@@ -102,6 +102,10 @@ class Announcement extends Model
             $path = substr($path, strlen('storage/'));
         }
 
+        if (str_starts_with($path, 'announcements/')) {
+            return url('announcement-images/' . $path);
+        }
+
         return url('storage/' . $path);
     }
 

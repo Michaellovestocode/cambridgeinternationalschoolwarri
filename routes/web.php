@@ -13,6 +13,7 @@ use App\Http\Controllers\AdminAdmissionEnquiryController;
 use App\Http\Controllers\AdmissionEnquiryController;
 use App\Http\Controllers\AdminParentController;
 use App\Http\Controllers\AnnouncementController;
+use App\Http\Controllers\AnnouncementImageController;
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\ParentPortalController;
 use App\Http\Controllers\LearningSessionController;
@@ -56,6 +57,9 @@ Route::get('/', function () {
 Route::get('/apply', [AdmissionEnquiryController::class, 'create'])->name('apply.create');
 Route::post('/apply', [AdmissionEnquiryController::class, 'submitApplication'])->name('apply.store');
 Route::post('/admission-enquiries', [AdmissionEnquiryController::class, 'store'])->name('admission-enquiries.store');
+Route::get('/announcement-images/{path}', [AnnouncementImageController::class, 'show'])
+    ->where('path', '.*')
+    ->name('announcement-images.show');
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
