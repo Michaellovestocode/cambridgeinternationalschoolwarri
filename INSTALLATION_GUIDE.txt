@@ -1,0 +1,121 @@
+==========================================================================
+NIGERIAN SCHOOL CBT SYSTEM - INSTALLATION GUIDE
+Laravel 12 | Computer-Based Testing System
+==========================================================================
+
+SYSTEM REQUIREMENTS:
+-------------------
+- PHP >= 8.2
+- Composer
+- MySQL/MariaDB >= 5.7
+- Web Server (Apache/Nginx)
+
+INSTALLATION STEPS:
+------------------
+
+1. EXTRACT THE ZIP FILE
+   - Extract nigerian-cbt-system.zip to your web directory
+   - Example: C:\xampp\htdocs\nigerian-cbt-system (Windows)
+   - Example: /var/www/html/nigerian-cbt-system (Linux)
+
+2. INSTALL COMPOSER DEPENDENCIES
+   Open terminal/command prompt in the project directory:
+   
+   composer install
+
+3. CONFIGURE ENVIRONMENT
+   a. Copy .env.example to .env:
+      
+      Windows: copy .env.example .env
+      Linux/Mac: cp .env.example .env
+   
+   b. Edit .env file and set database credentials:
+      
+      DB_DATABASE=nigerian_cbt
+      DB_USERNAME=root
+      DB_PASSWORD=your_password
+
+4. CREATE DATABASE
+   Create a MySQL database named 'nigerian_cbt':
+   
+   mysql -u root -p
+   CREATE DATABASE nigerian_cbt;
+   EXIT;
+
+5. GENERATE APPLICATION KEY
+   
+   php artisan key:generate
+
+6. RUN MIGRATIONS
+   
+   php artisan migrate
+
+7. SEED DATABASE (Creates demo users)
+   
+   php artisan db:seed
+
+8. START THE SERVER
+   
+   php artisan serve
+
+9. ACCESS THE SYSTEM
+   Open your browser: http://localhost:8000
+
+DEFAULT LOGIN CREDENTIALS:
+-------------------------
+
+ADMIN:
+Email: admin@school.com
+Password: password
+
+TEACHER:
+Email: okafor@school.com
+Password: password
+
+Email: adeyemi@school.com
+Password: password
+
+STUDENTS:
+Registration: STD2024001 | Password: password
+Registration: STD2024002 | Password: password
+Registration: STD2024003 | Password: password
+Registration: STD2024004 | Password: password
+Registration: STD2024005 | Password: password
+
+TROUBLESHOOTING:
+---------------
+
+Issue: Composer not found
+Solution: Install Composer from https://getcomposer.org
+
+Issue: PHP version too old
+Solution: Upgrade PHP to 8.2 or higher
+
+Issue: Database connection error
+Solution: Check DB credentials in .env file
+
+Issue: Permission denied errors
+Solution (Linux): 
+  chmod -R 775 storage bootstrap/cache
+  chown -R www-data:www-data storage bootstrap/cache
+
+FEATURES:
+---------
+✓ Student exam portal with timer
+✓ Multiple question types (MCQ, Theory, Coding, Fill-blank)
+✓ Auto-save functionality
+✓ Auto-grading for objective questions
+✓ Manual grading for subjective questions
+✓ Export results to PDF and Word
+✓ Print exam scripts
+✓ Analytics dashboard
+✓ Class management
+✓ Role-based access control
+
+SUPPORT:
+--------
+For issues, please review README.md file for detailed documentation.
+
+==========================================================================
+END OF INSTALLATION GUIDE
+==========================================================================

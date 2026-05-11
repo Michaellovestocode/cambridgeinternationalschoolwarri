@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <header style="background-color: red; color: white; text-align: center; font-family: cursive; font-size: 40px;">My Wish List</header>
+    <h1 style="text-align: center; color: white; background-color: black;">My Favourite Cars</h1>
+    <ol>
+        <li style="color: green;">Bugatti</li>
+        <li style="color: yellow;">Cyber Truck</li>
+        <li style="color: blue;">Ferrari</li>
+        <li style="color: red;">Lamborghini</li>
+    </ol>
+    <h1 style="text-align: center; color: white; background-color: brown;">My Favourite Countries</h1>
+    <ol type="A">
+        <li style="color: green;">USA</li>
+    <li style="color: yellow;">NIGERIA</li>
+    <li style="color: blue;">CANADA</li>
+    <li style="color: red;">NORWAY</li>
+    </ol>
+    <h1 style="text-align: center; color: white; background-color: purple;">My Favourite Food</h1>
+    <ul>
+        <li style="color: green;">Pizza</li>
+        <li style="color: yellow;">Shawarma</li>
+        <li style="color: blue;">Hot Dog</li>
+        <li style="color: red;">Sandwich</li>
+    </ul>
+</body>
+</html>

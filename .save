@@ -1,0 +1,75 @@
+/*
+|--------------------------------------------------------------------------
+| Database Setup Route (TEMPORARY - Remove after first use)
+|--------------------------------------------------------------------------
+*/
+
+Route::get('/setup-database', function() {
+    try {
+        $output = "<style>
+            body { font-family: Arial, sans-serif; max-width: 800px; margin: 50px auto; padding: 20px; }
+            h1 { color: #10b981; }
+            h2 { color: #3b82f6; margin-top: 30px; }
+            pre { background: #f3f4f6; padding: 15px; border-radius: 8px; overflow-x: auto; }
+            .success { color: #10b981; font-weight: bold; }
+            .error { color: #ef4444; font-weight: bold; }
+            a { display: inline-block; margin-top: 20px; padding: 10px 20px; background: #3b82f6; color: white; text-decoration: none; border-radius: 8px; }
+            a:hover { background: #2563eb; }
+        </style>";
+        
+        $output .= "<h1>🚀 Database Setup</h1>";
+        
+        // Run migrations
+        $output .= "<h2>📊 Running Migrations...</h2>";
+        Artisan::call('migrate', ['--force' => true]);
+        $migrations = Artisan::output();
+        $output .= "<pre>{$migrations}</pre>";
+        
+        // Run seeders
+        $output .= "<h2>🌱 Seeding Database...</h2>";
+        if (User::count() == 0) {
+            Artisan::call('db:seed', ['--force' => true]);
+            $seeding = Artisan::output();
+            $output .= "<pre>{$seeding}</pre>";
+            $output .= "<p class='success'>✅ Database seeded successfully!</p>";
+        } else {
+            $output .= "<p class='success'>ℹ️ Database already has users. Skipping seeders.</p>";
+            $output .= "<p>User count: " . User::count() . "</p>";
+        }
+        
+        // Storage link
+        $output .= "<h2>🔗 Creating Storage Link...</h2>";
+        try {
+            Artisan::call('storage:link');
+            $storage = Artisan::output();
+            $output .= "<pre>{$storage}</pre>";
+        } catch (\Exception $e) {
+            $output .= "<p class='success'>ℹ️ Storage link already exists.</p>";
+        }
+        
+        // Clear cache
+        $output .= "<h2>🧹 Clearing Cache...</h2>";
+        Artisan::call('config:clear');
+        Artisan::call('cache:clear');
+        Artisan::call('view:clear');
+        $output .= "<p class='success'>✅ Cache cleared!</p>";
+        
+        // Show demo credentials
+        $output .= "<h2>🔑 Demo Credentials</h2>";
+        $output .= "<pre>
+Admin:   admin@school.com / password
+Teacher: okafor@school.com / password  
+Student: STD2024001 / password
+        </pre>";
+        
+        $output .= "<p class='success'>✅ Setup Complete!</p>";
+        $output .= "<a href='/'>Go to Login Page →</a>";
+        
+        return $output;
+        
+    } catch (\Exception $e) {
+        return "<h1 class='error'>❌ Setup Failed</h1>
+                <pre>" . $e->getMessage() . "</pre>
+                <pre>" . $e->getTraceAsString() . "</pre>";
+    }
+});

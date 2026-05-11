@@ -1,0 +1,635 @@
+
+
+<?php $__env->startSection('title', 'Take Exam'); ?>
+
+<?php $__env->startSection('content'); ?>
+<div x-data="examApp()" class="space-y-6">
+    <!-- Timer and Header (STICKY) -->
+<div class="sticky top-0 z-50 bg-white rounded-lg shadow-lg border-b-4 border-green-600 p-6 mb-6">
+    <div class="flex justify-between items-center">
+        <div>
+            <h2 class="text-2xl font-bold text-gray-800"><?php echo e($attempt->exam->title); ?></h2>
+            <p class="text-gray-600"><?php echo e($attempt->exam->subject); ?></p>
+        </div>
+        <div class="text-center bg-gradient-to-br from-green-50 to-blue-50 border-2 rounded-xl px-6 py-3" :class="timeRemaining < 300 ? 'border-red-500 from-red-50 to-orange-50' : 'border-green-500'">
+            <div class="text-3xl font-bold" :class="timeRemaining < 300 ? 'text-red-600' : 'text-green-600'">
+                <span x-text="formatTime(timeRemaining)"></span>
+            </div>
+            <div class="text-sm font-semibold uppercase" :class="timeRemaining < 300 ? 'text-red-600' : 'text-gray-600'">
+                Time Remaining
+            </div>
+        </div>
+    </div>
+</div>
+    
+
+    <!-- Questions -->
+    <form id="exam-form" @submit.prevent="submitExam">
+        <?php echo csrf_field(); ?>
+        <div class="bg-white rounded-lg shadow p-6 space-y-8">
+            <?php $lastPassageId = null; ?>
+            <?php $__currentLoopData = $questions; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $index => $question): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+            <?php if($question->passage && $lastPassageId !== $question->question_passage_id): ?>
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-5">
+                <div class="text-xs font-bold uppercase text-blue-700 mb-2"><?php echo e($question->passage->title ?: 'Passage'); ?></div>
+                <div class="prose max-w-none text-gray-800 leading-relaxed"><?php echo $question->passage->formattedBody(); ?></div>
+            </div>
+            <?php $lastPassageId = $question->question_passage_id; ?>
+            <?php elseif(!$question->passage): ?>
+            <?php $lastPassageId = null; ?>
+            <?php endif; ?>
+            <div class="border-b pb-6 last:border-b-0" id="question-<?php echo e($question->id); ?>">
+                <div class="flex items-start mb-4">
+                    <span class="bg-green-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-semibold mr-3 flex-shrink-0">
+                        <?php echo e($index + 1); ?>
+
+                    </span>
+                    <div class="flex-1">
+                        <div class="text-gray-800 font-medium mb-2"><?php echo $question->formattedQuestionText(); ?></div>
+                        <span class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                            <?php echo e($question->marks); ?> marks
+                        </span>
+                        <span class="text-xs bg-gray-100 text-gray-800 px-2 py-1 rounded ml-2">
+                            <?php echo e(ucwords(str_replace('_', ' ', $question->question_type))); ?>
+
+                        </span>
+                    </div>
+                </div>
+
+                <?php
+                    $savedAnswer = $attempt->answers->where('question_id', $question->id)->first();
+                ?>
+
+                <div class="ml-11">
+                    <?php if($question->image_path): ?>
+                    <div class="mb-6 border rounded-lg overflow-hidden" x-data="{ zoomed: false }">
+                        <div class="bg-blue-50 px-4 py-2 border-b flex justify-between items-center">
+                            <span class="text-sm font-semibold text-blue-700">📸 Reference Image</span>
+                            <button type="button"
+                                    @click.stop.prevent="zoomed = !zoomed"
+                                    class="text-xs bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded transition">
+                                <span x-show="!zoomed">🔍 Zoom In</span>
+                                <span x-show="zoomed">✕ Close</span>
+                            </button>
+                        </div>
+                        
+                        <div x-show="!zoomed" class="p-4 bg-white">
+                            <img src="<?php echo e(asset('storage/' . $question->image_path)); ?>" 
+                                 alt="Reference design" 
+                                 onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22200%22%3E%3Crect fill=%22%23ddd%22 width=%22200%22 height=%22200%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22 fill=%22%23999%22%3EImage not found%3C/text%3E%3C/svg%3E';"
+                                 class="max-h-64 mx-auto border rounded shadow-sm cursor-pointer hover:opacity-90 transition"
+                                 @click.stop.prevent="zoomed = true"
+                                 title="Click to zoom">
+                        </div>
+
+                        <template x-if="zoomed">
+                            <div @click.stop.prevent="zoomed = false"
+                                 @keydown.escape.window="zoomed = false"
+                                 class="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center p-4"
+                                 style="z-index: 99999;">
+                                <div class="relative max-w-7xl max-h-full" @click.stop>
+                                    <button type="button"
+                                            @click.stop.prevent="zoomed = false"
+                                            class="absolute -top-12 right-0 bg-white text-gray-800 rounded-lg px-4 py-2 text-sm font-semibold shadow-lg hover:bg-gray-100 transition">
+                                        ✕ Close (ESC)
+                                    </button>
+                                    
+                                    <img src="<?php echo e(asset('storage/' . $question->image_path)); ?>" 
+                                         alt="Reference design zoomed" 
+                                         class="max-w-full max-h-screen object-contain rounded-lg shadow-2xl border-4 border-white">
+                                    
+                                    <div class="absolute bottom-0 left-0 right-0 bg-black bg-opacity-75 text-white text-center py-2 text-sm rounded-b-lg">
+                                        Reference Design - Study this carefully and recreate it in your code
+                                    </div>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                    <?php endif; ?>
+
+                    <?php if($question->question_type === 'multiple_choice'): ?>
+                        <div class="space-y-2">
+                            <?php $__currentLoopData = $question->options; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $key => $option): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                            <label class="flex items-center p-3 border rounded hover:bg-gray-50 cursor-pointer">
+                                <input 
+                                    type="radio" 
+                                    name="question_<?php echo e($question->id); ?>" 
+                                    value="<?php echo e($key); ?>"
+                                    <?php echo e($savedAnswer && $savedAnswer->answer_text == $key ? 'checked' : ''); ?>
+
+                                    @change="saveAnswer(<?php echo e($question->id); ?>, $event.target.value)"
+                                    class="mr-3 h-4 w-4 text-green-600">
+                                <span><strong><?php echo e($key); ?>.</strong> <?php echo e($option); ?></span>
+                            </label>
+                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                        </div>
+
+                    <?php elseif($question->question_type === 'fill_blank'): ?>
+                        <input 
+                            type="text" 
+                            name="question_<?php echo e($question->id); ?>"
+                            value="<?php echo e($savedAnswer->answer_text ?? ''); ?>"
+                            @change="saveAnswer(<?php echo e($question->id); ?>, $event.target.value)"
+                            class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500"
+                            placeholder="Type your answer...">
+
+                    <?php elseif($question->question_type === 'theory'): ?>
+                        <textarea 
+                            name="question_<?php echo e($question->id); ?>"
+                            rows="8"
+                            @change="saveAnswer(<?php echo e($question->id); ?>, $event.target.value)"
+                            class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500"
+                            placeholder="Write your answer..."><?php echo e($savedAnswer->answer_text ?? ''); ?></textarea>
+
+                    <?php elseif($question->question_type === 'coding'): ?>
+                        <div x-data="{ showPreview: false }" data-question="<?php echo e($question->id); ?>">
+                            <div class="bg-gray-900 p-2 rounded-t flex gap-2 flex-wrap items-center">
+                                <button type="button" 
+                                        onclick="switchFile(<?php echo e($question->id); ?>, 'index.html')"
+                                        class="file-tab bg-green-600 text-white px-3 py-1 rounded text-xs">
+                                    📄 HTML
+                                </button>
+                                <button type="button"
+                                        onclick="switchFile(<?php echo e($question->id); ?>, 'styles.css')"
+                                        class="file-tab bg-gray-700 text-gray-300 px-3 py-1 rounded text-xs">
+                                    🎨 CSS
+                                </button>
+                                <button type="button"
+                                        onclick="switchFile(<?php echo e($question->id); ?>, 'script.js')"
+                                        class="file-tab bg-gray-700 text-gray-300 px-3 py-1 rounded text-xs">
+                                    ⚡ JS
+                                </button>
+                                
+                                <div class="ml-auto flex gap-2">
+                                    <button type="button" 
+                                            @click.stop.prevent="showPreview = !showPreview"
+                                            class="bg-green-600 hover:bg-green-700 text-white text-xs px-3 py-1 rounded">
+                                        <span x-show="!showPreview">👁️ Preview</span>
+                                        <span x-show="showPreview">📝 Code</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="grid" :class="showPreview ? 'grid-cols-2 gap-2' : 'grid-cols-1'">
+                                <div>
+                                    <textarea 
+                                        id="code-editor-<?php echo e($question->id); ?>"
+                                        name="question_<?php echo e($question->id); ?>"
+                                        class="code-editor"
+                                        data-question-id="<?php echo e($question->id); ?>"><?php echo e($savedAnswer->answer_text ?? ''); ?></textarea>
+                                </div>
+
+                                <div x-show="showPreview" class="border rounded overflow-hidden">
+                                    <div class="bg-gray-100 p-2 border-b flex justify-between items-center">
+                                        <span class="text-xs font-semibold">Preview</span>
+                                        <button type="button" 
+                                                @click.stop.prevent="updatePreview(<?php echo e($question->id); ?>)"
+                                                class="text-xs bg-blue-500 text-white px-2 py-1 rounded">
+                                            🔄
+                                        </button>
+                                    </div>
+                                    <iframe 
+                                        id="preview-frame-<?php echo e($question->id); ?>"
+                                        style="width:100%; height:350px; border:none; background:white;"
+                                        sandbox="allow-scripts allow-same-origin">
+                                    </iframe>
+                                </div>
+                            </div>
+                        </div>
+                    <?php endif; ?>
+                </div>
+            </div>
+            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+        </div>
+
+        <div class="bg-white rounded-lg shadow p-6 mt-6">
+            <div class="flex justify-between items-center">
+                <div class="text-sm text-gray-600">
+                    <span x-show="isSaving" class="text-yellow-600">💾 Saving...</span>
+                    <span x-show="lastSaved && !isSaving" class="text-green-600">✓ Saved</span>
+                </div>
+                <button 
+                    type="submit"
+                    class="bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-lg font-semibold"
+                    :disabled="isSubmitting">
+                    <span x-show="!isSubmitting">Submit Exam</span>
+                    <span x-show="isSubmitting">Submitting...</span>
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<?php $__env->startPush('scripts'); ?>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/monokai.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/hint/show-hint.min.css">
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/htmlmixed/htmlmixed.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/css/css.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/javascript/javascript.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/hint/show-hint.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/hint/html-hint.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/hint/css-hint.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/hint/javascript-hint.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/closebrackets.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/closetag.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/matchbrackets.min.js"></script>
+
+<script>
+let editors = {};
+let projectFiles = {};
+
+// Enhanced CSS autocomplete
+CodeMirror.registerHelper("hint", "css", function(editor) {
+    const cur = editor.getCursor();
+    const token = editor.getTokenAt(cur);
+    const inner = CodeMirror.innerMode(editor.getMode(), token.state);
+    
+    if (inner.mode.name !== "css") return;
+
+    const propertyHints = [
+        "background", "background-color", "background-image", "background-position", "background-size",
+        "color", "border", "border-radius", "border-width", "border-style", "border-color",
+        "margin", "margin-top", "margin-right", "margin-bottom", "margin-left",
+        "padding", "padding-top", "padding-right", "padding-bottom", "padding-left",
+        "width", "height", "max-width", "max-height", "min-width", "min-height",
+        "display", "flex", "flex-direction", "justify-content", "align-items",
+        "grid", "position", "top", "left", "right", "bottom",
+        "font-size", "font-family", "font-weight", "font-style",
+        "text-align", "text-decoration", "line-height", "opacity"
+    ];
+
+    const colorValues = [
+        "#000000", "#ffffff", "#ff0000", "#00ff00", "#0000ff", 
+        "#ffff00", "#00ffff", "#ff00ff", "#808080", "#c0c0c0",
+        "red", "green", "blue", "yellow", "orange", "purple", "pink",
+        "black", "white", "gray", "transparent",
+        "rgb(255, 0, 0)", "rgba(0, 0, 0, 0.5)", "hsl(0, 100%, 50%)"
+    ];
+
+    const displayValues = ["block", "inline", "inline-block", "flex", "grid", "none"];
+    const positionValues = ["relative", "absolute", "fixed", "sticky", "static"];
+
+    const line = editor.getLine(cur.line);
+    const colonIndex = line.lastIndexOf(':', cur.ch);
+    
+    if (colonIndex > -1 && colonIndex < cur.ch) {
+        const property = line.substring(0, colonIndex).trim().split(/\s+/).pop();
+        let values = [];
+        
+        if (property.includes('color') || property === 'background') {
+            values = colorValues;
+        } else if (property === 'display') {
+            values = displayValues;
+        } else if (property === 'position') {
+            values = positionValues;
+        } else if (property.includes('width') || property.includes('height') || property.includes('margin') || property.includes('padding')) {
+            values = ["0", "auto", "10px", "20px", "50px", "100px", "100%", "1em", "1rem"];
+        } else {
+            values = ["auto", "none", "inherit", "initial"];
+        }
+
+        return {
+            list: values.map(v => v.includes(':') || v.includes('(') ? v : v + ';'),
+            from: CodeMirror.Pos(cur.line, colonIndex + 1),
+            to: cur
+        };
+    }
+    
+    return {
+        list: propertyHints.map(p => p + ': '),
+        from: CodeMirror.Pos(cur.line, token.start),
+        to: cur
+    };
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('keydown', function(e) {
+        if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
+            e.preventDefault();
+            alert("Use the autosave or submit button — Ctrl+S is disabled!");
+        }
+    });
+
+    document.querySelectorAll('.code-editor').forEach(function(textarea) {
+        const qId = textarea.dataset.questionId;
+        
+        let savedData = textarea.value;
+        try {
+            projectFiles[qId] = savedData ? JSON.parse(savedData) : null;
+        } catch(e) {
+            projectFiles[qId] = null;
+        }
+
+        if (!projectFiles[qId]) {
+            projectFiles[qId] = {
+                'index.html': savedData || '<!DOCTYPE html>\n<html>\n<head>\n  <title>My Website</title>\n  <link rel="stylesheet" href="styles.css">\n</head>\n<body>\n  \n</body>\n</html>',
+                'styles.css': '',
+                'script.js': '// JavaScript\nconsole.log("Ready!");'
+            };
+        }
+        
+        const editor = CodeMirror.fromTextArea(textarea, {
+            mode: 'htmlmixed',
+            theme: 'monokai',
+            lineNumbers: true,
+            autoCloseBrackets: true,
+            autoCloseTags: true,
+            matchBrackets: true,
+            lineWrapping: true,
+            indentUnit: 2,
+            tabSize: 2,
+            extraKeys: {
+                "Ctrl-Space": "autocomplete",
+                "'<'": function(cm) {
+                    if (cm.getMode().name === "htmlmixed") {
+                        cm.replaceSelection("<");
+                        setTimeout(() => {
+                            CodeMirror.commands.autocomplete(cm, null, {completeSingle: false});
+                        }, 50);
+                    } else {
+                        cm.replaceSelection("<");
+                    }
+                },
+                "':'": function(cm) {
+                    if (cm.getMode().name === 'css') {
+                        cm.replaceSelection(": ");
+                        setTimeout(() => CodeMirror.commands.autocomplete(cm), 50);
+                    } else {
+                        return CodeMirror.Pass;
+                    }
+                },
+                "Tab": function(cm) {
+                    if (cm.somethingSelected()) {
+                        cm.indentSelection("add");
+                    } else {
+                        cm.replaceSelection("  ", "end");
+                    }
+                }
+            },
+            hintOptions: {
+                completeSingle: false,
+                closeCharacters: /[\s()\[\]{};>,]/
+            }
+        });
+        
+        editors[qId] = { editor: editor, currentFile: 'index.html' };
+        editor.setValue(projectFiles[qId]['index.html']);
+        
+        let previewTimeout;
+        editor.on('change', function() {
+            const code = editor.getValue();
+            projectFiles[qId][editors[qId].currentFile] = code;
+            textarea.value = JSON.stringify(projectFiles[qId]);
+            
+            clearTimeout(previewTimeout);
+            previewTimeout = setTimeout(() => updatePreview(qId), 1000);
+        });
+        
+        editor.on('inputRead', function(cm, change) {
+            if (!cm.state.completionActive) {
+                const char = change.text[0];
+                const mode = cm.getMode().name;
+                
+                if (mode === "htmlmixed") {
+                    const cursor = cm.getCursor();
+                    const token = cm.getTokenAt(cursor);
+                    if (token.string.startsWith("<") && /<[a-zA-Z0-9-]*$/.test(token.string)) {
+                        CodeMirror.commands.autocomplete(cm, null, {completeSingle: false});
+                    }
+                }
+                
+                if (mode === 'css' && char && char.match(/[a-zA-Z-]/)) {
+                    CodeMirror.commands.autocomplete(cm, null, {completeSingle: false});
+                }
+                
+                if (mode === 'javascript' && char && char.match(/[a-zA-Z.]/)) {
+                    CodeMirror.commands.autocomplete(cm, null, {completeSingle: false});
+                }
+            }
+        });
+        
+        setTimeout(() => updatePreview(qId), 500);
+    });
+});
+
+function updatePreview(qId) {
+    const frame = document.getElementById('preview-frame-' + qId);
+    if (!frame) return;
+    
+    const files = projectFiles[qId];
+    if (!files) return;
+    
+    let html = files['index.html'] || '';
+    
+    if (files['styles.css']) {
+        const cssTag = '<style>' + files['styles.css'] + '</style>';
+        if (html.includes('</head>')) {
+            html = html.replace('</head>', cssTag + '</head>');
+        } else {
+            html = cssTag + html;
+        }
+    }
+    
+    if (files['script.js']) {
+        const jsTag = '<script>' + files['script.js'] + '<\/script>';
+        if (html.includes('</body>')) {
+            html = html.replace('</body>', jsTag + '</body>');
+        } else {
+            html = html + jsTag;
+        }
+    }
+    
+    try {
+        const doc = frame.contentDocument || frame.contentWindow.document;
+        doc.open();
+        doc.write(html);
+        doc.close();
+    } catch (e) {
+        console.error('Preview error:', e);
+    }
+}
+
+function switchFile(qId, filename) {
+    const obj = editors[qId];
+    if (!obj) return;
+    
+    projectFiles[qId][obj.currentFile] = obj.editor.getValue();
+    document.getElementById('code-editor-' + qId).value = JSON.stringify(projectFiles[qId]);
+    
+    obj.currentFile = filename;
+    obj.editor.setValue(projectFiles[qId][filename] || '');
+    
+    const modes = { 'index.html': 'htmlmixed', 'styles.css': 'css', 'script.js': 'javascript' };
+    obj.editor.setOption('mode', modes[filename]);
+    
+    document.querySelectorAll('[data-question="' + qId + '"] .file-tab').forEach(btn => {
+        btn.classList.remove('bg-green-600', 'text-white');
+        btn.classList.add('bg-gray-700', 'text-gray-300');
+    });
+    event.target.classList.remove('bg-gray-700', 'text-gray-300');
+    event.target.classList.add('bg-green-600', 'text-white');
+    
+    setTimeout(() => {
+        obj.editor.refresh();
+        obj.editor.focus();
+    }, 10);
+}
+
+function syncCodeEditors() {
+    Object.keys(editors).forEach(function(qId) {
+        const obj = editors[qId];
+        if (!obj) return;
+
+        projectFiles[qId][obj.currentFile] = obj.editor.getValue();
+
+        const textarea = document.getElementById('code-editor-' + qId);
+        if (textarea) {
+            textarea.value = JSON.stringify(projectFiles[qId]);
+        }
+    });
+}
+
+function examApp() {
+    return {
+        timeRemaining: <?php echo e($attempt->time_remaining ?? ($attempt->exam->duration_minutes * 60)); ?>,
+        timer: null,
+        autoSaveTimer: null,
+        isSaving: false,
+        isSubmitting: false,
+        lastSaved: false,
+
+        init() {
+            if (this.timeRemaining <= 0) {
+                this.submitExam(true);
+            } else {
+                this.startTimer();
+                this.autoSave();
+            }
+        },
+
+        startTimer() {
+            if (this.timer) {
+                clearInterval(this.timer);
+            }
+
+            this.timer = setInterval(() => {
+                if (this.timeRemaining > 0) {
+                    this.timeRemaining--;
+                } else {
+                    clearInterval(this.timer);
+                    this.submitExam(true);
+                }
+            }, 1000);
+        },
+
+        formatTime(seconds) {
+            const h = Math.floor(seconds / 3600);
+            const m = Math.floor((seconds % 3600) / 60);
+            const s = seconds % 60;
+            return String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+        },
+
+        autoSave() {
+            if (this.autoSaveTimer) {
+                clearInterval(this.autoSaveTimer);
+            }
+
+            this.autoSaveTimer = setInterval(() => {
+                if (this.timeRemaining > 0 && !this.isSubmitting) {
+                    syncCodeEditors();
+                    const form = document.getElementById('exam-form');
+                    const formData = new FormData(form);
+                    
+                    for (let [key, value] of formData.entries()) {
+                        if (key.startsWith('question_')) {
+                            const qId = key.replace('question_', '');
+                            this.saveAnswer(qId, value);
+                        }
+                    }
+                }
+            }, 30000);
+        },
+
+        async saveAnswer(qId, answer) {
+            this.isSaving = true;
+            try {
+                await fetch('<?php echo e(route("student.save-answer", $attempt->id)); ?>', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '<?php echo e(csrf_token()); ?>'
+                    },
+                    body: JSON.stringify({
+                        question_id: qId,
+                        answer_text: answer,
+                        time_remaining: this.timeRemaining
+                    })
+                });
+                this.lastSaved = true;
+                setTimeout(() => this.lastSaved = false, 2000);
+            } finally {
+                this.isSaving = false;
+            }
+        },
+
+        async submitExam(auto = false) {
+            if (this.isSubmitting) return;
+            if (!auto && !confirm('Submit exam? You cannot change your answers after submission.')) return;
+            if (auto) alert('Time is up! Submitting automatically.');
+            
+            this.isSubmitting = true;
+            syncCodeEditors();
+
+            const examForm = document.getElementById('exam-form');
+            const formData = new FormData(examForm);
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '<?php echo e(route("student.submit-exam", $attempt->id)); ?>';
+            form.innerHTML = '<input type="hidden" name="_token" value="<?php echo e(csrf_token()); ?>">';
+
+            for (let [key, value] of formData.entries()) {
+                if (!key.startsWith('question_')) continue;
+
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = key;
+                input.value = value;
+                form.appendChild(input);
+            }
+
+            document.body.appendChild(form);
+            form.submit();
+        }
+    }
+}
+</script>
+
+<style>
+.CodeMirror { 
+    height: 350px; 
+    border: 1px solid #e5e7eb; 
+    font-size: 14px;
+}
+.CodeMirror-hints { 
+    z-index: 10000 !important;
+    max-height: 200px;
+    overflow-y: auto;
+}
+.CodeMirror-hint {
+    padding: 4px 8px;
+    cursor: pointer;
+}
+.CodeMirror-hint-active {
+    background: #16a34a;
+    color: white;
+}
+[x-cloak] { display: none !important; }
+</style>
+<?php $__env->stopPush(); ?>
+
+<?php $__env->stopSection(); ?>
+
+<?php echo $__env->make('layouts.app', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH C:\laragon\www\modern-cbt-platform-for-highschool\resources\views\student\take-exam.blade.php ENDPATH**/ ?>

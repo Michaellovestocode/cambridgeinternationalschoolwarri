@@ -1,0 +1,118 @@
+╔══════════════════════════════════════════════════════════════════════════╗
+║                  NIGERIAN CBT SYSTEM - QUICK SETUP                       ║
+║                        Laravel 12 Edition                                ║
+╚══════════════════════════════════════════════════════════════════════════╝
+
+📦 PACKAGE CONTENTS:
+==================
+✓ Laravel 12 Framework (latest)
+✓ Complete Models, Controllers, Middleware
+✓ Database Migrations & Seeders  
+✓ Blade Views with TailwindCSS
+✓ Routes Configuration
+✓ Ready-to-use CBT System
+
+⚡ QUICK START (5 MINUTES):
+===========================
+
+STEP 1: Extract ZIP
+-------------------
+Extract nigerian-cbt-system.zip to your web directory
+
+STEP 2: Install Dependencies
+-----------------------------
+cd nigerian-cbt-system
+composer install
+
+STEP 3: Configure Environment
+------------------------------
+cp .env.example .env
+
+Edit .env file:
+DB_DATABASE=nigerian_cbt
+DB_USERNAME=root
+DB_PASSWORD=your_password
+
+STEP 4: Setup Database
+----------------------
+php artisan key:generate
+php artisan migrate
+php artisan db:seed
+
+STEP 5: Start Server
+--------------------
+php artisan serve
+
+STEP 6: Login
+-------------
+Open: http://localhost:8000
+
+Admin: admin@school.com / password
+Teacher: okafor@school.com / password  
+Student: STD2024001 / password
+
+🎯 FEATURES:
+============
+✓ Student Exam Portal
+✓ 4 Question Types (MCQ, Theory, Coding, Fill-blank)
+✓ Auto-Save & Auto-Submit
+✓ Timer with Countdown
+✓ Auto-Grading System
+✓ Manual Grading Interface
+✓ PDF & Word Export
+✓ Analytics Dashboard
+✓ Class Management
+
+📁 KEY FILES:
+=============
+Models: app/Models/
+Controllers: app/Http/Controllers/
+Views: resources/views/
+Routes: routes/web.php
+Migrations: database/migrations/
+Seeder: database/seeders/DatabaseSeeder.php
+
+🔧 TROUBLESHOOTING:
+===================
+Issue: Composer not found
+Fix: Install from https://getcomposer.org
+
+Issue: PHP version error
+Fix: Upgrade to PHP 8.2+
+
+Issue: Database error
+Fix: Create database first: CREATE DATABASE nigerian_cbt;
+
+Issue: Permission errors  
+Fix (Linux): chmod -R 775 storage bootstrap/cache
+
+📧 DEMO ACCOUNTS:
+=================
+ADMIN:
+Email: admin@school.com
+Password: password
+
+TEACHERS:
+Email: okafor@school.com | Password: password
+Email: adeyemi@school.com | Password: password
+
+STUDENTS:
+Reg: STD2024001 | Password: password
+Reg: STD2024002 | Password: password
+Reg: STD2024003 | Password: password
+Reg: STD2024004 | Password: password
+Reg: STD2024005 | Password: password
+
+💡 TIPS:
+========
+- Run "php artisan migrate:fresh --seed" to reset database
+- Check README.md for detailed documentation
+- See COMPLETE_SOURCE_CODE.md for all code
+- Use "php artisan serve --host=0.0.0.0" for network access
+
+🚀 READY TO GO!
+===============
+Your Nigerian CBT System is ready for deployment.
+Customize as needed for your school.
+
+Version: 1.0.0 | Laravel: 12.x | PHP: 8.2+ | MySQL: 5.7+

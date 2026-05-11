@@ -1,0 +1,337 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Session;
+use App\Models\Term;
+use App\Models\Subject;
+use App\Models\Score;
+use App\Models\ReportCard;
+use App\Models\SchoolClass;
+use App\Models\User;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+
+class ResultController extends Controller
+{
+    // ========== SESSIONS MANAGEMENT ==========
+    
+    public function sessions()
+    {
+        $sessions = Session::latest()->get();
+        return view('admin.results.sessions', compact('sessions'));
+    }
+    
+    public function storeSession(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255|unique:sessions,name',
+            'start_date' => 'required|date',
+            'end_date' => 'required|date|after:start_date',
+        ]);
+        
+        Session::create($request->all());
+        
+        return redirect()->back()->with('success', 'Session created successfully!');
+    }
+    
+    public function activateSession($id)
+    {
+        $session = Session::findOrFail($id);
+        $session->activate();
+        
+        return redirect()->back()->with('success', 'Session activated successfully!');
+    }
+    
+    public function deleteSession($id)
+    {
+        $session = Session::findOrFail($id);
+        
+        if ($session->is_active) {
+            return redirect()->back()->with('error', 'Cannot delete active session!');
+        }
+        
+        $session->delete();
+        
+        return redirect()->back()->with('success', 'Session deleted successfully!');
+    }
+    
+    // ========== TERMS MANAGEMENT ==========
+    
+    public function terms()
+    {
+        $sessions = Session::all();
+        $terms = Term::with('session')->latest()->get();
+        return view('admin.results.terms', compact('terms', 'sessions'));
+    }
+    
+    public function storeTerm(Request $request)
+    {
+        $request->validate([
+            'session_id' => 'required|exists:sessions,id',
+            'name' => 'required|string|max:255',
+            'term_number' => 'required|integer|min:1|max:3',
+            'start_date' => 'required|date',
+            'end_date' => 'required|date|after:start_date',
+            'next_term_begins' => 'nullable|date',
+        ]);
+        
+        Term::create($request->all());
+        
+        return redirect()->back()->with('success', 'Term created successfully!');
+    }
+    
+    public function activateTerm($id)
+    {
+        $term = Term::findOrFail($id);
+        
+        // Activate the session too
+        $term->session->activate();
+        
+        // Activate the term
+        $term->activate();
+        
+        return redirect()->back()->with('success', 'Term activated successfully!');
+    }
+    
+    public function deleteTerm($id)
+    {
+        $term = Term::findOrFail($id);
+        
+        if ($term->is_active) {
+            return redirect()->back()->with('error', 'Cannot delete active term!');
+        }
+        
+        $term->delete();
+        
+        return redirect()->back()->with('success', 'Term deleted successfully!');
+    }
+    
+    // ========== SUBJECTS MANAGEMENT ==========
+    
+    public function subjects()
+    {
+        $subjects = Subject::orderBy('order')->orderBy('name')->get();
+        return view('admin.results.subjects', compact('subjects'));
+    }
+    
+    public function storeSubject(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'code' => 'required|string|max:10|unique:subjects,code',
+            'category' => 'required|in:core,elective,vocational',
+            'class_level' => 'nullable|string',
+            'order' => 'nullable|integer',
+        ]);
+        
+        Subject::create($request->all());
+        
+        return redirect()->back()->with('success', 'Subject created successfully!');
+    }
+    
+    public function updateSubject(Request $request, $id)
+    {
+        $subject = Subject::findOrFail($id);
+        
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'code' => 'required|string|max:10|unique:subjects,code,' . $id,
+            'category' => 'required|in:core,elective,vocational',
+            'class_level' => 'nullable|string',
+            'order' => 'nullable|integer',
+        ]);
+        
+        $subject->update($request->all());
+        
+        return redirect()->back()->with('success', 'Subject updated successfully!');
+    }
+    
+    public function deleteSubject($id)
+    {
+        $subject = Subject::findOrFail($id);
+        $subject->delete();
+        
+        return redirect()->back()->with('success', 'Subject deleted successfully!');
+    }
+    
+    // ========== SCORE COMPILATION ==========
+    
+    public function scoresDashboard()
+    {
+        $activeSession = Session::getActive();
+        $activeTerm = Term::getActive();
+        $classes = SchoolClass::all();
+        $subjects = Subject::active()->get();
+        
+        return view('admin.results.scores-dashboard', compact('activeSession', 'activeTerm', 'classes', 'subjects'));
+    }
+    
+    public function viewScores(Request $request)
+    {
+        $request->validate([
+            'class_id' => 'required|exists:school_classes,id',
+            'subject_id' => 'nullable|exists:subjects,id',
+        ]);
+        
+        $activeSession = Session::getActive();
+        $activeTerm = Term::getActive();
+        $class = SchoolClass::findOrFail($request->class_id);
+        
+        $query = Score::where('class_id', $request->class_id)
+            ->where('session_id', $activeSession->id)
+            ->where('term_id', $activeTerm->id)
+            ->with(['student', 'subject', 'teacher']);
+        
+        if ($request->subject_id) {
+            $query->where('subject_id', $request->subject_id);
+        }
+        
+        $scores = $query->get();
+        
+        $classes = SchoolClass::all();
+        $subjects = Subject::active()->get();
+        
+        return view('admin.results.view-scores', compact('scores', 'class', 'activeSession', 'activeTerm', 'classes', 'subjects'));
+    }
+    
+    public function approveScore($id)
+    {
+        $score = Score::findOrFail($id);
+        $score->approve();
+        
+        return redirect()->back()->with('success', 'Score approved successfully!');
+    }
+    
+    public function bulkApproveScores(Request $request)
+    {
+        $request->validate([
+            'class_id' => 'required|exists:school_classes,id',
+            'subject_id' => 'nullable|exists:subjects,id',
+        ]);
+        
+        $activeSession = Session::getActive();
+        $activeTerm = Term::getActive();
+        
+        $query = Score::where('class_id', $request->class_id)
+            ->where('session_id', $activeSession->id)
+            ->where('term_id', $activeTerm->id)
+            ->where('status', 'submitted');
+        
+        if ($request->subject_id) {
+            $query->where('subject_id', $request->subject_id);
+        }
+        
+        $count = $query->update(['status' => 'approved']);
+        
+        return redirect()->back()->with('success', "{$count} scores approved successfully!");
+    }
+    
+    // ========== RESULT COMPILATION ==========
+    
+    public function compileResults(Request $request)
+    {
+        $request->validate([
+            'class_id' => 'required|exists:school_classes,id',
+        ]);
+        
+        $activeSession = Session::getActive();
+        $activeTerm = Term::getActive();
+        $class = SchoolClass::findOrFail($request->class_id);
+        
+        // Get all students in the class
+        $students = User::where('class_id', $request->class_id)
+            ->where('role', 'student')
+            ->get();
+        
+        DB::beginTransaction();
+        
+        try {
+            foreach ($students as $student) {
+                // Calculate positions for each subject
+                $subjects = Subject::active()->get();
+                
+                foreach ($subjects as $subject) {
+                    Score::calculatePositions(
+                        $subject->id,
+                        $request->class_id,
+                        $activeSession->id,
+                        $activeTerm->id
+                    );
+                    
+                    // Update class average
+                    $classAverage = Score::calculateClassAverage(
+                        $subject->id,
+                        $request->class_id,
+                        $activeSession->id,
+                        $activeTerm->id
+                    );
+                    
+                    Score::where('subject_id', $subject->id)
+                        ->where('class_id', $request->class_id)
+                        ->where('session_id', $activeSession->id)
+                        ->where('term_id', $activeTerm->id)
+                        ->update(['class_average' => $classAverage]);
+                }
+                
+                // Generate report card summary
+                $summary = ReportCard::generateForStudent(
+                    $student->id,
+                    $activeSession->id,
+                    $activeTerm->id
+                );
+                
+                if ($summary) {
+                    ReportCard::updateOrCreate(
+                        [
+                            'student_id' => $student->id,
+                            'session_id' => $activeSession->id,
+                            'term_id' => $activeTerm->id,
+                        ],
+                        array_merge($summary, [
+                            'class_id' => $request->class_id,
+                            'status' => 'generated',
+                        ])
+                    );
+                }
+            }
+            
+            // Publish all scores
+            Score::where('class_id', $request->class_id)
+                ->where('session_id', $activeSession->id)
+                ->where('term_id', $activeTerm->id)
+                ->where('status', 'approved')
+                ->update(['status' => 'published']);
+            
+            DB::commit();
+            
+            return redirect()->back()->with('success', 'Results compiled successfully for ' . $class->name . '!');
+            
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->with('error', 'Error compiling results: ' . $e->getMessage());
+        }
+    }
+    
+    public function publishResults(Request $request)
+    {
+        $request->validate([
+            'class_id' => 'required|exists:school_classes,id',
+        ]);
+        
+        $activeSession = Session::getActive();
+        $activeTerm = Term::getActive();
+        
+        $count = ReportCard::where('class_id', $request->class_id)
+            ->where('session_id', $activeSession->id)
+            ->where('term_id', $activeTerm->id)
+            ->where('status', 'generated')
+            ->get();
+        
+        foreach ($count as $reportCard) {
+            $reportCard->publish();
+        }
+        
+        return redirect()->back()->with('success', count($count) . ' report cards published successfully!');
+    }
+}
