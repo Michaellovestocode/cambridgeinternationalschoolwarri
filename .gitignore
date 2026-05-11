@@ -4,6 +4,8 @@
 /storage/*.key
 /vendor
 .env
+.env.*
+!.env.example
 .env.backup
 .phpunit.result.cache
 Homestead.json
@@ -15,6 +17,21 @@ yarn-error.log
 
 storage/logs/
 *.log
+
+/bootstrap/cache/*
+!/bootstrap/cache/.gitignore
+
+/storage/app/public/*
+!/storage/app/public/.gitignore
+/storage/framework/cache/*
+!/storage/framework/cache/.gitignore
+/storage/framework/sessions/*
+!/storage/framework/sessions/.gitignore
+/storage/framework/views/*
+!/storage/framework/views/.gitignore
+/storage/app/*.html
+/storage/app/inspect-*.php
+/storage/app/check-timezone.php
 
 storage/logs/
 /node_modules
