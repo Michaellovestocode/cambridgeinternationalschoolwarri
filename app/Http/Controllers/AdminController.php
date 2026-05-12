@@ -738,17 +738,24 @@ public function storeTeacher(Request $request)
         'email' => 'required|email|unique:users,email',
         'registration_number' => 'required|string|unique:users,registration_number',
         'whatsapp_number' => 'nullable|string|max:30',
+        'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:1024',
         'password' => 'required|string|min:6',
     ]);
 
-    User::create([
+    $data = [
         'name' => $validated['name'],
         'email' => $validated['email'],
         'registration_number' => $validated['registration_number'],
         'whatsapp_number' => $validated['whatsapp_number'] ?? null,
         'password' => Hash::make($validated['password']),
         'role' => 'teacher',
-    ]);
+    ];
+
+    if ($request->hasFile('photo')) {
+        $data['photo'] = $request->file('photo')->store('photos', 'public');
+    }
+
+    User::create($data);
 
     return redirect()->route('admin.teachers')->with('success', 'Teacher added successfully!');
 }
@@ -768,15 +775,22 @@ public function updateTeacher(Request $request, $teacherId)
         'email' => 'required|email|unique:users,email,' . $teacherId,
         'registration_number' => 'required|string|unique:users,registration_number,' . $teacherId,
         'whatsapp_number' => 'nullable|string|max:30',
+        'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:1024',
         'password' => 'nullable|string|min:6',
     ]);
 
-    $teacher->update([
+    $data = [
         'name' => $validated['name'],
         'email' => $validated['email'],
         'registration_number' => $validated['registration_number'],
         'whatsapp_number' => $validated['whatsapp_number'] ?? null,
-    ]);
+    ];
+
+    if ($request->hasFile('photo')) {
+        $data['photo'] = $request->file('photo')->store('photos', 'public');
+    }
+
+    $teacher->update($data);
 
     if ($request->filled('password')) {
         $teacher->update(['password' => Hash::make($validated['password'])]);

@@ -30,7 +30,19 @@
                     <tr class="hover:bg-gray-50">
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-600">{{ $index + 1 }}</td>
                         <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="font-medium text-gray-900">{{ $teacher->name }}</div>
+                            <div class="flex items-center gap-3">
+                                @if($teacher->photo)
+                                    <img src="{{ asset('storage/' . $teacher->photo) }}" alt="{{ $teacher->name }}" class="w-11 h-11 rounded-full object-cover border border-gray-200">
+                                @else
+                                    <div class="w-11 h-11 rounded-full bg-green-100 text-green-700 flex items-center justify-center text-sm font-bold border border-green-200">
+                                        {{ strtoupper(substr($teacher->name, 0, 1)) }}
+                                    </div>
+                                @endif
+                                <div>
+                                    <div class="font-medium text-gray-900">{{ $teacher->name }}</div>
+                                    <div class="text-xs text-gray-500">{{ $teacher->registration_number }}</div>
+                                </div>
+                            </div>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{ $teacher->email }}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-center">

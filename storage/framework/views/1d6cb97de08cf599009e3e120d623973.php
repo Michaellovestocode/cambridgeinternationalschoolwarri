@@ -30,7 +30,20 @@
                     <tr class="hover:bg-gray-50">
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-600"><?php echo e($index + 1); ?></td>
                         <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="font-medium text-gray-900"><?php echo e($teacher->name); ?></div>
+                            <div class="flex items-center gap-3">
+                                <?php if($teacher->photo): ?>
+                                    <img src="<?php echo e(asset('storage/' . $teacher->photo)); ?>" alt="<?php echo e($teacher->name); ?>" class="w-11 h-11 rounded-full object-cover border border-gray-200">
+                                <?php else: ?>
+                                    <div class="w-11 h-11 rounded-full bg-green-100 text-green-700 flex items-center justify-center text-sm font-bold border border-green-200">
+                                        <?php echo e(strtoupper(substr($teacher->name, 0, 1))); ?>
+
+                                    </div>
+                                <?php endif; ?>
+                                <div>
+                                    <div class="font-medium text-gray-900"><?php echo e($teacher->name); ?></div>
+                                    <div class="text-xs text-gray-500"><?php echo e($teacher->registration_number); ?></div>
+                                </div>
+                            </div>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600"><?php echo e($teacher->email); ?></td>
                         <td class="px-6 py-4 whitespace-nowrap text-center">
