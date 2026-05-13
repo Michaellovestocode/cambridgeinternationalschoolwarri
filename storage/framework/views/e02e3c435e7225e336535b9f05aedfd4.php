@@ -8,12 +8,28 @@
             <p class="text-gray-600 mt-1">
                 Fill attendance, remarks, signatures, and next term date manually. Attendance percentage is calculated automatically.
             </p>
+            <p class="mt-2">
+                <span class="px-3 py-1 rounded-full text-xs font-semibold <?php echo e($reportCard->isPublished() ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'); ?>">
+                    <?php echo e($reportCard->isPublished() ? 'Published, fee clearance required' : 'Hidden from parents and students'); ?>
+
+                </span>
+            </p>
         </div>
-        <div class="flex gap-3">
+        <div class="flex flex-wrap gap-3">
             <a href="<?php echo e(route('admin.report-cards')); ?>"
                class="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-lg font-medium">
                 Back
             </a>
+            <form method="POST" action="<?php echo e(route('admin.report-cards.publication', $reportCard->id)); ?>">
+                <?php echo csrf_field(); ?>
+                <?php echo method_field('PUT'); ?>
+                <input type="hidden" name="published" value="<?php echo e($reportCard->isPublished() ? 0 : 1); ?>">
+                <button type="submit"
+                        class="<?php echo e($reportCard->isPublished() ? 'bg-red-600 hover:bg-red-700' : 'bg-green-600 hover:bg-green-700'); ?> text-white px-4 py-2 rounded-lg font-medium">
+                    <?php echo e($reportCard->isPublished() ? 'Hide From Parents & Students' : 'Publish Report Card'); ?>
+
+                </button>
+            </form>
             <a href="<?php echo e(route('admin.report-cards.download', $reportCard->id)); ?>"
                class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium">
                 Download PDF

@@ -22,6 +22,20 @@
     </script>
     <style>
         * { font-family: 'Poppins', sans-serif; }
+        html, body {
+            max-width: 100%;
+            overflow-x: hidden;
+        }
+        img, video, canvas, svg {
+            max-width: 100%;
+        }
+        .flex > * {
+            min-width: 0;
+        }
+        .break-anywhere {
+            overflow-wrap: anywhere;
+            word-break: break-word;
+        }
 
         /* â”€â”€ Blob animations â”€â”€ */
         .blob-1 {
@@ -67,7 +81,7 @@
         .ticker-track {
             display: inline-flex;
             width: max-content;
-            animation: ticker-scroll 28s linear infinite;
+            animation: ticker-scroll 60s linear infinite;
             will-change: transform;
         }
         .ticker-track:hover {
@@ -152,6 +166,20 @@
             z-index: 9999;
             transition: width 0.1s linear;
         }
+
+        @media (max-width: 640px) {
+            #mainNav .nav-logo-mark { width: 2.75rem; height: 2.75rem; }
+            #mainNav .nav-brand-title { font-size: 1rem; line-height: 1.25rem; }
+            #mainNav .nav-brand-subtitle { font-size: .68rem; line-height: 1rem; }
+            .about-vision-card {
+                position: static !important;
+                margin-top: 1rem;
+                border-radius: 1.25rem;
+            }
+            .about-vision-grid {
+                grid-template-columns: 1fr !important;
+            }
+        }
     </style>
 </head>
 <body class="bg-gradient-to-br from-blue-50 via-yellow-50 to-green-50">
@@ -208,8 +236,11 @@
         <a href="#gallery"     onclick="toggleMenu()" class="hover:text-yellow-400 transition">Gallery</a>
         <a href="#faq"         onclick="toggleMenu()" class="hover:text-yellow-400 transition">FAQ</a>
         <a href="#contact"     onclick="toggleMenu()" class="hover:text-yellow-400 transition">Contact</a>
-        <a href="<?php echo e(route('apply.create')); ?>" class="bg-white text-gray-900 px-8 py-3 rounded-full mt-2 font-bold">Apply Now</a>
-        <a href="/login" class="bg-gradient-to-r from-blue-600 to-green-600 px-8 py-3 rounded-full mt-4">Login</a>
+        <div class="flex flex-wrap justify-center gap-3 mt-2">
+            <a href="<?php echo e(route('blog.index')); ?>" class="bg-blue-600 text-white px-7 py-3 rounded-full font-bold">Blog</a>
+            <a href="<?php echo e(route('apply.create')); ?>" class="bg-white text-gray-900 px-7 py-3 rounded-full font-bold">Apply Now</a>
+            <a href="/login" class="bg-gradient-to-r from-blue-600 to-green-600 px-7 py-3 rounded-full font-bold">Login</a>
+        </div>
     </div>
 </div>
 
@@ -221,12 +252,12 @@
         <div class="flex justify-between items-center h-20">
             <!-- Logo -->
             <div class="flex items-center space-x-3">
-                <div class="w-14 h-14 bg-gradient-to-br from-blue-600 via-yellow-500 to-green-600 rounded-2xl flex items-center justify-center shadow-lg transform rotate-3">
+                <div class="nav-logo-mark w-14 h-14 bg-gradient-to-br from-blue-600 via-yellow-500 to-green-600 rounded-2xl flex items-center justify-center shadow-lg transform rotate-3 shrink-0">
                     <span class="text-white font-black text-2xl -rotate-1"><img src="<?php echo e(asset('images/schoollogo.jpg')); ?>" alt="Vice Principal" class="w-full h-full object-cover rounded-2xl"></span>
                 </div>
-                <div>
-                    <h1 class="text-xl font-black text-gray-900">Cambridge</h1>
-                    <p class="text-xs text-gray-600 font-semibold">International School</p>
+                <div class="min-w-0">
+                    <h1 class="nav-brand-title text-xl font-black text-gray-900">Cambridge</h1>
+                    <p class="nav-brand-subtitle text-xs text-gray-600 font-semibold">International School</p>
                 </div>
             </div>
 
@@ -236,12 +267,16 @@
                 <a href="#programs" class="nav-link text-gray-700 hover:text-blue-600 font-semibold transition text-sm">Programs</a>
                 <a href="#about"    class="nav-link text-gray-700 hover:text-blue-600 font-semibold transition text-sm">About</a>
                 <a href="#news"     class="nav-link text-gray-700 hover:text-blue-600 font-semibold transition text-sm">News</a>
+                <a href="<?php echo e(route('blog.index')); ?>" class="text-gray-700 hover:text-blue-600 font-semibold transition text-sm">Blog</a>
                 <a href="#gallery"  class="nav-link text-gray-700 hover:text-blue-600 font-semibold transition text-sm">Gallery</a>
                 <a href="#faq"      class="nav-link text-gray-700 hover:text-blue-600 font-semibold transition text-sm">FAQ</a>
                 <a href="#contact"  class="nav-link text-gray-700 hover:text-blue-600 font-semibold transition text-sm">Contact</a>
             </div>
 
             <div class="flex items-center space-x-4">
+                <a href="<?php echo e(route('blog.index')); ?>" class="bg-white border-2 border-blue-100 text-blue-700 px-4 sm:px-6 py-2.5 rounded-full font-bold hover:border-blue-500 hover:bg-blue-50 transition text-sm sm:text-base">
+                    Blog
+                </a>
                 <a href="<?php echo e(route('apply.create')); ?>" class="hidden sm:block bg-gradient-to-r from-amber-400 to-orange-500 text-gray-900 px-6 py-2.5 rounded-full font-bold hover:shadow-xl transition transform hover:scale-105">
                     Apply Now
                 </a>
@@ -286,6 +321,9 @@
                 <div class="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
                     <a href="<?php echo e(route('apply.create')); ?>" class="bg-gradient-to-r from-amber-400 via-orange-500 to-rose-500 text-white px-8 py-4 rounded-full font-bold text-lg shadow-xl hover:shadow-2xl transition transform hover:scale-105 flex items-center justify-center space-x-2">
                         <span>Apply Now</span>
+                    </a>
+                    <a href="<?php echo e(route('blog.index')); ?>" class="bg-blue-600 text-white px-8 py-4 rounded-full font-bold text-lg shadow-xl hover:bg-blue-700 transition flex items-center justify-center space-x-2">
+                        <span>Read Blog</span>
                     </a>
                     <a href="/login" class="bg-white border-2 border-gray-200 text-gray-800 px-8 py-4 rounded-full font-bold text-lg hover:border-blue-600 hover:text-blue-600 transition flex items-center justify-center space-x-2">
                         <span>Login</span>
@@ -444,9 +482,9 @@
 
             <div class="fade-in-up" style="transition-delay:.15s">
                 <div class="relative">
-                    <img src="<?php echo e(asset('images/school life1.jpg')); ?>" alt="Cambridge students learning" class="w-full h-[420px] object-cover rounded-[2rem] shadow-2xl border border-white/15">
-                    <div class="absolute -bottom-6 left-6 right-6 bg-white text-gray-900 rounded-3xl shadow-2xl p-5">
-                        <div class="grid grid-cols-2 gap-4">
+                    <img src="<?php echo e(asset('images/school life9.jpg')); ?>" alt="Cambridge students learning" class="w-full h-72 sm:h-[420px] object-cover rounded-[2rem] shadow-2xl border border-white/15">
+                    <div class="about-vision-card absolute -bottom-6 left-6 right-6 bg-white text-gray-900 rounded-3xl shadow-2xl p-5">
+                        <div class="about-vision-grid grid grid-cols-2 gap-4">
                             <div>
                                 <div class="text-xs font-black uppercase text-blue-600" style="letter-spacing:.16em;">Vision</div>
                                 <p class="text-sm font-semibold mt-2 leading-6">To be a globally respected centre of educational excellence, raising transformational leaders for the future.</p>
@@ -651,7 +689,7 @@
 
             <div class="bg-white rounded-3xl shadow-lg overflow-hidden card-hover fade-in-up">
                 <div class="relative">
-    <img src="<?php echo e(asset('images/Director.jpg')); ?>" alt="Director" class="w-full h-64 object-cover">
+    <img src="<?php echo e(asset('images/Director.png')); ?>" alt="Director" class="w-full h-64 object-cover">
     
     <div class="absolute top-4 right-4 bg-gradient-to-r from-blue-600 to-green-600 text-white px-3 py-1 rounded-full text-xs font-bold">
         Director
@@ -1045,14 +1083,14 @@
                         <div class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center text-xs font-bold text-gray-700">MAIL</div>
                         <div>
                             <div class="font-bold text-gray-900">Email</div>
-                            <a href="mailto:cambridgewarri@gmail.com" class="text-blue-600 text-sm hover:underline">cambridgewarri@gmail.com</a>
+                            <a href="mailto:info@cambridgeinternationalschoolwarri.com" class="break-anywhere text-blue-600 text-sm hover:underline">info@cambridgeinternationalschoolwarri.com</a>
                         </div>
                     </div>
                     <div class="flex items-center space-x-4">
                         <div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center text-xs font-bold text-gray-700">WEB</div>
                         <div>
                             <div class="font-bold text-gray-900">Website</div>
-                            <a href="https://www.cambridgeinternationalschools.com" target="_blank" rel="noopener noreferrer" class="text-blue-600 text-sm hover:underline">www.cambridgeinternationalschools.com</a>
+                            <a href="https://www.cambridgeinternationalschools.com" target="_blank" rel="noopener noreferrer" class="break-anywhere text-blue-600 text-sm hover:underline">www.cambridgeinternationalschools.com</a>
                         </div>
                     </div>
                     <div class="flex items-center space-x-4">
@@ -1204,11 +1242,11 @@
             <div>
                 <h4 class="font-bold text-lg mb-4">Contact</h4>
                 <ul class="space-y-3 text-gray-400">
-                    <li class="flex items-start space-x-2"><span class="font-semibold text-white">Address:</span><span>No. 2 Airport Road, By Kosini Junction, Warri, Delta State, Nigeria</span></li>
-                    <li class="flex items-start space-x-2"><span class="font-semibold text-white">Email:</span><a href="mailto:cambridgewarri@gmail.com" class="hover:text-yellow-400 transition">cambridgewarri@gmail.com</a></li>
-                    <li class="flex items-start space-x-2"><span class="font-semibold text-white">Website:</span><a href="https://www.cambridgeinternationalschools.com" target="_blank" rel="noopener noreferrer" class="hover:text-yellow-400 transition">www.cambridgeinternationalschools.com</a></li>
-                    <li class="flex items-start space-x-2"><span class="font-semibold text-white">Phone:</span><span><a href="https://wa.me/2348032897744" target="_blank" rel="noopener noreferrer" class="hover:text-yellow-400 transition">WhatsApp</a> / <a href="tel:+2348032897744" class="hover:text-yellow-400 transition">Call</a> <span class="text-gray-400">(+234) 803-289-7744</span></span></li>
-                    <li class="flex items-start space-x-2"><span class="font-semibold text-white">Hours:</span><span>Mon-Fri: 7:30am-4:00pm</span></li>
+                    <li class="grid grid-cols-1 sm:grid-cols-[5.5rem_1fr] gap-1 sm:gap-3"><span class="font-semibold text-white">Address:</span><span class="min-w-0 leading-6">No. 2 Airport Road, By Kosini Junction, Warri, Delta State, Nigeria</span></li>
+                    <li class="grid grid-cols-1 sm:grid-cols-[5.5rem_1fr] gap-1 sm:gap-3"><span class="font-semibold text-white">Email:</span><a href="mailto:info@cambridgeinternationalschoolwarri.com" class="min-w-0 break-anywhere leading-6 hover:text-yellow-400 transition">info@cambridgeinternationalschoolwarri.com</a></li>
+                    <li class="grid grid-cols-1 sm:grid-cols-[5.5rem_1fr] gap-1 sm:gap-3"><span class="font-semibold text-white">Website:</span><a href="https://www.cambridgeinternationalschools.com" target="_blank" rel="noopener noreferrer" class="min-w-0 break-anywhere leading-6 hover:text-yellow-400 transition">www.cambridgeinternationalschools.com</a></li>
+                    <li class="grid grid-cols-1 sm:grid-cols-[5.5rem_1fr] gap-1 sm:gap-3"><span class="font-semibold text-white">Phone:</span><span class="min-w-0 leading-6"><a href="https://wa.me/2348032897744" target="_blank" rel="noopener noreferrer" class="hover:text-yellow-400 transition">WhatsApp</a> / <a href="tel:+2348032897744" class="hover:text-yellow-400 transition">Call</a> <span class="text-gray-400">(+234) 803-289-7744</span></span></li>
+                    <li class="grid grid-cols-1 sm:grid-cols-[5.5rem_1fr] gap-1 sm:gap-3"><span class="font-semibold text-white">Hours:</span><span class="min-w-0 leading-6">Mon-Fri: 7:30am-4:00pm</span></li>
                 </ul>
             </div>
         </div>

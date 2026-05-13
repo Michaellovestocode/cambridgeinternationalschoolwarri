@@ -7,7 +7,7 @@
     <div class="bg-white rounded-lg shadow p-8">
         <h2 class="text-2xl font-bold text-gray-800 mb-6">Add New Teacher</h2>
 
-        <form action="<?php echo e(route('admin.teacher.store')); ?>" method="POST" class="space-y-6">
+        <form action="<?php echo e(route('admin.teacher.store')); ?>" method="POST" enctype="multipart/form-data" class="space-y-6">
             <?php echo csrf_field(); ?>
 
             <div>
@@ -59,6 +59,20 @@ unset($__errorArgs, $__bag); ?>
                        class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500"
                        placeholder="+234...">
                 <?php $__errorArgs = ['whatsapp_number'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?><p class="text-red-500 text-sm mt-1"><?php echo e($message); ?></p><?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Profile Picture</label>
+                <input type="file" name="photo" accept="image/*"
+                       class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500">
+                <?php $__errorArgs = ['photo'];
 $__bag = $errors->getBag($__errorArgs[1] ?? 'default');
 if ($__bag->has($__errorArgs[0])) :
 if (isset($message)) { $__messageOriginal = $message; }

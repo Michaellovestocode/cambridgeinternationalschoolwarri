@@ -53,6 +53,31 @@
         </div>
         <?php endif; ?>
 
+        <div class="mt-6 border-t pt-5">
+            <div class="flex flex-wrap items-center justify-between gap-4 bg-gray-50 rounded-lg p-4">
+                <div>
+                    <h3 class="font-bold text-gray-800">Student Result Release</h3>
+                    <p class="text-sm text-gray-600">
+                        <?php if($exam->show_results_to_students): ?>
+                            Students can view their scores, pass/fail status, and answer scripts.
+                        <?php else: ?>
+                            Students only see that the exam was submitted successfully.
+                        <?php endif; ?>
+                    </p>
+                </div>
+                <form method="POST" action="<?php echo e(route('admin.exam.result-release', $exam->id)); ?>">
+                    <?php echo csrf_field(); ?>
+                    <?php echo method_field('PUT'); ?>
+                    <input type="hidden" name="show_results_to_students" value="<?php echo e($exam->show_results_to_students ? 0 : 1); ?>">
+                    <button type="submit"
+                            class="<?php echo e($exam->show_results_to_students ? 'bg-red-600 hover:bg-red-700' : 'bg-green-600 hover:bg-green-700'); ?> text-white px-5 py-2 rounded font-semibold">
+                        <?php echo e($exam->show_results_to_students ? 'Hide From Students' : 'Release To Students'); ?>
+
+                    </button>
+                </form>
+            </div>
+        </div>
+
         <!-- Export Buttons -->
         <div class="flex gap-3 mt-6">
             <a href="<?php echo e(route('admin.exam.export.pdf', $exam->id)); ?>" 

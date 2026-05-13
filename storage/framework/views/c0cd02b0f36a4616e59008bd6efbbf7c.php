@@ -283,6 +283,42 @@
         </div>
     </div>
 
+    <!-- Report Cards -->
+    <div id="report-cards" class="bg-white rounded-2xl shadow-lg overflow-hidden">
+        <div class="bg-gradient-to-r from-amber-50 to-green-50 px-6 py-4 border-b border-gray-100">
+            <h3 class="text-xl font-bold text-gray-800">Report Cards</h3>
+        </div>
+        <div class="p-6">
+            <?php $__empty_1 = true; $__currentLoopData = $reportCards; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $reportCard): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
+            <div class="border-2 border-gray-100 hover:border-amber-300 rounded-2xl p-5 mb-4 flex flex-wrap justify-between items-center gap-4 hover:shadow-md transition-all">
+                <div>
+                    <p class="font-bold text-gray-800 text-lg"><?php echo e($reportCard->session?->name ?? 'Session'); ?> - <?php echo e($reportCard->term?->name ?? 'Term'); ?></p>
+                    <p class="text-sm text-gray-600 mt-1"><?php echo e($reportCard->class->display_name ?? 'Class not assigned'); ?></p>
+                    <div class="flex flex-wrap gap-2 mt-3">
+                        <span class="bg-blue-50 text-blue-700 text-xs font-bold px-3 py-1 rounded-full">
+                            Average: <?php echo e($reportCard->average_score !== null ? number_format($reportCard->average_score, 1) . '%' : 'N/A'); ?>
+
+                        </span>
+                        <span class="bg-green-50 text-green-700 text-xs font-bold px-3 py-1 rounded-full">
+                            Grade: <?php echo e($reportCard->overall_grade ?? '-'); ?>
+
+                        </span>
+                    </div>
+                </div>
+                <a href="<?php echo e(route('student.report-cards.preview', $reportCard)); ?>"
+                   class="bg-amber-600 hover:bg-amber-700 text-white px-6 py-3 rounded-xl font-bold shadow transition-all whitespace-nowrap">
+                    View Report Card
+                </a>
+            </div>
+            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
+            <div class="text-center py-12">
+                <p class="text-gray-500 text-lg font-semibold">No published report cards yet</p>
+                <p class="text-gray-400 text-sm mt-2">Your report cards will appear here after the school publishes them and approves fee clearance.</p>
+            </div>
+            <?php endif; ?>
+        </div>
+    </div>
+
     <!-- Exam History -->
     <div class="bg-white rounded-2xl shadow-lg overflow-hidden">
         <div class="bg-gradient-to-r from-green-50 to-blue-50 px-6 py-4 border-b border-gray-100">
@@ -303,7 +339,7 @@
                             Submitted: <?php echo e($attempt->submitted_at->format('d M Y, h:i A')); ?>
 
                         </p>
-                        <?php if($attempt->isGraded()): ?>
+                        <?php if($attempt->isGraded() && $attempt->exam->show_results_to_students): ?>
                         <div class="flex items-center">
                             <span class="text-sm font-semibold text-gray-700 mr-2">Score:</span>
                             <span class="text-2xl font-bold px-4 py-1 rounded-lg <?php echo e($attempt->total_score >= $attempt->exam->pass_mark ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'); ?>">
@@ -311,6 +347,8 @@
 
                             </span>
                         </div>
+                        <?php elseif($attempt->isGraded()): ?>
+                        <span class="bg-blue-100 text-blue-800 text-xs font-bold px-3 py-1 rounded-full">Submitted</span>
                         <?php else: ?>
                         <span class="bg-yellow-100 text-yellow-800 text-xs font-bold px-3 py-1 rounded-full">⏳ Pending Grading</span>
                         <?php endif; ?>
@@ -318,7 +356,8 @@
                 </div>
                 <a href="<?php echo e(route('student.view-result', $attempt->id)); ?>" 
                    class="ml-4 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-bold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all whitespace-nowrap flex items-center">
-                    View Details
+                    <?php echo e($attempt->exam->show_results_to_students ? 'View Details' : 'Submitted'); ?>
+
                     <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>

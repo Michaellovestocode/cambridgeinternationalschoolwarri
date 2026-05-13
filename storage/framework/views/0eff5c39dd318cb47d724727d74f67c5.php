@@ -174,9 +174,18 @@ unset($__errorArgs, $__bag); ?>
         <div class="space-y-2 lg:col-span-2">
             <label for="image" class="block text-sm font-semibold text-gray-700">Cover Image</label>
             <input id="image" name="image" type="file" accept=".jpg,.jpeg,.png,.gif,.webp" class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-indigo-500">
-            <?php if($announcement->image_url): ?>
-                <img src="<?php echo e($announcement->image_url); ?>" alt="<?php echo e($announcement->title); ?>" class="mt-3 h-32 w-48 rounded-2xl object-cover border border-gray-200">
-            <?php endif; ?>
+            <div id="coverImagePreviewWrap" class="<?php echo e($announcement->image_url ? '' : 'hidden'); ?> mt-3 space-y-2">
+                <img
+                    id="coverImagePreview"
+                    src="<?php echo e($announcement->image_url); ?>"
+                    alt="<?php echo e($announcement->title ?: 'Cover image preview'); ?>"
+                    class="h-32 w-48 rounded-2xl object-cover border border-gray-200"
+                >
+                <p id="coverImagePreviewText" class="text-xs text-gray-500">
+                    <?php echo e($announcement->image_url ? 'Current cover image' : 'Selected cover image preview'); ?>
+
+                </p>
+            </div>
             <?php $__errorArgs = ['image'];
 $__bag = $errors->getBag($__errorArgs[1] ?? 'default');
 if ($__bag->has($__errorArgs[0])) :
@@ -237,4 +246,22 @@ unset($__errorArgs, $__bag); ?>
         </a>
     </div>
 </form>
+
+<script>
+    document.getElementById('image')?.addEventListener('change', function () {
+        const file = this.files?.[0];
+        const previewWrap = document.getElementById('coverImagePreviewWrap');
+        const preview = document.getElementById('coverImagePreview');
+        const previewText = document.getElementById('coverImagePreviewText');
+
+        if (!file || !previewWrap || !preview || !previewText) {
+            return;
+        }
+
+        preview.src = URL.createObjectURL(file);
+        preview.alt = file.name;
+        previewText.textContent = `New selected image: ${file.name}`;
+        previewWrap.classList.remove('hidden');
+    });
+</script>
 <?php /**PATH C:\laragon\www\modern-cbt-platform-for-highschool\resources\views\admin\announcements\_form.blade.php ENDPATH**/ ?>

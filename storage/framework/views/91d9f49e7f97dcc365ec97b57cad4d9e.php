@@ -163,8 +163,10 @@
                                         <span class="text-xs font-semibold text-gray-600"><?php echo e($examItem->status_label); ?></span>
                                     </div>
                                     <p class="text-xs text-gray-500 mt-1"><?php echo e($examItem->start_date->format('M j, Y g:i A')); ?></p>
-                                    <?php if($examItem->status === 'graded' && !is_null($examItem->attempt?->total_score)): ?>
+                                    <?php if($examItem->status === 'graded' && $examItem->show_results_to_students && !is_null($examItem->attempt?->total_score)): ?>
                                         <p class="text-sm text-green-700 mt-2">Score released: <?php echo e($examItem->attempt->total_score); ?> / <?php echo e($examItem->total_marks); ?></p>
+                                    <?php elseif($examItem->status === 'graded'): ?>
+                                        <p class="text-sm text-blue-700 mt-2">Child has completed this exam. The result has not been released yet.</p>
                                     <?php elseif($examItem->status === 'submitted'): ?>
                                         <p class="text-sm text-blue-700 mt-2">Child has completed this exam and the result is waiting for grading.</p>
                                     <?php elseif($examItem->status === 'missed'): ?>
@@ -190,13 +192,13 @@
                 <?php $__empty_1 = true; $__currentLoopData = $reportCards; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $reportCard): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
                     <div class="border border-gray-100 rounded-2xl p-4 flex justify-between items-center gap-3">
                         <div>
-                            <p class="text-sm text-gray-500"><?php echo e($reportCard->session); ?> • <?php echo e($reportCard->term); ?></p>
+                            <p class="text-sm text-gray-500"><?php echo e($reportCard->session?->name ?? 'Session'); ?> - <?php echo e($reportCard->term?->name ?? 'Term'); ?></p>
                             <p class="font-semibold text-gray-900"><?php echo e($reportCard->student->name ?? 'Student'); ?></p>
                         </div>
                         <a href="<?php echo e(route('parent.report-cards.preview', $reportCard)); ?>" class="text-blue-600 font-semibold text-xs hover:underline">View</a>
                     </div>
                 <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
-                    <p class="text-sm text-gray-500">No report cards issued yet.</p>
+                    <p class="text-sm text-gray-500">No report cards are available yet. Published report cards appear here after fee clearance is approved for each child.</p>
                 <?php endif; ?>
             </div>
         </div>

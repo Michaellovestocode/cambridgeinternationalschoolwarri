@@ -22,6 +22,20 @@
     </script>
     <style>
         * { font-family: 'Poppins', sans-serif; }
+        html, body {
+            max-width: 100%;
+            overflow-x: hidden;
+        }
+        img, video, canvas, svg {
+            max-width: 100%;
+        }
+        .flex > * {
+            min-width: 0;
+        }
+        .break-anywhere {
+            overflow-wrap: anywhere;
+            word-break: break-word;
+        }
 
         /* â”€â”€ Blob animations â”€â”€ */
         .blob-1 {
@@ -67,7 +81,7 @@
         .ticker-track {
             display: inline-flex;
             width: max-content;
-            animation: ticker-scroll 28s linear infinite;
+            animation: ticker-scroll 60s linear infinite;
             will-change: transform;
         }
         .ticker-track:hover {
@@ -152,6 +166,20 @@
             z-index: 9999;
             transition: width 0.1s linear;
         }
+
+        @media (max-width: 640px) {
+            #mainNav .nav-logo-mark { width: 2.75rem; height: 2.75rem; }
+            #mainNav .nav-brand-title { font-size: 1rem; line-height: 1.25rem; }
+            #mainNav .nav-brand-subtitle { font-size: .68rem; line-height: 1rem; }
+            .about-vision-card {
+                position: static !important;
+                margin-top: 1rem;
+                border-radius: 1.25rem;
+            }
+            .about-vision-grid {
+                grid-template-columns: 1fr !important;
+            }
+        }
     </style>
 </head>
 <body class="bg-gradient-to-br from-blue-50 via-yellow-50 to-green-50">
@@ -208,8 +236,11 @@
         <a href="#gallery"     onclick="toggleMenu()" class="hover:text-yellow-400 transition">Gallery</a>
         <a href="#faq"         onclick="toggleMenu()" class="hover:text-yellow-400 transition">FAQ</a>
         <a href="#contact"     onclick="toggleMenu()" class="hover:text-yellow-400 transition">Contact</a>
-        <a href="<?php echo e(route('apply.create')); ?>" class="bg-white text-gray-900 px-8 py-3 rounded-full mt-2 font-bold">Apply Now</a>
-        <a href="/login" class="bg-gradient-to-r from-blue-600 to-green-600 px-8 py-3 rounded-full mt-4">Login</a>
+        <div class="flex flex-wrap justify-center gap-3 mt-2">
+            <a href="<?php echo e(route('blog.index')); ?>" class="bg-blue-600 text-white px-7 py-3 rounded-full font-bold">Blog</a>
+            <a href="<?php echo e(route('apply.create')); ?>" class="bg-white text-gray-900 px-7 py-3 rounded-full font-bold">Apply Now</a>
+            <a href="/login" class="bg-gradient-to-r from-blue-600 to-green-600 px-7 py-3 rounded-full font-bold">Login</a>
+        </div>
     </div>
 </div>
 
@@ -221,12 +252,12 @@
         <div class="flex justify-between items-center h-20">
             <!-- Logo -->
             <div class="flex items-center space-x-3">
-                <div class="w-14 h-14 bg-gradient-to-br from-blue-600 via-yellow-500 to-green-600 rounded-2xl flex items-center justify-center shadow-lg transform rotate-3">
+                <div class="nav-logo-mark w-14 h-14 bg-gradient-to-br from-blue-600 via-yellow-500 to-green-600 rounded-2xl flex items-center justify-center shadow-lg transform rotate-3 shrink-0">
                     <span class="text-white font-black text-2xl -rotate-1"><img src="<?php echo e(asset('images/schoollogo.jpg')); ?>" alt="Vice Principal" class="w-full h-full object-cover rounded-2xl"></span>
                 </div>
-                <div>
-                    <h1 class="text-xl font-black text-gray-900">Cambridge</h1>
-                    <p class="text-xs text-gray-600 font-semibold">International School</p>
+                <div class="min-w-0">
+                    <h1 class="nav-brand-title text-xl font-black text-gray-900">Cambridge</h1>
+                    <p class="nav-brand-subtitle text-xs text-gray-600 font-semibold">International School</p>
                 </div>
             </div>
 
@@ -236,12 +267,16 @@
                 <a href="#programs" class="nav-link text-gray-700 hover:text-blue-600 font-semibold transition text-sm">Programs</a>
                 <a href="#about"    class="nav-link text-gray-700 hover:text-blue-600 font-semibold transition text-sm">About</a>
                 <a href="#news"     class="nav-link text-gray-700 hover:text-blue-600 font-semibold transition text-sm">News</a>
+                <a href="<?php echo e(route('blog.index')); ?>" class="text-gray-700 hover:text-blue-600 font-semibold transition text-sm">Blog</a>
                 <a href="#gallery"  class="nav-link text-gray-700 hover:text-blue-600 font-semibold transition text-sm">Gallery</a>
                 <a href="#faq"      class="nav-link text-gray-700 hover:text-blue-600 font-semibold transition text-sm">FAQ</a>
                 <a href="#contact"  class="nav-link text-gray-700 hover:text-blue-600 font-semibold transition text-sm">Contact</a>
             </div>
 
             <div class="flex items-center space-x-4">
+                <a href="<?php echo e(route('blog.index')); ?>" class="bg-white border-2 border-blue-100 text-blue-700 px-4 sm:px-6 py-2.5 rounded-full font-bold hover:border-blue-500 hover:bg-blue-50 transition text-sm sm:text-base">
+                    Blog
+                </a>
                 <a href="<?php echo e(route('apply.create')); ?>" class="hidden sm:block bg-gradient-to-r from-amber-400 to-orange-500 text-gray-900 px-6 py-2.5 rounded-full font-bold hover:shadow-xl transition transform hover:scale-105">
                     Apply Now
                 </a>
@@ -286,6 +321,9 @@
                 <div class="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
                     <a href="<?php echo e(route('apply.create')); ?>" class="bg-gradient-to-r from-amber-400 via-orange-500 to-rose-500 text-white px-8 py-4 rounded-full font-bold text-lg shadow-xl hover:shadow-2xl transition transform hover:scale-105 flex items-center justify-center space-x-2">
                         <span>Apply Now</span>
+                    </a>
+                    <a href="<?php echo e(route('blog.index')); ?>" class="bg-blue-600 text-white px-8 py-4 rounded-full font-bold text-lg shadow-xl hover:bg-blue-700 transition flex items-center justify-center space-x-2">
+                        <span>Read Blog</span>
                     </a>
                     <a href="/login" class="bg-white border-2 border-gray-200 text-gray-800 px-8 py-4 rounded-full font-bold text-lg hover:border-blue-600 hover:text-blue-600 transition flex items-center justify-center space-x-2">
                         <span>Login</span>
@@ -392,9 +430,153 @@
 </section>
 
 <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+     ABOUT CAMBRIDGE
+â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+<section id="about" class="py-16 sm:py-24 bg-gradient-to-br from-slate-950 via-blue-950 to-emerald-950 text-white overflow-hidden">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid lg:grid-cols-[1.05fr_.95fr] gap-10 lg:gap-14 items-center">
+            <div class="fade-in-up">
+                <div class="inline-flex items-center gap-2 bg-white/10 border border-white/15 rounded-full px-4 py-2 mb-6">
+                    <span class="w-2.5 h-2.5 rounded-full bg-yellow-400"></span>
+                    <span class="text-xs sm:text-sm font-bold uppercase text-yellow-100" style="letter-spacing:.18em;">About Us</span>
+                </div>
+
+                <div class="mb-5 flex flex-wrap gap-2 text-xs font-bold uppercase text-blue-50">
+                    <span class="rounded-full bg-white/10 border border-white/15 px-3 py-1">Creche</span>
+                    <span class="rounded-full bg-white/10 border border-white/15 px-3 py-1">Nursery</span>
+                    <span class="rounded-full bg-white/10 border border-white/15 px-3 py-1">Primary</span>
+                    <span class="rounded-full bg-white/10 border border-white/15 px-3 py-1">Secondary</span>
+                    <span class="rounded-full bg-yellow-300 text-blue-950 px-3 py-1">Day &amp; Boarding</span>
+                </div>
+
+                <h2 class="text-4xl sm:text-5xl lg:text-6xl font-black leading-tight mb-6">
+                    Cambridge International School, <span class="text-yellow-300">Warri</span>
+                </h2>
+
+                <p class="text-base sm:text-lg text-blue-50/90 leading-8 mb-4">
+                    Cambridge International School, Warri is a distinguished education institution committed to delivering world-class education from Creche through Secondary School level.
+                </p>
+                <p class="text-base sm:text-lg text-blue-50/90 leading-8 mb-8">
+                    Established in 1996 and strengthened through visionary leadership, the school has evolved into a centre of excellence known for nurturing well-rounded, disciplined, excellence-driven students who are academically sound, morally upright, and globally competitive.
+                </p>
+
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    <div class="bg-white/10 border border-white/15 rounded-2xl p-4">
+                        <div class="text-2xl sm:text-3xl font-black text-yellow-300">1996</div>
+                        <div class="text-xs font-semibold text-blue-100 mt-1">Established</div>
+                    </div>
+                    <div class="bg-white/10 border border-white/15 rounded-2xl p-4">
+                        <div class="text-2xl sm:text-3xl font-black text-emerald-300">2020</div>
+                        <div class="text-xs font-semibold text-blue-100 mt-1">Renewed Vision</div>
+                    </div>
+                    <div class="bg-white/10 border border-white/15 rounded-2xl p-4">
+                        <div class="text-2xl sm:text-3xl font-black text-sky-300">4</div>
+                        <div class="text-xs font-semibold text-blue-100 mt-1">School Levels</div>
+                    </div>
+                    <div class="bg-white/10 border border-white/15 rounded-2xl p-4">
+                        <div class="text-2xl sm:text-3xl font-black text-rose-300">3</div>
+                        <div class="text-xs font-semibold text-blue-100 mt-1">Curricula Blend</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="fade-in-up" style="transition-delay:.15s">
+                <div class="relative">
+                    <img src="<?php echo e(asset('images/school life1.jpg')); ?>" alt="Cambridge students learning" class="w-full h-72 sm:h-[420px] object-cover rounded-[2rem] shadow-2xl border border-white/15">
+                    <div class="about-vision-card absolute -bottom-6 left-6 right-6 bg-white text-gray-900 rounded-3xl shadow-2xl p-5">
+                        <div class="about-vision-grid grid grid-cols-2 gap-4">
+                            <div>
+                                <div class="text-xs font-black uppercase text-blue-600" style="letter-spacing:.16em;">Vision</div>
+                                <p class="text-sm font-semibold mt-2 leading-6">To be a globally respected centre of educational excellence, raising transformational leaders for the future.</p>
+                            </div>
+                            <div>
+                                <div class="text-xs font-black uppercase text-emerald-600" style="letter-spacing:.16em;">Mission</div>
+                                <p class="text-sm font-semibold mt-2 leading-6">To nurture Godly leaders by bringing out the best in every child through quality education, character development, and innovation.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-20 grid sm:grid-cols-2 lg:grid-cols-4 gap-4 fade-in-up">
+            <?php $__currentLoopData = ['Leadership', 'Excellence', 'Accountability', 'Discipline']; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $valueIndex => $value): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                <div class="bg-white/10 border border-white/15 rounded-2xl p-5">
+                    <div class="w-10 h-10 rounded-full bg-yellow-300 text-blue-950 flex items-center justify-center text-sm font-black mb-4">
+                        <?php echo e($valueIndex + 1); ?>
+
+                    </div>
+                    <h3 class="text-lg font-black"><?php echo e($value); ?></h3>
+                </div>
+            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+        </div>
+
+        <div class="mt-8 grid lg:grid-cols-3 gap-6">
+            <div class="lg:col-span-1 bg-white rounded-3xl p-7 shadow-xl fade-in-up">
+                <div class="text-xs font-black uppercase text-blue-600 mb-3" style="letter-spacing:.16em;">Unique Approach</div>
+                <h3 class="text-2xl font-black text-gray-900 mb-4">Blended learning for global readiness</h3>
+                <p class="text-gray-600 leading-7">A blended and enriched curriculum integrating Nigerian, British, and Montessori methodologies so students build strong foundations, independence, critical thinking, and readiness for local and international opportunities.</p>
+            </div>
+
+            <div class="bg-white rounded-3xl p-7 shadow-xl fade-in-up" style="transition-delay:.1s">
+                <div class="text-xs font-black uppercase text-emerald-600 mb-4" style="letter-spacing:.16em;">Academic Programmes</div>
+                <div class="space-y-4">
+                    <div class="flex gap-3">
+                        <span class="shrink-0 w-8 h-8 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center text-sm font-black">1</span>
+                        <p class="text-gray-700"><span class="font-bold text-gray-900">Creche &amp; Nursery:</span> Montessori-based early childhood education focused on creativity, independence, and foundational skills.</p>
+                    </div>
+                    <div class="flex gap-3">
+                        <span class="shrink-0 w-8 h-8 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center text-sm font-black">2</span>
+                        <p class="text-gray-700"><span class="font-bold text-gray-900">Primary:</span> Strong literacy, numeracy, character training, continuous assessment, and individualized learning.</p>
+                    </div>
+                    <div class="flex gap-3">
+                        <span class="shrink-0 w-8 h-8 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center text-sm font-black">3</span>
+                        <p class="text-gray-700"><span class="font-bold text-gray-900">Secondary:</span> Sciences, Commercial, Arts, Humanities, ICT, Artificial Intelligence, and Robotics.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-3xl p-7 shadow-xl fade-in-up" style="transition-delay:.2s">
+                <div class="text-xs font-black uppercase text-amber-600 mb-4" style="letter-spacing:.16em;">Facilities</div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="rounded-2xl bg-amber-50 p-4 text-sm font-bold text-gray-800">Science laboratories</div>
+                    <div class="rounded-2xl bg-blue-50 p-4 text-sm font-bold text-gray-800">Library and E-library</div>
+                    <div class="rounded-2xl bg-green-50 p-4 text-sm font-bold text-gray-800">ICT and robotics</div>
+                    <div class="rounded-2xl bg-rose-50 p-4 text-sm font-bold text-gray-800">Day and boarding</div>
+                    <div class="rounded-2xl bg-purple-50 p-4 text-sm font-bold text-gray-800">School clinic</div>
+                    <div class="rounded-2xl bg-cyan-50 p-4 text-sm font-bold text-gray-800">Reliable power</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-6 grid lg:grid-cols-2 gap-6">
+            <div class="bg-white/10 border border-white/15 rounded-3xl p-7 fade-in-up">
+                <div class="text-xs font-black uppercase text-yellow-200 mb-4" style="letter-spacing:.16em;">Co-Curricular Development</div>
+                <div class="grid sm:grid-cols-2 gap-3 text-sm font-semibold text-blue-50">
+                    <div class="rounded-2xl bg-white/10 p-4">Leadership and personal development</div>
+                    <div class="rounded-2xl bg-white/10 p-4">Sports and physical education</div>
+                    <div class="rounded-2xl bg-white/10 p-4">Creative arts and cultural activities</div>
+                    <div class="rounded-2xl bg-white/10 p-4">ICT and digital skills training</div>
+                    <div class="rounded-2xl bg-white/10 p-4">Moral and faith-based development</div>
+                    <div class="rounded-2xl bg-white/10 p-4">Excursions and field trips</div>
+                </div>
+            </div>
+
+            <div class="bg-white/10 border border-white/15 rounded-3xl p-7 fade-in-up" style="transition-delay:.1s">
+                <div class="text-xs font-black uppercase text-emerald-200 mb-4" style="letter-spacing:.16em;">Community Impact</div>
+                <p class="text-blue-50/90 leading-7 mb-5">Cambridge International School is committed to contributing meaningfully to society through scholarship opportunities, educational outreach, and community engagement initiatives.</p>
+                <div class="rounded-2xl bg-yellow-300 text-blue-950 p-5 font-black">
+                    "Building Future Leaders Through Excellence, Character, and Innovation."
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
      FEATURES / WHY CAMBRIDGE
 â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
-<section id="about" class="py-16 sm:py-24 bg-gradient-to-br from-gray-50 to-blue-50">
+<section id="why-cambridge" class="py-16 sm:py-24 bg-gradient-to-br from-gray-50 to-blue-50">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="grid lg:grid-cols-2 gap-12 items-center">
             <!-- Image -->
@@ -422,8 +604,8 @@
                             <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
                         </div>
                         <div>
-                            <h4 class="font-bold text-gray-900 mb-1">WAEC/NECO Accredited</h4>
-                            <p class="text-sm text-gray-600">Full Nigerian curriculum alignment with international standards</p>
+                            <h4 class="font-bold text-gray-900 mb-1">Government Approved</h4>
+                            <p class="text-sm text-gray-600">Approved at all levels, with preparation for WAEC, NECO, IGCSE, and international academic pathways.</p>
                         </div>
                     </div>
 
@@ -432,8 +614,8 @@
                             <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
                         </div>
                         <div>
-                            <h4 class="font-bold text-gray-900 mb-1">Modern Facilities</h4>
-                            <p class="text-sm text-gray-600">State-of-the-art classrooms with digital learning tools</p>
+                            <h4 class="font-bold text-gray-900 mb-1">Blended Curriculum</h4>
+                            <p class="text-sm text-gray-600">Nigerian and British curriculum strengths supported by Montessori methods, ICT, AI, and robotics.</p>
                         </div>
                     </div>
 
@@ -443,7 +625,7 @@
                         </div>
                         <div>
                             <h4 class="font-bold text-gray-900 mb-1">Expert Teachers</h4>
-                            <p class="text-sm text-gray-600">Highly qualified educators passionate about student success</p>
+                            <p class="text-sm text-gray-600">Experienced and dedicated educators across Nursery, Primary, Secondary, ICT, and administration.</p>
                         </div>
                     </div>
 
@@ -452,8 +634,8 @@
                             <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
                         </div>
                         <div>
-                            <h4 class="font-bold text-gray-900 mb-1">Parent Engagement</h4>
-                            <p class="text-sm text-gray-600">Real-time updates and transparent communication</p>
+                            <h4 class="font-bold text-gray-900 mb-1">Character and Leadership</h4>
+                            <p class="text-sm text-gray-600">A strong moral foundation with leadership, personal development, and faith-based growth.</p>
                         </div>
                     </div>
 
@@ -463,8 +645,8 @@
                             <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 17h8M8 17v-2a4 4 0 014-4h0a4 4 0 014 4v2M3 12l2-7h14l2 7M5 12h14"/></svg>
                         </div>
                         <div>
-                            <h4 class="font-bold text-gray-900 mb-1">Boarding Facilities</h4>
-                            <p class="text-sm text-gray-600">Safe and comfortable accommodation for students</p>
+                            <h4 class="font-bold text-gray-900 mb-1">Safe Learning Environment</h4>
+                            <p class="text-sm text-gray-600">Structured classrooms, boarding facilities, sports, clinic support, and a child-focused school culture.</p>
                         </div>
                     </div>
                 </div>
@@ -498,8 +680,8 @@
 </div>
                 <div class="p-6 text-center">
                     <h3 class="font-black text-gray-900 text-lg mb-1">Pst. Paul Awe</h3>
-                    <p class="text-blue-600 font-semibold text-sm mb-3">School Director</p>
-                    <p class="text-gray-600 text-sm leading-relaxed">20+ years of educational leadership, PhD in Educational Administration</p>
+                    <p class="text-purple-600 font-semibold text-sm mb-3">School Director</p>
+                    <p class="text-gray-600 text-sm leading-relaxed">A seasoned professional with over two decades of experience in education and banking, bringing strategic leadership, financial expertise, and operational excellence to the school.</p>
                 </div>
             </div>
 
@@ -507,7 +689,7 @@
 
             <div class="bg-white rounded-3xl shadow-lg overflow-hidden card-hover fade-in-up">
                 <div class="relative">
-    <img src="<?php echo e(asset('images/Director.jpg')); ?>" alt="Director" class="w-full h-64 object-cover">
+    <img src="<?php echo e(asset('images/Director.png')); ?>" alt="Director" class="w-full h-64 object-cover">
     
     <div class="absolute top-4 right-4 bg-gradient-to-r from-blue-600 to-green-600 text-white px-3 py-1 rounded-full text-xs font-bold">
         Director
@@ -516,7 +698,7 @@
                 <div class="p-6 text-center">
                     <h3 class="font-black text-gray-900 text-lg mb-1">Mrs. Precious Awe</h3>
                     <p class="text-blue-600 font-semibold text-sm mb-3">School Director</p>
-                    <p class="text-gray-600 text-sm leading-relaxed">20+ years of educational leadership, PhD in Educational Administration</p>
+                    <p class="text-gray-600 text-sm leading-relaxed">A passionate educationist and visionary leader committed to excellence, discipline, and holistic child development in a supportive learning environment.</p>
                 </div>
             </div>
 
@@ -532,7 +714,7 @@
                 <div class="p-6 text-center">
                     <h3 class="font-black text-gray-900 text-lg mb-1">Mr. Eziyi John</h3>
                     <p class="text-green-600 font-semibold text-sm mb-3">Principal</p>
-                    <p class="text-gray-600 text-sm leading-relaxed">MSc Mathematics, WAEC examiner, 15 years teaching experience</p>
+                    <p class="text-gray-600 text-sm leading-relaxed">An experienced school leader committed to academic excellence, discipline, and effective teaching practice. He works closely with staff and students to sustain high standards across the school.</p>
                 </div>
             </div>
 
@@ -548,7 +730,7 @@
                 <div class="p-6 text-center">
                     <h3 class="font-black text-gray-900 text-lg mb-1">Mrs Atibaka Toritseju Louisa</h3>
                     <p class="text-purple-600 font-semibold text-sm mb-3">Administrator</p>
-                    <p class="text-gray-600 text-sm leading-relaxed">BSc Biology/Chemistry, Laboratory specialist, STEM enthusiast</p>
+                    <p class="text-gray-600 text-sm leading-relaxed">A dedicated administrator who supports smooth school operations, parent communication, and student services. Her work helps maintain an organized, welcoming, and efficient learning environment.</p>
                 </div>
             </div>
 
@@ -564,7 +746,7 @@
                 <div class="p-6 text-center">
                     <h3 class="font-black text-gray-900 text-lg mb-1">Mr. Awonuga Daniel Olalekan</h3>
                     <p class="text-orange-600 font-semibold text-sm mb-3">Vice Principal</p>
-                    <p class="text-gray-600 text-sm leading-relaxed">MA English Literature, Published author, Drama club coordinator</p>
+                    <p class="text-gray-600 text-sm leading-relaxed">A committed educational leader focused on student discipline, academic supervision, and daily school coordination. He supports teachers and learners in building a culture of excellence.</p>
                 </div>
             </div>
         </div>
@@ -660,9 +842,10 @@
                     $buttonUrl = $announcement->button_url ?: "#contact";
                     $buttonLabel = $announcement->button_label ?: "Read more";
                     $imageUrl = $announcement->image_url ?: $style["image"];
+                    $fallbackImageUrl = $style["image"];
                 ?>
                 <article class="bg-white rounded-3xl shadow-lg overflow-hidden card-hover fade-in-up border border-gray-100" <?php if($index > 0): ?> style="transition-delay:.<?php echo e($index); ?>s" <?php endif; ?>>
-                    <img src="<?php echo e($imageUrl); ?>" alt="<?php echo e($announcement->title); ?>" class="w-full h-60 object-cover">
+                    <img src="<?php echo e($imageUrl); ?>" alt="<?php echo e($announcement->title); ?>" class="w-full h-60 object-cover" onerror="this.onerror=null;this.src='<?php echo e($fallbackImageUrl); ?>';">
                     <div class="p-6">
                         <div class="mb-3 flex flex-wrap items-center gap-2">
                             <span class="inline-block text-xs font-bold <?php echo e($style["badge"]); ?> px-3 py-1 rounded-full"><?php echo e($announcement->category_label); ?></span>
@@ -895,12 +1078,19 @@
                             <div class="font-bold text-gray-900">Address</div>
                             <div class="text-gray-500 text-sm">No. 2 Airport Road, By Kosini Junction, Warri, Delta State, Nigeria</div>
                         </div>
-                    </div>
+                    </div> 
                     <div class="flex items-center space-x-4">
                         <div class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center text-xs font-bold text-gray-700">MAIL</div>
                         <div>
                             <div class="font-bold text-gray-900">Email</div>
                             <a href="mailto:cambridgewarri@gmail.com" class="text-blue-600 text-sm hover:underline">cambridgewarri@gmail.com</a>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center text-xs font-bold text-gray-700">WEB</div>
+                        <div>
+                            <div class="font-bold text-gray-900">Website</div>
+                            <a href="https://www.cambridgeinternationalschools.com" target="_blank" rel="noopener noreferrer" class="break-anywhere text-blue-600 text-sm hover:underline">www.cambridgeinternationalschools.com</a>
                         </div>
                     </div>
                     <div class="flex items-center space-x-4">
@@ -966,7 +1156,7 @@
                             <label class="block text-sm font-semibold text-gray-700 mb-1">Class Applying For *</label>
                             <select id="classLevel" class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white">
                                 <option value="">-- Select Level --</option>
-                                <optgroup label="Nursury School">
+                                <optgroup label="Nursery School">
                                     <option>Nursery 1</option>
                                     <option>Nursery 2</option>
                                     <option>Nursery 3</option>
@@ -1054,6 +1244,7 @@
                 <ul class="space-y-3 text-gray-400">
                     <li class="flex items-start space-x-2"><span class="font-semibold text-white">Address:</span><span>No. 2 Airport Road, By Kosini Junction, Warri, Delta State, Nigeria</span></li>
                     <li class="flex items-start space-x-2"><span class="font-semibold text-white">Email:</span><a href="mailto:cambridgewarri@gmail.com" class="hover:text-yellow-400 transition">cambridgewarri@gmail.com</a></li>
+                    <li class="flex items-start space-x-2"><span class="font-semibold text-white">Website:</span><a href="https://www.cambridgeinternationalschools.com" target="_blank" rel="noopener noreferrer" class="break-anywhere hover:text-yellow-400 transition">www.cambridgeinternationalschools.com</a></li>
                     <li class="flex items-start space-x-2"><span class="font-semibold text-white">Phone:</span><span><a href="https://wa.me/2348032897744" target="_blank" rel="noopener noreferrer" class="hover:text-yellow-400 transition">WhatsApp</a> / <a href="tel:+2348032897744" class="hover:text-yellow-400 transition">Call</a> <span class="text-gray-400">(+234) 803-289-7744</span></span></li>
                     <li class="flex items-start space-x-2"><span class="font-semibold text-white">Hours:</span><span>Mon-Fri: 7:30am-4:00pm</span></li>
                 </ul>

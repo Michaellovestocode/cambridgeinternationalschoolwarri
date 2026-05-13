@@ -71,6 +71,10 @@
             $messagesRoute = 'admin.messages.index';
             $unreadMessagesCount = auth()->user()->receivedMessages()->whereNull('read_at')->count();
         }
+
+        $canManageReportCards = auth()->user()->isAdmin()
+            || (auth()->user()->isTeacher()
+                && \App\Models\FormTeacher::where('teacher_id', auth()->id())->where('is_active', true)->exists());
     ?>
 
     <nav class="nav-gradient text-white shadow-2xl sticky top-0 z-50">
@@ -110,13 +114,31 @@
                     <a href="<?php echo e(route('student.learning.index')); ?>" class="bg-cyan-500 hover:bg-cyan-600 text-white px-4 py-2 rounded-lg font-semibold transition">
                         Learning
                     </a>
+                    <a href="<?php echo e(route('student.dashboard')); ?>#report-cards" class="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-lg font-semibold transition">
+                        Report Cards
+                    </a>
                     <?php elseif(!auth()->user()->isStudent()): ?>
+                    <?php if(auth()->user()->isTeacher()): ?>
+                    <a href="<?php echo e(route('teacher.blog.index')); ?>" class="bg-violet-500 hover:bg-violet-600 text-white px-4 py-2 rounded-lg font-semibold transition">
+                        My Blog
+                    </a>
+                    <?php endif; ?>
                     <a href="<?php echo e(route('admin.learning-sessions.index')); ?>" class="bg-cyan-500 hover:bg-cyan-600 text-white px-4 py-2 rounded-lg font-semibold transition">
                         Learning
                     </a>
+                    <?php if($canManageReportCards): ?>
                     <a href="<?php echo e(route('admin.report-cards')); ?>" class="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-lg font-semibold transition">
                         Report Cards
                     </a>
+                    <?php endif; ?>
+                    <?php if(auth()->user()->isAdmin()): ?>
+                    <a href="<?php echo e(route('admin.blog.index')); ?>" class="bg-violet-500 hover:bg-violet-600 text-white px-4 py-2 rounded-lg font-semibold transition">
+                        Blog
+                    </a>
+                    <a href="<?php echo e(route('admin.fee-clearances.index')); ?>" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg font-semibold transition">
+                        Fee Clearance
+                    </a>
+                    <?php endif; ?>
                     <?php endif; ?>
                 </div>
 
@@ -164,13 +186,31 @@
                     <a href="<?php echo e(route('student.learning.index')); ?>" class="bg-cyan-500 hover:bg-cyan-600 text-white px-4 py-2 rounded-lg font-semibold transition text-sm">
                         Learning
                     </a>
+                    <a href="<?php echo e(route('student.dashboard')); ?>#report-cards" class="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-lg font-semibold transition text-sm">
+                        Report Cards
+                    </a>
                     <?php elseif(!auth()->user()->isStudent()): ?>
+                    <?php if(auth()->user()->isTeacher()): ?>
+                    <a href="<?php echo e(route('teacher.blog.index')); ?>" class="bg-violet-500 hover:bg-violet-600 text-white px-4 py-2 rounded-lg font-semibold transition text-sm">
+                        My Blog
+                    </a>
+                    <?php endif; ?>
                     <a href="<?php echo e(route('admin.learning-sessions.index')); ?>" class="bg-cyan-500 hover:bg-cyan-600 text-white px-4 py-2 rounded-lg font-semibold transition text-sm">
                         Learning
                     </a>
+                    <?php if($canManageReportCards): ?>
                     <a href="<?php echo e(route('admin.report-cards')); ?>" class="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-lg font-semibold transition text-sm">
                         Report Cards
                     </a>
+                    <?php endif; ?>
+                    <?php if(auth()->user()->isAdmin()): ?>
+                    <a href="<?php echo e(route('admin.blog.index')); ?>" class="bg-violet-500 hover:bg-violet-600 text-white px-4 py-2 rounded-lg font-semibold transition text-sm">
+                        Blog
+                    </a>
+                    <a href="<?php echo e(route('admin.fee-clearances.index')); ?>" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg font-semibold transition text-sm">
+                        Fee Clearance
+                    </a>
+                    <?php endif; ?>
                     <?php endif; ?>
                 </div>
             </div>

@@ -4,6 +4,24 @@
 
 <?php $__env->startSection('content'); ?>
 <div class="space-y-6">
+    <?php if(!$canViewReleasedResults): ?>
+    <div class="bg-white rounded-lg shadow p-8 text-center">
+        <div class="mx-auto w-16 h-16 rounded-full bg-green-100 text-green-700 flex items-center justify-center mb-4">
+            <svg class="w-9 h-9" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+            </svg>
+        </div>
+        <h2 class="text-3xl font-bold text-gray-800 mb-2">Exam Submitted Successfully</h2>
+        <p class="text-gray-600"><?php echo e($attempt->exam->title); ?> has been submitted.</p>
+        <p class="text-sm text-gray-500 mt-2">Your score and script will appear here only after your teacher releases the result.</p>
+        <div class="mt-6">
+            <a href="<?php echo e(route('student.dashboard')); ?>"
+               class="inline-block bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-lg font-semibold transition">
+                Back to Dashboard
+            </a>
+        </div>
+    </div>
+    <?php else: ?>
     <!-- Result Header -->
     <div class="bg-white rounded-lg shadow p-6">
         <div class="text-center">
@@ -242,6 +260,7 @@
         </a>
     </div>
 </div>
+    <?php endif; ?>
 </div>
 
 <?php $__env->startPush('styles'); ?>

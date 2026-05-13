@@ -156,6 +156,20 @@ unset($__errorArgs, $__bag); ?>
                 </label>
             </div>
 
+            <div class="border-t pt-4">
+                <label class="flex items-start">
+                    <input type="hidden" name="show_results_to_students" value="0">
+                    <input type="checkbox" name="show_results_to_students" value="1"
+                           <?php echo e(old('show_results_to_students', $exam->show_results_to_students) ? 'checked' : ''); ?>
+
+                           class="mt-1 mr-2 h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded">
+                    <span>
+                        <span class="font-medium text-gray-800">Release scores and scripts to students</span>
+                        <span class="block text-sm text-gray-600">When off, students only see a submitted-successfully message for this exam.</span>
+                    </span>
+                </label>
+            </div>
+
             <div class="flex gap-4 pt-4">
                 <button type="submit" 
                         class="bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-lg font-semibold">

@@ -65,7 +65,7 @@ unset($__defined_vars, $__key, $__value); ?>
     <p class="text-xs text-gray-500">Use the underline button or paste underlined text from Word.</p>
 </div>
 
-<?php if (! $__env->hasRenderedOnce('b61ae3e5-79b2-4511-b32b-887399a86953')): $__env->markAsRenderedOnce('b61ae3e5-79b2-4511-b32b-887399a86953'); ?>
+<?php if (! $__env->hasRenderedOnce('fe8e19c1-b6d1-4863-8584-089369dba657')): $__env->markAsRenderedOnce('fe8e19c1-b6d1-4863-8584-089369dba657'); ?>
 <style>
     [contenteditable][data-placeholder]:empty::before {
         content: attr(data-placeholder);

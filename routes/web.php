@@ -19,6 +19,8 @@ use App\Http\Controllers\ParentPortalController;
 use App\Http\Controllers\LearningSessionController;
 use App\Http\Controllers\StudentLearningSessionController;
 use App\Http\Controllers\AdminFeeClearanceController;
+use App\Http\Controllers\BlogPostController;
+use App\Http\Controllers\BlogImageController;
 use App\Models\Announcement;
 
 /*
@@ -57,6 +59,11 @@ Route::get('/', function () {
 Route::get('/apply', [AdmissionEnquiryController::class, 'create'])->name('apply.create');
 Route::post('/apply', [AdmissionEnquiryController::class, 'submitApplication'])->name('apply.store');
 Route::post('/admission-enquiries', [AdmissionEnquiryController::class, 'store'])->name('admission-enquiries.store');
+Route::get('/blog', [BlogPostController::class, 'publicIndex'])->name('blog.index');
+Route::get('/blog/{post}', [BlogPostController::class, 'publicShow'])->name('blog.show');
+Route::get('/blog-images/{path}', [BlogImageController::class, 'show'])
+    ->where('path', '.*')
+    ->name('blog-images.show');
 Route::get('/announcement-images/{path}', [AnnouncementImageController::class, 'show'])
     ->where('path', '.*')
     ->name('announcement-images.show');
@@ -102,6 +109,14 @@ Route::post('/teacher/scores/enter', [TeacherScoreController::class, 'enterScore
 Route::post('/teacher/scores/save', [TeacherScoreController::class, 'saveScores'])->name('teacher.scores.save');
 Route::post('/teacher/scores/submit', [TeacherScoreController::class, 'submitScores'])->name('teacher.scores.submit');
 Route::get('/teacher/scores/my-scores', [TeacherScoreController::class, 'myScores'])->name('teacher.scores.my-scores');
+
+    Route::prefix('teacher/blog')->name('teacher.blog.')->middleware('role:teacher')->group(function () {
+        Route::get('/', [BlogPostController::class, 'teacherIndex'])->name('index');
+        Route::get('/create', [BlogPostController::class, 'teacherCreate'])->name('create');
+        Route::post('/', [BlogPostController::class, 'teacherStore'])->name('store');
+        Route::get('/{post}/edit', [BlogPostController::class, 'teacherEdit'])->name('edit');
+        Route::put('/{post}', [BlogPostController::class, 'teacherUpdate'])->name('update');
+    });
 
     // Nigerian Report Cards
     Route::middleware('role:admin,teacher')->group(function () {
@@ -180,6 +195,11 @@ Route::get('/teacher/scores/my-scores', [TeacherScoreController::class, 'myScore
             Route::get('/announcements/{announcement}/edit', [AnnouncementController::class, 'edit'])->name('announcements.edit');
             Route::put('/announcements/{announcement}', [AnnouncementController::class, 'update'])->name('announcements.update');
             Route::delete('/announcements/{announcement}', [AnnouncementController::class, 'destroy'])->name('announcements.destroy');
+
+            Route::get('/blog', [BlogPostController::class, 'adminIndex'])->name('blog.index');
+            Route::get('/blog/{post}/edit', [BlogPostController::class, 'adminEdit'])->name('blog.edit');
+            Route::put('/blog/{post}', [BlogPostController::class, 'adminUpdate'])->name('blog.update');
+            Route::delete('/blog/{post}', [BlogPostController::class, 'adminDestroy'])->name('blog.destroy');
 
             Route::get('/parents', [AdminParentController::class, 'index'])->name('parents.index');
             Route::post('/parents', [AdminParentController::class, 'store'])->name('parents.store');

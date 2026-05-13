@@ -118,6 +118,11 @@
                         Report Cards
                     </a>
                     <?php elseif(!auth()->user()->isStudent()): ?>
+                    <?php if(auth()->user()->isTeacher()): ?>
+                    <a href="<?php echo e(route('teacher.blog.index')); ?>" class="bg-violet-500 hover:bg-violet-600 text-white px-4 py-2 rounded-lg font-semibold transition">
+                        My Blog
+                    </a>
+                    <?php endif; ?>
                     <a href="<?php echo e(route('admin.learning-sessions.index')); ?>" class="bg-cyan-500 hover:bg-cyan-600 text-white px-4 py-2 rounded-lg font-semibold transition">
                         Learning
                     </a>
@@ -127,6 +132,9 @@
                     </a>
                     <?php endif; ?>
                     <?php if(auth()->user()->isAdmin()): ?>
+                    <a href="<?php echo e(route('admin.blog.index')); ?>" class="bg-violet-500 hover:bg-violet-600 text-white px-4 py-2 rounded-lg font-semibold transition">
+                        Blog
+                    </a>
                     <a href="<?php echo e(route('admin.fee-clearances.index')); ?>" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg font-semibold transition">
                         Fee Clearance
                     </a>
@@ -182,6 +190,11 @@
                         Report Cards
                     </a>
                     <?php elseif(!auth()->user()->isStudent()): ?>
+                    <?php if(auth()->user()->isTeacher()): ?>
+                    <a href="<?php echo e(route('teacher.blog.index')); ?>" class="bg-violet-500 hover:bg-violet-600 text-white px-4 py-2 rounded-lg font-semibold transition text-sm">
+                        My Blog
+                    </a>
+                    <?php endif; ?>
                     <a href="<?php echo e(route('admin.learning-sessions.index')); ?>" class="bg-cyan-500 hover:bg-cyan-600 text-white px-4 py-2 rounded-lg font-semibold transition text-sm">
                         Learning
                     </a>
@@ -191,6 +204,9 @@
                     </a>
                     <?php endif; ?>
                     <?php if(auth()->user()->isAdmin()): ?>
+                    <a href="<?php echo e(route('admin.blog.index')); ?>" class="bg-violet-500 hover:bg-violet-600 text-white px-4 py-2 rounded-lg font-semibold transition text-sm">
+                        Blog
+                    </a>
                     <a href="<?php echo e(route('admin.fee-clearances.index')); ?>" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg font-semibold transition text-sm">
                         Fee Clearance
                     </a>

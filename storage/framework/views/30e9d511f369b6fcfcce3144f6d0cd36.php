@@ -211,16 +211,28 @@
                             <td class="px-4 py-3"><?php echo e($reportCard->session->name); ?></td>
                             <td class="px-4 py-3"><?php echo e($reportCard->term->name); ?></td>
                             <td class="px-4 py-3">
-                                <span class="px-3 py-1 rounded-full text-xs bg-yellow-100 text-yellow-800">
+                                <span class="px-3 py-1 rounded-full text-xs <?php echo e($reportCard->isPublished() ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'); ?>">
                                     <?php echo e(ucfirst($reportCard->status)); ?>
 
                                 </span>
                             </td>
                             <td class="px-4 py-3 text-right">
-                                <a href="<?php echo e(route('admin.report-cards.preview', $reportCard->id)); ?>"
-                                   class="bg-gray-900 hover:bg-black text-white px-4 py-2 rounded-lg text-sm font-medium">
-                                    Open
-                                </a>
+                                <div class="flex flex-wrap justify-end gap-2">
+                                    <form method="POST" action="<?php echo e(route('admin.report-cards.publication', $reportCard->id)); ?>">
+                                        <?php echo csrf_field(); ?>
+                                        <?php echo method_field('PUT'); ?>
+                                        <input type="hidden" name="published" value="<?php echo e($reportCard->isPublished() ? 0 : 1); ?>">
+                                        <button type="submit"
+                                                class="<?php echo e($reportCard->isPublished() ? 'bg-red-100 text-red-700 hover:bg-red-200' : 'bg-green-100 text-green-700 hover:bg-green-200'); ?> px-4 py-2 rounded-lg text-sm font-medium">
+                                            <?php echo e($reportCard->isPublished() ? 'Hide' : 'Publish'); ?>
+
+                                        </button>
+                                    </form>
+                                    <a href="<?php echo e(route('admin.report-cards.preview', $reportCard->id)); ?>"
+                                       class="bg-gray-900 hover:bg-black text-white px-4 py-2 rounded-lg text-sm font-medium">
+                                        Open
+                                    </a>
+                                </div>
                             </td>
                         </tr>
                     <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>

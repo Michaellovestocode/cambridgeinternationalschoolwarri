@@ -5,14 +5,14 @@
 <?php $__env->startSection('content'); ?>
 <div x-data="examApp()" class="space-y-6">
     <!-- Timer and Header (STICKY) -->
-<div class="sticky top-0 z-50 bg-white rounded-lg shadow-lg border-b-4 border-green-600 p-6 mb-6">
-    <div class="flex justify-between items-center">
+<div class="exam-sticky-header sticky z-40 bg-white rounded-lg shadow-lg border-b-4 border-green-600 p-4 md:p-6 mb-6">
+    <div class="flex flex-wrap justify-between items-center gap-4">
         <div>
             <h2 class="text-2xl font-bold text-gray-800"><?php echo e($attempt->exam->title); ?></h2>
             <p class="text-gray-600"><?php echo e($attempt->exam->subject); ?></p>
         </div>
-        <div class="text-center bg-gradient-to-br from-green-50 to-blue-50 border-2 rounded-xl px-6 py-3" :class="timeRemaining < 300 ? 'border-red-500 from-red-50 to-orange-50' : 'border-green-500'">
-            <div class="text-3xl font-bold" :class="timeRemaining < 300 ? 'text-red-600' : 'text-green-600'">
+        <div class="text-center bg-gradient-to-br from-green-50 to-blue-50 border-2 rounded-xl px-5 py-3 min-w-44" :class="timeRemaining < 300 ? 'border-red-500 from-red-50 to-orange-50' : 'border-green-500'">
+            <div class="text-2xl md:text-3xl font-bold" :class="timeRemaining < 300 ? 'text-red-600' : 'text-green-600'">
                 <span x-text="formatTime(timeRemaining)"></span>
             </div>
             <div class="text-sm font-semibold uppercase" :class="timeRemaining < 300 ? 'text-red-600' : 'text-gray-600'">
@@ -608,6 +608,14 @@ function examApp() {
 </script>
 
 <style>
+.exam-sticky-header {
+    top: 6rem;
+}
+@media (max-width: 767px) {
+    .exam-sticky-header {
+        top: 8.5rem;
+    }
+}
 .CodeMirror { 
     height: 350px; 
     border: 1px solid #e5e7eb; 

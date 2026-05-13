@@ -117,6 +117,11 @@
                         Report Cards
                     </a>
                     @elseif(!auth()->user()->isStudent())
+                    @if(auth()->user()->isTeacher())
+                    <a href="{{ route('teacher.blog.index') }}" class="bg-violet-500 hover:bg-violet-600 text-white px-4 py-2 rounded-lg font-semibold transition">
+                        My Blog
+                    </a>
+                    @endif
                     <a href="{{ route('admin.learning-sessions.index') }}" class="bg-cyan-500 hover:bg-cyan-600 text-white px-4 py-2 rounded-lg font-semibold transition">
                         Learning
                     </a>
@@ -126,6 +131,9 @@
                     </a>
                     @endif
                     @if(auth()->user()->isAdmin())
+                    <a href="{{ route('admin.blog.index') }}" class="bg-violet-500 hover:bg-violet-600 text-white px-4 py-2 rounded-lg font-semibold transition">
+                        Blog
+                    </a>
                     <a href="{{ route('admin.fee-clearances.index') }}" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg font-semibold transition">
                         Fee Clearance
                     </a>
@@ -179,6 +187,11 @@
                         Report Cards
                     </a>
                     @elseif(!auth()->user()->isStudent())
+                    @if(auth()->user()->isTeacher())
+                    <a href="{{ route('teacher.blog.index') }}" class="bg-violet-500 hover:bg-violet-600 text-white px-4 py-2 rounded-lg font-semibold transition text-sm">
+                        My Blog
+                    </a>
+                    @endif
                     <a href="{{ route('admin.learning-sessions.index') }}" class="bg-cyan-500 hover:bg-cyan-600 text-white px-4 py-2 rounded-lg font-semibold transition text-sm">
                         Learning
                     </a>
@@ -188,6 +201,9 @@
                     </a>
                     @endif
                     @if(auth()->user()->isAdmin())
+                    <a href="{{ route('admin.blog.index') }}" class="bg-violet-500 hover:bg-violet-600 text-white px-4 py-2 rounded-lg font-semibold transition text-sm">
+                        Blog
+                    </a>
                     <a href="{{ route('admin.fee-clearances.index') }}" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg font-semibold transition text-sm">
                         Fee Clearance
                     </a>
