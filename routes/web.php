@@ -37,6 +37,8 @@ Route::get('/', function () {
             return redirect()->route('student.dashboard');
         } elseif ($user->isParent()) {
             return redirect()->route('parent.dashboard');
+        } elseif ($user->isBlogManager()) {
+            return redirect()->route('admin.blog.index');
         } elseif ($user->isTeacher() || $user->isAdmin()) {
             return redirect()->route('admin.dashboard');
         }
@@ -133,6 +135,13 @@ Route::get('/teacher/scores/my-scores', [TeacherScoreController::class, 'myScore
 
 
 
+    Route::prefix('admin/blog')->name('admin.blog.')->middleware('blog.studio')->group(function () {
+        Route::get('/', [BlogPostController::class, 'adminIndex'])->name('index');
+        Route::get('/{post}/edit', [BlogPostController::class, 'adminEdit'])->name('edit');
+        Route::put('/{post}', [BlogPostController::class, 'adminUpdate'])->name('update');
+        Route::delete('/{post}', [BlogPostController::class, 'adminDestroy'])->name('destroy');
+    });
+
     // Admin/Teacher routes
     Route::prefix('admin')->name('admin.')->middleware('role:admin,teacher')->group(function () {
         Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
@@ -161,8 +170,10 @@ Route::get('/teacher/scores/my-scores', [TeacherScoreController::class, 'myScore
             
             // Class Management
             Route::get('/classes', [AdminController::class, 'classes'])->name('classes');
-        Route::post('/classes', [AdminController::class, 'storeClass'])->name('class.store');
-        Route::delete('/classes/{class}', [AdminController::class, 'deleteClass'])->name('class.delete');
+            Route::post('/classes', [AdminController::class, 'storeClass'])->name('class.store');
+            Route::get('/classes/{class}/edit', [AdminController::class, 'editClass'])->name('class.edit');
+            Route::put('/classes/{class}', [AdminController::class, 'updateClass'])->name('class.update');
+            Route::delete('/classes/{class}', [AdminController::class, 'deleteClass'])->name('class.delete');
 
             // Subjects Management
             Route::get('/subjects', [SubjectController::class, 'index'])->name('subjects.index');
@@ -196,10 +207,11 @@ Route::get('/teacher/scores/my-scores', [TeacherScoreController::class, 'myScore
             Route::put('/announcements/{announcement}', [AnnouncementController::class, 'update'])->name('announcements.update');
             Route::delete('/announcements/{announcement}', [AnnouncementController::class, 'destroy'])->name('announcements.destroy');
 
-            Route::get('/blog', [BlogPostController::class, 'adminIndex'])->name('blog.index');
-            Route::get('/blog/{post}/edit', [BlogPostController::class, 'adminEdit'])->name('blog.edit');
-            Route::put('/blog/{post}', [BlogPostController::class, 'adminUpdate'])->name('blog.update');
-            Route::delete('/blog/{post}', [BlogPostController::class, 'adminDestroy'])->name('blog.destroy');
+            Route::get('/blog-managers', [AdminController::class, 'blogManagers'])->name('blog-managers.index');
+            Route::get('/blog-managers/create', [AdminController::class, 'createBlogManager'])->name('blog-managers.create');
+            Route::post('/blog-managers', [AdminController::class, 'storeBlogManager'])->name('blog-managers.store');
+            Route::put('/blog-managers/{manager}/revoke', [AdminController::class, 'revokeBlogManager'])->name('blog-managers.revoke');
+            Route::delete('/blog-managers/{manager}', [AdminController::class, 'deleteBlogManager'])->name('blog-managers.destroy');
 
             Route::get('/parents', [AdminParentController::class, 'index'])->name('parents.index');
             Route::post('/parents', [AdminParentController::class, 'store'])->name('parents.store');

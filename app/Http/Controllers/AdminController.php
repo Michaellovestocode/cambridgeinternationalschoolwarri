@@ -760,6 +760,60 @@ public function storeTeacher(Request $request)
     return redirect()->route('admin.teachers')->with('success', 'Teacher added successfully!');
 }
 
+public function blogManagers()
+{
+    $managers = User::where('role', 'blog_manager')
+        ->orWhere('can_manage_blog', true)
+        ->latest()
+        ->get();
+
+    return view('admin.blog-managers.index', compact('managers'));
+}
+
+public function createBlogManager()
+{
+    return view('admin.blog-managers.create');
+}
+
+public function storeBlogManager(Request $request)
+{
+    $validated = $request->validate([
+        'name' => 'required|string|max:255',
+        'email' => 'required|email|unique:users,email',
+        'registration_number' => 'nullable|string|unique:users,registration_number',
+        'password' => 'required|string|min:6',
+    ]);
+
+    User::create([
+        'name' => $validated['name'],
+        'email' => $validated['email'],
+        'registration_number' => $validated['registration_number'] ?? null,
+        'password' => Hash::make($validated['password']),
+        'role' => 'blog_manager',
+        'can_manage_blog' => true,
+    ]);
+
+    return redirect()->route('admin.blog-managers.index')->with('success', 'Blog manager account created successfully.');
+}
+
+public function deleteBlogManager(User $manager)
+{
+    abort_unless($manager->isBlogManager(), 404);
+
+    $manager->delete();
+
+    return redirect()->route('admin.blog-managers.index')->with('success', 'Blog manager account deleted.');
+}
+
+public function revokeBlogManager(User $manager)
+{
+    abort_unless($manager->can_manage_blog && ! $manager->isBlogManager(), 404);
+
+    $manager->update(['can_manage_blog' => false]);
+
+    return redirect()->route('admin.blog-managers.index')->with('success', 'Blog Studio access revoked.');
+}
+
 public function editTeacher($teacherId)
 {
     $teacher = User::where('role', 'teacher')->findOrFail($teacherId);
@@ -777,6 +831,7 @@ public function updateTeacher(Request $request, $teacherId)
         'whatsapp_number' => 'nullable|string|max:30',
         'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:1024',
         'password' => 'nullable|string|min:6',
+        'can_manage_blog' => 'nullable|boolean',
     ]);
 
     $data = [
@@ -784,6 +839,7 @@ public function updateTeacher(Request $request, $teacherId)
         'email' => $validated['email'],
         'registration_number' => $validated['registration_number'],
         'whatsapp_number' => $validated['whatsapp_number'] ?? null,
+        'can_manage_blog' => $request->boolean('can_manage_blog'),
     ];
 
     if ($request->hasFile('photo')) {
@@ -834,7 +890,11 @@ public function deleteTeacher($teacherId)
 // Class Management
 public function classes()
 {
-    $classes = SchoolClass::withCount(['students', 'exams'])->get();
+    $classes = SchoolClass::withCount(['students', 'exams'])
+        ->get()
+        ->sort(fn (SchoolClass $first, SchoolClass $second) => strnatcasecmp($first->display_name, $second->display_name))
+        ->values();
+
     return view('admin.classes.index', compact('classes'));
 }
 
@@ -848,6 +908,23 @@ public function storeClass(Request $request)
     SchoolClass::create($validated);
 
     return redirect()->route('admin.classes')->with('success', 'Class added successfully!');
+}
+
+public function editClass(SchoolClass $class)
+{
+    return view('admin.classes.edit', compact('class'));
+}
+
+public function updateClass(Request $request, SchoolClass $class)
+{
+    $validated = $request->validate([
+        'name' => 'required|string|max:255',
+        'description' => 'nullable|string',
+    ]);
+
+    $class->update($validated);
+
+    return redirect()->route('admin.classes')->with('success', 'Class updated successfully!');
 }
 
 public function deleteClass($classId)

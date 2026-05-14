@@ -22,6 +22,7 @@ class User extends Authenticatable
         'parent_phone_number',
         'whatsapp_number',
         'sex',
+        'can_manage_blog',
     ];
 
     protected $hidden = [
@@ -35,6 +36,7 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'date_of_birth' => 'date',
             'password' => 'hashed',
+            'can_manage_blog' => 'boolean',
         ];
     }
 
@@ -60,6 +62,16 @@ class User extends Authenticatable
     public function isParent(): bool
     {
         return $this->role === 'parent';
+    }
+
+    public function isBlogManager(): bool
+    {
+        return $this->role === 'blog_manager';
+    }
+
+    public function canManageBlogStudio(): bool
+    {
+        return $this->isAdmin() || $this->isBlogManager() || (bool) $this->can_manage_blog;
     }
 
     public function class()

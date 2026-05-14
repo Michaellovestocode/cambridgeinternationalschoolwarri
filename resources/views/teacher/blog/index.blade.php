@@ -10,6 +10,9 @@
             <p class="text-gray-500 mt-1">Write education articles and submit them for admin approval.</p>
         </div>
         <div class="flex flex-wrap gap-3">
+            @if(auth()->user()->canManageBlogStudio())
+                <a href="{{ route('admin.blog.index') }}" class="bg-slate-900 hover:bg-slate-800 text-white px-5 py-3 rounded-xl font-semibold shadow">Blog Studio</a>
+            @endif
             <a href="{{ route('admin.dashboard') }}" class="border border-gray-200 text-gray-700 px-5 py-3 rounded-xl font-semibold">Dashboard</a>
             <a href="{{ route('teacher.blog.create') }}" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-3 rounded-xl font-semibold shadow">New Article</a>
         </div>

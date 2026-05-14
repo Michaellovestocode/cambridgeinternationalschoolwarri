@@ -157,6 +157,10 @@ class BlogPostController extends Controller
             'posts' => $query->latest()->paginate(12)->withQueryString(),
             'statuses' => BlogPost::statuses(),
             'teachers' => User::where('role', 'teacher')->orderBy('name')->get(),
+            'statusCounts' => BlogPost::query()
+                ->selectRaw('status, COUNT(*) as total')
+                ->groupBy('status')
+                ->pluck('total', 'status'),
             'filters' => [
                 'status' => $request->string('status')->value(''),
                 'author_id' => $request->string('author_id')->value(''),

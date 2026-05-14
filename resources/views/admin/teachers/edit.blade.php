@@ -60,6 +60,14 @@
                 @error('password')<p class="text-red-500 text-sm mt-1">{{ $message }}</p>@enderror
             </div>
 
+            <label class="flex items-start gap-3 rounded-xl border border-indigo-100 bg-indigo-50 p-4">
+                <input type="checkbox" name="can_manage_blog" value="1" @checked(old('can_manage_blog', $teacher->can_manage_blog)) class="mt-1 rounded border-indigo-300 text-indigo-600 focus:ring-indigo-500">
+                <span>
+                    <span class="block font-bold text-gray-900">Allow Blog Studio management</span>
+                    <span class="block text-sm text-gray-600">This teacher keeps their teacher dashboard and also gets access to the Blog Studio moderation dashboard.</span>
+                </span>
+            </label>
+
             <div class="flex gap-4">
                 <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-lg font-semibold">
                     Update Teacher

@@ -15,6 +15,7 @@ $app = Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->alias([
             'role' => \App\Http\Middleware\RoleMiddleware::class,
+            'blog.studio' => \App\Http\Middleware\BlogStudioMiddleware::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
