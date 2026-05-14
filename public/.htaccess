@@ -5,6 +5,10 @@
 
     RewriteEngine On
 
+    # Use one public hostname so search engines do not split indexing signals.
+    RewriteCond %{HTTP_HOST} ^www\.cambridgeinternationalschoolwarri\.com$ [NC]
+    RewriteRule ^ https://cambridgeinternationalschoolwarri.com%{REQUEST_URI} [L,R=301]
+
     # Handle Authorization Header
     RewriteCond %{HTTP:Authorization} .
     RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
