@@ -21,13 +21,13 @@
     <meta name="twitter:description" content="Quality Creche, Nursery, Primary, and Secondary education in Warri, Delta State.">
     <script type="application/ld+json">
         {
-            "@context": "https://schema.org",
-            "@type": "School",
+            "@@context": "https://schema.org",
+            "@@type": "School",
             "name": "Cambridge International School Warri",
             "url": "https://cambridgeinternationalschoolwarri.com/",
             "logo": "https://cambridgeinternationalschoolwarri.com/images/schoollogo.jpg",
             "address": {
-                "@type": "PostalAddress",
+                "@@type": "PostalAddress",
                 "streetAddress": "No. 2 Airport Road, By Kosini Junction",
                 "addressLocality": "Warri",
                 "addressRegion": "Delta State",
