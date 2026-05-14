@@ -1089,7 +1089,7 @@
                         <div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center text-xs font-bold text-gray-700">WEB</div>
                         <div>
                             <div class="font-bold text-gray-900">Website</div>
-                            <a href="https://www.cambridgeinternationalschools.com" target="_blank" rel="noopener noreferrer" class="break-anywhere text-blue-600 text-sm hover:underline">www.cambridgeinternationalschools.com</a>
+                            <a href="https://www.cambridgeinternationalschoolwarri.com" target="_blank" rel="noopener noreferrer" class="break-anywhere text-blue-600 text-sm hover:underline">www.cambridgeinternationalschoolwarri.com</a>
                         </div>
                     </div>
                     <div class="flex items-center space-x-4">
@@ -1243,7 +1243,7 @@
                 <ul class="space-y-3 text-gray-400">
                     <li class="grid grid-cols-1 sm:grid-cols-[5.5rem_1fr] gap-1 sm:gap-3"><span class="font-semibold text-white">Address:</span><span class="min-w-0 leading-6">No. 2 Airport Road, By Kosini Junction, Warri, Delta State, Nigeria</span></li>
                     <li class="grid grid-cols-1 sm:grid-cols-[5.5rem_1fr] gap-1 sm:gap-3"><span class="font-semibold text-white">Email:</span><a href="mailto:info@cambridgeinternationalschoolwarri.com" class="min-w-0 break-anywhere leading-6 hover:text-yellow-400 transition">info@cambridgeinternationalschoolwarri.com</a></li>
-                    <li class="grid grid-cols-1 sm:grid-cols-[5.5rem_1fr] gap-1 sm:gap-3"><span class="font-semibold text-white">Website:</span><a href="https://www.cambridgeinternationalschools.com" target="_blank" rel="noopener noreferrer" class="min-w-0 break-anywhere leading-6 hover:text-yellow-400 transition">www.cambridgeinternationalschools.com</a></li>
+                    <li class="grid grid-cols-1 sm:grid-cols-[5.5rem_1fr] gap-1 sm:gap-3"><span class="font-semibold text-white">Website:</span><a href="https://www.cambridgeinternationalschoolwarri.com" target="_blank" rel="noopener noreferrer" class="min-w-0 break-anywhere leading-6 hover:text-yellow-400 transition">www.cambridgeinternationalschoolwarri.com</a></li>
                     <li class="grid grid-cols-1 sm:grid-cols-[5.5rem_1fr] gap-1 sm:gap-3"><span class="font-semibold text-white">Phone:</span><span class="min-w-0 leading-6"><a href="https://wa.me/2348032897744" target="_blank" rel="noopener noreferrer" class="hover:text-yellow-400 transition">WhatsApp</a> / <a href="tel:+2348032897744" class="hover:text-yellow-400 transition">Call</a> <span class="text-gray-400">(+234) 803-289-7744</span></span></li>
                     <li class="grid grid-cols-1 sm:grid-cols-[5.5rem_1fr] gap-1 sm:gap-3"><span class="font-semibold text-white">Hours:</span><span class="min-w-0 leading-6">Mon-Fri: 7:30am-4:00pm</span></li>
                 </ul>
