@@ -137,6 +137,8 @@ Route::get('/teacher/scores/my-scores', [TeacherScoreController::class, 'myScore
 
     Route::prefix('admin/blog')->name('admin.blog.')->middleware('blog.studio')->group(function () {
         Route::get('/', [BlogPostController::class, 'adminIndex'])->name('index');
+        Route::get('/create', [BlogPostController::class, 'adminCreate'])->name('create');
+        Route::post('/', [BlogPostController::class, 'adminStore'])->name('store');
         Route::get('/{post}/edit', [BlogPostController::class, 'adminEdit'])->name('edit');
         Route::put('/{post}', [BlogPostController::class, 'adminUpdate'])->name('update');
         Route::delete('/{post}', [BlogPostController::class, 'adminDestroy'])->name('destroy');

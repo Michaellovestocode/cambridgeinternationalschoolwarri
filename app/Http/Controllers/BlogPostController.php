@@ -156,7 +156,7 @@ class BlogPostController extends Controller
         return view('admin.blog.index', [
             'posts' => $query->latest()->paginate(12)->withQueryString(),
             'statuses' => BlogPost::statuses(),
-            'teachers' => User::where('role', 'teacher')->orderBy('name')->get(),
+            'teachers' => $this->editorialAuthors(),
             'statusCounts' => BlogPost::query()
                 ->selectRaw('status, COUNT(*) as total')
                 ->groupBy('status')
@@ -176,8 +176,46 @@ class BlogPostController extends Controller
         return view('admin.blog.edit', [
             'post' => $post,
             'categories' => BlogPost::categories(),
-            'teachers' => User::where('role', 'teacher')->orderBy('name')->get(),
+            'teachers' => $this->editorialAuthors(),
         ]);
+    }
+
+    public function adminCreate()
+    {
+        return view('admin.blog.create', [
+            'post' => new BlogPost([
+                'author_id' => Auth::id(),
+                'category' => 'education',
+                'status' => BlogPost::STATUS_DRAFT,
+            ]),
+            'categories' => BlogPost::categories(),
+            'authors' => $this->editorialAuthors(),
+        ]);
+    }
+
+    public function adminStore(Request $request)
+    {
+        $data = $this->validatedAdminData($request);
+        $status = $data['status'];
+
+        $data['slug'] = $this->uniqueSlug($data['title']);
+        $data['reviewed_by'] = Auth::id();
+        $data['submitted_at'] = in_array($status, [BlogPost::STATUS_PENDING, BlogPost::STATUS_PUBLISHED], true) ? now() : null;
+        $data['image_path'] = $this->storeImage($request);
+
+        if ($status === BlogPost::STATUS_PUBLISHED && !$request->filled('published_at')) {
+            $data['published_at'] = now();
+        }
+
+        if ($status !== BlogPost::STATUS_PUBLISHED) {
+            $data['published_at'] = null;
+        }
+
+        $post = BlogPost::create($data);
+
+        return redirect()
+            ->route('admin.blog.edit', $post)
+            ->with('success', 'Blog post created successfully.');
     }
 
     public function adminUpdate(Request $request, BlogPost $post)
@@ -274,5 +312,14 @@ class BlogPostController extends Controller
     private function authorizeTeacherPost(BlogPost $post): void
     {
         abort_unless($post->author_id === Auth::id(), 403);
+    }
+
+    private function editorialAuthors()
+    {
+        return User::query()
+            ->whereIn('role', ['teacher', 'admin', 'blog_manager'])
+            ->orWhere('can_manage_blog', true)
+            ->orderBy('name')
+            ->get();
     }
 }
