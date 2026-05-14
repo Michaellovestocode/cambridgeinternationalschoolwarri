@@ -35,6 +35,10 @@
                         <p class="mt-2 text-sm text-white/80">Admin can mark your application as new, under review, approved, rejected, or contacted.</p>
                     </div>
                     <div class="rounded-2xl bg-white/10 p-4 backdrop-blur">
+                        <p class="text-sm font-semibold">Admissions email</p>
+                        <a href="mailto:admissions@cambridgeinternationalschoolwarri.com" class="mt-2 block break-all text-sm font-semibold text-amber-200 hover:text-amber-100">admissions@cambridgeinternationalschoolwarri.com</a>
+                    </div>
+                    <div class="rounded-2xl bg-white/10 p-4 backdrop-blur">
                         <p class="text-sm font-semibold">Helpful note</p>
                         <p class="mt-2 text-sm text-white/80">If a section does not apply, you can leave the optional fields blank. Required fields are marked with an asterisk.</p>
                     </div>

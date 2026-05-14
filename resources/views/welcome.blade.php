@@ -873,8 +873,13 @@
                     $buttonLabel = $announcement->button_label ?: "Read more";
                     $imageUrl = $announcement->image_url ?: $style["image"];
                     $fallbackImageUrl = $style["image"];
+                    $cardDelayStyle = $index > 0 ? "transition-delay:.{$index}s" : null;
+                    $dateLine = $announcement->display_date;
+                    if (!empty($announcement->location)) {
+                        $dateLine .= " · {$announcement->location}";
+                    }
                 @endphp
-                <article class="bg-white rounded-3xl shadow-lg overflow-hidden card-hover fade-in-up border border-gray-100" @if($index > 0) style="transition-delay:.{{ $index }}s" @endif>
+                <article class="bg-white rounded-3xl shadow-lg overflow-hidden card-hover fade-in-up border border-gray-100" style="{{ $cardDelayStyle }}">
                     <img src="{{ $imageUrl }}" alt="{{ $announcement->title }}" class="w-full h-60 object-cover" onerror="this.onerror=null;this.src='{{ $fallbackImageUrl }}';">
                     <div class="p-6">
                         <div class="mb-3 flex flex-wrap items-center gap-2">
@@ -886,7 +891,7 @@
                         <h3 class="font-black text-gray-900 text-lg mb-2">{{ $announcement->title }}</h3>
                         <p class="text-sm text-gray-500 mb-4">{{ $announcement->summary }}</p>
                         <div class="flex items-center justify-between gap-4 text-xs text-gray-400">
-                            <span>{{ $announcement->display_date }}@if(!empty($announcement->location)) · {{ $announcement->location }}@endif</span>
+                            <span>{{ $dateLine }}</span>
                             <a href="{{ $buttonUrl }}" class="text-blue-600 font-semibold hover:underline">{{ $buttonLabel }}</a>
                         </div>
                     </div>
