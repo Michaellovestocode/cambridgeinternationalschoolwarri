@@ -88,6 +88,14 @@
                 padding-bottom: .75rem;
                 align-items: flex-start;
             }
+            .mobile-nav-shell {
+                margin-left: -1rem;
+                margin-right: -1rem;
+                padding: .75rem .875rem 1rem;
+                background: rgba(15, 23, 42, .24);
+                border-top: 1px solid rgba(255, 255, 255, .16);
+                box-shadow: inset 0 1px 0 rgba(255, 255, 255, .08);
+            }
             .auth-actions {
                 gap: .5rem;
             }
@@ -100,14 +108,20 @@
                 padding-right: .75rem;
             }
             .mobile-nav-links {
-                overflow-x: auto;
-                flex-wrap: nowrap;
-                padding-bottom: .25rem;
-                -webkit-overflow-scrolling: touch;
+                display: grid;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: .65rem;
             }
             .mobile-nav-links a {
-                white-space: nowrap;
-                flex: 0 0 auto;
+                display: flex;
+                min-height: 3.05rem;
+                align-items: center;
+                justify-content: center;
+                white-space: normal;
+                text-align: center;
+                border-radius: .95rem;
+                padding: .75rem .65rem;
+                box-shadow: 0 10px 22px rgba(15, 23, 42, .16);
             }
             .mobile-action-stack {
                 flex-direction: column;
@@ -251,7 +265,7 @@
                 </div>
             </div>
 
-            <div class="md:hidden pb-4">
+            <div class="mobile-nav-shell md:hidden">
                 <div class="mobile-nav-links flex flex-wrap gap-2">
                     <a href="<?php echo e(route($dashboardRoute)); ?>" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-semibold transition text-sm">
                         Dashboard
