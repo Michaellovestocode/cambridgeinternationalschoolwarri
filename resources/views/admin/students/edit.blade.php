@@ -76,6 +76,24 @@
                 @error('sex')<p class="text-red-500 text-sm mt-1">{{ $message }}</p>@enderror
             </div>
 
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Club/Society</label>
+                    <input type="text" name="club_society" value="{{ old('club_society', $student->club_society) }}"
+                           class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500"
+                           placeholder="e.g., Science Club">
+                    @error('club_society')<p class="text-red-500 text-sm mt-1">{{ $message }}</p>@enderror
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Favourite Colour</label>
+                    <input type="text" name="favourite_colour" value="{{ old('favourite_colour', $student->favourite_colour) }}"
+                           class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500"
+                           placeholder="e.g., Blue">
+                    @error('favourite_colour')<p class="text-red-500 text-sm mt-1">{{ $message }}</p>@enderror
+                </div>
+            </div>
+
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Password (leave blank to keep current)</label>
                 <input type="password" name="password"

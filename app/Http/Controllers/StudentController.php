@@ -28,6 +28,7 @@ class StudentController extends Controller
                 ->whereIn('status', ['in_progress', 'submitted', 'graded']);
         })
         ->where('is_active', true)
+        ->where('grading_mode', 'auto')
         ->where('start_date', '<=', now())
         ->where('end_date', '>=', now())
         ->get();
@@ -105,7 +106,7 @@ class StudentController extends Controller
         $exam = Exam::with('classes')->findOrFail($examId);
         $student = Auth::user();
 
-        if (!$exam->isAvailable() || !$exam->classes->contains('id', $student->class_id)) {
+        if ($exam->isManual() || !$exam->isAvailable() || !$exam->classes->contains('id', $student->class_id)) {
             return redirect()->route('student.dashboard')->with('error', 'This exam is not currently available.');
         }
 

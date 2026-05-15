@@ -77,7 +77,7 @@ class Score extends Model
 
         static::saving(function ($score) {
             // Calculate total
-            $score->total = ($score->ca1 ?? 0) + ($score->ca2 ?? 0) + ($score->ca3 ?? 0) + ($score->exam ?? 0);
+            $score->total = ($score->ca1 ?? 0) + ($score->ca2 ?? 0) + ($score->exam ?? 0);
             
             // Calculate grade
             $score->grade = Subject::getGrade($score->total);
@@ -114,7 +114,6 @@ class Score extends Model
     {
         return $this->ca1 !== null && 
                $this->ca2 !== null && 
-               $this->ca3 !== null && 
                $this->exam !== null;
     }
 

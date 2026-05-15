@@ -85,9 +85,8 @@
                         <th class="px-6 py-4 text-left font-bold">Registration #</th>
                         <th class="px-6 py-4 text-left font-bold">Subject</th>
                         <th class="px-6 py-4 text-left font-bold">Class</th>
-                        <th class="px-6 py-4 text-center font-bold">CA1</th>
-                        <th class="px-6 py-4 text-center font-bold">CA2</th>
-                        <th class="px-6 py-4 text-center font-bold">CA3</th>
+                        <th class="px-6 py-4 text-center font-bold">1st Test</th>
+                        <th class="px-6 py-4 text-center font-bold">2nd Test</th>
                         <th class="px-6 py-4 text-center font-bold">Exam</th>
                         <th class="px-6 py-4 text-center font-bold">Total</th>
                         <th class="px-6 py-4 text-center font-bold">Status</th>
@@ -97,7 +96,7 @@
                 <tbody class="divide-y divide-gray-200">
                     <?php $__currentLoopData = $scores; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $score): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                         <?php
-                            $ca_total = ($score->ca1 ?? 0) + ($score->ca2 ?? 0) + ($score->ca3 ?? 0);
+                            $ca_total = ($score->ca1 ?? 0) + ($score->ca2 ?? 0);
                             $total = $ca_total + ($score->exam ?? 0);
                             $status_color = $score->status === 'submitted' ? 'bg-green-100 text-green-800' : ($score->status === 'draft' ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-100 text-gray-800');
                         ?>
@@ -108,7 +107,6 @@
                             <td class="px-6 py-4 text-gray-700"><?php echo e($score->class->name ?? 'N/A'); ?></td>
                             <td class="px-6 py-4 text-center font-bold text-blue-600"><?php echo e($score->ca1 ?? '-'); ?></td>
                             <td class="px-6 py-4 text-center font-bold text-blue-600"><?php echo e($score->ca2 ?? '-'); ?></td>
-                            <td class="px-6 py-4 text-center font-bold text-blue-600"><?php echo e($score->ca3 ?? '-'); ?></td>
                             <td class="px-6 py-4 text-center font-bold text-green-600"><?php echo e($score->exam ?? '-'); ?></td>
                             <td class="px-6 py-4 text-center font-bold text-purple-600 bg-gray-50"><?php echo e($total); ?></td>
                             <td class="px-6 py-4 text-center">

@@ -126,9 +126,16 @@
                         My Blog
                     </a>
                     <?php endif; ?>
+                    <?php if(auth()->user()->canManageBlogStudio()): ?>
+                    <a href="<?php echo e(route('admin.blog.index')); ?>" class="bg-slate-800 hover:bg-slate-900 text-white px-4 py-2 rounded-lg font-semibold transition">
+                        Blog Studio
+                    </a>
+                    <?php endif; ?>
+                    <?php if(auth()->user()->isAdmin() || auth()->user()->isTeacher()): ?>
                     <a href="<?php echo e(route('admin.learning-sessions.index')); ?>" class="bg-cyan-500 hover:bg-cyan-600 text-white px-4 py-2 rounded-lg font-semibold transition">
                         Learning
                     </a>
+                    <?php endif; ?>
                     <?php if($canManageReportCards): ?>
                     <a href="<?php echo e(route('admin.report-cards')); ?>" class="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-lg font-semibold transition">
                         Report Cards
@@ -198,9 +205,16 @@
                         My Blog
                     </a>
                     <?php endif; ?>
+                    <?php if(auth()->user()->canManageBlogStudio()): ?>
+                    <a href="<?php echo e(route('admin.blog.index')); ?>" class="bg-slate-800 hover:bg-slate-900 text-white px-4 py-2 rounded-lg font-semibold transition text-sm">
+                        Blog Studio
+                    </a>
+                    <?php endif; ?>
+                    <?php if(auth()->user()->isAdmin() || auth()->user()->isTeacher()): ?>
                     <a href="<?php echo e(route('admin.learning-sessions.index')); ?>" class="bg-cyan-500 hover:bg-cyan-600 text-white px-4 py-2 rounded-lg font-semibold transition text-sm">
                         Learning
                     </a>
+                    <?php endif; ?>
                     <?php if($canManageReportCards): ?>
                     <a href="<?php echo e(route('admin.report-cards')); ?>" class="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-lg font-semibold transition text-sm">
                         Report Cards

@@ -295,11 +295,37 @@ class ResultsController extends Controller
      */
     public function studentResults($studentId)
     {
+        $user = Auth::user();
         $student = User::where('role', 'student')->with(['examAttempts' => function($q) {
             $q->with('exam')->orderBy('created_at', 'desc');
         }])->findOrFail($studentId);
 
         $attempts = $student->examAttempts;
+
+        if (! $user->isAdmin()) {
+            $teacherSubjectIds = $user->isTeacher() ? $user->subjects()->pluck('subjects.id')->all() : [];
+            $teacherClassIds = $user->isTeacher() ? $user->teachingClasses()->pluck('school_classes.id')->all() : [];
+
+            $teacherSubjectNames = $user->isTeacher() ? $user->subjects()->pluck('subjects.name')->all() : [];
+            $teacherSubjectCodes = $user->isTeacher() ? $user->subjects()->pluck('subjects.code')->filter()->all() : [];
+
+            $attempts = $attempts->filter(function ($attempt) use ($user, $teacherSubjectIds, $teacherSubjectNames, $teacherSubjectCodes, $teacherClassIds) {
+                if ((int) $attempt->exam->created_by === (int) $user->id) {
+                    return true;
+                }
+
+                $teachesSubject = $attempt->exam->subject_id
+                    ? in_array((int) $attempt->exam->subject_id, array_map('intval', $teacherSubjectIds), true)
+                    : in_array($attempt->exam->subject, $teacherSubjectNames, true)
+                        || in_array($attempt->exam->subject, $teacherSubjectCodes, true);
+
+                return $user->isTeacher()
+                    && $teachesSubject
+                    && in_array((int) $attempt->user?->class_id, array_map('intval', $teacherClassIds), true);
+            });
+
+            abort_if($attempts->isEmpty(), 403);
+        }
         
         // Calculate statistics
         $gradedAttempts = $attempts->filter(fn($a) => $a->status === 'graded');

@@ -124,12 +124,10 @@
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm">
                             <div class="flex gap-2">
-                                <a href="<?php echo e(route('student.view-result', $attempt->id)); ?>" class="text-blue-600 hover:text-blue-900 font-medium">
-                                    View
-                                </a>
-                                <?php if($attempt->status === 'submitted'): ?>
+                                <?php if(in_array($attempt->status, ['submitted', 'graded'])): ?>
                                     <a href="<?php echo e(route('admin.attempt.grade', $attempt->id)); ?>" class="text-orange-600 hover:text-orange-900 font-medium">
-                                        Grade
+                                        <?php echo e($attempt->status === 'graded' ? 'View/Edit' : 'Grade'); ?>
+
                                     </a>
                                 <?php endif; ?>
                             </div>

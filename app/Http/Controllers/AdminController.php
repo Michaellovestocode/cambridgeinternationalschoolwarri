@@ -10,6 +10,10 @@ use App\Models\Subject;
 use App\Models\User;
 use App\Models\ExamAttempt;
 use App\Models\Answer;
+use App\Models\ReportCard;
+use App\Models\Score;
+use App\Models\Session;
+use App\Models\Term;
 use App\Models\AdmissionEnquiry;
 use App\Models\FormTeacher;
 use App\Models\Message;
@@ -131,6 +135,7 @@ class AdminController extends Controller
             'duration_minutes' => 'required|integer|min:1',
             'total_marks' => 'required|integer|min:1',
             'pass_mark' => 'required|integer|min:0',
+            'grading_mode' => 'required|in:auto,manual',
             'instructions' => 'nullable|string',
             'start_date' => 'required|date',
             'end_date' => 'required|date|after:start_date',
@@ -160,6 +165,7 @@ class AdminController extends Controller
             'duration_minutes' => $validated['duration_minutes'],
             'total_marks' => $validated['total_marks'],
             'pass_mark' => $validated['pass_mark'],
+            'grading_mode' => $validated['grading_mode'],
             'instructions' => $validated['instructions'],
             'created_by' => Auth::id(),
             'start_date' => $validated['start_date'],
@@ -169,6 +175,11 @@ class AdminController extends Controller
         ]);
 
         $exam->classes()->attach($validated['classes']);
+
+        if ($exam->isManual()) {
+            return redirect()->route('admin.exam.manual-scores', $exam->id)
+                ->with('success', 'Manual exam created. Enter the exam scores for the class.');
+        }
 
         return redirect()->route('admin.exam.questions', $exam->id)
             ->with('success', 'Exam created successfully! Now add questions.');
@@ -206,6 +217,7 @@ public function updateExam(Request $request, $examId)
         'duration_minutes' => 'required|integer|min:1',
         'total_marks' => 'required|integer|min:1',
         'pass_mark' => 'required|integer|min:0',
+        'grading_mode' => 'required|in:auto,manual',
         'instructions' => 'nullable|string',
         'start_date' => 'required|date',
         'end_date' => 'required|date|after:start_date',
@@ -235,6 +247,7 @@ public function updateExam(Request $request, $examId)
         'duration_minutes' => $validated['duration_minutes'],
         'total_marks' => $validated['total_marks'],
         'pass_mark' => $validated['pass_mark'],
+        'grading_mode' => $validated['grading_mode'],
         'instructions' => $validated['instructions'],
         'start_date' => $validated['start_date'],
         'end_date' => $validated['end_date'],
@@ -275,6 +288,139 @@ public function deleteExam($examId)
         ->with('success', 'Exam deleted successfully!');
 }
 
+public function manualExamScores(Request $request, $examId)
+{
+    $exam = Exam::with(['classes', 'subjectModel'])->findOrFail($examId);
+    abort_unless($this->canManageManualExam($exam), 403);
+
+    if (! $exam->isManual()) {
+        return redirect()->route('admin.exam.questions', $exam->id)
+            ->with('error', 'This exam is auto-gradable. Use the questions page instead.');
+    }
+
+    $activeSession = Session::getActive();
+    $activeTerm = Term::getActive();
+
+    if (! $activeSession || ! $activeTerm) {
+        return redirect()->route('admin.exams')
+            ->with('error', 'No active session or term found. Please set the active academic period first.');
+    }
+
+    $availableClasses = $this->manualExamClassesFor($exam);
+    $selectedClassId = (int) $request->input('class_id', $availableClasses->first()?->id);
+    $selectedClass = $availableClasses->firstWhere('id', $selectedClassId);
+
+    abort_unless($selectedClass, 403, 'You can only enter scores for assigned classes.');
+
+    $students = User::where('role', 'student')
+        ->where('class_id', $selectedClass->id)
+        ->orderBy('name')
+        ->get();
+
+    $scores = Score::where('class_id', $selectedClass->id)
+        ->where('subject_id', $exam->subject_id)
+        ->where('session_id', $activeSession->id)
+        ->where('term_id', $activeTerm->id)
+        ->get()
+        ->keyBy('student_id');
+
+    return view('admin.exams.manual-scores', compact(
+        'exam',
+        'activeSession',
+        'activeTerm',
+        'availableClasses',
+        'selectedClass',
+        'students',
+        'scores'
+    ));
+}
+
+public function storeManualExamScores(Request $request, $examId)
+{
+    $exam = Exam::with(['classes', 'subjectModel'])->findOrFail($examId);
+    abort_unless($this->canManageManualExam($exam), 403);
+    abort_unless($exam->isManual(), 403);
+
+    $validated = $request->validate([
+        'class_id' => 'required|exists:school_classes,id',
+        'scores' => 'required|array',
+        'scores.*.student_id' => 'required|exists:users,id',
+        'scores.*.ca1' => ['nullable', 'numeric', 'min:0', 'max:30'],
+        'scores.*.ca2' => ['nullable', 'numeric', 'min:0', 'max:10'],
+        'scores.*.exam' => ['nullable', 'numeric', 'min:0', 'max:60'],
+    ]);
+
+    $activeSession = Session::getActive();
+    $activeTerm = Term::getActive();
+
+    if (! $activeSession || ! $activeTerm) {
+        return back()->with('error', 'No active session or term found. Please set the active academic period first.');
+    }
+
+    $availableClasses = $this->manualExamClassesFor($exam);
+    abort_unless($availableClasses->contains('id', (int) $validated['class_id']), 403, 'You can only enter scores for assigned classes.');
+
+    DB::beginTransaction();
+
+    try {
+        $saved = 0;
+
+        foreach ($validated['scores'] as $scoreData) {
+            $hasScore = collect(['ca1', 'ca2', 'exam'])
+                ->contains(fn ($field) => ($scoreData[$field] ?? null) !== null && ($scoreData[$field] ?? '') !== '');
+
+            if (! $hasScore) {
+                continue;
+            }
+
+            $student = User::where('role', 'student')
+                ->where('class_id', $validated['class_id'])
+                ->findOrFail($scoreData['student_id']);
+
+            $existing = Score::firstOrNew([
+                'student_id' => $student->id,
+                'subject_id' => $exam->subject_id,
+                'session_id' => $activeSession->id,
+                'term_id' => $activeTerm->id,
+            ]);
+
+            $existing->fill([
+                'class_id' => $validated['class_id'],
+                'teacher_id' => Auth::id(),
+                'ca1' => $scoreData['ca1'] ?? 0,
+                'ca2' => $scoreData['ca2'] ?? 0,
+                'ca3' => 0,
+                'exam' => $scoreData['exam'] ?? 0,
+                'status' => 'submitted',
+            ]);
+            $existing->save();
+            $saved++;
+        }
+
+        Score::calculatePositions($exam->subject_id, $validated['class_id'], $activeSession->id, $activeTerm->id);
+
+        $classAverage = Score::calculateClassAverage($exam->subject_id, $validated['class_id'], $activeSession->id, $activeTerm->id);
+
+        Score::where('subject_id', $exam->subject_id)
+            ->where('class_id', $validated['class_id'])
+            ->where('session_id', $activeSession->id)
+            ->where('term_id', $activeTerm->id)
+            ->update(['class_average' => $classAverage]);
+
+        $generated = $this->refreshReportCardsForClass((int) $validated['class_id'], $activeSession, $activeTerm);
+
+        DB::commit();
+
+        return redirect()
+            ->route('admin.exam.manual-scores', ['exam' => $exam->id, 'class_id' => $validated['class_id']])
+            ->with('success', "{$saved} scores saved. {$generated} report cards refreshed.");
+    } catch (\Throwable $e) {
+        DB::rollBack();
+
+        return back()->with('error', 'Error saving manual scores: ' . $e->getMessage())->withInput();
+    }
+}
+
     public function examQuestions($examId)
     {
         $exam = Exam::with(['questions.passage', 'passages.questions'])->findOrFail($examId);
@@ -282,6 +428,11 @@ public function deleteExam($examId)
         // Check permission
         if (!Auth::user()->isAdmin() && $exam->created_by != Auth::id()) {
             abort(403);
+        }
+
+        if ($exam->isManual()) {
+            return redirect()->route('admin.exam.manual-scores', $exam->id)
+                ->with('error', 'This is a manual-entry exam. Enter scores directly instead of adding questions.');
         }
 
         return view('admin.exams.questions', compact('exam'));
@@ -579,34 +730,33 @@ public function deleteExam($examId)
         $attempt = ExamAttempt::with(['exam', 'user', 'answers.question'])
             ->findOrFail($attemptId);
         
-        // Check permission
-        if (!Auth::user()->isAdmin() && $attempt->exam->created_by != Auth::id()) {
-            abort(403);
-        }
+        abort_unless($this->canManageAttempt($attempt), 403);
 
         return view('admin.exams.grade', compact('attempt'));
     }
 
     public function updateGrading(Request $request, $attemptId)
     {
-        $attempt = ExamAttempt::with(['answers'])->findOrFail($attemptId);
+        $attempt = ExamAttempt::with(['answers', 'exam', 'user'])->findOrFail($attemptId);
         
-        // Check permission
-        if (!Auth::user()->isAdmin() && $attempt->exam->created_by != Auth::id()) {
-            abort(403);
-        }
+        abort_unless($this->canManageAttempt($attempt), 403);
 
         $validated = $request->validate([
-            'grades' => 'required|array',
+            'final_score' => ['nullable', 'numeric', 'min:0', 'max:' . max((float) $attempt->exam->total_marks, 1)],
+            'grades' => ['sometimes', 'array'],
             'grades.*.answer_id' => 'required|exists:answers,id',
             'grades.*.marks_obtained' => 'required|numeric|min:0',
             'grades.*.feedback' => 'nullable|string',
         ]);
 
-        DB::transaction(function () use ($validated, $attempt) {
-            $subjectiveScore = 0;
+        DB::transaction(function () use ($validated, $attempt, $request) {
+            $subjectiveScore = (float) ($attempt->subjective_score ?? 0);
 
-            foreach ($validated['grades'] as $gradeData) {
+            if (! empty($validated['grades'])) {
+                $subjectiveScore = 0;
+            }
+
+            foreach ($validated['grades'] ?? [] as $gradeData) {
                 $answer = Answer::findOrFail($gradeData['answer_id']);
                 
                 $answer->update([
@@ -618,7 +768,8 @@ public function deleteExam($examId)
                 $subjectiveScore += $gradeData['marks_obtained'];
             }
 
-            $totalScore = ($attempt->objective_score ?? 0) + $subjectiveScore;
+            $calculatedScore = ($attempt->objective_score ?? 0) + $subjectiveScore;
+            $totalScore = $request->filled('final_score') ? (float) $request->final_score : $calculatedScore;
 
             $attempt->update([
                 'subjective_score' => $subjectiveScore,
@@ -629,7 +780,7 @@ public function deleteExam($examId)
 
         app(CbtReportCardSyncService::class)->syncAttempt($attempt->fresh(['exam.subjectModel', 'user']));
 
-        return redirect()->route('admin.exam.results', $attempt->exam_id)
+        return redirect()->route('admin.attempt.grade', $attempt->id)
             ->with('success', 'Grading completed successfully!');
     }
 
@@ -988,6 +1139,8 @@ public function storeStudent(Request $request)
         'date_of_birth' => 'nullable',
         'parent_phone_number' => 'nullable|string|max:20',
         'sex' => 'nullable|in:male,female',
+        'club_society' => 'nullable|string|max:100',
+        'favourite_colour' => 'nullable|string|max:50',
     ]);
 
     if ($request->filled('date_of_birth') && !$dateOfBirth) {
@@ -1005,6 +1158,8 @@ public function storeStudent(Request $request)
         'date_of_birth' => $dateOfBirth,
         'parent_phone_number' => $validated['parent_phone_number'] ?? null,
         'sex' => $validated['sex'] ?? null,
+        'club_society' => $validated['club_society'] ?? null,
+        'favourite_colour' => $validated['favourite_colour'] ?? null,
     ];
 
     if ($request->hasFile('photo')) {
@@ -1038,6 +1193,8 @@ public function updateStudent(Request $request, $studentId)
         'date_of_birth' => 'nullable',
         'parent_phone_number' => 'nullable|string|max:20',
         'sex' => 'nullable|in:male,female',
+        'club_society' => 'nullable|string|max:100',
+        'favourite_colour' => 'nullable|string|max:50',
     ]);
 
     if ($request->filled('date_of_birth') && !$dateOfBirth) {
@@ -1053,6 +1210,8 @@ public function updateStudent(Request $request, $studentId)
         'date_of_birth' => $dateOfBirth,
         'parent_phone_number' => $validated['parent_phone_number'] ?? null,
         'sex' => $validated['sex'] ?? null,
+        'club_society' => $validated['club_society'] ?? null,
+        'favourite_colour' => $validated['favourite_colour'] ?? null,
     ];
 
     if ($request->hasFile('photo')) {
@@ -1194,5 +1353,128 @@ private function validPassageIdForExam($passageId, int $examId): ?int
     return QuestionPassage::where('exam_id', $examId)->whereKey($passageId)->exists()
         ? (int) $passageId
         : null;
+}
+
+private function canManageAttempt(ExamAttempt $attempt): bool
+{
+    $user = Auth::user();
+
+    if ($user->isAdmin()) {
+        return true;
+    }
+
+    $attempt->loadMissing(['exam', 'user']);
+
+    if ((int) $attempt->exam->created_by === (int) $user->id) {
+        return true;
+    }
+
+    if (! $user->isTeacher()) {
+        return false;
+    }
+
+    $classId = $attempt->user?->class_id;
+
+    if (! $classId) {
+        return false;
+    }
+
+    $teachesSubject = $attempt->exam->subject_id
+        ? $user->subjects()->whereKey($attempt->exam->subject_id)->exists()
+        : $user->subjects()
+            ->where(function ($query) use ($attempt) {
+                $query->where('subjects.name', $attempt->exam->subject)
+                    ->orWhere('subjects.code', $attempt->exam->subject);
+            })
+            ->exists();
+
+    return $teachesSubject && $user->teachingClasses()->whereKey($classId)->exists();
+}
+
+private function canManageManualExam(Exam $exam): bool
+{
+    $user = Auth::user();
+
+    if ($user->isAdmin()) {
+        return true;
+    }
+
+    if ((int) $exam->created_by === (int) $user->id) {
+        return true;
+    }
+
+    if (! $user->isTeacher()) {
+        return false;
+    }
+
+    $teachesSubject = $exam->subject_id
+        ? $user->subjects()->whereKey($exam->subject_id)->exists()
+        : $user->subjects()
+            ->where(function ($query) use ($exam) {
+                $query->where('subjects.name', $exam->subject)
+                    ->orWhere('subjects.code', $exam->subject);
+            })
+            ->exists();
+
+    return $teachesSubject && $this->manualExamClassesFor($exam)->isNotEmpty();
+}
+
+private function manualExamClassesFor(Exam $exam)
+{
+    $classes = $exam->classes()->orderBy('name')->get();
+    $user = Auth::user();
+
+    if ($user->isAdmin() || (int) $exam->created_by === (int) $user->id) {
+        return $classes;
+    }
+
+    $teacherClassIds = $user->teachingClasses()->pluck('school_classes.id')->all();
+
+    return $classes
+        ->whereIn('id', array_map('intval', $teacherClassIds))
+        ->values();
+}
+
+private function refreshReportCardsForClass(int $classId, Session $session, Term $term): int
+{
+    $generated = 0;
+
+    $students = User::where('class_id', $classId)
+        ->where('role', 'student')
+        ->get();
+
+    foreach ($students as $student) {
+        $summary = ReportCard::generateForStudent($student->id, $session->id, $term->id);
+
+        if (!$summary) {
+            continue;
+        }
+
+        $reportCard = ReportCard::firstOrNew([
+            'student_id' => $student->id,
+            'session_id' => $session->id,
+            'term_id' => $term->id,
+        ]);
+
+        $reportCard->fill(array_merge($summary, [
+            'class_id' => $classId,
+            'status' => $reportCard->status === 'published' ? 'published' : 'generated',
+        ]));
+
+        if (!$reportCard->exists) {
+            $reportCard->fill([
+                'days_school_opened' => 0,
+                'days_present' => 0,
+                'days_absent' => 0,
+                'attendance_percentage' => 0,
+                'next_term_begins' => $term->next_term_begins,
+            ]);
+        }
+
+        $reportCard->save();
+        $generated++;
+    }
+
+    return $generated;
 }
 }

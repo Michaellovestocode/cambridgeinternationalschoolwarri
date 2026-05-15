@@ -22,6 +22,9 @@
                 <span class="bg-blue-100 text-blue-800 text-sm font-semibold px-3 py-1 rounded-full">
                     {{ $exam->subject }}
                 </span>
+                <span class="{{ ($exam->grading_mode ?? 'auto') === 'manual' ? 'bg-amber-100 text-amber-800' : 'bg-green-100 text-green-800' }} text-sm font-semibold px-3 py-1 rounded-full ml-2">
+                    {{ ($exam->grading_mode ?? 'auto') === 'manual' ? 'Manual Entry' : 'Auto CBT' }}
+                </span>
             </div>
 
             <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-4">
@@ -65,10 +68,17 @@
                    class="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded">
                     ✏️ Edit Exam
                 </a>
-                <a href="{{ route('admin.exam.questions', $exam->id) }}" 
-                   class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">
-                    Manage Questions
-                </a>
+                @if(($exam->grading_mode ?? 'auto') === 'manual')
+                    <a href="{{ route('admin.exam.manual-scores', $exam->id) }}" 
+                       class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">
+                        Enter Scores
+                    </a>
+                @else
+                    <a href="{{ route('admin.exam.questions', $exam->id) }}" 
+                       class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">
+                        Manage Questions
+                    </a>
+                @endif
                 <a href="{{ route('admin.exam.results', $exam->id) }}" 
                    class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded">
                     View Results

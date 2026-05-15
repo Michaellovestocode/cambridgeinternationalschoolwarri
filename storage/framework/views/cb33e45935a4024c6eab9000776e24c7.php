@@ -156,6 +156,28 @@ unset($__errorArgs, $__bag); ?>
                 </label>
             </div>
 
+            <div class="border border-gray-200 rounded-xl p-4">
+                <label class="block text-sm font-medium text-gray-700 mb-3">Assessment Type *</label>
+                <div class="grid gap-3 md:grid-cols-2">
+                    <label class="flex items-start rounded-lg border border-gray-200 p-4 cursor-pointer hover:border-green-500">
+                        <input type="radio" name="grading_mode" value="auto" class="mt-1 mr-3 text-green-600 focus:ring-green-500"
+                               <?php echo e(old('grading_mode', $exam->grading_mode ?? 'auto') === 'auto' ? 'checked' : ''); ?>>
+                        <span>
+                            <span class="block font-semibold text-gray-900">Auto-gradable CBT</span>
+                            <span class="block text-sm text-gray-600">Students take the exam online. Objective questions are marked by the computer.</span>
+                        </span>
+                    </label>
+                    <label class="flex items-start rounded-lg border border-gray-200 p-4 cursor-pointer hover:border-green-500">
+                        <input type="radio" name="grading_mode" value="manual" class="mt-1 mr-3 text-green-600 focus:ring-green-500"
+                               <?php echo e(old('grading_mode', $exam->grading_mode ?? 'auto') === 'manual' ? 'checked' : ''); ?>>
+                        <span>
+                            <span class="block font-semibold text-gray-900">Manual mark entry</span>
+                            <span class="block text-sm text-gray-600">No questions needed. Enter all students' exam marks in one fast sheet.</span>
+                        </span>
+                    </label>
+                </div>
+            </div>
+
             <div class="border-t pt-4">
                 <label class="flex items-start">
                     <input type="hidden" name="show_results_to_students" value="0">
@@ -185,10 +207,17 @@ unset($__errorArgs, $__bag); ?>
         <div class="mt-8 pt-6 border-t">
             <h3 class="text-lg font-semibold text-gray-800 mb-3">Quick Actions</h3>
             <div class="flex gap-3">
-                <a href="<?php echo e(route('admin.exam.questions', $exam->id)); ?>" 
-                   class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">
-                    Manage Questions (<?php echo e($exam->questions->count()); ?>)
-                </a>
+                <?php if(($exam->grading_mode ?? 'auto') === 'manual'): ?>
+                    <a href="<?php echo e(route('admin.exam.manual-scores', $exam->id)); ?>" 
+                       class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">
+                        Enter Manual Scores
+                    </a>
+                <?php else: ?>
+                    <a href="<?php echo e(route('admin.exam.questions', $exam->id)); ?>" 
+                       class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">
+                        Manage Questions (<?php echo e($exam->questions->count()); ?>)
+                    </a>
+                <?php endif; ?>
                 <a href="<?php echo e(route('admin.exam.results', $exam->id)); ?>" 
                    class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded">
                     View Results

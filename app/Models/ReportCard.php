@@ -21,6 +21,8 @@ class ReportCard extends Model
         'total_students',
         'overall_grade',
         'grade_summary',
+        'affective_domain',
+        'psychomotor_skills',
         'days_school_opened',
         'days_present',
         'days_absent',
@@ -53,6 +55,8 @@ class ReportCard extends Model
         'head_teacher_signature_date' => 'date',
         'next_term_begins' => 'date',
         'grade_summary' => 'array',
+        'affective_domain' => 'array',
+        'psychomotor_skills' => 'array',
         'published_at' => 'datetime',
     ];
 

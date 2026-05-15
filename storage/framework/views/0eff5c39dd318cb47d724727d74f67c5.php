@@ -219,21 +219,23 @@ unset($__errorArgs, $__bag); ?>
                 <span class="block text-sm text-gray-500">Include this update in the moving top banner.</span>
             </span>
         </label>
-        <label class="flex items-start gap-3">
-            <?php if($announcement->parent_messages_sent_at): ?>
-                <input type="hidden" name="send_to_parent_dashboard" value="1">
-            <?php endif; ?>
-            <input type="checkbox" name="send_to_parent_dashboard" value="1" <?php if(old('send_to_parent_dashboard', $announcement->send_to_parent_dashboard)): echo 'checked'; endif; ?> <?php if($announcement->parent_messages_sent_at): echo 'disabled'; endif; ?> class="mt-1 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
-            <span>
-                <span class="block font-semibold text-gray-900">Send To Parents</span>
-                <span class="block text-sm text-gray-500">
-                    Add this update to parent inboxes and trigger WhatsApp delivery when configured.
-                    <?php if($announcement->parent_messages_sent_at): ?>
-                        Sent <?php echo e($announcement->parent_messages_sent_at->format('M j, Y g:i A')); ?>.
-                    <?php endif; ?>
+        <?php if(auth()->user()->isAdmin()): ?>
+            <label class="flex items-start gap-3">
+                <?php if($announcement->parent_messages_sent_at): ?>
+                    <input type="hidden" name="send_to_parent_dashboard" value="1">
+                <?php endif; ?>
+                <input type="checkbox" name="send_to_parent_dashboard" value="1" <?php if(old('send_to_parent_dashboard', $announcement->send_to_parent_dashboard)): echo 'checked'; endif; ?> <?php if($announcement->parent_messages_sent_at): echo 'disabled'; endif; ?> class="mt-1 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                <span>
+                    <span class="block font-semibold text-gray-900">Send To Parents</span>
+                    <span class="block text-sm text-gray-500">
+                        Add this update to parent inboxes and trigger WhatsApp delivery when configured.
+                        <?php if($announcement->parent_messages_sent_at): ?>
+                            Sent <?php echo e($announcement->parent_messages_sent_at->format('M j, Y g:i A')); ?>.
+                        <?php endif; ?>
+                    </span>
                 </span>
-            </span>
-        </label>
+            </label>
+        <?php endif; ?>
     </div>
 
     <div class="flex flex-wrap items-center gap-3">

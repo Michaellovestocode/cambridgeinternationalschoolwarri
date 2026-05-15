@@ -184,10 +184,9 @@ class NigerianReportCardController extends Controller
             'term_id' => 'required|exists:terms,id',
             'scores' => 'required|array',
             'scores.*.subject_id' => 'required|exists:subjects,id',
-            'scores.*.ca1' => 'nullable|numeric|min:0|max:10',
+            'scores.*.ca1' => 'nullable|numeric|min:0|max:30',
             'scores.*.ca2' => 'nullable|numeric|min:0|max:10',
-            'scores.*.ca3' => 'nullable|numeric|min:0|max:10',
-            'scores.*.exam' => 'nullable|numeric|min:0|max:70',
+            'scores.*.exam' => 'nullable|numeric|min:0|max:60',
         ]);
 
         $student = User::where('role', 'student')->findOrFail($validated['student_id']);
@@ -206,7 +205,7 @@ class NigerianReportCardController extends Controller
 
         try {
             foreach ($validated['scores'] as $scoreData) {
-                $hasScore = collect(['ca1', 'ca2', 'ca3', 'exam'])
+                $hasScore = collect(['ca1', 'ca2', 'exam'])
                     ->contains(fn ($field) => $scoreData[$field] !== null && $scoreData[$field] !== '');
 
                 if (!$hasScore) {
@@ -225,7 +224,7 @@ class NigerianReportCardController extends Controller
                         'teacher_id' => $teacherId,
                         'ca1' => $scoreData['ca1'] ?? 0,
                         'ca2' => $scoreData['ca2'] ?? 0,
-                        'ca3' => $scoreData['ca3'] ?? 0,
+                        'ca3' => 0,
                         'exam' => $scoreData['exam'] ?? 0,
                         'status' => 'submitted',
                     ]
@@ -391,6 +390,43 @@ class NigerianReportCardController extends Controller
         
         return view('admin.report-cards.preview', compact('reportCard', 'scores', 'colors', 'schoolSettings', 'selectedColor'));
     }
+
+    public function visualPreview($reportCardId)
+    {
+        $this->authorizeReportCardManagement();
+
+        $reportCard = ReportCard::with(['student.class', 'session', 'term'])
+            ->findOrFail($reportCardId);
+        $this->authorizeClassAccess($reportCard->class_id);
+
+        $scores = Score::where('student_id', $reportCard->student_id)
+            ->where('session_id', $reportCard->session_id)
+            ->where('term_id', $reportCard->term_id)
+            ->with('subject')
+            ->orderBy('subject_id')
+            ->get();
+
+        $schoolSettings = \App\Models\SchoolSettings::first() ?? new \App\Models\SchoolSettings();
+
+        $colorSchemes = [
+            'blue' => ['primary' => '#1E40AF', 'secondary' => '#3B82F6', 'light' => '#DBEAFE'],
+            'green' => ['primary' => '#15803D', 'secondary' => '#22C55E', 'light' => '#DCFCE7'],
+            'brown' => ['primary' => '#78350F', 'secondary' => '#A16207', 'light' => '#FEF3C7'],
+            'pink' => ['primary' => '#BE123C', 'secondary' => '#F472B6', 'light' => '#FCE7F3'],
+            'purple' => ['primary' => '#6B21A8', 'secondary' => '#A855F7', 'light' => '#F3E8FF'],
+        ];
+
+        $selectedColor = $colorSchemes[$reportCard->theme_color ?? 'blue'] ?? $colorSchemes['blue'];
+        $renderMode = 'browser';
+
+        return view('admin.report-cards.nigerian-pdf', compact(
+            'reportCard',
+            'scores',
+            'schoolSettings',
+            'selectedColor',
+            'renderMode'
+        ));
+    }
     
     // ========== DOWNLOAD PDF ==========
     
@@ -431,24 +467,31 @@ class NigerianReportCardController extends Controller
         ];
         
         $selectedColor = $colorSchemes[$color] ?? $colorSchemes['blue'];
+        $renderMode = 'pdf';
         
         // Generate PDF
         $pdf = Pdf::loadView('admin.report-cards.nigerian-pdf', compact(
             'reportCard',
             'scores',
             'schoolSettings',
-            'selectedColor'
+            'selectedColor',
+            'renderMode'
         ));
         
         $pdf->setPaper('A4', 'portrait');
         
-        $filename = "Report_Card_{$reportCard->student->name}_{$reportCard->session->name}_{$reportCard->term->name}.pdf";
-        $filename = preg_replace('/[^A-Za-z0-9_\-]/', '_', $filename);
+        $filenameBase = "Report_Card_{$reportCard->student->name}_{$reportCard->session->name}_{$reportCard->term->name}";
+        $filename = preg_replace('/[^A-Za-z0-9_\-]/', '_', $filenameBase) . '.pdf';
         
         // Save PDF path
         $reportCard->update(['pdf_path' => $filename]);
         
-        return $pdf->download($filename);
+        return response($pdf->output(), 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+            'Cache-Control' => 'private, max-age=0, must-revalidate',
+            'Pragma' => 'public',
+        ]);
     }
     
     public function update(Request $request, $reportCardId)
@@ -472,6 +515,10 @@ class NigerianReportCardController extends Controller
             'head_teacher_signature_date' => 'nullable|date',
             'next_term_begins' => 'nullable|date',
             'theme_color' => 'nullable|in:blue,green,brown,pink,purple',
+            'affective_domain' => 'nullable|array',
+            'affective_domain.*' => 'nullable|integer|min:1|max:5',
+            'psychomotor_skills' => 'nullable|array',
+            'psychomotor_skills.*' => 'nullable|integer|min:1|max:5',
         ]);
 
         if ($validated['days_present'] > $validated['days_school_opened']) {
@@ -489,6 +536,16 @@ class NigerianReportCardController extends Controller
         $validated['attendance_percentage'] = $validated['days_school_opened'] > 0
             ? round(($validated['days_present'] / $validated['days_school_opened']) * 100, 2)
             : 0;
+
+        $validated['affective_domain'] = collect($request->input('affective_domain', []))
+            ->filter(fn ($value) => filled($value))
+            ->map(fn ($value) => (int) $value)
+            ->all();
+
+        $validated['psychomotor_skills'] = collect($request->input('psychomotor_skills', []))
+            ->filter(fn ($value) => filled($value))
+            ->map(fn ($value) => (int) $value)
+            ->all();
 
         $reportCard->update($validated);
 

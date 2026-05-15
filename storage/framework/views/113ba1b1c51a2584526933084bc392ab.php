@@ -256,6 +256,25 @@
 
         <!-- Submit Button -->
         <div class="bg-white rounded-lg shadow p-6">
+            <div class="mb-6 rounded-lg border border-amber-200 bg-amber-50 p-4">
+                <label for="final_score" class="block text-sm font-bold text-amber-900 mb-2">
+                    Final Score Override
+                </label>
+                <div class="flex flex-col sm:flex-row gap-3 sm:items-center">
+                    <input type="number"
+                           id="final_score"
+                           name="final_score"
+                           value="<?php echo e(old('final_score', $attempt->total_score)); ?>"
+                           min="0"
+                           max="<?php echo e(max((float) $attempt->exam->total_marks, 1)); ?>"
+                           step="0.5"
+                           class="w-full sm:w-48 px-4 py-2 border border-amber-300 rounded-lg focus:ring-2 focus:ring-amber-500">
+                    <span class="text-sm text-amber-800">
+                        Use this only when a computer-graded score needs correction. Maximum: <?php echo e(number_format($attempt->exam->total_marks, 1)); ?>.
+                    </span>
+                </div>
+            </div>
+
             <div class="flex justify-between items-center">
                 <div class="text-sm text-gray-600">
                     <?php
@@ -269,7 +288,7 @@
                 </div>
                 
                 <div class="flex gap-4">
-                    <a href="<?php echo e(route('admin.exam.results', $attempt->exam_id)); ?>" 
+                    <a href="<?php echo e(route('admin.results.index')); ?>" 
                        class="bg-gray-300 hover:bg-gray-400 text-gray-800 px-8 py-3 rounded-lg font-semibold">
                         Cancel
                     </a>

@@ -47,6 +47,7 @@
                         <span class="text-xs text-slate-400">Studio</span>
                     </a>
                     <a href="{{ route('admin.blog.create') }}" class="block rounded-2xl px-4 py-3 text-sm font-bold text-white/75 hover:bg-white/10 hover:text-white">New Post</a>
+                    <a href="{{ route('admin.announcements.index') }}" class="block rounded-2xl px-4 py-3 text-sm font-bold text-white/75 hover:bg-white/10 hover:text-white">Website News & Events</a>
                     <a href="{{ route('blog.index') }}" target="_blank" class="block rounded-2xl px-4 py-3 text-sm font-bold text-white/75 hover:bg-white/10 hover:text-white">Public Blog</a>
                     @if(auth()->user()->isAdmin())
                         <a href="{{ route('admin.blog-managers.index') }}" class="block rounded-2xl px-4 py-3 text-sm font-bold text-white/75 hover:bg-white/10 hover:text-white">Blog Managers</a>
@@ -74,6 +75,7 @@
                     </div>
                     <div class="flex flex-wrap gap-2">
                         <a href="{{ route('admin.blog.index') }}" class="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-bold text-slate-700 hover:bg-slate-50">Posts</a>
+                        <a href="{{ route('admin.announcements.index') }}" class="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-bold text-slate-700 hover:bg-slate-50">News & Events</a>
                         <a href="{{ url('/') }}" target="_blank" class="rounded-xl bg-slate-950 px-4 py-2.5 text-sm font-bold text-white hover:bg-slate-800">Visit Site</a>
                     </div>
                 </div>

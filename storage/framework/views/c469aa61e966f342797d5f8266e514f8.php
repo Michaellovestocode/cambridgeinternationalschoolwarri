@@ -21,10 +21,7 @@
     <meta name="twitter:description" content="Quality Creche, Nursery, Primary, and Secondary education in Warri, Delta State.">
     <script type="application/ld+json">
         {
-            "<?php $__contextArgs = [];
-if (context()->has($__contextArgs[0])) :
-if (isset($value)) { $__contextPrevious[] = $value; }
-$value = context()->get($__contextArgs[0]); ?>": "https://schema.org",
+            "@context": "https://schema.org",
             "@type": "School",
             "name": "Cambridge International School Warri",
             "url": "https://cambridgeinternationalschoolwarri.com/",

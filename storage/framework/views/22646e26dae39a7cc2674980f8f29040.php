@@ -112,18 +112,15 @@
 
                     </p>
                 </div>
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
                     <div class="bg-blue-50 text-blue-800 rounded-lg px-4 py-3">
-                        <span class="font-semibold">CA1</span> 0-10
+                        <span class="font-semibold">1st Test</span> 0-30
                     </div>
                     <div class="bg-blue-50 text-blue-800 rounded-lg px-4 py-3">
-                        <span class="font-semibold">CA2</span> 0-10
+                        <span class="font-semibold">2nd Test</span> 0-10
                     </div>
                     <div class="bg-blue-50 text-blue-800 rounded-lg px-4 py-3">
-                        <span class="font-semibold">CA3</span> 0-10
-                    </div>
-                    <div class="bg-blue-50 text-blue-800 rounded-lg px-4 py-3">
-                        <span class="font-semibold">Exam</span> 0-70
+                        <span class="font-semibold">Exam</span> 0-60
                     </div>
                 </div>
             </div>
@@ -138,9 +135,8 @@
                         <thead>
                             <tr class="bg-gray-100 text-gray-700">
                                 <th class="px-4 py-3 text-left">Subject</th>
-                                <th class="px-4 py-3 text-center">CA1</th>
-                                <th class="px-4 py-3 text-center">CA2</th>
-                                <th class="px-4 py-3 text-center">CA3</th>
+                                <th class="px-4 py-3 text-center">1st Test</th>
+                                <th class="px-4 py-3 text-center">2nd Test</th>
                                 <th class="px-4 py-3 text-center">Exam</th>
                                 <th class="px-4 py-3 text-center">Total</th>
                                 <th class="px-4 py-3 text-center">Current Grade</th>
@@ -152,9 +148,8 @@
                                     $score = $scores[$subject->id] ?? null;
                                     $ca1 = old("scores.$index.ca1", $score?->ca1);
                                     $ca2 = old("scores.$index.ca2", $score?->ca2);
-                                    $ca3 = old("scores.$index.ca3", $score?->ca3);
                                     $exam = old("scores.$index.exam", $score?->exam);
-                                    $total = (float) ($ca1 ?? 0) + (float) ($ca2 ?? 0) + (float) ($ca3 ?? 0) + (float) ($exam ?? 0);
+                                    $total = (float) ($ca1 ?? 0) + (float) ($ca2 ?? 0) + (float) ($exam ?? 0);
                                 ?>
                                 <tr class="border-t border-gray-200 score-row">
                                     <td class="px-4 py-3 font-medium text-gray-900">
@@ -164,7 +159,7 @@
                                     </td>
                                     <td class="px-4 py-3">
                                         <input type="number" name="scores[<?php echo e($index); ?>][ca1]" value="<?php echo e($ca1); ?>"
-                                               min="0" max="10" step="0.5"
+                                               min="0" max="30" step="0.5"
                                                class="score-input w-24 border border-gray-300 rounded-lg px-3 py-2 text-center">
                                     </td>
                                     <td class="px-4 py-3">
@@ -173,13 +168,8 @@
                                                class="score-input w-24 border border-gray-300 rounded-lg px-3 py-2 text-center">
                                     </td>
                                     <td class="px-4 py-3">
-                                        <input type="number" name="scores[<?php echo e($index); ?>][ca3]" value="<?php echo e($ca3); ?>"
-                                               min="0" max="10" step="0.5"
-                                               class="score-input w-24 border border-gray-300 rounded-lg px-3 py-2 text-center">
-                                    </td>
-                                    <td class="px-4 py-3">
                                         <input type="number" name="scores[<?php echo e($index); ?>][exam]" value="<?php echo e($exam); ?>"
-                                               min="0" max="70" step="0.5"
+                                               min="0" max="60" step="0.5"
                                                class="score-input w-24 border border-gray-300 rounded-lg px-3 py-2 text-center">
                                     </td>
                                     <td class="px-4 py-3 text-center font-semibold text-gray-900">

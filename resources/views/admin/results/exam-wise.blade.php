@@ -133,9 +133,9 @@
                                 <a href="{{ route('admin.results.student', $attempt->user->id) }}" class="text-blue-600 hover:text-blue-900 font-medium">
                                     View
                                 </a>
-                                @if($attempt->status === 'submitted')
+                                @if(in_array($attempt->status, ['submitted', 'graded']))
                                     <a href="{{ route('admin.attempt.grade', $attempt->id) }}" class="text-orange-600 hover:text-orange-900 font-medium">
-                                        Grade
+                                        {{ $attempt->status === 'graded' ? 'View/Edit' : 'Grade' }}
                                     </a>
                                 @endif
                             </div>

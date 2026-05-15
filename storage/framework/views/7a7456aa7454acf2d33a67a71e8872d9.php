@@ -30,21 +30,18 @@
             <!-- Score Grading System Info -->
             <div class="bg-blue-50 border border-blue-300 rounded-lg p-4 mb-6">
                 <h3 class="font-bold text-blue-800 mb-2">📊 Grading System</h3>
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-blue-800 text-sm">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-blue-800 text-sm">
                     <div>
-                        <span class="font-bold">CA1:</span> 0-10
+                        <span class="font-bold">1st Test:</span> 0-30
                     </div>
                     <div>
-                        <span class="font-bold">CA2:</span> 0-10
+                        <span class="font-bold">2nd Test:</span> 0-10
                     </div>
                     <div>
-                        <span class="font-bold">CA3:</span> 0-10
-                    </div>
-                    <div>
-                        <span class="font-bold">Exam:</span> 0-70
+                        <span class="font-bold">Exam:</span> 0-60
                     </div>
                 </div>
-                <p class="text-blue-800 text-sm mt-3">Total = CA (30) + Exam (70) = 100 marks</p>
+                <p class="text-blue-800 text-sm mt-3">Total = 1st Test (30) + 2nd Test (10) + Exam (60) = 100 marks</p>
             </div>
 
             <!-- Students Score Table -->
@@ -59,10 +56,9 @@
                             <tr>
                                 <th class="border border-gray-300 px-4 py-3 text-left font-bold">S/N</th>
                                 <th class="border border-gray-300 px-4 py-3 text-left font-bold">Student Name</th>
-                                <th class="border border-gray-300 px-4 py-3 text-center font-bold">CA1 (10)</th>
-                                <th class="border border-gray-300 px-4 py-3 text-center font-bold">CA2 (10)</th>
-                                <th class="border border-gray-300 px-4 py-3 text-center font-bold">CA3 (10)</th>
-                                <th class="border border-gray-300 px-4 py-3 text-center font-bold">Exam (70)</th>
+                                <th class="border border-gray-300 px-4 py-3 text-center font-bold">1st Test (30)</th>
+                                <th class="border border-gray-300 px-4 py-3 text-center font-bold">2nd Test (10)</th>
+                                <th class="border border-gray-300 px-4 py-3 text-center font-bold">Exam (60)</th>
                                 <th class="border border-gray-300 px-4 py-3 text-center font-bold">Total (100)</th>
                             </tr>
                         </thead>
@@ -72,7 +68,6 @@
                                     $existingScore = $scores[$student->id] ?? null;
                                     $ca1 = (float)($existingScore->ca1 ?? 0);
                                     $ca2 = (float)($existingScore->ca2 ?? 0);
-                                    $ca3 = (float)($existingScore->ca3 ?? 0);
                                     $exam = (float)($existingScore->exam ?? 0);
                                 ?>
                                 <tr class="hover:bg-gray-50 border-b border-gray-300">
@@ -88,7 +83,7 @@
                                         <input type="number" 
                                             name="scores[<?php echo e($index); ?>][ca1]" 
                                             value="<?php echo e($ca1); ?>"
-                                            min="0" max="10" step="0.5"
+                                            min="0" max="30" step="0.5"
                                             class="w-full border border-gray-400 rounded px-2 py-1 text-center focus:outline-none focus:border-blue-500"
                                             placeholder="0">
                                     </td>
@@ -102,22 +97,14 @@
                                     </td>
                                     <td class="border border-gray-300 px-4 py-3">
                                         <input type="number" 
-                                            name="scores[<?php echo e($index); ?>][ca3]" 
-                                            value="<?php echo e($ca3); ?>"
-                                            min="0" max="10" step="0.5"
-                                            class="w-full border border-gray-400 rounded px-2 py-1 text-center focus:outline-none focus:border-blue-500"
-                                            placeholder="0">
-                                    </td>
-                                    <td class="border border-gray-300 px-4 py-3">
-                                        <input type="number" 
                                             name="scores[<?php echo e($index); ?>][exam]" 
                                             value="<?php echo e($exam); ?>"
-                                            min="0" max="70" step="0.5"
+                                            min="0" max="60" step="0.5"
                                             class="w-full border border-gray-400 rounded px-2 py-1 text-center focus:outline-none focus:border-blue-500"
                                             placeholder="0">
                                     </td>
                                     <td class="border border-gray-300 px-4 py-3 text-center font-bold bg-gray-100">
-                                        <span class="total-score"><?php echo e(($ca1 ?? 0) + ($ca2 ?? 0) + ($ca3 ?? 0) + ($exam ?? 0)); ?></span>
+                                        <span class="total-score"><?php echo e(($ca1 ?? 0) + ($ca2 ?? 0) + ($exam ?? 0)); ?></span>
                                     </td>
                                 </tr>
                             <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
@@ -165,9 +152,8 @@ document.querySelectorAll('input[type="number"]').forEach(input => {
         if (row) {
             const ca1 = parseFloat(row.querySelector('input[name*="[ca1]"]').value) || 0;
             const ca2 = parseFloat(row.querySelector('input[name*="[ca2]"]').value) || 0;
-            const ca3 = parseFloat(row.querySelector('input[name*="[ca3]"]').value) || 0;
             const exam = parseFloat(row.querySelector('input[name*="[exam]"]').value) || 0;
-            const total = ca1 + ca2 + ca3 + exam;
+            const total = ca1 + ca2 + exam;
             row.querySelector('.total-score').textContent = total.toFixed(1);
         }
     });
@@ -179,6 +165,7 @@ function submitForm(action) {
     form.action = action;
     form.submit();
 }
+</script>
 
 <?php $__env->stopSection(); ?>
 

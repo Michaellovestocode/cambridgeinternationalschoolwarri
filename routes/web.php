@@ -127,6 +127,7 @@ Route::get('/teacher/scores/my-scores', [TeacherScoreController::class, 'myScore
         Route::post('/admin/report-cards/manual', [NigerianReportCardController::class, 'storeManual'])->name('admin.report-cards.manual.store');
         Route::get('/admin/report-cards/generate/{student}', [NigerianReportCardController::class, 'generate'])->name('admin.report-cards.generate');
         Route::get('/admin/report-cards/{id}/preview', [NigerianReportCardController::class, 'preview'])->name('admin.report-cards.preview');
+        Route::get('/admin/report-cards/{id}/visual-preview', [NigerianReportCardController::class, 'visualPreview'])->name('admin.report-cards.visual-preview');
         Route::get('/admin/report-cards/{id}/download', [NigerianReportCardController::class, 'downloadPDF'])->name('admin.report-cards.download');
         Route::post('/admin/report-cards/bulk', [NigerianReportCardController::class, 'bulkGenerate'])->name('admin.report-cards.bulk');
         Route::put('/admin/report-cards/{id}', [NigerianReportCardController::class, 'update'])->name('admin.report-cards.update');
@@ -142,6 +143,15 @@ Route::get('/teacher/scores/my-scores', [TeacherScoreController::class, 'myScore
         Route::get('/{post}/edit', [BlogPostController::class, 'adminEdit'])->name('edit');
         Route::put('/{post}', [BlogPostController::class, 'adminUpdate'])->name('update');
         Route::delete('/{post}', [BlogPostController::class, 'adminDestroy'])->name('destroy');
+    });
+
+    Route::prefix('admin')->name('admin.')->middleware('blog.studio')->group(function () {
+        Route::get('/announcements', [AnnouncementController::class, 'index'])->name('announcements.index');
+        Route::get('/announcements/create', [AnnouncementController::class, 'create'])->name('announcements.create');
+        Route::post('/announcements', [AnnouncementController::class, 'store'])->name('announcements.store');
+        Route::get('/announcements/{announcement}/edit', [AnnouncementController::class, 'edit'])->name('announcements.edit');
+        Route::put('/announcements/{announcement}', [AnnouncementController::class, 'update'])->name('announcements.update');
+        Route::delete('/announcements/{announcement}', [AnnouncementController::class, 'destroy'])->name('announcements.destroy');
     });
 
     // Admin/Teacher routes
@@ -202,13 +212,6 @@ Route::get('/teacher/scores/my-scores', [TeacherScoreController::class, 'myScore
             Route::get('/enquiries/{enquiry}', [AdminAdmissionEnquiryController::class, 'show'])->name('enquiries.show');
             Route::put('/enquiries/{enquiry}', [AdminAdmissionEnquiryController::class, 'update'])->name('enquiries.update');
 
-            Route::get('/announcements', [AnnouncementController::class, 'index'])->name('announcements.index');
-            Route::get('/announcements/create', [AnnouncementController::class, 'create'])->name('announcements.create');
-            Route::post('/announcements', [AnnouncementController::class, 'store'])->name('announcements.store');
-            Route::get('/announcements/{announcement}/edit', [AnnouncementController::class, 'edit'])->name('announcements.edit');
-            Route::put('/announcements/{announcement}', [AnnouncementController::class, 'update'])->name('announcements.update');
-            Route::delete('/announcements/{announcement}', [AnnouncementController::class, 'destroy'])->name('announcements.destroy');
-
             Route::get('/blog-managers', [AdminController::class, 'blogManagers'])->name('blog-managers.index');
             Route::get('/blog-managers/create', [AdminController::class, 'createBlogManager'])->name('blog-managers.create');
             Route::post('/blog-managers', [AdminController::class, 'storeBlogManager'])->name('blog-managers.store');
@@ -231,6 +234,8 @@ Route::get('/teacher/scores/my-scores', [TeacherScoreController::class, 'myScore
         Route::get('/exams/{exam}/edit', [AdminController::class, 'editExam'])->name('exam.edit');
         Route::put('/exams/{exam}', [AdminController::class, 'updateExam'])->name('exam.update');
         Route::delete('/exams/{exam}', [AdminController::class, 'deleteExam'])->name('exam.delete');
+        Route::get('/exams/{exam}/manual-scores', [AdminController::class, 'manualExamScores'])->name('exam.manual-scores');
+        Route::post('/exams/{exam}/manual-scores', [AdminController::class, 'storeManualExamScores'])->name('exam.manual-scores.store');
         Route::get('/exams/{exam}/questions', [AdminController::class, 'examQuestions'])->name('exam.questions');
         Route::post('/exams/{exam}/questions', [AdminController::class, 'storeQuestion'])->name('exam.question.store');
         Route::post('/exams/{exam}/passages', [AdminController::class, 'storeQuestionPassage'])->name('exam.passage.store');

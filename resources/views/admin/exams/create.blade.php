@@ -63,7 +63,7 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Total Marks *</label>
-                    <input type="number" name="total_marks" value="{{ old('total_marks', 100) }}" 
+                    <input type="number" name="total_marks" id="total_marks" value="{{ old('total_marks', 100) }}" 
                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                            min="1" required>
                 </div>
@@ -119,6 +119,28 @@
                 @enderror
             </div>
 
+            <div class="border border-gray-200 rounded-xl p-4">
+                <label class="block text-sm font-medium text-gray-700 mb-3">Assessment Type *</label>
+                <div class="grid gap-3 md:grid-cols-2">
+                    <label class="flex items-start rounded-lg border border-gray-200 p-4 cursor-pointer hover:border-green-500">
+                        <input type="radio" name="grading_mode" value="auto" class="mt-1 mr-3 text-green-600 focus:ring-green-500"
+                               {{ old('grading_mode', 'auto') === 'auto' ? 'checked' : '' }}>
+                        <span>
+                            <span class="block font-semibold text-gray-900">Auto-gradable CBT</span>
+                            <span class="block text-sm text-gray-600">Students take the exam online. Objective questions are marked by the computer.</span>
+                        </span>
+                    </label>
+                    <label class="flex items-start rounded-lg border border-gray-200 p-4 cursor-pointer hover:border-green-500">
+                        <input type="radio" name="grading_mode" value="manual" class="mt-1 mr-3 text-green-600 focus:ring-green-500"
+                               {{ old('grading_mode') === 'manual' ? 'checked' : '' }}>
+                        <span>
+                            <span class="block font-semibold text-gray-900">Manual mark entry</span>
+                            <span class="block text-sm text-gray-600">No questions needed. Enter all students' exam marks in one fast sheet.</span>
+                        </span>
+                    </label>
+                </div>
+            </div>
+
             <div class="border-t pt-4">
                 <label class="flex items-start">
                     <input type="hidden" name="is_active" value="0">
@@ -148,7 +170,7 @@
             <div class="flex gap-4 pt-4">
                 <button type="submit" 
                         class="bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-lg font-semibold">
-                    Create Exam & Add Questions
+                    Create Exam
                 </button>
                 <a href="{{ route('admin.exams') }}" 
                    class="bg-gray-300 hover:bg-gray-400 text-gray-800 px-8 py-3 rounded-lg font-semibold">
@@ -163,6 +185,8 @@
 document.addEventListener('DOMContentLoaded', function () {
     const classesBySubject = @json($classesBySubject);
     const subjectSelect = document.getElementById('subject_id');
+    const totalMarksInput = document.getElementById('total_marks');
+    const gradingModeInputs = Array.from(document.querySelectorAll('input[name="grading_mode"]'));
     const classOptions = Array.from(document.querySelectorAll('[data-class-option]'));
     const noClassesMessage = document.getElementById('no_classes_message');
 
@@ -193,6 +217,17 @@ document.addEventListener('DOMContentLoaded', function () {
 
     subjectSelect.addEventListener('change', syncClassOptions);
     syncClassOptions();
+
+    function syncManualDefaults() {
+        const mode = gradingModeInputs.find(function (input) { return input.checked; })?.value;
+        if (mode === 'manual' && totalMarksInput.value === '100') {
+            totalMarksInput.value = '60';
+        }
+    }
+
+    gradingModeInputs.forEach(function (input) {
+        input.addEventListener('change', syncManualDefaults);
+    });
 });
 </script>
 @endsection

@@ -210,9 +210,10 @@
                                 <a href="<?php echo e(route('admin.results.student', $attempt->user->id)); ?>" class="text-blue-600 hover:text-blue-900 text-sm font-medium">
                                     View
                                 </a>
-                                <?php if($attempt->status === 'submitted'): ?>
+                                <?php if(in_array($attempt->status, ['submitted', 'graded'])): ?>
                                     <a href="<?php echo e(route('admin.attempt.grade', $attempt->id)); ?>" class="text-orange-600 hover:text-orange-900 text-sm font-medium">
-                                        Grade
+                                        <?php echo e($attempt->status === 'graded' ? 'View/Edit' : 'Grade'); ?>
+
                                     </a>
                                 <?php endif; ?>
                             </div>

@@ -36,7 +36,8 @@
                 <thead>
                     <tr class="bg-gray-50 text-gray-600">
                         <th class="px-4 py-3 text-left">Subject</th>
-                        <th class="px-4 py-3 text-left">CA</th>
+                        <th class="px-4 py-3 text-left">1st Test</th>
+                        <th class="px-4 py-3 text-left">2nd Test</th>
                         <th class="px-4 py-3 text-left">Exam</th>
                         <th class="px-4 py-3 text-left">Total</th>
                         <th class="px-4 py-3 text-left">Grade</th>
@@ -46,14 +47,15 @@
                     <?php $__empty_1 = true; $__currentLoopData = $scores; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $score): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
                         <tr class="border-t border-gray-100">
                             <td class="px-4 py-3 font-medium text-gray-900"><?php echo e($score->subject->name ?? 'Subject'); ?></td>
-                            <td class="px-4 py-3"><?php echo e(number_format(($score->ca1 ?? 0) + ($score->ca2 ?? 0) + ($score->ca3 ?? 0), 1)); ?></td>
+                            <td class="px-4 py-3"><?php echo e(number_format($score->ca1 ?? 0, 1)); ?></td>
+                            <td class="px-4 py-3"><?php echo e(number_format($score->ca2 ?? 0, 1)); ?></td>
                             <td class="px-4 py-3"><?php echo e(number_format($score->exam ?? 0, 1)); ?></td>
                             <td class="px-4 py-3"><?php echo e(number_format($score->total ?? 0, 1)); ?></td>
                             <td class="px-4 py-3"><?php echo e($score->grade ?? '-'); ?></td>
                         </tr>
                     <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
                         <tr>
-                            <td colspan="5" class="px-4 py-6 text-center text-gray-500">No scores are attached to this report card yet.</td>
+                            <td colspan="6" class="px-4 py-6 text-center text-gray-500">No scores are attached to this report card yet.</td>
                         </tr>
                     <?php endif; ?>
                 </tbody>

@@ -4,7 +4,38 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="<?php echo e(csrf_token()); ?>">
-    <title>Cambridge International School - Education for Excellence</title>
+    <link rel="icon" type="image/png" sizes="48x48" href="<?php echo e(asset('favicon-48x48.png')); ?>">
+    <link rel="apple-touch-icon" sizes="180x180" href="<?php echo e(asset('apple-touch-icon.png')); ?>">
+    <link rel="manifest" href="<?php echo e(asset('site.webmanifest')); ?>">
+    <title>Cambridge International School Warri | Creche, Nursery, Primary & Secondary</title>
+    <meta name="description" content="Cambridge International School, Warri provides quality Creche, Nursery, Primary, and Secondary education in Delta State, nurturing disciplined, confident, and globally competitive learners.">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://cambridgeinternationalschoolwarri.com/">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Cambridge International School Warri">
+    <meta property="og:description" content="Quality Creche, Nursery, Primary, and Secondary education in Warri, Delta State.">
+    <meta property="og:url" content="https://cambridgeinternationalschoolwarri.com/">
+    <meta property="og:image" content="https://cambridgeinternationalschoolwarri.com/images/schoollogo.jpg">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Cambridge International School Warri">
+    <meta name="twitter:description" content="Quality Creche, Nursery, Primary, and Secondary education in Warri, Delta State.">
+    <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@type": "School",
+            "name": "Cambridge International School Warri",
+            "url": "https://cambridgeinternationalschoolwarri.com/",
+            "logo": "https://cambridgeinternationalschoolwarri.com/images/schoollogo.jpg",
+            "address": {
+                "@type": "PostalAddress",
+                "streetAddress": "No. 2 Airport Road, By Kosini Junction",
+                "addressLocality": "Warri",
+                "addressRegion": "Delta State",
+                "addressCountry": "NG"
+            },
+            "email": "info@cambridgeinternationalschoolwarri.com"
+        }
+    </script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <script>
@@ -843,8 +874,13 @@
                     $buttonLabel = $announcement->button_label ?: "Read more";
                     $imageUrl = $announcement->image_url ?: $style["image"];
                     $fallbackImageUrl = $style["image"];
+                    $cardDelayStyle = $index > 0 ? "transition-delay:.{$index}s" : null;
+                    $dateLine = $announcement->display_date;
+                    if (!empty($announcement->location)) {
+                        $dateLine .= " · {$announcement->location}";
+                    }
                 ?>
-                <article class="bg-white rounded-3xl shadow-lg overflow-hidden card-hover fade-in-up border border-gray-100" <?php if($index > 0): ?> style="transition-delay:.<?php echo e($index); ?>s" <?php endif; ?>>
+                <article class="bg-white rounded-3xl shadow-lg overflow-hidden card-hover fade-in-up border border-gray-100" style="<?php echo e($cardDelayStyle); ?>">
                     <img src="<?php echo e($imageUrl); ?>" alt="<?php echo e($announcement->title); ?>" class="w-full h-60 object-cover" onerror="this.onerror=null;this.src='<?php echo e($fallbackImageUrl); ?>';">
                     <div class="p-6">
                         <div class="mb-3 flex flex-wrap items-center gap-2">
@@ -856,7 +892,7 @@
                         <h3 class="font-black text-gray-900 text-lg mb-2"><?php echo e($announcement->title); ?></h3>
                         <p class="text-sm text-gray-500 mb-4"><?php echo e($announcement->summary); ?></p>
                         <div class="flex items-center justify-between gap-4 text-xs text-gray-400">
-                            <span><?php echo e($announcement->display_date); ?><?php if(!empty($announcement->location)): ?> · <?php echo e($announcement->location); ?><?php endif; ?></span>
+                            <span><?php echo e($dateLine); ?></span>
                             <a href="<?php echo e($buttonUrl); ?>" class="text-blue-600 font-semibold hover:underline"><?php echo e($buttonLabel); ?></a>
                         </div>
                     </div>
@@ -1090,7 +1126,7 @@
                         <div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center text-xs font-bold text-gray-700">WEB</div>
                         <div>
                             <div class="font-bold text-gray-900">Website</div>
-                            <a href="https://www.cambridgeinternationalschools.com" target="_blank" rel="noopener noreferrer" class="break-anywhere text-blue-600 text-sm hover:underline">www.cambridgeinternationalschools.com</a>
+                            <a href="https://cambridgeinternationalschoolwarri.com" target="_blank" rel="noopener noreferrer" class="break-anywhere text-blue-600 text-sm hover:underline">cambridgeinternationalschoolwarri.com</a>
                         </div>
                     </div>
                     <div class="flex items-center space-x-4">
@@ -1244,7 +1280,7 @@
                 <ul class="space-y-3 text-gray-400">
                     <li class="grid grid-cols-1 sm:grid-cols-[5.5rem_1fr] gap-1 sm:gap-3"><span class="font-semibold text-white">Address:</span><span class="min-w-0 leading-6">No. 2 Airport Road, By Kosini Junction, Warri, Delta State, Nigeria</span></li>
                     <li class="grid grid-cols-1 sm:grid-cols-[5.5rem_1fr] gap-1 sm:gap-3"><span class="font-semibold text-white">Email:</span><a href="mailto:info@cambridgeinternationalschoolwarri.com" class="min-w-0 break-anywhere leading-6 hover:text-yellow-400 transition">info@cambridgeinternationalschoolwarri.com</a></li>
-                    <li class="grid grid-cols-1 sm:grid-cols-[5.5rem_1fr] gap-1 sm:gap-3"><span class="font-semibold text-white">Website:</span><a href="https://www.cambridgeinternationalschools.com" target="_blank" rel="noopener noreferrer" class="min-w-0 break-anywhere leading-6 hover:text-yellow-400 transition">www.cambridgeinternationalschools.com</a></li>
+                    <li class="grid grid-cols-1 sm:grid-cols-[5.5rem_1fr] gap-1 sm:gap-3"><span class="font-semibold text-white">Website:</span><a href="https://cambridgeinternationalschoolwarri.com" target="_blank" rel="noopener noreferrer" class="min-w-0 break-anywhere leading-6 hover:text-yellow-400 transition">cambridgeinternationalschoolwarri.com</a></li>
                     <li class="grid grid-cols-1 sm:grid-cols-[5.5rem_1fr] gap-1 sm:gap-3"><span class="font-semibold text-white">Phone:</span><span class="min-w-0 leading-6"><a href="https://wa.me/2348032897744" target="_blank" rel="noopener noreferrer" class="hover:text-yellow-400 transition">WhatsApp</a> / <a href="tel:+2348032897744" class="hover:text-yellow-400 transition">Call</a> <span class="text-gray-400">(+234) 803-289-7744</span></span></li>
                     <li class="grid grid-cols-1 sm:grid-cols-[5.5rem_1fr] gap-1 sm:gap-3"><span class="font-semibold text-white">Hours:</span><span class="min-w-0 leading-6">Mon-Fri: 7:30am-4:00pm</span></li>
                 </ul>

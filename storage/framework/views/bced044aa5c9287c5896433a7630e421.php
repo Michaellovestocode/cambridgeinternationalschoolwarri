@@ -343,6 +343,19 @@
                     </svg>
                 </a>
 
+                <a href="<?php echo e(route('admin.blog-managers.index')); ?>"
+                   class="flex items-center justify-between bg-gradient-to-r from-slate-800 to-indigo-700 hover:from-slate-900 hover:to-indigo-800 text-white px-6 py-4 rounded-xl font-bold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all group">
+                    <span class="flex items-center">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h8l6 6v8a2 2 0 01-2 2z"></path>
+                        </svg>
+                        Blog Managers
+                    </span>
+                    <svg class="w-5 h-5 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                    </svg>
+                </a>
+
                 <a href="<?php echo e(route('admin.subjects.index')); ?>" 
                    class="flex items-center justify-between bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-white px-6 py-4 rounded-xl font-bold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all group">
                     <span class="flex items-center">

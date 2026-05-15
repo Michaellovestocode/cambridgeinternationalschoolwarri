@@ -9,7 +9,10 @@
             <p class="text-xs text-gray-400 mt-1">Pinned updates appear first on the homepage, and lower sort-order numbers win when multiple pinned updates exist.</p>
         </div>
         <div class="flex items-center gap-3">
-            <a href="<?php echo e(route('admin.dashboard')); ?>" class="text-sm text-blue-600 hover:underline">Back to dashboard</a>
+            <a href="<?php echo e(auth()->user()->isAdmin() ? route('admin.dashboard') : route('admin.blog.index')); ?>" class="text-sm text-blue-600 hover:underline">
+                <?php echo e(auth()->user()->isAdmin() ? 'Back to dashboard' : 'Back to Blog Studio'); ?>
+
+            </a>
             <a href="<?php echo e(route('admin.announcements.create')); ?>" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-3 rounded-xl font-semibold shadow-lg">Create update</a>
         </div>
     </div>

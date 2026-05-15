@@ -124,8 +124,14 @@
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm">
                             <a href="<?php echo e(route('admin.results.student', $attempt->user->id)); ?>" class="text-blue-600 hover:text-blue-900 font-medium">
-                                View
+                                View Student
                             </a>
+                            <?php if(in_array($attempt->status, ['submitted', 'graded'])): ?>
+                                <a href="<?php echo e(route('admin.attempt.grade', $attempt->id)); ?>" class="text-orange-600 hover:text-orange-900 font-medium">
+                                    <?php echo e($attempt->status === 'graded' ? 'View/Edit' : 'Grade'); ?>
+
+                                </a>
+                            <?php endif; ?>
                         </td>
                     </tr>
                     <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>

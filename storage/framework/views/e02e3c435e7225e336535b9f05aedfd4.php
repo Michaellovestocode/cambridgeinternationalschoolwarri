@@ -4,7 +4,7 @@
 <div class="max-w-7xl mx-auto space-y-8">
     <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
         <div>
-            <h1 class="text-3xl font-bold text-gray-900">Report Card Preview</h1>
+            <h1 class="text-3xl font-bold text-gray-900">Edit Report Card Details</h1>
             <p class="text-gray-600 mt-1">
                 Fill attendance, remarks, signatures, and next term date manually. Attendance percentage is calculated automatically.
             </p>
@@ -19,6 +19,10 @@
             <a href="<?php echo e(route('admin.report-cards')); ?>"
                class="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-lg font-medium">
                 Back
+            </a>
+            <a href="<?php echo e(route('admin.report-cards.visual-preview', $reportCard->id)); ?>" target="_blank"
+               class="bg-gray-900 hover:bg-black text-white px-4 py-2 rounded-lg font-medium">
+                Visual Preview
             </a>
             <form method="POST" action="<?php echo e(route('admin.report-cards.publication', $reportCard->id)); ?>">
                 <?php echo csrf_field(); ?>
@@ -128,6 +132,80 @@
                     <p class="text-sm text-gray-500 mt-2">
                         Attendance percentage will be calculated automatically from days present and days school opened.
                     </p>
+                </div>
+
+                <?php
+                    $affectiveTraits = [
+                        'punctuality' => 'Punctuality',
+                        'neatness' => 'Neatness',
+                        'politeness' => 'Politeness',
+                        'attentiveness' => 'Attentiveness',
+                        'self_control' => 'Self Control',
+                        'sense_of_responsibility' => 'Sense of Responsibility',
+                    ];
+                    $psychomotorTraits = [
+                        'handwriting' => 'Handwriting',
+                        'drawing_painting' => 'Drawing/Painting',
+                        'craft_work' => 'Craft Work',
+                        'speech_fluency' => 'Speech Fluency',
+                        'sports_games' => 'Sports & Games',
+                        'music' => 'Music',
+                    ];
+                    $ratingOptions = [
+                        5 => '5 - Excellent',
+                        4 => '4 - Good',
+                        3 => '3 - Average',
+                        2 => '2 - Fair',
+                        1 => '1 - Needs Improvement',
+                    ];
+                ?>
+
+                <div>
+                    <h2 class="text-xl font-semibold text-gray-900 mb-4">Behaviour & Skills Ratings</h2>
+                    <p class="text-sm text-gray-500 mb-4">
+                        These ratings appear in the Affective Domain and Psychomotor Skills tables on the visual report card.
+                    </p>
+                    <div class="grid lg:grid-cols-2 gap-6">
+                        <div class="border border-gray-200 rounded-xl p-4">
+                            <h3 class="font-semibold text-gray-900 mb-4">Affective Domain</h3>
+                            <div class="space-y-3">
+                                <?php $__currentLoopData = $affectiveTraits; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $key => $label): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1" for="affective_domain_<?php echo e($key); ?>"><?php echo e($label); ?></label>
+                                        <select id="affective_domain_<?php echo e($key); ?>" name="affective_domain[<?php echo e($key); ?>]" class="w-full border border-gray-300 rounded-lg px-3 py-2">
+                                            <option value="">Not Rated</option>
+                                            <?php $__currentLoopData = $ratingOptions; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $value => $text): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                                <option value="<?php echo e($value); ?>" <?php echo e((string) old("affective_domain.$key", data_get($reportCard->affective_domain, $key)) === (string) $value ? 'selected' : ''); ?>>
+                                                    <?php echo e($text); ?>
+
+                                                </option>
+                                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                                        </select>
+                                    </div>
+                                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                            </div>
+                        </div>
+
+                        <div class="border border-gray-200 rounded-xl p-4">
+                            <h3 class="font-semibold text-gray-900 mb-4">Psychomotor Skills</h3>
+                            <div class="space-y-3">
+                                <?php $__currentLoopData = $psychomotorTraits; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $key => $label): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1" for="psychomotor_skills_<?php echo e($key); ?>"><?php echo e($label); ?></label>
+                                        <select id="psychomotor_skills_<?php echo e($key); ?>" name="psychomotor_skills[<?php echo e($key); ?>]" class="w-full border border-gray-300 rounded-lg px-3 py-2">
+                                            <option value="">Not Rated</option>
+                                            <?php $__currentLoopData = $ratingOptions; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $value => $text): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                                <option value="<?php echo e($value); ?>" <?php echo e((string) old("psychomotor_skills.$key", data_get($reportCard->psychomotor_skills, $key)) === (string) $value ? 'selected' : ''); ?>>
+                                                    <?php echo e($text); ?>
+
+                                                </option>
+                                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                                        </select>
+                                    </div>
+                                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="grid lg:grid-cols-2 gap-6">

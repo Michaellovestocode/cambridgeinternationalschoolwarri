@@ -24,6 +24,7 @@
                 <div class="mt-7 flex flex-wrap gap-3">
                     <a href="{{ route('admin.blog.create') }}" class="rounded-2xl bg-white px-5 py-3 text-sm font-black text-slate-950 hover:bg-slate-100">New Post</a>
                     <a href="{{ route('admin.blog.index', ['status' => \App\Models\BlogPost::STATUS_PENDING]) }}" class="rounded-2xl bg-amber-400 px-5 py-3 text-sm font-black text-slate-950 hover:bg-amber-300">Review Pending ({{ $pendingCount }})</a>
+                    <a href="{{ route('admin.announcements.index') }}" class="rounded-2xl bg-cyan-400 px-5 py-3 text-sm font-black text-slate-950 hover:bg-cyan-300">Website News & Events</a>
                     <a href="{{ route('blog.index') }}" target="_blank" class="rounded-2xl border border-white/15 px-5 py-3 text-sm font-bold text-white hover:bg-white/10">View Public Blog</a>
                 </div>
             </div>

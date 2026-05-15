@@ -17,6 +17,7 @@ class Exam extends Model
         'duration_minutes',
         'total_marks',
         'pass_mark',
+        'grading_mode',
         'instructions',
         'created_by',
         'start_date',
@@ -69,5 +70,10 @@ class Exam extends Model
     {
         return $this->is_active && 
                now()->between($this->start_date, $this->end_date);
+    }
+
+    public function isManual(): bool
+    {
+        return $this->grading_mode === 'manual';
     }
 }

@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="<?php echo e(csrf_token()); ?>">
+    <link rel="icon" type="image/png" sizes="48x48" href="<?php echo e(asset('favicon-48x48.png')); ?>">
+    <link rel="apple-touch-icon" sizes="180x180" href="<?php echo e(asset('apple-touch-icon.png')); ?>">
+    <link rel="manifest" href="<?php echo e(asset('site.webmanifest')); ?>">
     <title><?php echo $__env->yieldContent('title', 'Cambridge International School CBT System'); ?></title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
@@ -123,9 +126,16 @@
                         My Blog
                     </a>
                     <?php endif; ?>
+                    <?php if(auth()->user()->canManageBlogStudio()): ?>
+                    <a href="<?php echo e(route('admin.blog.index')); ?>" class="bg-slate-800 hover:bg-slate-900 text-white px-4 py-2 rounded-lg font-semibold transition">
+                        Blog Studio
+                    </a>
+                    <?php endif; ?>
+                    <?php if(auth()->user()->isAdmin() || auth()->user()->isTeacher()): ?>
                     <a href="<?php echo e(route('admin.learning-sessions.index')); ?>" class="bg-cyan-500 hover:bg-cyan-600 text-white px-4 py-2 rounded-lg font-semibold transition">
                         Learning
                     </a>
+                    <?php endif; ?>
                     <?php if($canManageReportCards): ?>
                     <a href="<?php echo e(route('admin.report-cards')); ?>" class="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-lg font-semibold transition">
                         Report Cards
@@ -195,9 +205,16 @@
                         My Blog
                     </a>
                     <?php endif; ?>
+                    <?php if(auth()->user()->canManageBlogStudio()): ?>
+                    <a href="<?php echo e(route('admin.blog.index')); ?>" class="bg-slate-800 hover:bg-slate-900 text-white px-4 py-2 rounded-lg font-semibold transition text-sm">
+                        Blog Studio
+                    </a>
+                    <?php endif; ?>
+                    <?php if(auth()->user()->isAdmin() || auth()->user()->isTeacher()): ?>
                     <a href="<?php echo e(route('admin.learning-sessions.index')); ?>" class="bg-cyan-500 hover:bg-cyan-600 text-white px-4 py-2 rounded-lg font-semibold transition text-sm">
                         Learning
                     </a>
+                    <?php endif; ?>
                     <?php if($canManageReportCards): ?>
                     <a href="<?php echo e(route('admin.report-cards')); ?>" class="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-lg font-semibold transition text-sm">
                         Report Cards

@@ -44,7 +44,7 @@ class CbtReportCardSyncService
                 'teacher_id' => $attempt->exam->created_by,
                 'ca1' => $score->exists ? $score->ca1 : 0,
                 'ca2' => $score->exists ? $score->ca2 : 0,
-                'ca3' => $score->exists ? $score->ca3 : 0,
+                'ca3' => 0,
                 'exam' => $examScore,
                 'status' => 'submitted',
                 'teacher_comment' => $score->teacher_comment,
@@ -114,6 +114,6 @@ class CbtReportCardSyncService
         $totalMarks = (float) ($attempt->exam->total_marks ?: 100);
         $score = (float) ($attempt->total_score ?? 0);
 
-        return round(($score / max($totalMarks, 1)) * 70, 2);
+        return round(($score / max($totalMarks, 1)) * 60, 2);
     }
 }

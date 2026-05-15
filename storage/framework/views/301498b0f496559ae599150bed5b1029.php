@@ -94,12 +94,15 @@ unset($__errorArgs, $__bag); ?>
                             </span>
                         </td>
                         <td class="px-8 py-4 whitespace-nowrap text-sm">
-                            <form action="<?php echo e(route('admin.class.delete', $class->id)); ?>" method="POST" 
-                                  onsubmit="return confirm('Delete this class?')" class="inline">
-                                <?php echo csrf_field(); ?>
-                                <?php echo method_field('DELETE'); ?>
-                                <button type="submit" class="bg-red-50 text-red-600 hover:bg-red-100 px-4 py-2 rounded-lg font-semibold transition">Delete</button>
-                            </form>
+                            <div class="flex flex-wrap gap-2">
+                                <a href="<?php echo e(route('admin.class.edit', $class)); ?>" class="bg-blue-50 text-blue-700 hover:bg-blue-100 px-4 py-2 rounded-lg font-semibold transition">Edit</a>
+                                <form action="<?php echo e(route('admin.class.delete', $class->id)); ?>" method="POST" 
+                                      onsubmit="return confirm('Delete this class?')" class="inline">
+                                    <?php echo csrf_field(); ?>
+                                    <?php echo method_field('DELETE'); ?>
+                                    <button type="submit" class="bg-red-50 text-red-600 hover:bg-red-100 px-4 py-2 rounded-lg font-semibold transition">Delete</button>
+                                </form>
+                            </div>
                         </td>
                     </tr>
                     <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>

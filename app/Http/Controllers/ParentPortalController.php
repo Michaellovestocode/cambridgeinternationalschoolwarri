@@ -51,6 +51,7 @@ class ParentPortalController extends Controller
                 $query->whereRaw('1 = 0');
             })
             ->where('is_active', true)
+            ->where('grading_mode', 'auto')
             ->orderBy('start_date')
             ->get();
 

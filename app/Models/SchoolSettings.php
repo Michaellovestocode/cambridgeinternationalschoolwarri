@@ -29,8 +29,7 @@ class SchoolSettings extends Model
             return Storage::url($this->school_logo);
         }
         
-        // Default placeholder logo
-        return 'https://ui-avatars.com/api/?name=Cambridge&size=200&background=1E40AF&color=fff&bold=true';
+        return asset('images/schoollogo.jpg');
     }
 
     // Get signature URL

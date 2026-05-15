@@ -22,6 +22,8 @@ class User extends Authenticatable
         'parent_phone_number',
         'whatsapp_number',
         'sex',
+        'club_society',
+        'favourite_colour',
         'can_manage_blog',
     ];
 

@@ -122,8 +122,13 @@
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm">
                             <a href="{{ route('admin.results.student', $attempt->user->id) }}" class="text-blue-600 hover:text-blue-900 font-medium">
-                                View
+                                View Student
                             </a>
+                            @if(in_array($attempt->status, ['submitted', 'graded']))
+                                <a href="{{ route('admin.attempt.grade', $attempt->id) }}" class="text-orange-600 hover:text-orange-900 font-medium">
+                                    {{ $attempt->status === 'graded' ? 'View/Edit' : 'Grade' }}
+                                </a>
+                            @endif
                         </td>
                     </tr>
                     @empty

@@ -127,21 +127,23 @@
                 <span class="block text-sm text-gray-500">Include this update in the moving top banner.</span>
             </span>
         </label>
-        <label class="flex items-start gap-3">
-            @if($announcement->parent_messages_sent_at)
-                <input type="hidden" name="send_to_parent_dashboard" value="1">
-            @endif
-            <input type="checkbox" name="send_to_parent_dashboard" value="1" @checked(old('send_to_parent_dashboard', $announcement->send_to_parent_dashboard)) @disabled($announcement->parent_messages_sent_at) class="mt-1 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
-            <span>
-                <span class="block font-semibold text-gray-900">Send To Parents</span>
-                <span class="block text-sm text-gray-500">
-                    Add this update to parent inboxes and trigger WhatsApp delivery when configured.
-                    @if($announcement->parent_messages_sent_at)
-                        Sent {{ $announcement->parent_messages_sent_at->format('M j, Y g:i A') }}.
-                    @endif
+        @if(auth()->user()->isAdmin())
+            <label class="flex items-start gap-3">
+                @if($announcement->parent_messages_sent_at)
+                    <input type="hidden" name="send_to_parent_dashboard" value="1">
+                @endif
+                <input type="checkbox" name="send_to_parent_dashboard" value="1" @checked(old('send_to_parent_dashboard', $announcement->send_to_parent_dashboard)) @disabled($announcement->parent_messages_sent_at) class="mt-1 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                <span>
+                    <span class="block font-semibold text-gray-900">Send To Parents</span>
+                    <span class="block text-sm text-gray-500">
+                        Add this update to parent inboxes and trigger WhatsApp delivery when configured.
+                        @if($announcement->parent_messages_sent_at)
+                            Sent {{ $announcement->parent_messages_sent_at->format('M j, Y g:i A') }}.
+                        @endif
+                    </span>
                 </span>
-            </span>
-        </label>
+            </label>
+        @endif
     </div>
 
     <div class="flex flex-wrap items-center gap-3">

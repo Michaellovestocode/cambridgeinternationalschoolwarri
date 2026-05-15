@@ -14,7 +14,7 @@ class AnnouncementController extends Controller
 {
     public function __construct(private MessageNotificationService $messageNotificationService)
     {
-        $this->middleware('role:admin');
+        $this->middleware('blog.studio');
     }
 
     public function index(Request $request)
@@ -90,7 +90,7 @@ class AnnouncementController extends Controller
 
     public function update(Request $request, Announcement $announcement)
     {
-        $data = $this->validatedData($request);
+        $data = $this->validatedData($request, $announcement);
 
         if ($request->hasFile('image')) {
             $data['image_path'] = $this->storeImage($request);
@@ -113,7 +113,7 @@ class AnnouncementController extends Controller
             ->with('success', 'Update deleted successfully.');
     }
 
-    private function validatedData(Request $request): array
+    private function validatedData(Request $request, ?Announcement $announcement = null): array
     {
         $validated = $request->validate([
             'title' => ['required', 'string', 'max:255'],
@@ -134,7 +134,9 @@ class AnnouncementController extends Controller
         $validated['is_published'] = $request->boolean('is_published');
         $validated['is_pinned'] = $request->boolean('is_pinned');
         $validated['show_in_ticker'] = $request->boolean('show_in_ticker');
-        $validated['send_to_parent_dashboard'] = $request->boolean('send_to_parent_dashboard');
+        $validated['send_to_parent_dashboard'] = Auth::user()?->isAdmin()
+            ? $request->boolean('send_to_parent_dashboard')
+            : (bool) ($announcement?->send_to_parent_dashboard ?? false);
         $validated['sort_order'] = $validated['sort_order'] ?? 0;
 
         if (!$validated['ticker_text']) {

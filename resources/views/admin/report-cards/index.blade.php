@@ -221,7 +221,11 @@
                                     </form>
                                     <a href="{{ route('admin.report-cards.preview', $reportCard->id) }}"
                                        class="bg-gray-900 hover:bg-black text-white px-4 py-2 rounded-lg text-sm font-medium">
-                                        Open
+                                        Edit Details
+                                    </a>
+                                    <a href="{{ route('admin.report-cards.visual-preview', $reportCard->id) }}" target="_blank"
+                                       class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium">
+                                        Visual Preview
                                     </a>
                                 </div>
                             </td>
