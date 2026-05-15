@@ -199,9 +199,44 @@
         }
 
         @media (max-width: 640px) {
+            input,
+            select,
+            textarea,
+            button {
+                font-size: 16px;
+            }
+            section {
+                scroll-margin-top: 7rem;
+            }
+            .card-hover:hover {
+                transform: none;
+            }
+            .ticker-item {
+                padding-right: 1.5rem;
+            }
+            #mobileMenu {
+                overflow-y: auto;
+                -webkit-overflow-scrolling: touch;
+            }
             #mainNav .nav-logo-mark { width: 2.75rem; height: 2.75rem; }
             #mainNav .nav-brand-title { font-size: 1rem; line-height: 1.25rem; }
             #mainNav .nav-brand-subtitle { font-size: .68rem; line-height: 1rem; }
+            #home {
+                min-height: auto;
+                padding-top: 8.5rem;
+            }
+            #home h1 {
+                font-size: clamp(2.25rem, 13vw, 3.75rem);
+            }
+            #home .absolute.rounded-full,
+            #home .blob-1,
+            #home .blob-2 {
+                pointer-events: none;
+            }
+            .student-circle {
+                width: 104px;
+                height: 104px;
+            }
             .about-vision-card {
                 position: static !important;
                 margin-top: 1rem;

@@ -21,13 +21,80 @@
             background: rgba(255, 255, 255, .82);
             backdrop-filter: blur(18px);
         }
+        html,
+        body {
+            max-width: 100%;
+            overflow-x: hidden;
+        }
+        img,
+        video,
+        canvas,
+        svg {
+            max-width: 100%;
+        }
+        .overflow-x-auto {
+            -webkit-overflow-scrolling: touch;
+        }
+        @media (max-width: 1023px) {
+            .studio-sidebar-shell {
+                min-height: auto;
+            }
+            .studio-sidebar-inner {
+                min-height: auto;
+                position: relative;
+            }
+            .studio-sidebar-nav {
+                display: flex;
+                gap: .5rem;
+                overflow-x: auto;
+                padding-bottom: .25rem;
+                -webkit-overflow-scrolling: touch;
+            }
+            .studio-sidebar-nav > * + * {
+                margin-top: 0 !important;
+            }
+            .studio-sidebar-nav a {
+                flex: 0 0 auto;
+                white-space: nowrap;
+            }
+            .studio-sidebar-note,
+            .studio-signed-in {
+                display: none;
+            }
+        }
+        @media (max-width: 640px) {
+            input,
+            select,
+            textarea,
+            button {
+                font-size: 16px;
+            }
+            .studio-page-pad {
+                padding-left: .875rem !important;
+                padding-right: .875rem !important;
+            }
+            .studio-header-title {
+                min-width: 0;
+            }
+            .studio-header-actions {
+                width: 100%;
+                overflow-x: auto;
+                flex-wrap: nowrap;
+                padding-bottom: .25rem;
+                -webkit-overflow-scrolling: touch;
+            }
+            .studio-header-actions a {
+                flex: 0 0 auto;
+                white-space: nowrap;
+            }
+        }
     </style>
     @stack('styles')
 </head>
 <body class="min-h-screen text-slate-900">
     <div class="min-h-screen lg:grid lg:grid-cols-[280px_1fr]">
-        <aside class="bg-slate-950 text-white">
-            <div class="sticky top-0 flex min-h-screen flex-col px-5 py-6">
+        <aside class="studio-sidebar-shell bg-slate-950 text-white">
+            <div class="studio-sidebar-inner sticky top-0 flex min-h-screen flex-col px-5 py-6">
                 <div class="flex items-center gap-3">
                     <img src="{{ asset('images/schoollogo.jpg') }}" alt="School Logo" class="h-12 w-12 rounded-2xl object-cover ring-2 ring-white/10">
                     <div>
@@ -36,12 +103,12 @@
                     </div>
                 </div>
 
-                <div class="mt-6 rounded-3xl border border-white/10 bg-white/[.06] p-4">
+                <div class="studio-sidebar-note mt-6 rounded-3xl border border-white/10 bg-white/[.06] p-4">
                     <p class="text-xs font-black uppercase text-white/45" style="letter-spacing:.14em;">Workspace</p>
                     <p class="mt-2 text-sm leading-6 text-white/75">Review, polish, schedule, and publish teacher-written stories for the public school blog.</p>
                 </div>
 
-                <nav class="mt-8 space-y-2">
+                <nav class="studio-sidebar-nav mt-8 space-y-2 lg:block">
                     <a href="{{ route('admin.blog.index') }}" class="flex items-center justify-between rounded-2xl bg-white px-4 py-3 text-sm font-bold text-slate-950 shadow-lg shadow-black/10">
                         <span>Moderation Queue</span>
                         <span class="text-xs text-slate-400">Studio</span>
@@ -55,7 +122,7 @@
                     @endif
                 </nav>
 
-                <div class="mt-auto rounded-2xl border border-white/10 bg-white/5 p-4">
+                <div class="studio-signed-in mt-auto rounded-2xl border border-white/10 bg-white/5 p-4">
                     <p class="text-xs font-bold uppercase text-white/40">Signed in</p>
                     <p class="mt-1 text-sm font-bold">{{ auth()->user()->name }}</p>
                     <form action="{{ route('logout') }}" method="POST" class="mt-4">
@@ -68,12 +135,12 @@
 
         <main class="min-w-0">
             <header class="sticky top-0 z-20 border-b border-slate-200/80 studio-glass">
-                <div class="flex flex-wrap items-center justify-between gap-4 px-5 py-5 sm:px-8">
-                    <div>
+                <div class="studio-page-pad flex flex-wrap items-center justify-between gap-4 px-5 py-5 sm:px-8">
+                    <div class="studio-header-title">
                         <p class="text-xs font-black uppercase text-indigo-600" style="letter-spacing:.16em;">Publishing</p>
                         <h2 class="text-2xl font-black">@yield('page_heading', 'Blog Studio')</h2>
                     </div>
-                    <div class="flex flex-wrap gap-2">
+                    <div class="studio-header-actions flex flex-wrap gap-2">
                         <a href="{{ route('admin.blog.index') }}" class="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-bold text-slate-700 hover:bg-slate-50">Posts</a>
                         <a href="{{ route('admin.announcements.index') }}" class="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-bold text-slate-700 hover:bg-slate-50">News & Events</a>
                         <a href="{{ url('/') }}" target="_blank" class="rounded-xl bg-slate-950 px-4 py-2.5 text-sm font-bold text-white hover:bg-slate-800">Visit Site</a>
@@ -81,7 +148,7 @@
                 </div>
             </header>
 
-            <div class="px-5 py-6 sm:px-8">
+            <div class="studio-page-pad px-5 py-6 sm:px-8">
                 @if(session('success'))
                     <div class="mb-6 rounded-xl border border-emerald-200 bg-emerald-50 px-5 py-4 text-sm font-bold text-emerald-800">{{ session('success') }}</div>
                 @endif

@@ -5,6 +5,56 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - Nigerian CBT System</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        html,
+        body {
+            max-width: 100%;
+            overflow-x: hidden;
+        }
+
+        input,
+        button {
+            font-size: 16px;
+        }
+
+        @media (max-width: 640px) {
+            body {
+                align-items: flex-start !important;
+                overflow-y: auto;
+                background-attachment: scroll !important;
+            }
+
+            .login-shell {
+                min-height: 100vh;
+                padding-top: 2rem;
+                padding-bottom: 2rem;
+            }
+
+            .login-brand {
+                padding: 1rem 1.25rem;
+            }
+
+            .login-brand h1 {
+                font-size: 1.75rem;
+                line-height: 2.25rem;
+            }
+
+            .login-card {
+                border-radius: 1.5rem;
+                padding: 1.5rem;
+            }
+
+            .login-card h2 {
+                font-size: 1.75rem;
+                line-height: 2.25rem;
+            }
+
+            .bg-orb {
+                width: 16rem !important;
+                height: 16rem !important;
+            }
+        }
+    </style>
 </head>
 <body class="min-h-screen flex items-center justify-center relative overflow-hidden"
       style="background-image: url('https://images.unsplash.com/photo-1546410531-bb4caa6b424d?w=1920&q=80'); background-size: cover; background-position: center; background-attachment: fixed;">
@@ -14,16 +64,16 @@
     
     <!-- Animated Background Shapes -->
     <div class="absolute inset-0 overflow-hidden pointer-events-none">
-        <div class="absolute -top-1/2 -left-1/4 w-96 h-96 bg-green-500/20 rounded-full blur-3xl animate-pulse"></div>
-        <div class="absolute -bottom-1/2 -right-1/4 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl animate-pulse" style="animation-delay: 1s;"></div>
-        <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse" style="animation-delay: 2s;"></div>
+        <div class="bg-orb absolute -top-1/2 -left-1/4 w-96 h-96 bg-green-500/20 rounded-full blur-3xl animate-pulse"></div>
+        <div class="bg-orb absolute -bottom-1/2 -right-1/4 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl animate-pulse" style="animation-delay: 1s;"></div>
+        <div class="bg-orb absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse" style="animation-delay: 2s;"></div>
     </div>
 
     <!-- Login Card Container -->
-    <div class="relative z-10 w-full max-w-md px-4">
+    <div class="login-shell relative z-10 w-full max-w-md px-4">
         <!-- School Header -->
         <div class="text-center mb-6">
-            <div class="inline-block bg-white/10 backdrop-blur-md px-6 py-4 rounded-2xl border border-white/20 shadow-2xl">
+            <div class="login-brand inline-block bg-white/10 backdrop-blur-md px-6 py-4 rounded-2xl border border-white/20 shadow-2xl">
                 <h1 class="text-4xl font-bold text-white mb-2">🎓 CAMBRIDGE</h1>
                 <p class="text-white/90 text-sm font-medium italic">My school is a place of light</p>
                 <p class="text-white/70 text-xs mt-1">Where dreams are shaped both day and night</p>
@@ -31,7 +81,7 @@
         </div>
 
         <!-- Login Card -->
-        <div class="bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl p-8 border border-white/30">
+        <div class="login-card bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl p-8 border border-white/30">
             <div class="text-center mb-8">
                 <h2 class="text-3xl font-bold text-gray-800 mb-2">Welcome Back</h2>
                 <p class="text-gray-600">Cambridge International Staffs/Learners Portal</p>

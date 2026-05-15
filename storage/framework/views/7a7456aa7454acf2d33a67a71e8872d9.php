@@ -114,13 +114,13 @@
             <?php endif; ?>
 
             <!-- Action Buttons -->
-            <div class="flex gap-4 justify-between pt-6 border-t">
+            <div class="mobile-action-stack flex gap-4 justify-between pt-6 border-t">
                 <div>
                     <a href="<?php echo e(route('teacher.scores.dashboard')); ?>" class="bg-gray-400 hover:bg-gray-500 text-white px-8 py-3 rounded-lg font-semibold">
                         ← Cancel
                     </a>
                 </div>
-                <div class="flex gap-4">
+                <div class="mobile-action-stack flex gap-4">
                     <button type="button" onclick="submitForm('<?php echo e(route('teacher.scores.save')); ?>')" class="bg-yellow-600 hover:bg-yellow-700 text-white px-8 py-3 rounded-lg font-semibold">
                         💾 Save as Draft
                     </button>

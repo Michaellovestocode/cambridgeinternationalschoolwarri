@@ -37,6 +37,16 @@
         body::after {
             display: none;
         }
+        html,
+        body {
+            max-width: 100%;
+        }
+        img,
+        video,
+        canvas,
+        svg {
+            max-width: 100%;
+        }
         main { position: relative; z-index: 1; }
         .nav-gradient { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
         .btn-primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); transition: all 0.3s ease; }
@@ -50,6 +60,75 @@
         .error-bg { background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%); }
         .fade-in { animation: fadeIn 0.5s ease-in; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .mobile-safe-scroll {
+            -webkit-overflow-scrolling: touch;
+        }
+        .overflow-x-auto {
+            -webkit-overflow-scrolling: touch;
+        }
+        .overflow-x-auto > table {
+            min-width: 680px;
+        }
+        @media (max-width: 640px) {
+            body {
+                background-attachment: scroll;
+            }
+            main {
+                padding-top: 1rem !important;
+                padding-bottom: 1.5rem !important;
+            }
+            .app-shell {
+                padding-left: 0.875rem !important;
+                padding-right: 0.875rem !important;
+            }
+            .auth-nav-row {
+                height: auto;
+                min-height: 4.5rem;
+                padding-top: .75rem;
+                padding-bottom: .75rem;
+                align-items: flex-start;
+            }
+            .auth-actions {
+                gap: .5rem;
+            }
+            .auth-actions form,
+            .auth-actions button {
+                width: auto;
+            }
+            .auth-actions button {
+                padding-left: .75rem;
+                padding-right: .75rem;
+            }
+            .mobile-nav-links {
+                overflow-x: auto;
+                flex-wrap: nowrap;
+                padding-bottom: .25rem;
+                -webkit-overflow-scrolling: touch;
+            }
+            .mobile-nav-links a {
+                white-space: nowrap;
+                flex: 0 0 auto;
+            }
+            .mobile-action-stack {
+                flex-direction: column;
+            }
+            .mobile-action-stack > * {
+                width: 100%;
+                justify-content: center;
+                text-align: center;
+            }
+            .mobile-action-stack > div > a {
+                display: flex;
+                width: 100%;
+                justify-content: center;
+            }
+            input,
+            select,
+            textarea,
+            button {
+                font-size: 16px;
+            }
+        }
     </style>
     @stack('styles')
 </head>
@@ -82,13 +161,13 @@
 
     <nav class="nav-gradient text-white shadow-2xl sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between items-center h-20">
-                <div class="flex items-center space-x-3">
+            <div class="auth-nav-row flex justify-between items-center h-20 gap-3">
+                <div class="flex min-w-0 items-center space-x-3">
                     <div class="flex items-center justify-center w-12 h-12 bg-white/20 rounded-2xl backdrop-blur-lg">
                         <img src="{{ asset('images/schoollogo.jpg') }}" alt="School Logo" class="w-8 h-8 rounded-full object-cover">
                         <span class="sr-only">Cambridge International School</span>
                     </div>
-                    <div>
+                    <div class="min-w-0">
                         <h1 class="text-lg font-black">CAMBRIDGE</h1>
                         <p class="text-xs text-white/70 font-medium">International School</p>
                     </div>
@@ -151,7 +230,7 @@
                     @endif
                 </div>
 
-                <div class="flex items-center space-x-3">
+                <div class="auth-actions flex shrink-0 items-center space-x-3">
                     <div class="hidden sm:flex flex-col items-end">
                         <p class="text-sm font-semibold text-white">{{ auth()->user()->name }}</p>
                         <span class="text-xs text-white/70 font-medium">{{ ucfirst(auth()->user()->role) }}</span>
@@ -171,7 +250,7 @@
             </div>
 
             <div class="md:hidden pb-4">
-                <div class="flex flex-wrap gap-2">
+                <div class="mobile-nav-links flex flex-wrap gap-2">
                     <a href="{{ route($dashboardRoute) }}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-semibold transition text-sm">
                         Dashboard
                     </a>
@@ -233,7 +312,7 @@
     @endauth
 
     <main class="min-h-screen py-8">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="app-shell max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             @if(session('success'))
                 <div class="fade-in mb-6 success-bg text-white px-6 py-4 rounded-xl font-semibold shadow-lg flex items-center space-x-3">
                     <span class="text-2xl">OK</span>

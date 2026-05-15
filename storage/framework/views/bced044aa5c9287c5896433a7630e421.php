@@ -2,17 +2,133 @@
 
 <?php $__env->startSection('title', 'Admin Dashboard'); ?>
 
+<?php $__env->startPush('styles'); ?>
+<style>
+    @media (max-width: 767px) {
+        .admin-dashboard-shell {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .admin-dashboard-shell > * {
+            margin-top: 0 !important;
+        }
+
+        .admin-mobile-form-banner { order: 0; }
+        .admin-mobile-hero { order: 1; }
+        .admin-mobile-actions { order: 2; }
+        .admin-mobile-stats { order: 3; }
+        .admin-mobile-attempts { order: 4; }
+        .admin-mobile-class { order: 5; }
+
+        .admin-mobile-hero {
+            border-radius: 1.25rem;
+        }
+
+        .admin-mobile-hero .admin-hero-inner {
+            padding: 1.25rem;
+        }
+
+        .admin-mobile-hero h1 {
+            font-size: 1.75rem;
+            line-height: 2.25rem;
+        }
+
+        .admin-date-card {
+            width: 100%;
+            padding: 1rem;
+        }
+
+        .admin-date-card .admin-date-day {
+            font-size: 2.25rem;
+            line-height: 2.5rem;
+        }
+
+        .admin-mobile-stats {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: .75rem;
+        }
+
+        .admin-stat-card {
+            border-radius: 1.25rem;
+            padding: 1rem;
+            transform: none !important;
+        }
+
+        .admin-stat-card svg {
+            width: 1.5rem;
+            height: 1.5rem;
+        }
+
+        .admin-stat-number {
+            font-size: 1.875rem;
+            line-height: 2.25rem;
+        }
+
+        .admin-stat-title {
+            font-size: .875rem;
+            line-height: 1.25rem;
+        }
+
+        .admin-stat-secondary {
+            display: none;
+        }
+
+        .admin-mobile-actions {
+            display: block;
+        }
+
+        .admin-quick-card,
+        .admin-section-card {
+            border-radius: 1.25rem;
+        }
+
+        .admin-quick-card > div:first-child,
+        .admin-section-card > div:first-child {
+            padding: 1rem 1.125rem;
+        }
+
+        .admin-quick-list,
+        .admin-section-body {
+            padding: 1rem;
+        }
+
+        .admin-quick-list a {
+            min-height: 4rem;
+            padding: 1rem;
+            border-radius: 1rem;
+            transform: none !important;
+        }
+
+        .admin-quick-list a span:first-child {
+            align-items: flex-start;
+            line-height: 1.3;
+        }
+
+        .admin-mobile-recent-exams {
+            margin-top: 1rem;
+        }
+
+        .admin-section-body {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+    }
+</style>
+<?php $__env->stopPush(); ?>
+
 <?php $__env->startSection('content'); ?>
-<div class="space-y-6">
+<div class="admin-dashboard-shell space-y-6">
     <!-- Form Teacher Banner -->
     <?php if($isFormTeacher ?? false): ?>
-        <div class="bg-gradient-to-r from-green-600 to-indigo-600 rounded-2xl shadow-lg p-6 text-white">
-            <div class="flex items-center justify-between">
+        <div class="admin-mobile-form-banner bg-gradient-to-r from-green-600 to-indigo-600 rounded-2xl shadow-lg p-6 text-white">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                 <div>
                     <h3 class="text-2xl font-bold mb-2">Welcome, Form Teacher! 👨‍🏫</h3>
                 <p class="text-white/90">You are assigned as a form teacher. Access score entry and report cards for your class from here.</p>
                 </div>
-                <div class="flex gap-3 ml-4">
+                <div class="flex flex-col sm:flex-row gap-3 md:ml-4">
                     <a href="<?php echo e(route('teacher.scores.dashboard')); ?>" 
                        class="bg-white text-indigo-600 hover:bg-indigo-50 px-6 py-3 rounded-lg font-bold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all whitespace-nowrap">
                         📚 Score Entry
@@ -27,21 +143,21 @@
     <?php endif; ?>
 
     <!-- Welcome Header with Background -->
-    <div class="relative bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 rounded-3xl shadow-2xl overflow-hidden">
+    <div class="admin-mobile-hero relative bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 rounded-3xl shadow-2xl overflow-hidden">
         <div class="absolute inset-0 bg-black opacity-10"></div>
         <div class="absolute -right-10 -top-10 w-40 h-40 bg-white opacity-10 rounded-full blur-3xl"></div>
         <div class="absolute -left-10 -bottom-10 w-40 h-40 bg-white opacity-10 rounded-full blur-3xl"></div>
         
-        <div class="relative p-8 text-white">
+        <div class="admin-hero-inner relative p-8 text-white">
             <div class="flex items-center justify-between flex-wrap gap-4">
                 <div>
                     <h1 class="text-4xl font-bold mb-2">Welcome, <?php echo e(Auth::user()->name); ?>! 👨‍💼</h1>
                     <p class="text-white/90 text-lg">Administrator Dashboard</p>
                     <p class="text-white/70 text-sm mt-2 italic">Cambridge International School - CBT System</p>
                 </div>
-                <div class="bg-white/20 backdrop-blur-md rounded-2xl p-6 border border-white/30">
+                <div class="admin-date-card bg-white/20 backdrop-blur-md rounded-2xl p-6 border border-white/30">
                     <div class="text-center">
-                        <div class="text-5xl font-bold"><?php echo e(\Carbon\Carbon::now()->format('d')); ?></div>
+                        <div class="admin-date-day text-5xl font-bold"><?php echo e(\Carbon\Carbon::now()->format('d')); ?></div>
                         <div class="text-sm mt-1"><?php echo e(\Carbon\Carbon::now()->format('F Y')); ?></div>
                         <div class="text-xs mt-2 opacity-80"><?php echo e(\Carbon\Carbon::now()->format('l')); ?></div>
                     </div>
@@ -51,9 +167,9 @@
     </div>
 
     <!-- Quick Stats -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+    <div class="admin-mobile-stats grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
         <!-- Total Exams -->
-        <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-2xl shadow-lg p-6 text-white transform hover:scale-105 transition-transform duration-200">
+        <div class="admin-stat-card bg-gradient-to-br from-green-500 to-green-600 rounded-2xl shadow-lg p-6 text-white transform hover:scale-105 transition-transform duration-200">
             <div class="flex items-center justify-between mb-4">
                 <div class="bg-white/20 backdrop-blur-sm rounded-xl p-3">
                     <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -61,15 +177,15 @@
                     </svg>
                 </div>
                 <div class="text-right">
-                    <div class="text-4xl font-bold"><?php echo e($examsCount); ?></div>
+                    <div class="admin-stat-number text-4xl font-bold"><?php echo e($examsCount); ?></div>
                 </div>
             </div>
-            <div class="text-white/90 font-semibold text-lg">Total Exams</div>
+            <div class="admin-stat-title text-white/90 font-semibold text-lg">Total Exams</div>
             <div class="text-white/70 text-sm mt-1">All exams in system</div>
         </div>
 
         <!-- Total Students -->
-        <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl shadow-lg p-6 text-white transform hover:scale-105 transition-transform duration-200">
+        <div class="admin-stat-card bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl shadow-lg p-6 text-white transform hover:scale-105 transition-transform duration-200">
             <div class="flex items-center justify-between mb-4">
                 <div class="bg-white/20 backdrop-blur-sm rounded-xl p-3">
                     <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -77,10 +193,10 @@
                     </svg>
                 </div>
                 <div class="text-right">
-                    <div class="text-4xl font-bold"><?php echo e($studentsCount); ?></div>
+                    <div class="admin-stat-number text-4xl font-bold"><?php echo e($studentsCount); ?></div>
                 </div>
             </div>
-            <div class="text-white/90 font-semibold text-lg"><?php echo e($isFormTeacher ? 'Class Students' : 'Total Students'); ?></div>
+            <div class="admin-stat-title text-white/90 font-semibold text-lg"><?php echo e($isFormTeacher ? 'Class Students' : 'Total Students'); ?></div>
             <div class="text-white/70 text-sm mt-1">
                 <?php echo e($isFormTeacher ? ($formTeacherAssignment?->schoolClass?->display_name ?? 'Assigned class') : 'Registered students'); ?>
 
@@ -88,7 +204,7 @@
         </div>
 
         <!-- Recent Attempts -->
-        <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl shadow-lg p-6 text-white transform hover:scale-105 transition-transform duration-200">
+        <div class="admin-stat-card admin-stat-secondary bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl shadow-lg p-6 text-white transform hover:scale-105 transition-transform duration-200">
             <div class="flex items-center justify-between mb-4">
                 <div class="bg-white/20 backdrop-blur-sm rounded-xl p-3">
                     <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -96,13 +212,13 @@
                     </svg>
                 </div>
                 <div class="text-right">
-                    <div class="text-4xl font-bold"><?php echo e($groupedAttempts->flatten()->count()); ?></div>
+                    <div class="admin-stat-number text-4xl font-bold"><?php echo e($groupedAttempts->flatten()->count()); ?></div>
                 </div>
             </div>
-            <div class="text-white/90 font-semibold text-lg">Recent Attempts</div>
+            <div class="admin-stat-title text-white/90 font-semibold text-lg">Recent Attempts</div>
             <div class="text-white/70 text-sm mt-1">Latest submissions</div>
         </div>
-        <div class="bg-gradient-to-br from-rose-500 to-pink-600 rounded-2xl shadow-lg p-6 text-white transform hover:scale-105 transition-transform duration-200">
+        <div class="admin-stat-card admin-stat-secondary bg-gradient-to-br from-rose-500 to-pink-600 rounded-2xl shadow-lg p-6 text-white transform hover:scale-105 transition-transform duration-200">
             <div class="flex items-center justify-between mb-4">
                 <div class="bg-white/20 backdrop-blur-sm rounded-xl p-3">
                     <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -110,14 +226,14 @@
                     </svg>
                 </div>
                 <div class="text-right">
-                    <div class="text-4xl font-bold"><?php echo e($unreadMessagesCount); ?></div>
+                    <div class="admin-stat-number text-4xl font-bold"><?php echo e($unreadMessagesCount); ?></div>
                 </div>
             </div>
-            <div class="text-white/90 font-semibold text-lg">Unread Messages</div>
+            <div class="admin-stat-title text-white/90 font-semibold text-lg">Unread Messages</div>
             <div class="text-white/70 text-sm mt-1">Parents waiting for a response</div>
         </div>
         <?php if(auth()->user()->isAdmin()): ?>
-        <div class="bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-2xl shadow-lg p-6 text-white transform hover:scale-105 transition-transform duration-200">
+        <div class="admin-stat-card admin-stat-secondary bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-2xl shadow-lg p-6 text-white transform hover:scale-105 transition-transform duration-200">
             <div class="flex items-center justify-between mb-4">
                 <div class="bg-white/20 backdrop-blur-sm rounded-xl p-3">
                     <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -126,10 +242,10 @@
                     </svg>
                 </div>
                 <div class="text-right">
-                    <div class="text-4xl font-bold"><?php echo e($newEnquiriesCount); ?></div>
+                    <div class="admin-stat-number text-4xl font-bold"><?php echo e($newEnquiriesCount); ?></div>
                 </div>
             </div>
-            <div class="text-white/90 font-semibold text-lg">New Applications</div>
+            <div class="admin-stat-title text-white/90 font-semibold text-lg">New Applications</div>
             <p class="text-white/70 text-sm mt-1">Awaiting admissions review</p>
             <a href="<?php echo e(route('admin.enquiries.index', ['status' => \App\Models\AdmissionEnquiry::STATUS_NEW])); ?>" class="mt-4 inline-flex items-center text-white text-sm font-semibold hover:underline">
                 View inbox
@@ -142,15 +258,15 @@
     </div>
 
     <!-- Quick Actions & Recent Exams -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div class="admin-mobile-actions grid grid-cols-1 lg:grid-cols-2 gap-6">
         <!-- Quick Actions -->
-        <div class="bg-white rounded-2xl shadow-lg overflow-hidden">
+        <div class="admin-quick-card bg-white rounded-2xl shadow-lg overflow-hidden">
             <div class="bg-gradient-to-r from-green-50 to-blue-50 px-6 py-4 border-b border-gray-100">
                 <h3 class="text-xl font-bold text-gray-800 flex items-center">
                     <span class="mr-2">⚡</span> Quick Actions
                 </h3>
             </div>
-            <div class="p-6 space-y-3">
+            <div class="admin-quick-list p-6 space-y-3">
                 <a href="<?php echo e(route('admin.exam.create')); ?>" 
                    class="flex items-center justify-between bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-6 py-4 rounded-xl font-bold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all group">
                     <span class="flex items-center">
@@ -373,13 +489,13 @@
         </div>
 
         <!-- Recent Exams -->
-        <div class="bg-white rounded-2xl shadow-lg overflow-hidden">
+        <div class="admin-mobile-recent-exams admin-section-card bg-white rounded-2xl shadow-lg overflow-hidden">
             <div class="bg-gradient-to-r from-purple-50 to-pink-50 px-6 py-4 border-b border-gray-100">
                 <h3 class="text-xl font-bold text-gray-800 flex items-center">
                     <span class="mr-2">📚</span> Recent Exams
                 </h3>
             </div>
-            <div class="p-6">
+            <div class="admin-section-body p-6">
                 <?php $__empty_1 = true; $__currentLoopData = $recentExams; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $exam): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
                 <div class="border-l-4 border-green-500 bg-green-50 rounded-r-xl pl-4 py-3 mb-3 hover:bg-green-100 transition-colors">
                     <p class="font-bold text-gray-800"><?php echo e($exam->title); ?></p>
@@ -407,13 +523,13 @@
     </div>
 
     <!-- Recent Student Attempts Grouped by Class -->
-    <div class="bg-white rounded-2xl shadow-lg overflow-hidden">
+    <div class="admin-mobile-attempts admin-section-card bg-white rounded-2xl shadow-lg overflow-hidden">
         <div class="bg-gradient-to-r from-blue-50 to-purple-50 px-6 py-4 border-b border-gray-100">
             <h3 class="text-xl font-bold text-gray-800 flex items-center">
                 <span class="mr-2">📊</span> Recent Student Attempts by Class
             </h3>
         </div>
-        <div class="p-6">
+        <div class="admin-section-body p-6">
             <?php if($groupedAttempts->isNotEmpty()): ?>
                 <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
                     <?php $__currentLoopData = $groupedAttempts; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $className => $attempts): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
@@ -500,7 +616,7 @@
         </div>
     </div>
     <?php if($isFormTeacher): ?>
-    <div class="bg-white rounded-2xl shadow-lg overflow-hidden">
+    <div class="admin-mobile-class admin-section-card bg-white rounded-2xl shadow-lg overflow-hidden">
         <div class="bg-gradient-to-r from-emerald-50 to-cyan-50 px-6 py-4 border-b border-gray-100">
             <div class="flex items-center justify-between gap-3">
                 <div>
@@ -512,7 +628,7 @@
                 </span>
             </div>
         </div>
-        <div class="p-6">
+        <div class="admin-section-body p-6">
             <?php if($classStudents->isNotEmpty()): ?>
                 <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
                     <?php $__currentLoopData = $classStudents; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $student): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
