@@ -6,10 +6,13 @@ use App\Models\BlogPost;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class BlogPostController extends Controller
 {
+    private const IMAGE_MAX_KB = 10240;
+
     public function publicIndex(Request $request)
     {
         $query = BlogPost::with('author')->published();
@@ -83,6 +86,8 @@ class BlogPostController extends Controller
 
     public function teacherStore(Request $request)
     {
+        $this->logImageUploadFailure($request, 'teacherStore');
+
         $data = $this->validatedTeacherData($request);
         $data['author_id'] = Auth::id();
         $data['slug'] = $this->uniqueSlug($data['title']);
@@ -112,6 +117,8 @@ class BlogPostController extends Controller
         $this->authorizeTeacherPost($post);
 
         abort_if($post->status === BlogPost::STATUS_PUBLISHED, 403, 'Published posts can only be edited by admin.');
+
+        $this->logImageUploadFailure($request, 'teacherUpdate');
 
         $data = $this->validatedTeacherData($request);
         $data['status'] = $request->input('action') === 'draft' ? BlogPost::STATUS_DRAFT : BlogPost::STATUS_PENDING;
@@ -195,6 +202,8 @@ class BlogPostController extends Controller
 
     public function adminStore(Request $request)
     {
+        $this->logImageUploadFailure($request, 'adminStore');
+
         $data = $this->validatedAdminData($request);
         $status = $data['status'];
 
@@ -220,6 +229,8 @@ class BlogPostController extends Controller
 
     public function adminUpdate(Request $request, BlogPost $post)
     {
+        $this->logImageUploadFailure($request, 'adminUpdate');
+
         $data = $this->validatedAdminData($request);
         $status = $data['status'];
         $data['reviewed_by'] = Auth::id();
@@ -267,8 +278,8 @@ class BlogPostController extends Controller
             'category' => ['required', 'string', 'in:' . implode(',', BlogPost::categories())],
             'excerpt' => ['nullable', 'string', 'max:500'],
             'body' => ['required', 'string', 'min:50'],
-            'image' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif,webp', 'max:4096'],
-        ]);
+            'image' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif,webp', 'max:' . self::IMAGE_MAX_KB],
+        ], $this->imageValidationMessages());
     }
 
     private function validatedAdminData(Request $request): array
@@ -282,7 +293,42 @@ class BlogPostController extends Controller
             'status' => ['required', 'string', 'in:' . implode(',', BlogPost::statuses())],
             'published_at' => ['nullable', 'date'],
             'admin_note' => ['nullable', 'string', 'max:1000'],
-            'image' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif,webp', 'max:4096'],
+            'image' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif,webp', 'max:' . self::IMAGE_MAX_KB],
+        ], $this->imageValidationMessages());
+    }
+
+    private function imageValidationMessages(): array
+    {
+        return [
+            'image.uploaded' => 'The cover image is larger than the server upload limit. Please use an image under 10MB or increase PHP upload_max_filesize and post_max_size on the server.',
+            'image.max' => 'The cover image must not be larger than 10MB.',
+            'image.image' => 'The cover file must be a valid image.',
+            'image.mimes' => 'The cover image must be a JPEG, PNG, GIF, or WEBP file.',
+        ];
+    }
+
+    private function logImageUploadFailure(Request $request, string $context): void
+    {
+        if (!$request->files->has('image')) {
+            return;
+        }
+
+        $file = $request->file('image');
+
+        if (!$file || $file->isValid()) {
+            return;
+        }
+
+        Log::warning('Blog cover image upload failed before validation.', [
+            'context' => $context,
+            'error_code' => $file->getError(),
+            'error_message' => $file->getErrorMessage(),
+            'client_name' => $file->getClientOriginalName(),
+            'client_mime' => $file->getClientMimeType(),
+            'php_upload_max_filesize' => ini_get('upload_max_filesize'),
+            'php_post_max_size' => ini_get('post_max_size'),
+            'php_upload_tmp_dir' => ini_get('upload_tmp_dir'),
+            'php_file_uploads' => ini_get('file_uploads'),
         ]);
     }
 

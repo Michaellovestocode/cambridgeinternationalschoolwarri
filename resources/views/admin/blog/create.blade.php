@@ -80,7 +80,7 @@
         <aside class="space-y-6">
             <section class="rounded-[2rem] border border-slate-200 bg-white p-5 shadow-sm">
                 <h2 class="text-lg font-black text-slate-950">Cover Image</h2>
-                <p class="mt-2 text-sm leading-6 text-slate-500">Upload a clear school photo for the article card and public blog page.</p>
+                <p class="mt-2 text-sm leading-6 text-slate-500">Upload a clear school photo for the article card and public blog page. JPEG, PNG, GIF, or WEBP, up to 10MB.</p>
                 <input type="file" name="image" accept="image/*" class="mt-5 w-full rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-4 text-sm text-slate-600">
                 @error('image') <span class="mt-2 block text-sm text-rose-600">{{ $message }}</span> @enderror
             </section>

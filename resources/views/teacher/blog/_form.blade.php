@@ -53,6 +53,7 @@
 
         <div class="space-y-2 lg:col-span-2">
             <label for="image" class="block text-sm font-semibold text-gray-700">Cover Image</label>
+            <p class="text-xs text-gray-500">JPEG, PNG, GIF, or WEBP, up to 10MB.</p>
             <input id="image" name="image" type="file" accept=".jpg,.jpeg,.png,.gif,.webp" class="w-full border border-gray-200 rounded-xl px-4 py-3" @disabled(!$canEdit)>
             @if($post->image_url)
                 <img src="{{ $post->image_url }}" alt="{{ $post->title }}" class="mt-3 h-32 w-52 rounded-2xl object-cover border border-gray-200">
