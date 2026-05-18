@@ -203,7 +203,7 @@
         
         th, td {
             border: 1px solid #000;
-            padding: 4px 3px;
+            padding: 3px 2px;
             text-align: center;
         }
         
@@ -220,13 +220,44 @@
         }
 
         .scores-table tbody tr td {
-            height: 22px;
+            height: 19px;
         }
         
         .subject-name {
             text-align: left;
-            padding-left: 5px;
+            padding-left: 4px;
             font-weight: bold;
+        }
+
+        .official-layout {
+            display: table;
+            width: 100%;
+            margin-bottom: 7px;
+        }
+
+        .official-main {
+            display: table-cell;
+            width: 68%;
+            padding-right: 6px;
+            vertical-align: top;
+        }
+
+        .official-sidebar {
+            display: table-cell;
+            width: 32%;
+            vertical-align: top;
+        }
+
+        .official-main .scores-table {
+            font-size: 8px;
+        }
+
+        .official-main .scores-table th {
+            font-size: 7.2px;
+        }
+
+        .official-main .scores-table td {
+            font-size: 8px;
         }
 
         .total-cell {
@@ -272,9 +303,9 @@
         }
         
         .summary-box {
-            border: 2px solid {{ $selectedColor['primary'] }};
-            padding: 6px;
-            margin-bottom: 6px;
+            border: 1.5px solid {{ $selectedColor['primary'] }};
+            padding: 4px;
+            margin-bottom: 5px;
             background: rgba(255, 255, 255, .88);
         }
         
@@ -282,16 +313,16 @@
             font-weight: bold;
             background: {{ $selectedColor['light'] }};
             padding: 3px;
-            margin-bottom: 4px;
+            margin-bottom: 3px;
             text-align: center;
-            font-size: 10px;
+            font-size: 9px;
             color: #111827;
             border-bottom: 1px solid {{ $selectedColor['secondary'] }};
         }
         
         .summary-item {
-            padding: 2px 0;
-            font-size: 9px;
+            padding: 1px 0;
+            font-size: 8px;
         }
         
         /* Grade Scale */
@@ -322,22 +353,22 @@
 
         .traits-table {
             margin-bottom: 0;
-            font-size: 8px;
+            font-size: 7.4px;
         }
 
         .traits-table td {
-            padding: 2px;
+            padding: 1.5px;
         }
 
         .rating-cell {
-            width: 18px;
-            font-size: 8px;
+            width: 15px;
+            font-size: 7px;
         }
 
         .rating-index {
-            font-size: 7.5px;
+            font-size: 7px;
             line-height: 1.35;
-            margin-top: 4px;
+            margin-top: 3px;
             color: #111827;
         }
         
@@ -527,129 +558,97 @@
             </div>
         </div>
         
-        <!-- Scores Table -->
-        <table class="scores-table">
-            <thead>
-                <tr>
-                    <th rowspan="2" style="width: 25%;">SUBJECTS</th>
-                    <th colspan="2">TESTS</th>
-                    <th rowspan="2">EXAM<br>(60)</th>
-                    <th rowspan="2">TOTAL<br>(100)</th>
-                    <th rowspan="2">GRADE</th>
-                    <th rowspan="2">CLASS<br>AVG</th>
-                    <th rowspan="2">POSITION</th>
-                    <th rowspan="2">REMARK</th>
-                </tr>
-                <tr>
-                    <th>1ST TEST<br>(30)</th>
-                    <th>2ND TEST<br>(10)</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach($scores as $score)
-                <tr>
-                    <td class="subject-name">{{ strtoupper($score->subject->name) }}</td>
-                    <td>{{ number_format($score->ca1, 1) }}</td>
-                    <td>{{ number_format($score->ca2, 1) }}</td>
-                    <td>{{ number_format($score->exam, 1) }}</td>
-                    <td class="total-cell">{{ number_format($score->total, 1) }}</td>
-                    <td class="
-                        @if(substr($score->grade, 0, 1) == 'A') grade-a
-                        @elseif(substr($score->grade, 0, 1) == 'B') grade-b
-                        @elseif(substr($score->grade, 0, 1) == 'C') grade-c
-                        @elseif($score->grade == 'F9') grade-f
-                        @endif
-                    "><strong>{{ $score->grade }}</strong></td>
-                    <td>{{ number_format($score->class_average, 1) }}</td>
-                    <td class="position-cell">{{ $score->position }}/{{ $score->total_students }}</td>
-                    <td>{{ $score->remark }}</td>
-                </tr>
-                @endforeach
-            </tbody>
-        </table>
-        
-        <!-- Summary Section -->
-        <div class="summary-section">
-            <!-- Left Column -->
-            <div class="summary-col">
-                <!-- Attendance Summary -->
+        @php
+            $gradeCount = ['A' => 0, 'B' => 0, 'C' => 0, 'D' => 0, 'E' => 0, 'F' => 0];
+            foreach($scores as $score) {
+                $gradeLetter = substr($score->grade, 0, 1);
+                if(isset($gradeCount[$gradeLetter])) {
+                    $gradeCount[$gradeLetter]++;
+                }
+            }
+        @endphp
+
+        <div class="official-layout">
+            <div class="official-main">
+                <!-- Scores Table -->
+                <table class="scores-table">
+                    <thead>
+                        <tr>
+                            <th rowspan="2" style="width: 29%;">SUBJECTS</th>
+                            <th colspan="2">TESTS</th>
+                            <th rowspan="2">EXAM<br>(60)</th>
+                            <th rowspan="2">TOTAL<br>(100)</th>
+                            <th rowspan="2">GRADE</th>
+                            <th rowspan="2">CLASS<br>AVG</th>
+                            <th rowspan="2">POSITION</th>
+                            <th rowspan="2">REMARK</th>
+                        </tr>
+                        <tr>
+                            <th>1ST<br>(30)</th>
+                            <th>2ND<br>(10)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($scores as $score)
+                        <tr>
+                            <td class="subject-name">{{ strtoupper($score->subject->name) }}</td>
+                            <td>{{ number_format($score->ca1, 1) }}</td>
+                            <td>{{ number_format($score->ca2, 1) }}</td>
+                            <td>{{ number_format($score->exam, 1) }}</td>
+                            <td class="total-cell">{{ number_format($score->total, 1) }}</td>
+                            <td class="
+                                @if(substr($score->grade, 0, 1) == 'A') grade-a
+                                @elseif(substr($score->grade, 0, 1) == 'B') grade-b
+                                @elseif(substr($score->grade, 0, 1) == 'C') grade-c
+                                @elseif($score->grade == 'F9') grade-f
+                                @endif
+                            "><strong>{{ $score->grade }}</strong></td>
+                            <td>{{ number_format($score->class_average, 1) }}</td>
+                            <td class="position-cell">{{ $score->position }}/{{ $score->total_students }}</td>
+                            <td>{{ strtoupper($score->remark) }}</td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+
+                <div class="summary-section">
+                    <div class="summary-col">
+                        <div class="summary-box">
+                            <div class="summary-title">GRADE ANALYSIS</div>
+                            <table style="width: 100%; font-size: 8px; margin-bottom: 0;">
+                                <tr>
+                                    <td><strong>A:</strong> {{ $gradeCount['A'] }}</td>
+                                    <td><strong>B:</strong> {{ $gradeCount['B'] }}</td>
+                                    <td><strong>C:</strong> {{ $gradeCount['C'] }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>D:</strong> {{ $gradeCount['D'] }}</td>
+                                    <td><strong>E:</strong> {{ $gradeCount['E'] }}</td>
+                                    <td><strong>F:</strong> {{ $gradeCount['F'] }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="summary-col">
+                        <div class="summary-box">
+                            <div class="summary-title">PERFORMANCE SUMMARY</div>
+                            <div class="summary-item">Total Score: <strong>{{ number_format($reportCard->total_score, 1) }}</strong></div>
+                            <div class="summary-item">Average: <strong>{{ number_format($reportCard->average_score, 1) }}%</strong></div>
+                            <div class="summary-item">Position: <strong>{{ $reportCard->position }}/{{ $reportCard->total_students }}</strong></div>
+                            <div class="summary-item">Grade: <strong>{{ $reportCard->overall_grade }}</strong></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="official-sidebar">
                 <div class="summary-box">
                     <div class="summary-title">ATTENDANCE SUMMARY</div>
                     <div class="summary-item">No of Times School Opened: <strong>{{ $reportCard->days_school_opened }}</strong></div>
                     <div class="summary-item">No of Times Present: <strong>{{ $reportCard->days_present }}</strong></div>
                     <div class="summary-item">No of Times Absent: <strong>{{ $reportCard->days_absent }}</strong></div>
                 </div>
-                
-                <!-- Grade Analysis -->
-                <div class="summary-box">
-                    <div class="summary-title">GRADE ANALYSIS</div>
-                    @php
-                        $gradeCount = ['A' => 0, 'B' => 0, 'C' => 0, 'D' => 0, 'E' => 0, 'F' => 0];
-                        foreach($scores as $score) {
-                            $gradeLetter = substr($score->grade, 0, 1);
-                            if(isset($gradeCount[$gradeLetter])) {
-                                $gradeCount[$gradeLetter]++;
-                            }
-                        }
-                    @endphp
-                    <table style="width: 100%; font-size: 9px;">
-                        <tr>
-                            <td><strong>A:</strong> {{ $gradeCount['A'] }}</td>
-                            <td><strong>B:</strong> {{ $gradeCount['B'] }}</td>
-                            <td><strong>C:</strong> {{ $gradeCount['C'] }}</td>
-                        </tr>
-                        <tr>
-                            <td><strong>D:</strong> {{ $gradeCount['D'] }}</td>
-                            <td><strong>E:</strong> {{ $gradeCount['E'] }}</td>
-                            <td><strong>F:</strong> {{ $gradeCount['F'] }}</td>
-                        </tr>
-                    </table>
-                </div>
-                
-                <!-- Performance Summary -->
-                <div class="summary-box">
-                    <div class="summary-title">PERFORMANCE SUMMARY</div>
-                    <div class="summary-item">Total Score: <strong>{{ number_format($reportCard->total_score, 1) }}</strong></div>
-                    <div class="summary-item">Average: <strong>{{ number_format($reportCard->average_score, 1) }}%</strong></div>
-                    <div class="summary-item">Position: <strong>{{ $reportCard->position }}/{{ $reportCard->total_students }}</strong></div>
-                    <div class="summary-item">Grade: <strong>{{ $reportCard->overall_grade }}</strong></div>
-                </div>
-            </div>
-            
-            <!-- Right Column -->
-            <div class="summary-col">
-                <!-- Grade Scale -->
-                <div class="summary-box grade-scale">
-                    <div class="summary-title">GRADE SCALE</div>
-                    <table>
-                        <tr>
-                            <th>Score</th>
-                            <th>Grade</th>
-                            <th>Remark</th>
-                        </tr>
-                        <tr><td>75-100</td><td>A1</td><td>EXCELLENT</td></tr>
-                        <tr><td>70-74</td><td>B2</td><td>VERY GOOD</td></tr>
-                        <tr><td>65-69</td><td>B3</td><td>GOOD</td></tr>
-                        <tr><td>60-64</td><td>C4</td><td>CREDIT</td></tr>
-                        <tr><td>55-59</td><td>C5</td><td>CREDIT</td></tr>
-                        <tr><td>50-54</td><td>C6</td><td>CREDIT</td></tr>
-                        <tr><td>45-49</td><td>D7</td><td>PASS</td></tr>
-                        <tr><td>40-44</td><td>E8</td><td>PASS</td></tr>
-                        <tr><td>0-39</td><td>F9</td><td>FAIL</td></tr>
-                    </table>
-                </div>
-                <!-- Grade Box -->
-            <div style="border: 2px solid {{ $selectedColor['primary'] }}; text-align: center; background: rgba(255, 255, 255, .92);">
-                <div style="background: {{ $selectedColor['primary'] }}; color: #fff; font-weight: bold; font-size: 10px; padding: 4px;">OVERALL GRADE</div>
-                <div style="font-size: 16px; font-weight: bold; color: #cc0000; padding: 10px 0;">
-                    {{ \App\Models\Subject::getRemark($reportCard->overall_grade) }}, {{ $reportCard->overall_grade }}
-                </div>
-            </div>
-            </div>
-        </div>
 
-        <div class="traits-section">
-            <div class="traits-col">
                 <div class="summary-box">
                     <div class="summary-title">AFFECTIVE DOMAIN</div>
                     <table class="traits-table">
@@ -670,12 +669,8 @@
                             </tr>
                         @endforeach
                     </table>
-                    <div class="rating-index">
-                        <strong>Rating Index:</strong> 5 - Excellent, 4 - Good, 3 - Average, 2 - Fair, 1 - Needs Improvement
-                    </div>
                 </div>
-            </div>
-            <div class="traits-col">
+
                 <div class="summary-box">
                     <div class="summary-title">PSYCHOMOTOR SKILLS</div>
                     <table class="traits-table">
@@ -696,8 +691,29 @@
                             </tr>
                         @endforeach
                     </table>
-                    <div class="rating-index">
-                        Use the rating boxes for form teacher assessment before final issue.
+                    <div class="rating-index"><strong>Rating:</strong> 5 Excellent, 4 Good, 3 Average, 2 Fair, 1 Needs Improvement</div>
+                </div>
+
+                <div class="summary-box grade-scale">
+                    <div class="summary-title">GRADE SCALE</div>
+                    <table>
+                        <tr><th>Score</th><th>Grade</th><th>Remark</th></tr>
+                        <tr><td>75-100</td><td>A1</td><td>EXCELLENT</td></tr>
+                        <tr><td>70-74</td><td>B2</td><td>VERY GOOD</td></tr>
+                        <tr><td>65-69</td><td>B3</td><td>GOOD</td></tr>
+                        <tr><td>60-64</td><td>C4</td><td>CREDIT</td></tr>
+                        <tr><td>55-59</td><td>C5</td><td>CREDIT</td></tr>
+                        <tr><td>50-54</td><td>C6</td><td>CREDIT</td></tr>
+                        <tr><td>45-49</td><td>D7</td><td>PASS</td></tr>
+                        <tr><td>40-44</td><td>E8</td><td>PASS</td></tr>
+                        <tr><td>0-39</td><td>F9</td><td>FAIL</td></tr>
+                    </table>
+                </div>
+
+                <div style="border: 1.5px solid {{ $selectedColor['primary'] }}; text-align: center; background: rgba(255, 255, 255, .92);">
+                    <div style="background: {{ $selectedColor['primary'] }}; color: #fff; font-weight: bold; font-size: 9px; padding: 3px;">OVERALL GRADE</div>
+                    <div style="font-size: 13px; font-weight: bold; color: #cc0000; padding: 7px 0;">
+                        {{ \App\Models\Subject::getRemark($reportCard->overall_grade) }}, {{ $reportCard->overall_grade }}
                     </div>
                 </div>
             </div>

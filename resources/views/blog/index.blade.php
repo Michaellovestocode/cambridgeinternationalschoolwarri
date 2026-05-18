@@ -2,14 +2,118 @@
 
 @section('title', 'Education Blog')
 
+@push('styles')
+<style>
+    @media (max-width: 767px) {
+        .blog-mobile-shell {
+            gap: 1.25rem;
+        }
+
+        .blog-mobile-hero {
+            border-radius: 1rem;
+        }
+
+        .blog-mobile-feature-image {
+            height: 17rem;
+        }
+
+        .blog-mobile-feature-body {
+            padding: 1.25rem;
+        }
+
+        .blog-mobile-feature-title {
+            font-size: 1.65rem;
+            line-height: 1.08;
+        }
+
+        .blog-mobile-feature-excerpt {
+            font-size: .95rem;
+            line-height: 1.65;
+        }
+
+        .blog-mobile-insight-list {
+            display: grid;
+            grid-auto-flow: column;
+            grid-auto-columns: minmax(17rem, 86%);
+            gap: .9rem;
+            overflow-x: auto;
+            padding: 1rem;
+            scroll-snap-type: x mandatory;
+            scrollbar-width: none;
+        }
+
+        .blog-mobile-insight-list::-webkit-scrollbar {
+            display: none;
+        }
+
+        .blog-mobile-insight-card {
+            align-items: stretch;
+            background: rgba(255, 255, 255, .08);
+            border: 1px solid rgba(255, 255, 255, .12);
+            border-radius: 1rem;
+            display: grid;
+            grid-template-columns: 5.75rem 1fr;
+            min-height: 8.5rem;
+            padding: .75rem;
+            scroll-snap-align: start;
+        }
+
+        .blog-mobile-insight-card img,
+        .blog-mobile-insight-card .blog-mobile-insight-placeholder {
+            border-radius: .8rem;
+            height: 100%;
+            min-height: 7rem;
+            width: 5.75rem;
+        }
+
+        .blog-mobile-story-grid {
+            display: grid;
+            gap: .95rem;
+        }
+
+        .blog-mobile-story-card a {
+            display: grid;
+            grid-template-columns: 7.4rem 1fr;
+            min-height: 9.25rem;
+        }
+
+        .blog-mobile-story-image,
+        .blog-mobile-story-placeholder {
+            height: 100%;
+            min-height: 9.25rem;
+            width: 100%;
+        }
+
+        .blog-mobile-story-body {
+            padding: .95rem;
+        }
+
+        .blog-mobile-story-body h3 {
+            font-size: 1.05rem;
+            line-height: 1.18;
+            margin-top: .45rem;
+        }
+
+        .blog-mobile-story-body p.blog-mobile-excerpt {
+            display: none;
+        }
+
+        .blog-mobile-sidebars {
+            display: grid;
+            gap: .85rem;
+        }
+    }
+</style>
+@endpush
+
 @section('content')
 @php
     $featuredPost = $posts->first();
     $remainingPosts = $posts->getCollection()->skip(1);
 @endphp
 
-<div class="space-y-8">
-    <header class="relative overflow-hidden rounded-2xl bg-gray-950 text-white shadow-2xl">
+<div class="space-y-8 blog-mobile-shell">
+    <header class="relative overflow-hidden rounded-2xl bg-gray-950 text-white shadow-2xl blog-mobile-hero">
         <div class="absolute inset-0 opacity-20">
             <img src="{{ $featuredPost?->image_url ?: asset('images/school life1.jpg') }}" alt="" class="h-full w-full object-cover">
         </div>
@@ -74,16 +178,16 @@
                 <a href="{{ route('blog.show', $featuredPost) }}" class="block group">
                     <div class="relative">
                         @if($featuredPost->image_url)
-                            <img src="{{ $featuredPost->image_url }}" alt="{{ $featuredPost->title }}" class="w-full h-80 sm:h-[470px] object-cover">
+                            <img src="{{ $featuredPost->image_url }}" alt="{{ $featuredPost->title }}" class="w-full h-80 sm:h-[470px] object-cover blog-mobile-feature-image">
                         @else
-                            <div class="h-80 sm:h-[470px] bg-gradient-to-br from-slate-100 to-gray-300"></div>
+                            <div class="h-80 sm:h-[470px] bg-gradient-to-br from-slate-100 to-gray-300 blog-mobile-feature-image"></div>
                         @endif
                         <div class="absolute left-5 top-5 bg-white text-gray-950 px-4 py-2 rounded-lg text-xs font-black uppercase shadow">{{ \Illuminate\Support\Str::headline($featuredPost->category) }}</div>
                     </div>
-                    <div class="p-6 sm:p-8">
+                    <div class="p-6 sm:p-8 blog-mobile-feature-body">
                         <p class="text-sm font-bold text-gray-500">{{ $featuredPost->display_date }} / {{ $featuredPost->reading_minutes }} min read</p>
-                        <h2 class="mt-3 text-3xl sm:text-5xl font-black text-gray-950 leading-tight group-hover:text-blue-700 transition">{{ $featuredPost->title }}</h2>
-                        <p class="mt-4 text-lg text-gray-600 leading-8">{{ $featuredPost->excerpt ?: \Illuminate\Support\Str::limit(strip_tags($featuredPost->body), 180) }}</p>
+                        <h2 class="mt-3 text-3xl sm:text-5xl font-black text-gray-950 leading-tight group-hover:text-blue-700 transition blog-mobile-feature-title">{{ $featuredPost->title }}</h2>
+                        <p class="mt-4 text-lg text-gray-600 leading-8 blog-mobile-feature-excerpt">{{ $featuredPost->excerpt ?: \Illuminate\Support\Str::limit(strip_tags($featuredPost->body), 180) }}</p>
                         <p class="mt-5 text-sm font-bold text-gray-900">By {{ $featuredPost->author?->name ?? 'Cambridge Teacher' }}</p>
                     </div>
                 </a>
@@ -94,13 +198,13 @@
                     <p class="text-xs font-black uppercase text-amber-300" style="letter-spacing:.16em;">Latest Insight</p>
                     <h3 class="text-2xl font-black mt-2">For Parents And Teachers</h3>
                 </div>
-                <div class="divide-y divide-white/10">
+                <div class="divide-y divide-white/10 md:divide-y blog-mobile-insight-list">
                     @foreach($remainingPosts->take(4) as $post)
-                        <a href="{{ route('blog.show', $post) }}" class="grid grid-cols-[88px_1fr] gap-4 p-5 hover:bg-white/10 transition">
+                        <a href="{{ route('blog.show', $post) }}" class="grid grid-cols-[88px_1fr] gap-4 p-5 hover:bg-white/10 transition blog-mobile-insight-card">
                             @if($post->image_url)
                                 <img src="{{ $post->image_url }}" alt="{{ $post->title }}" class="h-20 w-22 rounded-lg object-cover">
                             @else
-                                <div class="h-20 w-22 rounded-lg bg-white/10"></div>
+                                <div class="h-20 w-22 rounded-lg bg-white/10 blog-mobile-insight-placeholder"></div>
                             @endif
                             <div>
                                 <p class="text-xs font-bold text-amber-300 uppercase">{{ \Illuminate\Support\Str::headline($post->category) }}</p>
@@ -114,23 +218,23 @@
         </section>
 
         <section class="grid lg:grid-cols-[1fr_280px] gap-6">
-            <div class="grid md:grid-cols-2 gap-6">
+            <div class="grid md:grid-cols-2 gap-6 blog-mobile-story-grid">
                 @foreach($remainingPosts->skip(4) as $post)
-                    <article class="bg-white rounded-2xl shadow border border-gray-100 overflow-hidden hover:shadow-xl transition">
+                    <article class="bg-white rounded-2xl shadow border border-gray-100 overflow-hidden hover:shadow-xl transition blog-mobile-story-card">
                         <a href="{{ route('blog.show', $post) }}" class="block group">
                             @if($post->image_url)
-                                <img src="{{ $post->image_url }}" alt="{{ $post->title }}" class="w-full h-56 object-cover">
+                                <img src="{{ $post->image_url }}" alt="{{ $post->title }}" class="w-full h-56 object-cover blog-mobile-story-image">
                             @else
-                                <div class="h-56 bg-gray-100"></div>
+                                <div class="h-56 bg-gray-100 blog-mobile-story-placeholder"></div>
                             @endif
-                            <div class="p-6">
+                            <div class="p-6 blog-mobile-story-body">
                                 <div class="flex flex-wrap items-center gap-2 text-xs font-black uppercase text-gray-500">
                                     <span>{{ \Illuminate\Support\Str::headline($post->category) }}</span>
                                     <span>/</span>
                                     <span>{{ $post->reading_minutes }} min read</span>
                                 </div>
                                 <h3 class="mt-3 text-2xl font-black text-gray-950 leading-tight group-hover:text-blue-700 transition">{{ $post->title }}</h3>
-                                <p class="mt-3 text-gray-600 leading-7">{{ $post->excerpt ?: \Illuminate\Support\Str::limit(strip_tags($post->body), 130) }}</p>
+                                <p class="mt-3 text-gray-600 leading-7 blog-mobile-excerpt">{{ $post->excerpt ?: \Illuminate\Support\Str::limit(strip_tags($post->body), 130) }}</p>
                                 <p class="mt-5 text-sm font-bold text-gray-500">{{ $post->display_date }}</p>
                             </div>
                         </a>
@@ -138,7 +242,7 @@
                 @endforeach
             </div>
 
-            <aside class="space-y-5">
+            <aside class="space-y-5 blog-mobile-sidebars">
                 <div class="bg-white rounded-2xl shadow border border-gray-100 p-6">
                     <h3 class="text-lg font-black text-gray-950">Sections</h3>
                     <div class="mt-4 flex flex-wrap gap-2">
