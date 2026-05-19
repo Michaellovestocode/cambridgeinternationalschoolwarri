@@ -4,18 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <link rel="icon" type="image/png" sizes="48x48" href="{{ asset('favicon-48x48.png') }}">
-    <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('apple-touch-icon.png') }}">
-    <link rel="manifest" href="{{ asset('site.webmanifest') }}">
+    <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48x48.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="manifest" href="/site.webmanifest">
     <title>Cambridge International School Warri | Creche, Nursery, Primary & Secondary</title>
     <meta name="description" content="Cambridge International School, Warri provides quality Creche, Nursery, Primary, and Secondary education in Delta State, nurturing disciplined, confident, and globally competitive learners.">
     <meta name="robots" content="index, follow">
-    <link rel="canonical" href="https://cambridgeinternationalschoolwarri.com/">
+    <link rel="canonical" href="https://www.cambridgeinternationalschoolwarri.com/">
     <meta property="og:type" content="website">
     <meta property="og:title" content="Cambridge International School Warri">
     <meta property="og:description" content="Quality Creche, Nursery, Primary, and Secondary education in Warri, Delta State.">
-    <meta property="og:url" content="https://cambridgeinternationalschoolwarri.com/">
-    <meta property="og:image" content="https://cambridgeinternationalschoolwarri.com/images/schoollogo.jpg">
+    <meta property="og:url" content="https://www.cambridgeinternationalschoolwarri.com/">
+    <meta property="og:image" content="https://www.cambridgeinternationalschoolwarri.com/images/schoollogo.jpg">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Cambridge International School Warri">
     <meta name="twitter:description" content="Quality Creche, Nursery, Primary, and Secondary education in Warri, Delta State.">
@@ -25,7 +26,8 @@
             "@@type": "School",
             "name": "Cambridge International School Warri",
             "url": "https://cambridgeinternationalschoolwarri.com/",
-            "logo": "https://cambridgeinternationalschoolwarri.com/images/schoollogo.jpg",
+            "logo": "https://www.cambridgeinternationalschoolwarri.com/icon-512.png",
+            "image": "https://www.cambridgeinternationalschoolwarri.com/images/schoollogo.jpg",
             "address": {
                 "@@type": "PostalAddress",
                 "streetAddress": "No. 2 Airport Road, By Kosini Junction",
@@ -34,6 +36,47 @@
                 "addressCountry": "NG"
             },
             "email": "info@cambridgeinternationalschoolwarri.com"
+        }
+    </script>
+    <script type="application/ld+json">
+        {
+            "@@context": "https://schema.org",
+            "@@type": "WebSite",
+            "name": "Cambridge International School Warri",
+            "alternateName": "Cambridge Warri",
+            "url": "https://www.cambridgeinternationalschoolwarri.com/"
+        }
+    </script>
+    <script type="application/ld+json">
+        {
+            "@@context": "https://schema.org",
+            "@@type": "ItemList",
+            "itemListElement": [
+                {
+                    "@@type": "SiteNavigationElement",
+                    "position": 1,
+                    "name": "Apply Now",
+                    "url": "https://www.cambridgeinternationalschoolwarri.com/apply"
+                },
+                {
+                    "@@type": "SiteNavigationElement",
+                    "position": 2,
+                    "name": "Education Blog",
+                    "url": "https://www.cambridgeinternationalschoolwarri.com/blog"
+                },
+                {
+                    "@@type": "SiteNavigationElement",
+                    "position": 3,
+                    "name": "News And Events",
+                    "url": "https://www.cambridgeinternationalschoolwarri.com/#news"
+                },
+                {
+                    "@@type": "SiteNavigationElement",
+                    "position": 4,
+                    "name": "Contact Cambridge International School Warri",
+                    "url": "https://www.cambridgeinternationalschoolwarri.com/#contact"
+                }
+            ]
         }
     </script>
     <script src="https://cdn.tailwindcss.com"></script>
