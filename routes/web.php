@@ -61,6 +61,7 @@ Route::get('/', function () {
 Route::get('/apply', [AdmissionEnquiryController::class, 'create'])->name('apply.create');
 Route::post('/apply', [AdmissionEnquiryController::class, 'submitApplication'])->name('apply.store');
 Route::post('/admission-enquiries', [AdmissionEnquiryController::class, 'store'])->name('admission-enquiries.store');
+Route::get('/announcements/{announcement}', [AnnouncementController::class, 'show'])->name('announcements.show');
 Route::get('/blog', [BlogPostController::class, 'publicIndex'])->name('blog.index');
 Route::get('/blog/{post}', [BlogPostController::class, 'publicShow'])->name('blog.show');
 Route::get('/blog-images/{path}', [BlogImageController::class, 'show'])

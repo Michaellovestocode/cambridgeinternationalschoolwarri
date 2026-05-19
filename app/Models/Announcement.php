@@ -16,6 +16,9 @@ class Announcement extends Model
         'button_label',
         'button_url',
         'image_path',
+        'gallery_images',
+        'video_path',
+        'video_url',
         'event_date',
         'location',
         'published_at',
@@ -37,6 +40,7 @@ class Announcement extends Model
         'show_in_ticker' => 'boolean',
         'send_to_parent_dashboard' => 'boolean',
         'parent_messages_sent_at' => 'datetime',
+        'gallery_images' => 'array',
     ];
 
     public const CATEGORY_ACHIEVEMENT = 'achievement';
@@ -84,15 +88,47 @@ class Announcement extends Model
 
     public function getImageUrlAttribute(): ?string
     {
-        if (!$this->image_path) {
+        return $this->mediaUrl($this->image_path);
+    }
+
+    public function getGalleryImageUrlsAttribute(): array
+    {
+        return collect($this->gallery_images ?? [])
+            ->map(fn ($path) => $this->mediaUrl($path))
+            ->filter()
+            ->values()
+            ->all();
+    }
+
+    public function getVideoEmbedUrlAttribute(): ?string
+    {
+        if (!$this->video_url) {
             return null;
         }
 
-        if (str_starts_with($this->image_path, 'http://') || str_starts_with($this->image_path, 'https://')) {
-            return $this->image_path;
+        if (preg_match('~(?:youtube\.com/watch\?v=|youtu\.be/)([^&?/]+)~', $this->video_url, $matches)) {
+            return 'https://www.youtube.com/embed/' . $matches[1];
         }
 
-        $path = ltrim($this->image_path, '/');
+        return null;
+    }
+
+    public function getVideoFileUrlAttribute(): ?string
+    {
+        return $this->mediaUrl($this->video_path);
+    }
+
+    private function mediaUrl(?string $storedPath): ?string
+    {
+        if (!$storedPath) {
+            return null;
+        }
+
+        if (str_starts_with($storedPath, 'http://') || str_starts_with($storedPath, 'https://')) {
+            return $storedPath;
+        }
+
+        $path = ltrim($storedPath, '/');
 
         if (str_starts_with($path, 'public/')) {
             $path = substr($path, strlen('public/'));

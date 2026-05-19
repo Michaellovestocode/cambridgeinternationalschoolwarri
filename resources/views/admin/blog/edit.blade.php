@@ -73,6 +73,21 @@
             </div>
 
             <div class="space-y-2 lg:col-span-2">
+                <label for="gallery_images" class="block text-sm font-semibold text-gray-700">Article Gallery Images</label>
+                <p class="text-xs text-gray-500">Add extra images that appear inside the public blog post.</p>
+                <input id="gallery_images" name="gallery_images[]" type="file" accept=".jpg,.jpeg,.png,.gif,.webp" multiple class="w-full border border-gray-200 rounded-xl px-4 py-3">
+                @if($post->gallery_image_urls)
+                    <div class="mt-3 grid grid-cols-2 sm:grid-cols-4 gap-3">
+                        @foreach($post->gallery_image_urls as $galleryImage)
+                            <img src="{{ $galleryImage }}" alt="{{ $post->title }} gallery image" class="h-24 w-full rounded-xl object-cover border border-gray-200">
+                        @endforeach
+                    </div>
+                @endif
+                @error('gallery_images')<p class="text-sm text-rose-600">{{ $message }}</p>@enderror
+                @error('gallery_images.*')<p class="text-sm text-rose-600">{{ $message }}</p>@enderror
+            </div>
+
+            <div class="space-y-2 lg:col-span-2">
                 <label for="excerpt" class="block text-sm font-semibold text-gray-700">Short Summary</label>
                 <textarea id="excerpt" name="excerpt" rows="3" class="w-full border border-gray-200 rounded-xl px-4 py-3">{{ old('excerpt', $post->excerpt) }}</textarea>
                 @error('excerpt')<p class="text-sm text-rose-600">{{ $message }}</p>@enderror
@@ -96,6 +111,7 @@
             <button class="bg-slate-950 hover:bg-slate-800 text-white px-6 py-3 rounded-xl font-bold shadow">Save Review</button>
             @if($post->status === \App\Models\BlogPost::STATUS_PUBLISHED)
                 <a href="{{ route('blog.show', $post) }}" target="_blank" class="border border-gray-200 text-gray-700 px-6 py-3 rounded-xl font-semibold">View Public</a>
+                <button type="button" data-copy-url="{{ route('blog.show', $post) }}" class="copy-blog-link border border-emerald-200 text-emerald-700 px-6 py-3 rounded-xl font-semibold hover:bg-emerald-50">Copy Link</button>
             @endif
             <a href="{{ route('admin.blog.index') }}" class="text-gray-600 hover:underline font-semibold">Cancel</a>
         </div>
@@ -129,4 +145,15 @@
     </div>
 </aside>
 </div>
+
+<script>
+    document.querySelectorAll('.copy-blog-link').forEach((button) => {
+        button.addEventListener('click', async () => {
+            await navigator.clipboard.writeText(button.dataset.copyUrl);
+            const originalText = button.textContent;
+            button.textContent = 'Copied';
+            setTimeout(() => button.textContent = originalText, 1600);
+        });
+    });
+</script>
 @endsection

@@ -29,8 +29,20 @@
     <div class="max-w-3xl mx-auto px-6 sm:px-8 py-10 sm:py-14">
         <div class="text-lg text-gray-800 leading-9 whitespace-pre-line">{{ $post->body }}</div>
 
+        @if($post->gallery_image_urls)
+            <section class="mt-10">
+                <h2 class="text-2xl font-black text-gray-950">Photo Gallery</h2>
+                <div class="mt-5 grid gap-4 sm:grid-cols-2">
+                    @foreach($post->gallery_image_urls as $galleryImage)
+                        <img src="{{ $galleryImage }}" alt="{{ $post->title }} photo" class="h-72 w-full rounded-2xl object-cover shadow-sm">
+                    @endforeach
+                </div>
+            </section>
+        @endif
+
         <div class="mt-12 pt-8 border-t border-gray-100 flex flex-wrap items-center justify-between gap-4">
             <a href="{{ route('blog.index') }}" class="bg-gray-950 text-white px-5 py-3 rounded-lg font-bold hover:bg-gray-800">Back to Blog</a>
+            <button type="button" id="copyBlogLink" data-copy-url="{{ route('blog.show', $post) }}" class="border border-emerald-200 text-emerald-700 px-5 py-3 rounded-lg font-bold hover:bg-emerald-50">Copy Link</button>
             <a href="{{ url('/') }}" class="text-gray-700 font-bold hover:underline">Cambridge International School</a>
         </div>
     </div>
@@ -57,4 +69,12 @@
     </div>
 </section>
 @endif
+<script>
+    document.getElementById('copyBlogLink')?.addEventListener('click', async function () {
+        await navigator.clipboard.writeText(this.dataset.copyUrl);
+        const originalText = this.textContent;
+        this.textContent = 'Copied';
+        setTimeout(() => this.textContent = originalText, 1600);
+    });
+</script>
 @endsection

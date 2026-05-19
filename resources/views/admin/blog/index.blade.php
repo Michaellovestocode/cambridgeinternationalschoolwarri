@@ -135,6 +135,7 @@
                             <a href="{{ route('admin.blog.edit', $post) }}" class="bg-slate-950 hover:bg-slate-800 text-white px-4 py-2 rounded-xl font-bold">Review/Edit</a>
                             @if($post->status === \App\Models\BlogPost::STATUS_PUBLISHED)
                                 <a href="{{ route('blog.show', $post) }}" target="_blank" class="border border-slate-200 text-slate-700 px-4 py-2 rounded-xl font-bold hover:bg-slate-50">View Public</a>
+                                <button type="button" data-copy-url="{{ route('blog.show', $post) }}" class="copy-blog-link border border-emerald-200 text-emerald-700 px-4 py-2 rounded-xl font-bold hover:bg-emerald-50">Copy Link</button>
                             @endif
                             <form method="POST" action="{{ route('admin.blog.destroy', $post) }}" onsubmit="return confirm('Delete this blog post?');">
                                 @csrf
@@ -157,4 +158,15 @@
         {{ $posts->links() }}
     </div>
 </div>
+
+<script>
+    document.querySelectorAll('.copy-blog-link').forEach((button) => {
+        button.addEventListener('click', async () => {
+            await navigator.clipboard.writeText(button.dataset.copyUrl);
+            const originalText = button.textContent;
+            button.textContent = 'Copied';
+            setTimeout(() => button.textContent = originalText, 1600);
+        });
+    });
+</script>
 @endsection

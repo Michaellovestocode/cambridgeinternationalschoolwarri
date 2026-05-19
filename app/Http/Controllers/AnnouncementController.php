@@ -14,7 +14,7 @@ class AnnouncementController extends Controller
 {
     public function __construct(private MessageNotificationService $messageNotificationService)
     {
-        $this->middleware('blog.studio');
+        $this->middleware('blog.studio')->except('show');
     }
 
     public function index(Request $request)
@@ -67,10 +67,31 @@ class AnnouncementController extends Controller
         ]);
     }
 
+    public function show(Announcement $announcement)
+    {
+        abort_unless(
+            $announcement->is_published
+                && (!$announcement->published_at || $announcement->published_at->lte(now()))
+                && (!$announcement->expires_at || $announcement->expires_at->gte(now())),
+            404
+        );
+
+        $relatedAnnouncements = Announcement::published()
+            ->whereKeyNot($announcement->id)
+            ->where('category', $announcement->category)
+            ->homepageOrder()
+            ->take(3)
+            ->get();
+
+        return view('announcements.show', compact('announcement', 'relatedAnnouncements'));
+    }
+
     public function store(Request $request)
     {
         $data = $this->validatedData($request);
         $data['image_path'] = $this->storeImage($request);
+        $data['gallery_images'] = $this->storeGalleryImages($request);
+        $data['video_path'] = $this->storeVideo($request);
 
         $announcement = Announcement::create($data);
         $this->deliverToParentsIfRequested($announcement);
@@ -94,6 +115,17 @@ class AnnouncementController extends Controller
 
         if ($request->hasFile('image')) {
             $data['image_path'] = $this->storeImage($request);
+        }
+
+        if ($request->hasFile('gallery_images')) {
+            $data['gallery_images'] = array_values(array_merge(
+                $announcement->gallery_images ?? [],
+                $this->storeGalleryImages($request)
+            ));
+        }
+
+        if ($request->hasFile('video')) {
+            $data['video_path'] = $this->storeVideo($request);
         }
 
         $announcement->update($data);
@@ -124,6 +156,10 @@ class AnnouncementController extends Controller
             'button_label' => ['nullable', 'string', 'max:50'],
             'button_url' => ['nullable', 'string', 'max:1000'],
             'image' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif,webp', 'max:4096'],
+            'gallery_images' => ['nullable', 'array', 'max:8'],
+            'gallery_images.*' => ['image', 'mimes:jpeg,png,jpg,gif,webp', 'max:4096'],
+            'video' => ['nullable', 'file', 'mimes:mp4,webm,mov', 'max:51200'],
+            'video_url' => ['nullable', 'url', 'max:1000'],
             'event_date' => ['nullable', 'date'],
             'location' => ['nullable', 'string', 'max:255'],
             'published_at' => ['nullable', 'date'],
@@ -153,6 +189,28 @@ class AnnouncementController extends Controller
         }
 
         return $request->file('image')->store('announcements', 'public');
+    }
+
+    private function storeGalleryImages(Request $request): array
+    {
+        if (!$request->hasFile('gallery_images')) {
+            return [];
+        }
+
+        return collect($request->file('gallery_images'))
+            ->filter(fn ($file) => $file && $file->isValid())
+            ->map(fn ($file) => $file->store('announcements/gallery', 'public'))
+            ->values()
+            ->all();
+    }
+
+    private function storeVideo(Request $request): ?string
+    {
+        if (!$request->hasFile('video')) {
+            return null;
+        }
+
+        return $request->file('video')->store('announcements/videos', 'public');
     }
 
     private function deliverToParentsIfRequested(Announcement $announcement): void

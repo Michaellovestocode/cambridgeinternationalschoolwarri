@@ -103,6 +103,38 @@
             </div>
             @error('image')<p class="text-sm text-rose-600">{{ $message }}</p>@enderror
         </div>
+
+        <div class="space-y-2 lg:col-span-2">
+            <label for="gallery_images" class="block text-sm font-semibold text-gray-700">More Images</label>
+            <input id="gallery_images" name="gallery_images[]" type="file" accept=".jpg,.jpeg,.png,.gif,.webp" multiple class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-indigo-500">
+            <p class="text-xs text-gray-500">Add up to 8 extra images for the full news/event page. The cover image still controls the homepage card.</p>
+            @if($announcement->gallery_image_urls)
+                <div class="mt-3 grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    @foreach($announcement->gallery_image_urls as $galleryImage)
+                        <img src="{{ $galleryImage }}" alt="{{ $announcement->title }} gallery image" class="h-24 w-full rounded-xl object-cover border border-gray-200">
+                    @endforeach
+                </div>
+            @endif
+            @error('gallery_images')<p class="text-sm text-rose-600">{{ $message }}</p>@enderror
+            @error('gallery_images.*')<p class="text-sm text-rose-600">{{ $message }}</p>@enderror
+        </div>
+
+        <div class="space-y-2">
+            <label for="video" class="block text-sm font-semibold text-gray-700">Video Upload</label>
+            <input id="video" name="video" type="file" accept=".mp4,.webm,.mov,video/mp4,video/webm,video/quicktime" class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-indigo-500">
+            <p class="text-xs text-gray-500">Use short MP4, WEBM, or MOV clips. For long videos, paste a link instead.</p>
+            @if($announcement->video_file_url)
+                <video class="mt-3 h-36 w-full rounded-xl border border-gray-200 bg-black object-cover" controls src="{{ $announcement->video_file_url }}"></video>
+            @endif
+            @error('video')<p class="text-sm text-rose-600">{{ $message }}</p>@enderror
+        </div>
+
+        <div class="space-y-2">
+            <label for="video_url" class="block text-sm font-semibold text-gray-700">Video Link</label>
+            <input id="video_url" name="video_url" type="url" value="{{ old('video_url', $announcement->video_url) }}" class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-indigo-500" placeholder="https://youtube.com/watch?v=...">
+            <p class="text-xs text-gray-500">YouTube links embed neatly on the public detail page.</p>
+            @error('video_url')<p class="text-sm text-rose-600">{{ $message }}</p>@enderror
+        </div>
     </div>
 
     <div class="grid sm:grid-cols-2 xl:grid-cols-4 gap-4 rounded-2xl bg-slate-50 border border-slate-200 p-5">

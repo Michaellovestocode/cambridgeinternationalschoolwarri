@@ -73,6 +73,12 @@
                         @elseif($announcement->send_to_parent_dashboard)
                             <span class="inline-flex rounded-full bg-orange-50 px-3 py-1 text-xs font-semibold text-orange-700">Parent delivery pending</span>
                         @endif
+                        @if($announcement->gallery_image_urls)
+                            <span class="inline-flex rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700">{{ count($announcement->gallery_image_urls) }} extra image{{ count($announcement->gallery_image_urls) === 1 ? '' : 's' }}</span>
+                        @endif
+                        @if($announcement->video_file_url || $announcement->video_url)
+                            <span class="inline-flex rounded-full bg-rose-50 px-3 py-1 text-xs font-semibold text-rose-700">Video</span>
+                        @endif
                     </div>
 
                     <div>
@@ -96,6 +102,9 @@
 
                     <div class="flex flex-wrap items-center gap-3">
                         <a href="{{ route('admin.announcements.edit', $announcement) }}" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl font-semibold">Edit</a>
+                        @if($announcement->is_published)
+                            <a href="{{ route('announcements.show', $announcement) }}" target="_blank" class="border border-slate-200 text-slate-700 hover:bg-slate-50 px-4 py-2 rounded-xl font-semibold">View Public</a>
+                        @endif
                         <form method="POST" action="{{ route('admin.announcements.destroy', $announcement) }}" onsubmit="return confirm('Delete this website update?');">
                             @csrf
                             @method('DELETE')

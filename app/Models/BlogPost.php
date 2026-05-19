@@ -22,6 +22,7 @@ class BlogPost extends Model
         'excerpt',
         'body',
         'image_path',
+        'gallery_images',
         'status',
         'admin_note',
         'submitted_at',
@@ -31,6 +32,7 @@ class BlogPost extends Model
     protected $casts = [
         'submitted_at' => 'datetime',
         'published_at' => 'datetime',
+        'gallery_images' => 'array',
     ];
 
     public static function statuses(): array
@@ -87,15 +89,29 @@ class BlogPost extends Model
 
     public function getImageUrlAttribute(): ?string
     {
-        if (!$this->image_path) {
+        return $this->mediaUrl($this->image_path);
+    }
+
+    public function getGalleryImageUrlsAttribute(): array
+    {
+        return collect($this->gallery_images ?? [])
+            ->map(fn ($path) => $this->mediaUrl($path))
+            ->filter()
+            ->values()
+            ->all();
+    }
+
+    private function mediaUrl(?string $storedPath): ?string
+    {
+        if (!$storedPath) {
             return null;
         }
 
-        if (str_starts_with($this->image_path, 'http://') || str_starts_with($this->image_path, 'https://')) {
-            return $this->image_path;
+        if (str_starts_with($storedPath, 'http://') || str_starts_with($storedPath, 'https://')) {
+            return $storedPath;
         }
 
-        $path = ltrim($this->image_path, '/');
+        $path = ltrim($storedPath, '/');
 
         if (str_starts_with($path, 'blog/')) {
             return url('blog-images/' . $path);

@@ -94,6 +94,7 @@ class BlogPostController extends Controller
         $data['status'] = $request->input('action') === 'draft' ? BlogPost::STATUS_DRAFT : BlogPost::STATUS_PENDING;
         $data['submitted_at'] = $data['status'] === BlogPost::STATUS_PENDING ? now() : null;
         $data['image_path'] = $this->storeImage($request);
+        $data['gallery_images'] = $this->storeGalleryImages($request);
 
         BlogPost::create($data);
 
@@ -127,6 +128,13 @@ class BlogPostController extends Controller
 
         if ($request->hasFile('image')) {
             $data['image_path'] = $this->storeImage($request);
+        }
+
+        if ($request->hasFile('gallery_images')) {
+            $data['gallery_images'] = array_values(array_merge(
+                $post->gallery_images ?? [],
+                $this->storeGalleryImages($request)
+            ));
         }
 
         if ($post->title !== $data['title']) {
@@ -211,6 +219,7 @@ class BlogPostController extends Controller
         $data['reviewed_by'] = Auth::id();
         $data['submitted_at'] = in_array($status, [BlogPost::STATUS_PENDING, BlogPost::STATUS_PUBLISHED], true) ? now() : null;
         $data['image_path'] = $this->storeImage($request);
+        $data['gallery_images'] = $this->storeGalleryImages($request);
 
         if ($status === BlogPost::STATUS_PUBLISHED && !$request->filled('published_at')) {
             $data['published_at'] = now();
@@ -237,6 +246,13 @@ class BlogPostController extends Controller
 
         if ($request->hasFile('image')) {
             $data['image_path'] = $this->storeImage($request);
+        }
+
+        if ($request->hasFile('gallery_images')) {
+            $data['gallery_images'] = array_values(array_merge(
+                $post->gallery_images ?? [],
+                $this->storeGalleryImages($request)
+            ));
         }
 
         if ($post->title !== $data['title']) {
@@ -279,6 +295,8 @@ class BlogPostController extends Controller
             'excerpt' => ['nullable', 'string', 'max:500'],
             'body' => ['required', 'string', 'min:50'],
             'image' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif,webp', 'max:' . self::IMAGE_MAX_KB],
+            'gallery_images' => ['nullable', 'array', 'max:10'],
+            'gallery_images.*' => ['image', 'mimes:jpeg,png,jpg,gif,webp', 'max:' . self::IMAGE_MAX_KB],
         ], $this->imageValidationMessages());
     }
 
@@ -294,6 +312,8 @@ class BlogPostController extends Controller
             'published_at' => ['nullable', 'date'],
             'admin_note' => ['nullable', 'string', 'max:1000'],
             'image' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif,webp', 'max:' . self::IMAGE_MAX_KB],
+            'gallery_images' => ['nullable', 'array', 'max:10'],
+            'gallery_images.*' => ['image', 'mimes:jpeg,png,jpg,gif,webp', 'max:' . self::IMAGE_MAX_KB],
         ], $this->imageValidationMessages());
     }
 
@@ -339,6 +359,19 @@ class BlogPostController extends Controller
         }
 
         return $request->file('image')->store('blog', 'public');
+    }
+
+    private function storeGalleryImages(Request $request): array
+    {
+        if (!$request->hasFile('gallery_images')) {
+            return [];
+        }
+
+        return collect($request->file('gallery_images'))
+            ->filter(fn ($file) => $file && $file->isValid())
+            ->map(fn ($file) => $file->store('blog/gallery', 'public'))
+            ->values()
+            ->all();
     }
 
     private function uniqueSlug(string $title, ?int $ignoreId = null): string

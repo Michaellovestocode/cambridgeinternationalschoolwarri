@@ -86,6 +86,14 @@
             </section>
 
             <section class="rounded-[2rem] border border-slate-200 bg-white p-5 shadow-sm">
+                <h2 class="text-lg font-black text-slate-950">Article Gallery</h2>
+                <p class="mt-2 text-sm leading-6 text-slate-500">Optional extra images shown inside the public blog article.</p>
+                <input type="file" name="gallery_images[]" accept="image/*" multiple class="mt-5 w-full rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-4 text-sm text-slate-600">
+                @error('gallery_images') <span class="mt-2 block text-sm text-rose-600">{{ $message }}</span> @enderror
+                @error('gallery_images.*') <span class="mt-2 block text-sm text-rose-600">{{ $message }}</span> @enderror
+            </section>
+
+            <section class="rounded-[2rem] border border-slate-200 bg-white p-5 shadow-sm">
                 <h2 class="text-lg font-black text-slate-950">Editorial Note</h2>
                 <textarea name="admin_note" rows="6" class="mt-3 w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm leading-7 text-slate-800 focus:border-emerald-500 focus:ring-emerald-500" placeholder="Optional private note for this post.">{{ old('admin_note') }}</textarea>
                 @error('admin_note') <span class="mt-2 block text-sm text-rose-600">{{ $message }}</span> @enderror

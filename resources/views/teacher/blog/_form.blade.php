@@ -60,6 +60,21 @@
             @endif
             @error('image')<p class="text-sm text-rose-600">{{ $message }}</p>@enderror
         </div>
+
+        <div class="space-y-2 lg:col-span-2">
+            <label for="gallery_images" class="block text-sm font-semibold text-gray-700">Article Gallery Images</label>
+            <p class="text-xs text-gray-500">Optional extra images that appear inside the blog post.</p>
+            <input id="gallery_images" name="gallery_images[]" type="file" accept=".jpg,.jpeg,.png,.gif,.webp" multiple class="w-full border border-gray-200 rounded-xl px-4 py-3" @disabled(!$canEdit)>
+            @if($post->gallery_image_urls)
+                <div class="mt-3 grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    @foreach($post->gallery_image_urls as $galleryImage)
+                        <img src="{{ $galleryImage }}" alt="{{ $post->title }} gallery image" class="h-24 w-full rounded-xl object-cover border border-gray-200">
+                    @endforeach
+                </div>
+            @endif
+            @error('gallery_images')<p class="text-sm text-rose-600">{{ $message }}</p>@enderror
+            @error('gallery_images.*')<p class="text-sm text-rose-600">{{ $message }}</p>@enderror
+        </div>
     </div>
 
     <div class="flex flex-wrap items-center gap-3">

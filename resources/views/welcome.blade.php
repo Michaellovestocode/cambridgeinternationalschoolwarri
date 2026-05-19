@@ -362,36 +362,36 @@
 <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
      HERO SECTION
 â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
-<section id="home" class="relative min-h-screen flex items-center pt-32 overflow-hidden">
+<section id="home" class="relative min-h-screen flex items-center pt-28 sm:pt-32 overflow-hidden">
     <div class="absolute top-20 right-10 w-64 h-64 bg-yellow-300 opacity-30 blob-1 blur-3xl"></div>
     <div class="absolute bottom-20 left-10 w-80 h-80 bg-blue-400 opacity-20 blob-2 blur-3xl"></div>
     <div class="absolute top-40 left-1/4 w-40 h-40 bg-green-400 opacity-25 blob-1 blur-2xl"></div>
 
-    <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24">
+    <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-24">
         <div class="grid lg:grid-cols-2 gap-12 items-center">
             <!-- Left -->
             <div class="text-center lg:text-left fade-in-up">
-                <div class="inline-flex items-center space-x-2 bg-gradient-to-r from-blue-100 to-green-100 border-2 border-blue-200 rounded-full px-5 py-2 mb-6 sm:mb-8">
+                <div class="inline-flex items-center space-x-2 bg-gradient-to-r from-blue-100 to-green-100 border-2 border-blue-200 rounded-full px-5 py-2 mb-4 sm:mb-8">
                     <span class="w-3 h-3 bg-green-500 rounded-full animate-pulse"></span>
                     <span class="text-gray-800 text-sm font-bold">Top-Rated School in Warri</span>
                 </div>
 
-                <h1 class="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black text-gray-900 mb-6 leading-tight">
+                <h1 class="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black text-gray-900 mb-4 sm:mb-6 leading-tight">
                     Education for<br><span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-purple-600 to-green-600">Excellence.</span>
                 </h1>
 
-                <p class="text-lg sm:text-xl text-gray-600 mb-8 sm:mb-10 max-w-xl mx-auto lg:mx-0">
+                <p class="text-base sm:text-xl text-gray-600 mb-5 sm:mb-10 max-w-xl mx-auto lg:mx-0">
                     A modern learning environment where education meets innovation, inspiring every student to succeed.
                 </p>
 
                 <div class="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-                    <a href="{{ route('apply.create') }}" class="bg-gradient-to-r from-amber-400 via-orange-500 to-rose-500 text-white px-8 py-4 rounded-full font-bold text-lg shadow-xl hover:shadow-2xl transition transform hover:scale-105 flex items-center justify-center space-x-2">
+                    <a href="{{ route('apply.create') }}" class="bg-gradient-to-r from-amber-400 via-orange-500 to-rose-500 text-white px-8 py-3.5 sm:py-4 rounded-full font-bold text-base sm:text-lg shadow-xl hover:shadow-2xl transition transform hover:scale-105 flex items-center justify-center space-x-2">
                         <span>Apply Now</span>
                     </a>
-                    <a href="{{ route('blog.index') }}" class="bg-blue-600 text-white px-8 py-4 rounded-full font-bold text-lg shadow-xl hover:bg-blue-700 transition flex items-center justify-center space-x-2">
+                    <a href="{{ route('blog.index') }}" class="bg-blue-600 text-white px-8 py-3.5 sm:py-4 rounded-full font-bold text-base sm:text-lg shadow-xl hover:bg-blue-700 transition flex items-center justify-center space-x-2">
                         <span>Read Blog</span>
                     </a>
-                    <a href="/login" class="bg-white border-2 border-gray-200 text-gray-800 px-8 py-4 rounded-full font-bold text-lg hover:border-blue-600 hover:text-blue-600 transition flex items-center justify-center space-x-2">
+                    <a href="/login" class="bg-white border-2 border-gray-200 text-gray-800 px-8 py-3.5 sm:py-4 rounded-full font-bold text-base sm:text-lg hover:border-blue-600 hover:text-blue-600 transition flex items-center justify-center space-x-2">
                         <span>Login</span>
                     </a>
                 </div>
@@ -904,7 +904,8 @@
             @foreach($homepageAnnouncements as $index => $announcement)
                 @php
                     $style = $categoryStyles[$announcement->category] ?? $categoryStyles["announcement"];
-                    $buttonUrl = $announcement->button_url ?: "#contact";
+                    $isLiveAnnouncement = $announcement instanceof \App\Models\Announcement;
+                    $buttonUrl = $announcement->button_url ?: ($isLiveAnnouncement ? route('announcements.show', $announcement) : "#contact");
                     $buttonLabel = $announcement->button_label ?: "Read more";
                     $imageUrl = $announcement->image_url ?: $style["image"];
                     $fallbackImageUrl = $style["image"];
