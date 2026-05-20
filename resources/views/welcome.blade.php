@@ -948,8 +948,15 @@
                 @php
                     $style = $categoryStyles[$announcement->category] ?? $categoryStyles["announcement"];
                     $isLiveAnnouncement = $announcement instanceof \App\Models\Announcement;
-                    $buttonUrl = $announcement->button_url ?: ($isLiveAnnouncement ? route('announcements.show', $announcement) : "#contact");
-                    $buttonLabel = $announcement->button_label ?: "Read more";
+                    $hasMoreContent = $isLiveAnnouncement && (
+                        filled($announcement->body)
+                        || !empty($announcement->gallery_image_urls)
+                        || filled($announcement->video_url)
+                    );
+                    $buttonUrl = $hasMoreContent
+                        ? route('announcements.show', $announcement)
+                        : ($announcement->button_url ?: ($isLiveAnnouncement ? route('announcements.show', $announcement) : "#contact"));
+                    $buttonLabel = $hasMoreContent ? "Read more" : ($announcement->button_label ?: "Read more");
                     $imageUrl = $announcement->image_url ?: $style["image"];
                     $fallbackImageUrl = $style["image"];
                     $cardDelayStyle = $index > 0 ? "transition-delay:.{$index}s" : null;

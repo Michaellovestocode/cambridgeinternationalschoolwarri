@@ -189,6 +189,7 @@
                         <h2 class="mt-3 text-3xl sm:text-5xl font-black text-gray-950 leading-tight group-hover:text-blue-700 transition blog-mobile-feature-title">{{ $featuredPost->title }}</h2>
                         <p class="mt-4 text-lg text-gray-600 leading-8 blog-mobile-feature-excerpt">{{ $featuredPost->excerpt ?: \Illuminate\Support\Str::limit(strip_tags($featuredPost->body), 180) }}</p>
                         <p class="mt-5 text-sm font-bold text-gray-900">By {{ $featuredPost->author?->name ?? 'Cambridge Teacher' }}</p>
+                        <p class="mt-5 inline-flex items-center text-sm font-black text-blue-700">Read article <span class="ml-2">-&gt;</span></p>
                     </div>
                 </a>
             </article>
@@ -210,6 +211,7 @@
                                 <p class="text-xs font-bold text-amber-300 uppercase">{{ \Illuminate\Support\Str::headline($post->category) }}</p>
                                 <h4 class="font-black leading-snug mt-1">{{ $post->title }}</h4>
                                 <p class="text-xs text-white/60 mt-2">{{ $post->display_date }}</p>
+                                <p class="mt-2 text-xs font-black text-white">Read more -&gt;</p>
                             </div>
                         </a>
                     @endforeach
@@ -235,7 +237,10 @@
                                 </div>
                                 <h3 class="mt-3 text-2xl font-black text-gray-950 leading-tight group-hover:text-blue-700 transition">{{ $post->title }}</h3>
                                 <p class="mt-3 text-gray-600 leading-7 blog-mobile-excerpt">{{ $post->excerpt ?: \Illuminate\Support\Str::limit(strip_tags($post->body), 130) }}</p>
-                                <p class="mt-5 text-sm font-bold text-gray-500">{{ $post->display_date }}</p>
+                                <div class="mt-5 flex flex-wrap items-center justify-between gap-3">
+                                    <p class="text-sm font-bold text-gray-500">{{ $post->display_date }}</p>
+                                    <p class="text-sm font-black text-blue-700">Read more -&gt;</p>
+                                </div>
                             </div>
                         </a>
                     </article>
