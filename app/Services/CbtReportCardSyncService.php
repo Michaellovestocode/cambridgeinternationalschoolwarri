@@ -75,7 +75,10 @@ class CbtReportCardSyncService
 
             $reportCard->fill(array_merge($summary, [
                 'class_id' => $student->class_id,
-                'status' => $reportCard->status === 'published' ? 'published' : 'generated',
+                'status' => 'generated',
+                'review_required' => true,
+                'published_at' => null,
+                'scores_updated_at' => now(),
             ]));
 
             if (!$reportCard->exists) {

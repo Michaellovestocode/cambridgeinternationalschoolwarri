@@ -104,7 +104,7 @@
             <div class="border-2 border-blue-300 rounded-lg p-6 hover:shadow-lg transition">
                 <div class="text-5xl mb-4">📝</div>
                 <h3 class="text-xl font-bold text-gray-800 mb-2">Enter Scores</h3>
-                <p class="text-gray-600 mb-4">Enter 1st Test, 2nd Test, and exam scores for your assigned classes and subjects.</p>
+                <p class="text-gray-600 mb-4">Enter 1st Test, Notes, and exam scores for your assigned classes and subjects.</p>
                 <a href="{{ route('teacher.scores.select') }}" class="inline-block w-full text-center bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold transition">
                     Begin Entering Scores
                 </a>
@@ -125,7 +125,7 @@
                 <div class="text-5xl mb-4">ℹ️</div>
                 <h3 class="text-xl font-bold text-gray-800 mb-2">How It Works</h3>
                 <p class="text-gray-600 mb-4">Learn about the score entry system and best practices.</p>
-                <button class="w-full text-center bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg font-semibold transition" onclick="alert('Step 1: Select your assigned class and subject\nStep 2: Enter 1st Test score out of 30\nStep 3: Enter 2nd Test score out of 10\nStep 4: Enter Exam score out of 60\nStep 5: Save as draft or submit for approval')">
+                <button class="w-full text-center bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg font-semibold transition" onclick="alert('Step 1: Select your assigned class and subject\nStep 2: Enter 1st Test score out of 30\nStep 3: Enter Notes score out of 10\nStep 4: Enter Exam score out of 60\nStep 5: Save as draft or submit for approval')">
                     View Instructions
                 </button>
             </div>
@@ -137,7 +137,7 @@
         <h3 class="text-lg font-bold text-yellow-800 mb-3">💡 Score Entry Tips</h3>
         <ul class="text-yellow-700 space-y-2">
             <li>1st Test is out of 30 marks</li>
-            <li>2nd Test is out of 10 marks</li>
+            <li>Notes is out of 10 marks</li>
             <li>Exam score is out of 60 marks</li>
             <li>Total score per subject = 30 + 10 + 60 = 100</li>
             <li>Save scores as draft before final submission</li>

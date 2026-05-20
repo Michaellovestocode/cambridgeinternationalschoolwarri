@@ -10,8 +10,7 @@ return new class extends Migration
     {
         Schema::table('announcements', function (Blueprint $table) {
             $table->json('gallery_images')->nullable()->after('image_path');
-            $table->string('video_path')->nullable()->after('gallery_images');
-            $table->string('video_url')->nullable()->after('video_path');
+            $table->string('video_url')->nullable()->after('gallery_images');
         });
 
         Schema::table('blog_posts', function (Blueprint $table) {
@@ -22,7 +21,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('announcements', function (Blueprint $table) {
-            $table->dropColumn(['gallery_images', 'video_path', 'video_url']);
+            $table->dropColumn(['gallery_images', 'video_url']);
         });
 
         Schema::table('blog_posts', function (Blueprint $table) {

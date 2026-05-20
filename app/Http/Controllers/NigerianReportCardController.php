@@ -105,6 +105,12 @@ class NigerianReportCardController extends Controller
         $selectedClassId = $request->input('class_id');
         $selectedStudentId = $request->input('student_id');
 
+        if ($selectedStudentId && !$selectedClassId) {
+            $selectedClassId = User::where('role', 'student')
+                ->whereKey($selectedStudentId)
+                ->value('class_id');
+        }
+
         if ($selectedClassId) {
             $this->authorizeClassAccess((int) $selectedClassId);
         }
@@ -117,7 +123,6 @@ class NigerianReportCardController extends Controller
             ->when($user->isTeacher(), function ($query) use ($user) {
                 $query->whereIn('class_id', $this->formTeacherClassIdsFor($user->id));
             })
-            ->when($selectedClassId, fn ($query) => $query->where('class_id', $selectedClassId))
             ->with('class')
             ->orderBy('name')
             ->get();
@@ -274,6 +279,9 @@ class NigerianReportCardController extends Controller
                 array_merge($summary, [
                     'class_id' => $validated['class_id'],
                     'status' => 'generated',
+                    'review_required' => true,
+                    'published_at' => null,
+                    'scores_updated_at' => now(),
                     'days_school_opened' => 0,
                     'days_present' => 0,
                     'days_absent' => 0,
@@ -341,6 +349,9 @@ class NigerianReportCardController extends Controller
             array_merge($summary, [
                 'class_id' => $student->class_id,
                 'status' => 'generated',
+                'review_required' => true,
+                'published_at' => null,
+                'scores_updated_at' => now(),
                 'days_school_opened' => 0,
                 'days_present' => 0,
                 'days_absent' => 0,
@@ -361,7 +372,7 @@ class NigerianReportCardController extends Controller
     {
         $this->authorizeReportCardManagement();
 
-        $reportCard = ReportCard::with(['student.class', 'session', 'term'])
+        $reportCard = ReportCard::with(['student.class', 'session', 'term', 'reviewer'])
             ->findOrFail($reportCardId);
         $this->authorizeClassAccess($reportCard->class_id);
         
@@ -547,6 +558,10 @@ class NigerianReportCardController extends Controller
             ->map(fn ($value) => (int) $value)
             ->all();
 
+        $validated['review_required'] = false;
+        $validated['reviewed_at'] = now();
+        $validated['reviewed_by'] = auth()->id();
+
         $reportCard->update($validated);
 
         return redirect()->route('admin.report-cards.preview', $reportCard->id)
@@ -561,6 +576,14 @@ class NigerianReportCardController extends Controller
         $this->authorizeClassAccess($reportCard->class_id);
 
         if ($request->boolean('published')) {
+            $publishErrors = $this->publicationReadinessErrors($reportCard);
+
+            if ($publishErrors->isNotEmpty()) {
+                return redirect()->back()
+                    ->withErrors(['published' => $publishErrors->implode(' ')])
+                    ->withInput();
+            }
+
             $reportCard->publish();
             $message = 'Report card published. Parents and students can view it only after fee clearance is approved.';
         } else {
@@ -569,6 +592,48 @@ class NigerianReportCardController extends Controller
         }
 
         return redirect()->back()->with('success', $message);
+    }
+
+    private function publicationReadinessErrors(ReportCard $reportCard): \Illuminate\Support\Collection
+    {
+        $reportCard->loadMissing(['class.subjects', 'student', 'session', 'term']);
+
+        $errors = collect();
+
+        if ($reportCard->review_required) {
+            $errors->push('This report card has updated scores and must be reviewed before publishing.');
+        }
+
+        if ((int) $reportCard->days_school_opened <= 0) {
+            $errors->push('Enter attendance before publishing.');
+        }
+
+        if (!filled($reportCard->class_teacher_comment) || !filled($reportCard->head_teacher_comment)) {
+            $errors->push('Class teacher and head teacher remarks are required before publishing.');
+        }
+
+        $expectedSubjectIds = $reportCard->class?->subjects()
+            ->active()
+            ->pluck('subjects.id')
+            ->map(fn ($id) => (int) $id)
+            ->values() ?? collect();
+
+        if ($expectedSubjectIds->isNotEmpty()) {
+            $scoredSubjectIds = Score::where('student_id', $reportCard->student_id)
+                ->where('session_id', $reportCard->session_id)
+                ->where('term_id', $reportCard->term_id)
+                ->where('status', '!=', 'draft')
+                ->pluck('subject_id')
+                ->map(fn ($id) => (int) $id);
+
+            $missingCount = $expectedSubjectIds->diff($scoredSubjectIds)->count();
+
+            if ($missingCount > 0) {
+                $errors->push("{$missingCount} assigned subject score(s) are missing.");
+            }
+        }
+
+        return $errors;
     }
 
     // ========== BULK GENERATE FOR CLASS ==========
@@ -617,6 +682,9 @@ class NigerianReportCardController extends Controller
                     array_merge($summary, [
                         'class_id' => $request->class_id,
                         'status' => 'generated',
+                        'review_required' => true,
+                        'published_at' => null,
+                        'scores_updated_at' => now(),
                         'days_school_opened' => 0,
                         'days_present' => 0,
                         'days_absent' => 0,

@@ -42,7 +42,11 @@ class ReportCard extends Model
         'pdf_path',
         'word_path',
         'status',
+        'review_required',
         'published_at',
+        'scores_updated_at',
+        'reviewed_at',
+        'reviewed_by',
         'created_by',
     ];
 
@@ -57,7 +61,10 @@ class ReportCard extends Model
         'grade_summary' => 'array',
         'affective_domain' => 'array',
         'psychomotor_skills' => 'array',
+        'review_required' => 'boolean',
         'published_at' => 'datetime',
+        'scores_updated_at' => 'datetime',
+        'reviewed_at' => 'datetime',
     ];
 
     // Relationships
@@ -81,6 +88,11 @@ class ReportCard extends Model
         return $this->belongsTo(SchoolClass::class, 'class_id');
     }
 
+    public function reviewer()
+    {
+        return $this->belongsTo(User::class, 'reviewed_by');
+    }
+
     // Get all scores for this report
     public function scores()
     {
@@ -98,6 +110,9 @@ class ReportCard extends Model
         $this->update([
             'status' => 'published',
             'published_at' => now(),
+            'review_required' => false,
+            'reviewed_at' => now(),
+            'reviewed_by' => auth()->id(),
         ]);
     }
 
@@ -106,7 +121,23 @@ class ReportCard extends Model
         $this->update([
             'status' => 'draft',
             'published_at' => null,
+            'review_required' => false,
         ]);
+    }
+
+    public function markScoresUpdated(bool $forceReview = true): void
+    {
+        $attributes = [
+            'scores_updated_at' => now(),
+        ];
+
+        if ($forceReview || $this->isPublished()) {
+            $attributes['status'] = 'generated';
+            $attributes['published_at'] = null;
+            $attributes['review_required'] = true;
+        }
+
+        $this->forceFill($attributes)->save();
     }
 
     public function isPublished()

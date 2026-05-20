@@ -37,14 +37,14 @@
             <div class="whitespace-pre-line text-lg leading-9 text-slate-800">{{ $announcement->body }}</div>
         @endif
 
-        @if($announcement->video_embed_url || $announcement->video_file_url)
+        @if($announcement->video_embed_url)
             <section class="mt-10 overflow-hidden rounded-2xl border border-slate-200 bg-slate-950 shadow-lg">
-                @if($announcement->video_embed_url)
-                    <iframe src="{{ $announcement->video_embed_url }}" title="{{ $announcement->title }} video" class="aspect-video w-full" allowfullscreen></iframe>
-                @elseif($announcement->video_file_url)
-                    <video src="{{ $announcement->video_file_url }}" class="aspect-video w-full bg-black" controls></video>
-                @endif
+                <iframe src="{{ $announcement->video_embed_url }}" title="{{ $announcement->title }} video" class="aspect-video w-full" allowfullscreen></iframe>
             </section>
+        @elseif($announcement->video_url)
+            <a href="{{ $announcement->video_url }}" target="_blank" rel="noopener" class="mt-10 inline-flex rounded-xl bg-red-600 px-6 py-3 font-black text-white hover:bg-red-700">
+                Watch Video
+            </a>
         @endif
 
         @if($announcement->gallery_image_urls)

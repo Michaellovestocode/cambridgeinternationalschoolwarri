@@ -76,8 +76,8 @@
                         @if($announcement->gallery_image_urls)
                             <span class="inline-flex rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700">{{ count($announcement->gallery_image_urls) }} extra image{{ count($announcement->gallery_image_urls) === 1 ? '' : 's' }}</span>
                         @endif
-                        @if($announcement->video_file_url || $announcement->video_url)
-                            <span class="inline-flex rounded-full bg-rose-50 px-3 py-1 text-xs font-semibold text-rose-700">Video</span>
+                        @if($announcement->video_url)
+                            <span class="inline-flex rounded-full bg-rose-50 px-3 py-1 text-xs font-semibold text-rose-700">Video Link</span>
                         @endif
                     </div>
 

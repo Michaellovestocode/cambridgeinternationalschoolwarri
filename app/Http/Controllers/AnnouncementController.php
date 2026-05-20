@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Services\MessageNotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class AnnouncementController extends Controller
@@ -91,7 +92,6 @@ class AnnouncementController extends Controller
         $data = $this->validatedData($request);
         $data['image_path'] = $this->storeImage($request);
         $data['gallery_images'] = $this->storeGalleryImages($request);
-        $data['video_path'] = $this->storeVideo($request);
 
         $announcement = Announcement::create($data);
         $this->deliverToParentsIfRequested($announcement);
@@ -124,10 +124,6 @@ class AnnouncementController extends Controller
             ));
         }
 
-        if ($request->hasFile('video')) {
-            $data['video_path'] = $this->storeVideo($request);
-        }
-
         $announcement->update($data);
         $this->deliverToParentsIfRequested($announcement->fresh());
 
@@ -138,6 +134,7 @@ class AnnouncementController extends Controller
 
     public function destroy(Announcement $announcement)
     {
+        $this->deleteStoredMedia($announcement);
         $announcement->delete();
 
         return redirect()
@@ -158,7 +155,6 @@ class AnnouncementController extends Controller
             'image' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif,webp', 'max:4096'],
             'gallery_images' => ['nullable', 'array', 'max:8'],
             'gallery_images.*' => ['image', 'mimes:jpeg,png,jpg,gif,webp', 'max:4096'],
-            'video' => ['nullable', 'file', 'mimes:mp4,webm,mov', 'max:51200'],
             'video_url' => ['nullable', 'url', 'max:1000'],
             'event_date' => ['nullable', 'date'],
             'location' => ['nullable', 'string', 'max:255'],
@@ -204,13 +200,36 @@ class AnnouncementController extends Controller
             ->all();
     }
 
-    private function storeVideo(Request $request): ?string
+    private function deleteStoredMedia(Announcement $announcement): void
     {
-        if (!$request->hasFile('video')) {
-            return null;
+        $paths = collect([
+            $announcement->image_path,
+        ])->merge($announcement->gallery_images ?? []);
+
+        $paths->each(fn ($path) => $this->deletePublicFile($path));
+    }
+
+    private function deletePublicFile(?string $path): void
+    {
+        if (!$path || str_starts_with($path, 'http://') || str_starts_with($path, 'https://')) {
+            return;
         }
 
-        return $request->file('video')->store('announcements/videos', 'public');
+        $path = ltrim(str_replace('\\', '/', $path), '/');
+
+        if (str_starts_with($path, 'public/')) {
+            $path = substr($path, strlen('public/'));
+        }
+
+        if (str_starts_with($path, 'storage/')) {
+            $path = substr($path, strlen('storage/'));
+        }
+
+        if (!str_starts_with($path, 'announcements/')) {
+            return;
+        }
+
+        Storage::disk('public')->delete($path);
     }
 
     private function deliverToParentsIfRequested(Announcement $announcement): void

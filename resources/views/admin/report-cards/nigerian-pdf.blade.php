@@ -87,12 +87,12 @@
         }
 
         .header-logo-cell {
-            width: 82px;
+            width: 90px;
             text-align: left;
         }
 
         .header-photo-cell {
-            width: 88px;
+            width: 90px;
             text-align: right;
         }
 
@@ -102,24 +102,25 @@
         }
         
         .school-logo {
-            width: 70px;
-            height: 70px;
+            width: 82px;
+            height: 88px;
+            border: 2px solid {{ $selectedColor['primary'] }};
             object-fit: contain;
         }
         
         .student-photo {
-            width: 74px;
-            height: 86px;
+            width: 82px;
+            height: 88px;
             border: 2px solid {{ $selectedColor['primary'] }};
             object-fit: cover;
         }
 
         .student-photo-placeholder {
-            width: 74px;
-            height: 86px;
+            width: 82px;
+            height: 88px;
             border: 2px solid {{ $selectedColor['primary'] }};
             text-align: center;
-            line-height: 86px;
+            line-height: 88px;
             font-size: 10px;
             color: #666;
             display: inline-block;
@@ -173,22 +174,23 @@
             border: 1px solid {{ $selectedColor['primary'] }};
             background: #fff;
         }
-        
-        .info-row {
-            display: table;
+
+        .student-info-table {
             width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+            margin-bottom: 0;
         }
-        
-        .info-cell {
-            display: table-cell;
+
+        .student-info-table td {
             padding: 4px 8px;
             border: 1px solid #000;
             vertical-align: middle;
+            text-align: left;
         }
-        
+
         .info-label {
             font-weight: bold;
-            width: 18%;
             background: {{ $selectedColor['light'] }};
             color: #111827;
         }
@@ -449,6 +451,11 @@
         $schoolAddress = $schoolSettings->school_address ?: 'No. 2 Airport Road, By Kosini Junction, Warri, Delta State, Nigeria';
         $schoolEmail = $schoolSettings->school_email ?: 'info@cambridgeinternationalschoolwarri.com';
         $schoolWebsite = $schoolSettings->school_website ?: 'cambridgeinternationalschoolwarri.com';
+        $termReportName = str($reportCard->term->name)
+            ->replaceMatches('/\b1st\b/i', 'First')
+            ->replaceMatches('/\b2nd\b/i', 'Second')
+            ->replaceMatches('/\b3rd\b/i', 'Third')
+            ->upper();
         $affectiveTraits = [
             'punctuality' => 'Punctuality',
             'neatness' => 'Neatness',
@@ -509,7 +516,7 @@
                         </div>
 
                         <div class="report-title">
-                            {{ strtoupper($reportCard->term->name) }} STUDENT'S PERFORMANCE REPORT
+                            {{ $termReportName }} STUDENT'S PERFORMANCE REPORT
                         </div>
                         <div class="report-meta">
                             {{ strtoupper($reportCard->session->name) }} ACADEMIC SESSION
@@ -528,34 +535,44 @@
         
         <!-- Student Info -->
         <div class="student-info">
-            <div class="info-row">
-                <div class="info-cell info-label">NAME:</div>
-                <div class="info-cell" style="width: 45%;">{{ strtoupper($reportCard->student->name) }}</div>
-                <div class="info-cell info-label">GENDER:</div>
-                <div class="info-cell">{{ strtoupper($reportCard->student->sex ?? 'N/A') }}</div>
-            </div>
-            <div class="info-row">
-                <div class="info-cell info-label">CLASS:</div>
-                <div class="info-cell">{{ $reportCard->class->display_name }}</div>
-                <div class="info-cell info-label">SESSION:</div>
-                <div class="info-cell">{{ $reportCard->session->name }}</div>
-                <div class="info-cell info-label">ADMISSION NO:</div>
-                <div class="info-cell">{{ $reportCard->student->registration_number }}</div>
-            </div>
-            <div class="info-row">
-                <div class="info-cell info-label">D.O.B:</div>
-                <div class="info-cell">{{ $reportCard->student->date_of_birth ? $reportCard->student->date_of_birth->format('d-M-Y') : 'N/A' }}</div>
-                <div class="info-cell info-label">AGE:</div>
-                <div class="info-cell">{{ $reportCard->student->age ?? 'N/A' }}yrs</div>
-                <div class="info-cell info-label">ATTENDANCE:</div>
-                <div class="info-cell">{{ $reportCard->days_present }}/{{ $reportCard->days_school_opened }} ({{ number_format($reportCard->attendance_percentage, 1) }}%)</div>
-            </div>
-            <div class="info-row">
-                <div class="info-cell info-label">CLUB/SOCIETY:</div>
-                <div class="info-cell" style="width: 45%;">{{ strtoupper($clubSociety) }}</div>
-                <div class="info-cell info-label">FAV. COLOUR:</div>
-                <div class="info-cell">{{ strtoupper($favouriteColour) }}</div>
-            </div>
+            <table class="student-info-table">
+                <colgroup>
+                    <col style="width: 15%;">
+                    <col style="width: 27%;">
+                    <col style="width: 13%;">
+                    <col style="width: 16%;">
+                    <col style="width: 15%;">
+                    <col style="width: 14%;">
+                </colgroup>
+                <tr>
+                    <td class="info-label">NAME:</td>
+                    <td colspan="3">{{ strtoupper($reportCard->student->name) }}</td>
+                    <td class="info-label">GENDER:</td>
+                    <td>{{ strtoupper($reportCard->student->sex ?? 'N/A') }}</td>
+                </tr>
+                <tr>
+                    <td class="info-label">CLASS:</td>
+                    <td>{{ $reportCard->class->display_name }}</td>
+                    <td class="info-label">SESSION:</td>
+                    <td>{{ $reportCard->session->name }}</td>
+                    <td class="info-label">ADMISSION NO:</td>
+                    <td>{{ $reportCard->student->registration_number }}</td>
+                </tr>
+                <tr>
+                    <td class="info-label">D.O.B:</td>
+                    <td>{{ $reportCard->student->date_of_birth ? $reportCard->student->date_of_birth->format('d-M-Y') : 'N/A' }}</td>
+                    <td class="info-label">AGE:</td>
+                    <td>{{ $reportCard->student->age ?? 'N/A' }}yrs</td>
+                    <td class="info-label">ATTENDANCE:</td>
+                    <td>{{ $reportCard->days_present }}/{{ $reportCard->days_school_opened }} ({{ number_format($reportCard->attendance_percentage, 1) }}%)</td>
+                </tr>
+                <tr>
+                    <td class="info-label">CLUB/SOCIETY:</td>
+                    <td colspan="3">{{ strtoupper($clubSociety) }}</td>
+                    <td class="info-label">FAV. COLOUR:</td>
+                    <td>{{ strtoupper($favouriteColour) }}</td>
+                </tr>
+            </table>
         </div>
         
         @php
@@ -585,7 +602,7 @@
                         </tr>
                         <tr>
                             <th>1ST<br>(30)</th>
-                            <th>2ND<br>(10)</th>
+                            <th>NOTES<br>(10)</th>
                         </tr>
                     </thead>
                     <tbody>

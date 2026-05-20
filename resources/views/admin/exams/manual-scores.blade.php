@@ -63,7 +63,7 @@
         <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
             <div>
                 <h2 class="text-xl font-black text-gray-900">{{ $selectedClass->display_name }}</h2>
-                <p class="text-sm text-gray-600">Enter 1st Test, 2nd Test, and exam marks for all students, then submit once.</p>
+                <p class="text-sm text-gray-600">Enter 1st Test, Notes, and exam marks for all students, then submit once.</p>
             </div>
             <div class="rounded-xl bg-green-50 px-4 py-3 text-sm font-bold text-green-800">
                 Limits: 30 + 10 + 60 = 100
@@ -82,7 +82,7 @@
                             <th class="px-4 py-3 text-left">#</th>
                             <th class="px-4 py-3 text-left">Student</th>
                             <th class="px-4 py-3 text-center">1st Test</th>
-                            <th class="px-4 py-3 text-center">2nd Test</th>
+                            <th class="px-4 py-3 text-center">Notes</th>
                             <th class="px-4 py-3 text-center">Exam /60</th>
                             <th class="px-4 py-3 text-center">Total /100</th>
                         </tr>
@@ -124,7 +124,7 @@
                                            step="0.5"
                                            data-second-test
                                            data-score-limit="10"
-                                           data-score-label="2nd Test"
+                                           data-score-label="Notes"
                                            class="w-24 border border-gray-300 rounded-lg px-3 py-2 text-center focus:border-green-500 focus:ring-green-500">
                                 </td>
                                 <td class="px-4 py-3">

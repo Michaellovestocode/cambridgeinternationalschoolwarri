@@ -37,7 +37,7 @@
                     <tr class="bg-gray-50 text-gray-600">
                         <th class="px-4 py-3 text-left">Subject</th>
                         <th class="px-4 py-3 text-left">1st Test</th>
-                        <th class="px-4 py-3 text-left">2nd Test</th>
+                        <th class="px-4 py-3 text-left">Notes</th>
                         <th class="px-4 py-3 text-left">Exam</th>
                         <th class="px-4 py-3 text-left">Total</th>
                         <th class="px-4 py-3 text-left">Grade</th>

@@ -363,7 +363,10 @@ class TeacherScoreController extends Controller
 
             $reportCard->fill(array_merge($summary, [
                 'class_id' => $classId,
-                'status' => $reportCard->status === 'published' ? 'published' : 'generated',
+                'status' => 'generated',
+                'review_required' => true,
+                'published_at' => null,
+                'scores_updated_at' => now(),
             ]));
 
             if (!$reportCard->exists) {

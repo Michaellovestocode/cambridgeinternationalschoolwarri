@@ -67,7 +67,7 @@
                 <select id="class_id" name="class_id" class="w-full border border-gray-300 rounded-lg px-4 py-3" required>
                     <option value="">Select class</option>
                     @foreach ($classes as $class)
-                        <option value="{{ $class->id }}" {{ (string) request('class_id') === (string) $class->id ? 'selected' : '' }}>
+                        <option value="{{ $class->id }}" {{ (string) $selectedClass?->id === (string) $class->id ? 'selected' : '' }}>
                             {{ $class->display_name }}
                         </option>
                     @endforeach
@@ -78,7 +78,7 @@
                 <select id="student_id" name="student_id" class="w-full border border-gray-300 rounded-lg px-4 py-3" required>
                     <option value="">Select student</option>
                     @foreach ($students as $student)
-                        <option value="{{ $student->id }}" {{ (string) request('student_id') === (string) $student->id ? 'selected' : '' }}>
+                        <option value="{{ $student->id }}" data-class-id="{{ $student->class_id }}" {{ (string) request('student_id') === (string) $student->id ? 'selected' : '' }}>
                             {{ $student->name }}{{ $student->registration_number ? ' - ' . $student->registration_number : '' }}
                         </option>
                     @endforeach
@@ -112,7 +112,7 @@
                         <span class="font-semibold">1st Test</span> 0-30
                     </div>
                     <div class="bg-blue-50 text-blue-800 rounded-lg px-4 py-3">
-                        <span class="font-semibold">2nd Test</span> 0-10
+                        <span class="font-semibold">Notes</span> 0-10
                     </div>
                     <div class="bg-blue-50 text-blue-800 rounded-lg px-4 py-3">
                         <span class="font-semibold">Exam</span> 0-60
@@ -131,7 +131,7 @@
                             <tr class="bg-gray-100 text-gray-700">
                                 <th class="px-4 py-3 text-left">Subject</th>
                                 <th class="px-4 py-3 text-center">1st Test</th>
-                                <th class="px-4 py-3 text-center">2nd Test</th>
+                                <th class="px-4 py-3 text-center">Notes</th>
                                 <th class="px-4 py-3 text-center">Exam</th>
                                 <th class="px-4 py-3 text-center">Total</th>
                                 <th class="px-4 py-3 text-center">Current Grade</th>
@@ -202,6 +202,17 @@ document.querySelectorAll('.score-row').forEach((row) => {
             total.textContent = sum.toFixed(1);
         });
     });
+});
+
+const studentSelect = document.getElementById('student_id');
+const classSelect = document.getElementById('class_id');
+
+studentSelect?.addEventListener('change', () => {
+    const classId = studentSelect.selectedOptions[0]?.dataset.classId;
+
+    if (classId && classSelect) {
+        classSelect.value = classId;
+    }
 });
 </script>
 @endsection

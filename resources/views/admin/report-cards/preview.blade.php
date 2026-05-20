@@ -14,6 +14,11 @@
                 <span class="px-3 py-1 rounded-full text-xs font-semibold {{ $reportCard->isPublished() ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800' }}">
                     {{ $reportCard->isPublished() ? 'Published, fee clearance required' : 'Hidden from parents and students' }}
                 </span>
+                @if($reportCard->review_required)
+                    <span class="ml-2 px-3 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-800">
+                        Needs Review After Score Update
+                    </span>
+                @endif
             </p>
         </div>
         <div class="flex flex-wrap gap-3">
@@ -68,6 +73,9 @@
                 <p><span class="font-semibold text-gray-700">Overall Grade:</span> {{ $reportCard->overall_grade }}</p>
                 <p><span class="font-semibold text-gray-700">Average Score:</span> {{ number_format($reportCard->average_score, 1) }}%</p>
                 <p><span class="font-semibold text-gray-700">Position:</span> {{ $reportCard->position }}/{{ $reportCard->total_students }}</p>
+                <p><span class="font-semibold text-gray-700">Last Score Update:</span> {{ $reportCard->scores_updated_at?->format('d M Y, H:i') ?? 'Not recorded' }}</p>
+                <p><span class="font-semibold text-gray-700">Last Reviewed:</span> {{ $reportCard->reviewed_at?->format('d M Y, H:i') ?? 'Not reviewed' }}</p>
+                <p><span class="font-semibold text-gray-700">Reviewed By:</span> {{ $reportCard->reviewer?->name ?? '-' }}</p>
             </div>
 
             <div>

@@ -83,7 +83,7 @@
                         <th class="px-6 py-4 text-left font-bold">Subject</th>
                         <th class="px-6 py-4 text-left font-bold">Class</th>
                         <th class="px-6 py-4 text-center font-bold">1st Test</th>
-                        <th class="px-6 py-4 text-center font-bold">2nd Test</th>
+                        <th class="px-6 py-4 text-center font-bold">Notes</th>
                         <th class="px-6 py-4 text-center font-bold">Exam</th>
                         <th class="px-6 py-4 text-center font-bold">Total</th>
                         <th class="px-6 py-4 text-center font-bold">Status</th>

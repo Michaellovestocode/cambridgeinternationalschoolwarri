@@ -17,7 +17,6 @@ class Announcement extends Model
         'button_url',
         'image_path',
         'gallery_images',
-        'video_path',
         'video_url',
         'event_date',
         'location',
@@ -111,11 +110,6 @@ class Announcement extends Model
         }
 
         return null;
-    }
-
-    public function getVideoFileUrlAttribute(): ?string
-    {
-        return $this->mediaUrl($this->video_path);
     }
 
     private function mediaUrl(?string $storedPath): ?string

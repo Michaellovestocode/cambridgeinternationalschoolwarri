@@ -34,13 +34,13 @@
                         <span class="font-bold">1st Test:</span> 0-30
                     </div>
                     <div>
-                        <span class="font-bold">2nd Test:</span> 0-10
+                        <span class="font-bold">Notes:</span> 0-10
                     </div>
                     <div>
                         <span class="font-bold">Exam:</span> 0-60
                     </div>
                 </div>
-                <p class="text-blue-800 text-sm mt-3">Total = 1st Test (30) + 2nd Test (10) + Exam (60) = 100 marks</p>
+                <p class="text-blue-800 text-sm mt-3">Total = 1st Test (30) + Notes (10) + Exam (60) = 100 marks</p>
             </div>
 
             <!-- Students Score Table -->
@@ -56,7 +56,7 @@
                                 <th class="border border-gray-300 px-4 py-3 text-left font-bold">S/N</th>
                                 <th class="border border-gray-300 px-4 py-3 text-left font-bold">Student Name</th>
                                 <th class="border border-gray-300 px-4 py-3 text-center font-bold">1st Test (30)</th>
-                                <th class="border border-gray-300 px-4 py-3 text-center font-bold">2nd Test (10)</th>
+                                <th class="border border-gray-300 px-4 py-3 text-center font-bold">Notes (10)</th>
                                 <th class="border border-gray-300 px-4 py-3 text-center font-bold">Exam (60)</th>
                                 <th class="border border-gray-300 px-4 py-3 text-center font-bold">Total (100)</th>
                             </tr>

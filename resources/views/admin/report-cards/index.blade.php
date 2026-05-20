@@ -29,6 +29,16 @@
         </div>
     @endif
 
+    @if ($errors->any())
+        <div class="bg-red-100 border border-red-200 text-red-800 px-4 py-3 rounded-lg">
+            <ul class="list-disc list-inside space-y-1">
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
     <div class="bg-white rounded-xl shadow p-6">
         <form method="GET" action="{{ route('admin.report-cards') }}" class="grid lg:grid-cols-4 gap-4">
             <div>
@@ -204,9 +214,19 @@
                             <td class="px-4 py-3">{{ $reportCard->session->name }}</td>
                             <td class="px-4 py-3">{{ $reportCard->term->name }}</td>
                             <td class="px-4 py-3">
-                                <span class="px-3 py-1 rounded-full text-xs {{ $reportCard->isPublished() ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800' }}">
-                                    {{ ucfirst($reportCard->status) }}
-                                </span>
+                                <div class="flex flex-wrap gap-2">
+                                    <span class="px-3 py-1 rounded-full text-xs {{ $reportCard->isPublished() ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800' }}">
+                                        {{ ucfirst($reportCard->status) }}
+                                    </span>
+                                    @if($reportCard->review_required)
+                                        <span class="px-3 py-1 rounded-full text-xs bg-red-100 text-red-800">
+                                            Needs Review
+                                        </span>
+                                    @endif
+                                </div>
+                                @if($reportCard->scores_updated_at)
+                                    <p class="mt-1 text-xs text-gray-500">Scores: {{ $reportCard->scores_updated_at->format('d M, H:i') }}</p>
+                                @endif
                             </td>
                             <td class="px-4 py-3 text-right">
                                 <div class="flex flex-wrap justify-end gap-2">

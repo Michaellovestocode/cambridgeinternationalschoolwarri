@@ -7,6 +7,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class BlogPostController extends Controller
@@ -280,6 +281,7 @@ class BlogPostController extends Controller
 
     public function adminDestroy(BlogPost $post)
     {
+        $this->deleteStoredMedia($post);
         $post->delete();
 
         return redirect()
@@ -372,6 +374,36 @@ class BlogPostController extends Controller
             ->map(fn ($file) => $file->store('blog/gallery', 'public'))
             ->values()
             ->all();
+    }
+
+    private function deleteStoredMedia(BlogPost $post): void
+    {
+        collect([$post->image_path])
+            ->merge($post->gallery_images ?? [])
+            ->each(fn ($path) => $this->deletePublicFile($path));
+    }
+
+    private function deletePublicFile(?string $path): void
+    {
+        if (!$path || str_starts_with($path, 'http://') || str_starts_with($path, 'https://')) {
+            return;
+        }
+
+        $path = ltrim(str_replace('\\', '/', $path), '/');
+
+        if (str_starts_with($path, 'public/')) {
+            $path = substr($path, strlen('public/'));
+        }
+
+        if (str_starts_with($path, 'storage/')) {
+            $path = substr($path, strlen('storage/'));
+        }
+
+        if (!str_starts_with($path, 'blog/')) {
+            return;
+        }
+
+        Storage::disk('public')->delete($path);
     }
 
     private function uniqueSlug(string $title, ?int $ignoreId = null): string
