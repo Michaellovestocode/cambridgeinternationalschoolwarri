@@ -140,7 +140,7 @@ class SchoolClass extends Model
         return [
             $sectionOrder[$this->section_key] ?? 99,
             $this->level_number ?? 99,
-            strnattolower($this->display_name),
+            strtolower($this->display_name),
         ];
     }
 }
