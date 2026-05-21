@@ -145,6 +145,11 @@ class StudentController extends Controller
             abort(403);
         }
 
+        if ($attempt->isRejected()) {
+            return redirect()->route('student.dashboard')
+                ->with('info', 'That attempt was rejected by your teacher/admin. Please start the exam again.');
+        }
+
         // Check if already submitted
         if ($attempt->isSubmitted() || $attempt->isGraded()) {
             return redirect()->route('student.view-result', $attempt->id);
@@ -225,6 +230,11 @@ class StudentController extends Controller
     // Check ownership
     if ($attempt->user_id != Auth::id()) {
         abort(403);
+    }
+
+    if ($attempt->isRejected()) {
+        return redirect()->route('student.dashboard')
+            ->with('info', 'That attempt was rejected. Please start the exam again.');
     }
 
     if ($attempt->isSubmitted() || $attempt->isGraded()) {
@@ -365,6 +375,11 @@ class StudentController extends Controller
         // Check ownership
         if ($attempt->user_id != Auth::id()) {
             abort(403);
+        }
+
+        if ($attempt->isRejected()) {
+            return redirect()->route('student.dashboard')
+                ->with('info', 'That attempt was rejected by your teacher/admin. You can retake the exam if it is still open.');
         }
 
         $canViewReleasedResults = (bool) $attempt->exam->show_results_to_students;

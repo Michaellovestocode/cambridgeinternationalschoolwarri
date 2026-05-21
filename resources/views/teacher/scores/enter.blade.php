@@ -3,12 +3,25 @@
 @section('title', 'Enter Scores - ' . ($class->name ?? 'Class'))
 
 @section('content')
+@php
+    $modeLabels = [
+        'first_test' => '1st Test',
+        'notes' => 'Notes',
+        'exam' => 'Exam',
+        'all' => 'All Scores',
+    ];
+
+    $scoreMode = $scoreMode ?? 'all';
+    $scoreFields = $scoreFields ?? ['ca1', 'ca2', 'exam'];
+    $modeLabel = $modeLabels[$scoreMode] ?? 'All Scores';
+@endphp
 <div class="max-w-6xl mx-auto px-4 py-8">
     <div class="mb-8">
         <h1 class="text-3xl font-bold text-gray-800 mb-2">
             📝 Enter Scores - {{ $class->name ?? 'Class' }}
         </h1>
         <p class="text-gray-600">{{ $subject->name ?? 'Subject' }} | {{ $activeSession->name ?? '' }} - {{ $activeTerm->name ?? '' }}</p>
+        <p class="text-sm font-semibold text-blue-700 mt-2">Current entry mode: {{ $modeLabel }}</p>
     </div>
 
     <!-- Navigation -->
@@ -18,6 +31,15 @@
         </a>
     </div>
 
+    <div class="mb-6 grid grid-cols-2 md:grid-cols-4 gap-3">
+        @foreach($modeLabels as $value => $label)
+            <a href="{{ route('teacher.scores.enter') }}?class_id={{ $class->id }}&subject_id={{ $subject->id }}&score_mode={{ $value }}"
+               class="rounded-lg border-2 px-4 py-3 text-center font-bold transition {{ $scoreMode === $value ? 'border-blue-600 bg-blue-600 text-white shadow' : 'border-gray-200 bg-white text-gray-700 hover:border-blue-300' }}">
+                {{ $label }}
+            </a>
+        @endforeach
+    </div>
+
     <!-- Score Entry Form -->
     <div class="bg-white rounded-lg shadow-lg p-8">
         <form id="scoresForm" method="POST" class="space-y-6">
@@ -25,6 +47,7 @@
 
             <input type="hidden" name="class_id" value="{{ $class->id }}">
             <input type="hidden" name="subject_id" value="{{ $subject->id }}">
+            <input type="hidden" name="score_mode" value="{{ $scoreMode }}">
 
             <!-- Score Grading System Info -->
             <div class="bg-blue-50 border border-blue-300 rounded-lg p-4 mb-6">
@@ -55,10 +78,17 @@
                             <tr>
                                 <th class="border border-gray-300 px-4 py-3 text-left font-bold">S/N</th>
                                 <th class="border border-gray-300 px-4 py-3 text-left font-bold">Student Name</th>
-                                <th class="border border-gray-300 px-4 py-3 text-center font-bold">1st Test (30)</th>
-                                <th class="border border-gray-300 px-4 py-3 text-center font-bold">Notes (10)</th>
-                                <th class="border border-gray-300 px-4 py-3 text-center font-bold">Exam (60)</th>
+                                @if(in_array('ca1', $scoreFields, true))
+                                    <th class="border border-gray-300 px-4 py-3 text-center font-bold">1st Test (30)</th>
+                                @endif
+                                @if(in_array('ca2', $scoreFields, true))
+                                    <th class="border border-gray-300 px-4 py-3 text-center font-bold">Notes (10)</th>
+                                @endif
+                                @if(in_array('exam', $scoreFields, true))
+                                    <th class="border border-gray-300 px-4 py-3 text-center font-bold">Exam (60)</th>
+                                @endif
                                 <th class="border border-gray-300 px-4 py-3 text-center font-bold">Total (100)</th>
+                                <th class="border border-gray-300 px-4 py-3 text-center font-bold">Status</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -76,33 +106,57 @@
                                         <br>
                                         <span class="text-sm text-gray-500">{{ $student->registration_number }}</span>
                                     </td>
-                                    <td class="border border-gray-300 px-4 py-3">
-                                        <input type="number" name="scores[{{ $index }}][student_id]" value="{{ $student->id }}" hidden>
-                                        <input type="number" 
-                                            name="scores[{{ $index }}][ca1]" 
-                                            value="{{ $ca1 }}"
-                                            min="0" max="30" step="0.5"
-                                            class="w-full border border-gray-400 rounded px-2 py-1 text-center focus:outline-none focus:border-blue-500"
-                                            placeholder="0">
-                                    </td>
-                                    <td class="border border-gray-300 px-4 py-3">
-                                        <input type="number" 
-                                            name="scores[{{ $index }}][ca2]" 
-                                            value="{{ $ca2 }}"
-                                            min="0" max="10" step="0.5"
-                                            class="w-full border border-gray-400 rounded px-2 py-1 text-center focus:outline-none focus:border-blue-500"
-                                            placeholder="0">
-                                    </td>
-                                    <td class="border border-gray-300 px-4 py-3">
-                                        <input type="number" 
-                                            name="scores[{{ $index }}][exam]" 
-                                            value="{{ $exam }}"
-                                            min="0" max="60" step="0.5"
-                                            class="w-full border border-gray-400 rounded px-2 py-1 text-center focus:outline-none focus:border-blue-500"
-                                            placeholder="0">
-                                    </td>
+                                    <input type="hidden" name="scores[{{ $index }}][student_id]" value="{{ $student->id }}">
+
+                                    @if(in_array('ca1', $scoreFields, true))
+                                        <td class="border border-gray-300 px-4 py-3">
+                                            <input type="number" 
+                                                name="scores[{{ $index }}][ca1]" 
+                                                value="{{ $ca1 }}"
+                                                min="0" max="30" step="0.5"
+                                                class="w-full border border-gray-400 rounded px-2 py-1 text-center focus:outline-none focus:border-blue-500"
+                                                placeholder="0">
+                                        </td>
+                                    @else
+                                        <input type="hidden" name="scores[{{ $index }}][ca1]" value="{{ $ca1 }}">
+                                    @endif
+
+                                    @if(in_array('ca2', $scoreFields, true))
+                                        <td class="border border-gray-300 px-4 py-3">
+                                            <input type="number" 
+                                                name="scores[{{ $index }}][ca2]" 
+                                                value="{{ $ca2 }}"
+                                                min="0" max="10" step="0.5"
+                                                class="w-full border border-gray-400 rounded px-2 py-1 text-center focus:outline-none focus:border-blue-500"
+                                                placeholder="0">
+                                        </td>
+                                    @else
+                                        <input type="hidden" name="scores[{{ $index }}][ca2]" value="{{ $ca2 }}">
+                                    @endif
+
+                                    @if(in_array('exam', $scoreFields, true))
+                                        <td class="border border-gray-300 px-4 py-3">
+                                            <input type="number" 
+                                                name="scores[{{ $index }}][exam]" 
+                                                value="{{ $exam }}"
+                                                min="0" max="60" step="0.5"
+                                                class="w-full border border-gray-400 rounded px-2 py-1 text-center focus:outline-none focus:border-blue-500"
+                                                placeholder="0">
+                                        </td>
+                                    @else
+                                        <input type="hidden" name="scores[{{ $index }}][exam]" value="{{ $exam }}">
+                                    @endif
                                     <td class="border border-gray-300 px-4 py-3 text-center font-bold bg-gray-100">
                                         <span class="total-score">{{ ($ca1 ?? 0) + ($ca2 ?? 0) + ($exam ?? 0) }}</span>
+                                    </td>
+                                    <td class="border border-gray-300 px-4 py-3 text-center">
+                                        @if($existingScore)
+                                            <span class="inline-flex rounded-full px-3 py-1 text-xs font-bold {{ $existingScore->status === 'submitted' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700' }}">
+                                                {{ ucfirst($existingScore->status) }}
+                                            </span>
+                                        @else
+                                            <span class="inline-flex rounded-full bg-gray-100 px-3 py-1 text-xs font-bold text-gray-600">Not saved</span>
+                                        @endif
                                     </td>
                                 </tr>
                             @endforeach

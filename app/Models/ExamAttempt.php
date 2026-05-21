@@ -32,6 +32,7 @@ class ExamAttempt extends Model
     const STATUS_IN_PROGRESS = 'in_progress';
     const STATUS_SUBMITTED = 'submitted';
     const STATUS_GRADED = 'graded';
+    const STATUS_REJECTED = 'rejected';
 
     public function user()
     {
@@ -61,6 +62,11 @@ class ExamAttempt extends Model
     public function isGraded(): bool
     {
         return $this->status === self::STATUS_GRADED;
+    }
+
+    public function isRejected(): bool
+    {
+        return $this->status === self::STATUS_REJECTED;
     }
 
     public function secondsRemaining(): int

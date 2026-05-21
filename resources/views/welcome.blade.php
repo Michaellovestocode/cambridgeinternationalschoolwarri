@@ -225,6 +225,57 @@
         /* â”€â”€ Sticky nav shadow on scroll â”€â”€ */
         .nav-scrolled { box-shadow: 0 4px 24px rgba(0,0,0,.12) !important; }
 
+        .mobile-menu-panel {
+            background:
+                radial-gradient(circle at top left, rgba(252, 211, 77, .26), transparent 34%),
+                radial-gradient(circle at bottom right, rgba(16, 185, 129, .20), transparent 34%),
+                linear-gradient(145deg, rgba(255,255,255,.98), rgba(239,246,255,.96));
+        }
+        .mobile-menu-link {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: .75rem;
+            border: 1px solid rgba(226, 232, 240, .95);
+            border-radius: 1rem;
+            background: rgba(255,255,255,.78);
+            padding: .85rem 1rem;
+            color: #0f172a;
+            font-weight: 800;
+            box-shadow: 0 10px 24px rgba(15, 23, 42, .06);
+            transition: transform .2s ease, border-color .2s ease, box-shadow .2s ease;
+        }
+        .mobile-menu-link:hover {
+            transform: translateY(-2px);
+            border-color: rgba(37, 99, 235, .35);
+            box-shadow: 0 16px 30px rgba(37, 99, 235, .10);
+        }
+        .mobile-menu-link span:first-child {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 2rem;
+            height: 2rem;
+            border-radius: .8rem;
+            background: linear-gradient(135deg, #dbeafe, #dcfce7);
+            color: #1d4ed8;
+            font-size: .82rem;
+            font-weight: 900;
+        }
+        .mobile-menu-toggle .menu-line {
+            transform-origin: center;
+            transition: transform .22s ease, opacity .22s ease;
+        }
+        .mobile-menu-toggle.is-open .menu-line-top {
+            transform: translateY(6px) rotate(45deg);
+        }
+        .mobile-menu-toggle.is-open .menu-line-middle {
+            opacity: 0;
+        }
+        .mobile-menu-toggle.is-open .menu-line-bottom {
+            transform: translateY(-6px) rotate(-45deg);
+        }
+
         /* â”€â”€ Accordion â”€â”€ */
         .faq-body {
             max-height: 0; overflow: hidden;
@@ -329,26 +380,44 @@
 <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
      MOBILE MENU OVERLAY
 â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
-<div id="mobileMenu" class="fixed inset-0 bg-black/95 z-50 hidden">
-    <div class="flex justify-end p-6">
-        <button onclick="toggleMenu()" class="text-white" aria-label="Close menu">
-            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-            </svg>
-        </button>
-    </div>
-    <div class="flex flex-col items-center justify-center space-y-8 text-white text-2xl font-semibold mt-12">
-        <a href="#home"        onclick="toggleMenu()" class="hover:text-yellow-400 transition">Home</a>
-        <a href="#programs"    onclick="toggleMenu()" class="hover:text-yellow-400 transition">Programs</a>
-        <a href="#about"       onclick="toggleMenu()" class="hover:text-yellow-400 transition">About</a>
-        <a href="#news"        onclick="toggleMenu()" class="hover:text-yellow-400 transition">News</a>
-        <a href="#gallery"     onclick="toggleMenu()" class="hover:text-yellow-400 transition">Gallery</a>
-        <a href="#faq"         onclick="toggleMenu()" class="hover:text-yellow-400 transition">FAQ</a>
-        <a href="#contact"     onclick="toggleMenu()" class="hover:text-yellow-400 transition">Contact</a>
-        <div class="flex flex-wrap justify-center gap-3 mt-2">
-            <a href="{{ route('blog.index') }}" class="bg-blue-600 text-white px-7 py-3 rounded-full font-bold">Blog</a>
-            <a href="{{ route('apply.create') }}" class="bg-white text-gray-900 px-7 py-3 rounded-full font-bold">Apply Now</a>
-            <a href="/login" class="bg-gradient-to-r from-blue-600 to-green-600 px-7 py-3 rounded-full font-bold">Login</a>
+<div id="mobileMenu" class="fixed inset-0 z-50 hidden bg-slate-950/45 p-4 backdrop-blur-sm">
+    <div class="mobile-menu-panel min-h-full rounded-[2rem] border border-white/70 shadow-2xl">
+        <div class="flex items-center justify-between border-b border-slate-200/80 p-5">
+            <div class="flex items-center gap-3">
+                <div class="h-12 w-12 overflow-hidden rounded-2xl bg-white shadow">
+                    <img src="{{ asset('images/schoollogo.jpg') }}" alt="Cambridge International School logo" class="h-full w-full object-cover">
+                </div>
+                <div>
+                    <p class="text-lg font-black leading-tight text-slate-950">Cambridge</p>
+                    <p class="text-xs font-bold uppercase text-blue-700" style="letter-spacing:.12em;">International School</p>
+                </div>
+            </div>
+            <button onclick="toggleMenu()" class="rounded-full bg-white p-3 text-slate-700 shadow-lg" aria-label="Close menu">
+                <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.4" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
+        </div>
+
+        <div class="px-5 py-6">
+            <p class="mb-4 text-xs font-black uppercase text-slate-500" style="letter-spacing:.18em;">Explore</p>
+            <div class="grid gap-3">
+                <a href="#home" onclick="toggleMenu()" class="mobile-menu-link"><span>01</span><strong>Home</strong><em class="not-italic text-blue-500">Open</em></a>
+                <a href="#programs" onclick="toggleMenu()" class="mobile-menu-link"><span>02</span><strong>Programs</strong><em class="not-italic text-green-500">Learn</em></a>
+                <a href="#about" onclick="toggleMenu()" class="mobile-menu-link"><span>03</span><strong>About</strong><em class="not-italic text-amber-500">Story</em></a>
+                <a href="#news" onclick="toggleMenu()" class="mobile-menu-link"><span>04</span><strong>News</strong><em class="not-italic text-rose-500">Latest</em></a>
+                <a href="#gallery" onclick="toggleMenu()" class="mobile-menu-link"><span>05</span><strong>Gallery</strong><em class="not-italic text-purple-500">View</em></a>
+                <a href="#faq" onclick="toggleMenu()" class="mobile-menu-link"><span>06</span><strong>FAQ</strong><em class="not-italic text-sky-500">Help</em></a>
+                <a href="#contact" onclick="toggleMenu()" class="mobile-menu-link"><span>07</span><strong>Contact</strong><em class="not-italic text-emerald-500">Reach us</em></a>
+            </div>
+
+            <div class="mt-6 rounded-2xl bg-slate-950 p-3 shadow-xl">
+                <div class="grid grid-cols-3 gap-2">
+                    <a href="{{ route('blog.index') }}" class="rounded-xl bg-white/10 px-3 py-3 text-center text-sm font-black text-white transition hover:bg-white/20">Blog</a>
+                    <a href="{{ route('apply.create') }}" class="rounded-xl bg-amber-400 px-3 py-3 text-center text-sm font-black text-slate-950 transition hover:bg-amber-300">Apply</a>
+                    <a href="/login" class="rounded-xl bg-blue-600 px-3 py-3 text-center text-sm font-black text-white transition hover:bg-blue-500">Login</a>
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -392,9 +461,11 @@
                 <a href="/login" class="hidden sm:block bg-gradient-to-r from-blue-600 to-green-600 text-white px-6 py-2.5 rounded-full font-bold hover:shadow-xl transition transform hover:scale-105">
                     Login
                 </a>
-                <button onclick="toggleMenu()" class="lg:hidden" aria-label="Open menu">
-                    <svg class="w-7 h-7 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                <button id="mobileMenuButton" onclick="toggleMenu()" class="mobile-menu-toggle lg:hidden rounded-full border border-blue-100 bg-white p-2.5 shadow-sm" aria-label="Open menu">
+                    <svg class="h-6 w-6 text-slate-800" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path class="menu-line menu-line-top" stroke-linecap="round" stroke-width="2.4" d="M5 7h14"/>
+                        <path class="menu-line menu-line-middle" stroke-linecap="round" stroke-width="2.4" d="M5 12h14"/>
+                        <path class="menu-line menu-line-bottom" stroke-linecap="round" stroke-width="2.4" d="M5 17h14"/>
                     </svg>
                 </button>
             </div>
@@ -1403,7 +1474,13 @@
 <script>
     /* â”€â”€ Mobile Menu â”€â”€ */
     function toggleMenu() {
-        document.getElementById('mobileMenu').classList.toggle('hidden');
+        const menu = document.getElementById('mobileMenu');
+        const button = document.getElementById('mobileMenuButton');
+        const isOpening = menu.classList.contains('hidden');
+
+        menu.classList.toggle('hidden');
+        button?.classList.toggle('is-open', isOpening);
+        document.body.classList.toggle('overflow-hidden', isOpening);
     }
 
     /* â”€â”€ Counter Animation â”€â”€ */

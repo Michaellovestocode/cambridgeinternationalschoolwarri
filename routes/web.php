@@ -45,8 +45,9 @@ Route::get('/', function () {
     }
     
     $announcements = Announcement::published()
-        ->homepageOrder()
-        ->take(3)
+        ->orderByRaw('COALESCE(published_at, created_at) DESC')
+        ->orderByDesc('created_at')
+        ->take(6)
         ->get();
 
     $tickerAnnouncements = Announcement::published()
@@ -108,7 +109,7 @@ Route::middleware('auth')->group(function () {
     // Teacher Score Entry
 Route::get('/teacher/scores', [TeacherScoreController::class, 'dashboard'])->name('teacher.scores.dashboard');
 Route::get('/teacher/scores/select', [TeacherScoreController::class, 'selectClassSubject'])->name('teacher.scores.select');
-Route::post('/teacher/scores/enter', [TeacherScoreController::class, 'enterScores'])->name('teacher.scores.enter');
+Route::match(['get', 'post'], '/teacher/scores/enter', [TeacherScoreController::class, 'enterScores'])->name('teacher.scores.enter');
 Route::post('/teacher/scores/save', [TeacherScoreController::class, 'saveScores'])->name('teacher.scores.save');
 Route::post('/teacher/scores/submit', [TeacherScoreController::class, 'submitScores'])->name('teacher.scores.submit');
 Route::get('/teacher/scores/my-scores', [TeacherScoreController::class, 'myScores'])->name('teacher.scores.my-scores');
@@ -261,6 +262,7 @@ Route::get('/teacher/scores/my-scores', [TeacherScoreController::class, 'myScore
         Route::put('/exams/{exam}/result-release', [AdminController::class, 'updateResultRelease'])->name('exam.result-release');
         Route::get('/attempts/{attempt}/grade', [AdminController::class, 'gradeAttempt'])->name('attempt.grade');
         Route::post('/attempts/{attempt}/grade', [AdminController::class, 'updateGrading'])->name('attempt.update-grade');
+        Route::post('/attempts/{attempt}/reject', [AdminController::class, 'rejectAttempt'])->name('attempt.reject');
         
         // Exports
         Route::get('/exams/{exam}/export/pdf', [AdminController::class, 'exportResultsPDF'])->name('exam.export.pdf');

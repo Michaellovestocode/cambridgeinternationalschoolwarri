@@ -91,6 +91,7 @@ class TeacherScoreController extends Controller
         $request->validate([
             'class_id' => 'required|exists:school_classes,id',
             'subject_id' => 'required|exists:subjects,id',
+            'score_mode' => 'nullable|in:all,first_test,notes,exam',
             'scores' => 'sometimes|array',
             'scores.*.student_id' => 'required_with:scores|exists:users,id',
             'scores.*.ca1' => 'nullable|numeric|min:0|max:30',
@@ -101,6 +102,8 @@ class TeacherScoreController extends Controller
         $teacher = Auth::user();
         $activeSession = Session::getActive();
         $activeTerm = Term::getActive();
+        $scoreMode = $request->input('score_mode', 'all');
+        $scoreFields = $this->scoreFieldsForMode($scoreMode);
         
         $class = SchoolClass::findOrFail($request->class_id);
         $subject = Subject::findOrFail($request->subject_id);
@@ -125,7 +128,9 @@ class TeacherScoreController extends Controller
             'students', 
             'scores', 
             'activeSession', 
-            'activeTerm'
+            'activeTerm',
+            'scoreMode',
+            'scoreFields'
         ));
     }
     
@@ -136,6 +141,7 @@ class TeacherScoreController extends Controller
         $request->validate([
             'class_id' => 'required|exists:school_classes,id',
             'subject_id' => 'required|exists:subjects,id',
+            'score_mode' => 'nullable|in:all,first_test,notes,exam',
             'scores' => 'required|array',
             'scores.*.student_id' => 'required|exists:users,id',
             'scores.*.ca1' => 'nullable|numeric|min:0|max:30',
@@ -146,34 +152,37 @@ class TeacherScoreController extends Controller
         $teacher = Auth::user();
         $activeSession = Session::getActive();
         $activeTerm = Term::getActive();
+        $scoreMode = $request->input('score_mode', 'all');
+        $scoreFields = $this->scoreFieldsForMode($scoreMode);
         $this->authorizeScoreEntry($teacher, (int) $request->class_id, (int) $request->subject_id);
         
         DB::beginTransaction();
         
         try {
             foreach ($request->scores as $scoreData) {
-                // Skip if all fields are empty
-                if (empty($scoreData['ca1']) && empty($scoreData['ca2']) && empty($scoreData['exam'])) {
+                $score = Score::firstOrNew([
+                    'student_id' => $scoreData['student_id'],
+                    'subject_id' => $request->subject_id,
+                    'session_id' => $activeSession->id,
+                    'term_id' => $activeTerm->id,
+                ]);
+
+                if (!$this->rowHasScoreForFields($scoreData, $scoreFields) && !$score->exists) {
                     continue;
                 }
-                
-                Score::updateOrCreate(
-                    [
-                        'student_id' => $scoreData['student_id'],
-                        'subject_id' => $request->subject_id,
-                        'session_id' => $activeSession->id,
-                        'term_id' => $activeTerm->id,
-                    ],
+
+                $score->fill($this->scorePayloadForFields(
+                    $score,
+                    $scoreData,
+                    $scoreFields,
                     [
                         'class_id' => $request->class_id,
                         'teacher_id' => $teacher->id,
-                        'ca1' => $scoreData['ca1'] ?? 0,
-                        'ca2' => $scoreData['ca2'] ?? 0,
-                        'ca3' => 0,
-                        'exam' => $scoreData['exam'] ?? 0,
                         'status' => 'draft',
                     ]
-                );
+                ));
+
+                $score->save();
             }
             
             DB::commit();
@@ -193,12 +202,20 @@ class TeacherScoreController extends Controller
         $request->validate([
             'class_id' => 'required|exists:school_classes,id',
             'subject_id' => 'required|exists:subjects,id',
+            'score_mode' => 'nullable|in:all,first_test,notes,exam',
+            'scores' => 'sometimes|array',
+            'scores.*.student_id' => 'required_with:scores|exists:users,id',
+            'scores.*.ca1' => 'nullable|numeric|min:0|max:30',
+            'scores.*.ca2' => 'nullable|numeric|min:0|max:10',
+            'scores.*.exam' => 'nullable|numeric|min:0|max:60',
         ]);
         
         $teacher = Auth::user();
         $activeSession = Session::getActive();
         $activeTerm = Term::getActive();
         $this->authorizeScoreEntry($teacher, (int) $request->class_id, (int) $request->subject_id);
+        $scoreMode = $request->input('score_mode', 'all');
+        $scoreFields = $this->scoreFieldsForMode($scoreMode);
         
         DB::beginTransaction();
 
@@ -206,27 +223,29 @@ class TeacherScoreController extends Controller
             $savedCount = 0;
 
             foreach ($request->input('scores', []) as $scoreData) {
-                if (empty($scoreData['ca1']) && empty($scoreData['ca2']) && empty($scoreData['exam'])) {
+                $score = Score::firstOrNew([
+                    'student_id' => $scoreData['student_id'],
+                    'subject_id' => $request->subject_id,
+                    'session_id' => $activeSession->id,
+                    'term_id' => $activeTerm->id,
+                ]);
+
+                if (!$this->rowHasScoreForFields($scoreData, $scoreFields) && !$score->exists) {
                     continue;
                 }
 
-                Score::updateOrCreate(
-                    [
-                        'student_id' => $scoreData['student_id'],
-                        'subject_id' => $request->subject_id,
-                        'session_id' => $activeSession->id,
-                        'term_id' => $activeTerm->id,
-                    ],
+                $score->fill($this->scorePayloadForFields(
+                    $score,
+                    $scoreData,
+                    $scoreFields,
                     [
                         'class_id' => $request->class_id,
                         'teacher_id' => $teacher->id,
-                        'ca1' => $scoreData['ca1'] ?? 0,
-                        'ca2' => $scoreData['ca2'] ?? 0,
-                        'ca3' => 0,
-                        'exam' => $scoreData['exam'] ?? 0,
                         'status' => 'submitted',
                     ]
-                );
+                ));
+
+                $score->save();
 
                 $savedCount++;
             }
@@ -338,6 +357,45 @@ class TeacherScoreController extends Controller
         $hasSubject = $teacher->subjects()->whereKey($subjectId)->exists();
 
         abort_unless($hasClass && $hasSubject, 403, 'You can only enter scores for classes and subjects assigned to you.');
+    }
+
+    private function scoreFieldsForMode(string $mode): array
+    {
+        return match ($mode) {
+            'first_test' => ['ca1'],
+            'notes' => ['ca2'],
+            'exam' => ['exam'],
+            default => ['ca1', 'ca2', 'exam'],
+        };
+    }
+
+    private function rowHasScoreForFields(array $scoreData, array $fields): bool
+    {
+        foreach ($fields as $field) {
+            if (array_key_exists($field, $scoreData) && $scoreData[$field] !== null && $scoreData[$field] !== '') {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private function scorePayloadForFields(Score $score, array $scoreData, array $fields, array $basePayload): array
+    {
+        $payload = array_merge($basePayload, ['ca3' => 0]);
+
+        foreach (['ca1', 'ca2', 'exam'] as $field) {
+            if (in_array($field, $fields, true)) {
+                $payload[$field] = $scoreData[$field] ?? 0;
+                continue;
+            }
+
+            if (!$score->exists) {
+                $payload[$field] = 0;
+            }
+        }
+
+        return $payload;
     }
 
     private function refreshReportCardsForClass(int $classId, Session $session, Term $term): int

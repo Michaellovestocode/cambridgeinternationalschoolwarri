@@ -23,6 +23,10 @@
                     {{ $announcement->button_label ?: 'Open link' }}
                 </a>
             @endif
+
+            <button type="button" id="copyAnnouncementLink" data-copy-url="{{ route('announcements.show', $announcement) }}" class="mt-8 inline-flex rounded-xl border border-emerald-200 px-6 py-3 font-black text-emerald-700 hover:bg-emerald-50">
+                Copy Link
+            </button>
         </div>
 
         @if($announcement->image_url)
@@ -83,4 +87,13 @@
         </div>
     </section>
 @endif
+
+<script>
+    document.getElementById('copyAnnouncementLink')?.addEventListener('click', async function () {
+        await navigator.clipboard.writeText(this.dataset.copyUrl);
+        const originalText = this.textContent;
+        this.textContent = 'Copied';
+        setTimeout(() => this.textContent = originalText, 1600);
+    });
+</script>
 @endsection

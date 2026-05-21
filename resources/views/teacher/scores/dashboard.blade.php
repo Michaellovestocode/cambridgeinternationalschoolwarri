@@ -6,7 +6,7 @@
 <div class="max-w-6xl mx-auto px-4 py-8">
     <div class="mb-8">
         <h1 class="text-4xl font-bold text-gray-800 mb-2">📊 Score Entry Dashboard</h1>
-        <p class="text-gray-600">Manage continuous assessment and exam scores for your students</p>
+        <p class="text-gray-600">Save 1st Test, Notes, and Exam scores as they become available, then submit when ready for report-card review.</p>
     </div>
 
     <!-- Session/Term Info -->
@@ -103,10 +103,10 @@
             <!-- Enter Scores -->
             <div class="border-2 border-blue-300 rounded-lg p-6 hover:shadow-lg transition">
                 <div class="text-5xl mb-4">📝</div>
-                <h3 class="text-xl font-bold text-gray-800 mb-2">Enter Scores</h3>
-                <p class="text-gray-600 mb-4">Enter 1st Test, Notes, and exam scores for your assigned classes and subjects.</p>
+                <h3 class="text-xl font-bold text-gray-800 mb-2">Continuous Assessment & Exam Scores</h3>
+                <p class="text-gray-600 mb-4">Enter 1st Test, Notes, or Exam separately for your assigned classes and subjects.</p>
                 <a href="{{ route('teacher.scores.select') }}" class="inline-block w-full text-center bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold transition">
-                    Begin Entering Scores
+                    Enter Scores
                 </a>
             </div>
 

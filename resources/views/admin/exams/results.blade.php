@@ -17,7 +17,7 @@
         </div>
 
         <!-- Statistics -->
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
+        <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mt-6">
             <div class="bg-blue-50 p-4 rounded-lg">
                 <div class="text-sm text-gray-600">Total Students</div>
                 <div class="text-2xl font-bold text-blue-600">{{ $statistics['total_students'] }}</div>
@@ -33,6 +33,10 @@
             <div class="bg-purple-50 p-4 rounded-lg">
                 <div class="text-sm text-gray-600">Pass Rate</div>
                 <div class="text-2xl font-bold text-purple-600">{{ $statistics['pass_rate'] }}%</div>
+            </div>
+            <div class="bg-red-50 p-4 rounded-lg">
+                <div class="text-sm text-gray-600">Rejected / Retake</div>
+                <div class="text-2xl font-bold text-red-600">{{ $statistics['rejected'] }}</div>
             </div>
         </div>
 
@@ -131,6 +135,8 @@
                                 <span class="px-2 py-1 text-xs bg-green-100 text-green-800 rounded-full">Graded</span>
                             @elseif($attempt->status === 'submitted')
                                 <span class="px-2 py-1 text-xs bg-yellow-100 text-yellow-800 rounded-full">Pending</span>
+                            @elseif($attempt->status === 'rejected')
+                                <span class="px-2 py-1 text-xs bg-red-100 text-red-800 rounded-full">Rejected - Retake Allowed</span>
                             @else
                                 <span class="px-2 py-1 text-xs bg-gray-100 text-gray-800 rounded-full">In Progress</span>
                             @endif
@@ -145,39 +151,56 @@
                             @endif
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm">
-                            <div class="flex gap-3 items-center">
+                            <div class="flex flex-wrap gap-3 items-center">
                                 @if($attempt->status === 'in_progress')
-                                    <!-- Submit For Student Button -->
-                                    <form method="POST" 
-                                          action="{{ route('admin.submit-for-student', $attempt->id) }}" 
-                                          onsubmit="return confirm('⚠️ Submit exam for {{ $attempt->user->name }}?\n\nThis will:\n✓ Mark exam as completed\n✓ Auto-grade MCQ/Fill-blank\n✓ Stop the timer\n\nCannot be undone!')"
+                                    <form method="POST"
+                                          action="{{ route('admin.submit-for-student', $attempt->id) }}"
+                                          onsubmit="return confirm('Submit exam for {{ $attempt->user->name }}? This will mark the exam as completed and stop the timer.');"
                                           class="inline">
                                         @csrf
-                                        <button type="submit" 
+                                        <button type="submit"
                                                 class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-xs font-semibold">
-                                            ✓ Submit
+                                            Submit
                                         </button>
                                     </form>
-                                    <a href="{{ route('admin.attempt.grade', $attempt->id) }}" 
-                                       class="text-gray-400 hover:text-gray-600 text-xs" title="View Progress">
-                                        👁️ View
+                                    <a href="{{ route('admin.attempt.grade', $attempt->id) }}"
+                                       class="text-gray-500 hover:text-gray-700 text-xs font-semibold" title="View Progress">
+                                        View
                                     </a>
                                 @elseif($attempt->status === 'submitted')
-                                    <a href="{{ route('admin.attempt.grade', $attempt->id) }}" 
+                                    <a href="{{ route('admin.attempt.grade', $attempt->id) }}"
                                        class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-xs font-semibold">
-                                        📝 Grade Now
+                                        Grade Now
                                     </a>
+                                    <form method="POST"
+                                          action="{{ route('admin.attempt.reject', $attempt->id) }}"
+                                          onsubmit="return confirm('Reject this submitted attempt for {{ $attempt->user->name }}? The student will be allowed to retake the exam.');"
+                                          class="inline">
+                                        @csrf
+                                        <button type="submit" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-xs font-semibold">
+                                            Reject / Retake
+                                        </button>
+                                    </form>
                                 @elseif($attempt->status === 'graded')
-                                    <div class="flex gap-2">
-                                        <a href="{{ route('admin.attempt.print', $attempt->id) }}" 
-                                           class="text-purple-600 hover:text-purple-800 text-lg" title="Print Script">
-                                            🖨️
-                                        </a>
-                                        <a href="{{ route('admin.attempt.grade', $attempt->id) }}" 
-                                           class="text-green-600 hover:text-green-800 text-lg" title="View/Edit">
-                                            👁️
-                                        </a>
-                                    </div>
+                                    <a href="{{ route('admin.attempt.print', $attempt->id) }}"
+                                       class="text-purple-600 hover:text-purple-800 text-xs font-bold" title="Print Script">
+                                        Print
+                                    </a>
+                                    <a href="{{ route('admin.attempt.grade', $attempt->id) }}"
+                                       class="text-green-600 hover:text-green-800 text-xs font-bold" title="View/Edit">
+                                        View/Edit
+                                    </a>
+                                    <form method="POST"
+                                          action="{{ route('admin.attempt.reject', $attempt->id) }}"
+                                          onsubmit="return confirm('Reject this graded attempt for {{ $attempt->user->name }}? This will remove the exam score from report-card calculation and allow a retake.');"
+                                          class="inline">
+                                        @csrf
+                                        <button type="submit" class="text-red-600 hover:text-red-800 text-xs font-bold" title="Reject and allow retake">
+                                            Retake
+                                        </button>
+                                    </form>
+                                @elseif($attempt->status === 'rejected')
+                                    <span class="text-xs font-semibold text-red-600">Waiting for retake</span>
                                 @endif
                             </div>
                         </td>

@@ -5,18 +5,18 @@
 @section('content')
 <div x-data="examApp()" class="space-y-6">
     <!-- Timer and Header (STICKY) -->
-<div class="exam-sticky-header sticky z-40 bg-white rounded-lg shadow-lg border-b-4 border-green-600 p-4 md:p-6 mb-6">
-    <div class="flex flex-wrap justify-between items-center gap-4">
-        <div>
-            <h2 class="text-2xl font-bold text-gray-800">{{ $attempt->exam->title }}</h2>
-            <p class="text-gray-600">{{ $attempt->exam->subject }}</p>
+<div class="exam-sticky-header sticky z-40 mb-4 rounded-xl border border-green-100 bg-white/95 px-3 py-2 shadow-md backdrop-blur md:px-4">
+    <div class="flex items-center justify-between gap-3">
+        <div class="min-w-0 flex-1">
+            <h2 class="truncate text-sm font-black text-gray-900 sm:text-lg">{{ $attempt->exam->title }}</h2>
+            <p class="truncate text-xs font-semibold text-gray-500 sm:text-sm">{{ $attempt->exam->subject }}</p>
         </div>
-        <div class="text-center bg-gradient-to-br from-green-50 to-blue-50 border-2 rounded-xl px-5 py-3 min-w-44" :class="timeRemaining < 300 ? 'border-red-500 from-red-50 to-orange-50' : 'border-green-500'">
-            <div class="text-2xl md:text-3xl font-bold" :class="timeRemaining < 300 ? 'text-red-600' : 'text-green-600'">
+        <div class="shrink-0 rounded-xl border bg-gradient-to-br from-green-50 to-blue-50 px-3 py-2 text-center sm:px-4" :class="timeRemaining < 300 ? 'border-red-400 from-red-50 to-orange-50' : 'border-green-300'">
+            <div class="font-mono text-lg font-black leading-none sm:text-2xl" :class="timeRemaining < 300 ? 'text-red-600' : 'text-green-700'">
                 <span x-text="formatTime(timeRemaining)"></span>
             </div>
-            <div class="text-sm font-semibold uppercase" :class="timeRemaining < 300 ? 'text-red-600' : 'text-gray-600'">
-                Time Remaining
+            <div class="mt-1 text-[10px] font-black uppercase leading-none sm:text-xs" :class="timeRemaining < 300 ? 'text-red-600' : 'text-gray-500'">
+                Time Left
             </div>
         </div>
     </div>
@@ -26,7 +26,7 @@
     <!-- Questions -->
     <form id="exam-form" @submit.prevent="submitExam">
         @csrf
-        <div class="bg-white rounded-lg shadow p-6 space-y-8">
+        <div class="bg-white rounded-lg shadow p-4 space-y-6 sm:p-6 sm:space-y-8">
             @php $lastPassageId = null; @endphp
             @foreach($questions as $index => $question)
             @if($question->passage && $lastPassageId !== $question->question_passage_id)
@@ -606,11 +606,11 @@ function examApp() {
 
 <style>
 .exam-sticky-header {
-    top: 6rem;
+    top: 5.25rem;
 }
 @media (max-width: 767px) {
     .exam-sticky-header {
-        top: 8.5rem;
+        top: 4.75rem;
     }
 }
 .CodeMirror { 

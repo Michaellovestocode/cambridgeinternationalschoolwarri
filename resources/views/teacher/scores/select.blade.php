@@ -6,7 +6,7 @@
 <div class="max-w-4xl mx-auto px-4 py-8">
     <div class="mb-8">
         <h1 class="text-3xl font-bold text-gray-800 mb-2">📋 Select Class and Subject</h1>
-        <p class="text-gray-600">Choose the class and subject to enter scores for</p>
+        <p class="text-gray-600">Choose what you want to enter now. You can save 1st Test, Notes, and Exam separately during the term.</p>
     </div>
 
     <!-- Session/Term Info -->
@@ -63,11 +63,36 @@
                 @enderror
             </div>
 
+            <!-- Score Mode -->
+            <div>
+                <label class="block text-gray-700 font-bold mb-3">
+                    <span class="text-red-500">*</span> What score do you want to enter?
+                </label>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                    @php
+                        $modes = [
+                            'first_test' => ['title' => '1st Test', 'detail' => 'Out of 30'],
+                            'notes' => ['title' => 'Notes', 'detail' => 'Out of 10'],
+                            'exam' => ['title' => 'Exam', 'detail' => 'Out of 60'],
+                            'all' => ['title' => 'All Scores', 'detail' => '30 + 10 + 60'],
+                        ];
+                    @endphp
+                    @foreach($modes as $value => $mode)
+                        <label class="cursor-pointer">
+                            <input type="radio" name="score_mode" value="{{ $value }}" class="peer sr-only" {{ old('score_mode', 'first_test') === $value ? 'checked' : '' }}>
+                            <span class="block rounded-lg border-2 border-gray-200 bg-white p-4 transition peer-checked:border-blue-600 peer-checked:bg-blue-50">
+                                <span class="block font-bold text-gray-900">{{ $mode['title'] }}</span>
+                                <span class="block text-sm text-gray-600">{{ $mode['detail'] }}</span>
+                            </span>
+                        </label>
+                    @endforeach
+                </div>
+            </div>
+
             <!-- Info Box -->
             <div class="bg-blue-50 border border-blue-300 rounded-lg p-4">
                 <p class="text-blue-800">
-                    <strong>Note:</strong> You can enter and edit scores multiple times before submission. 
-                    Once submitted, scores cannot be modified.
+                    <strong>Note:</strong> Use Save Draft while the term is ongoing. Final Submit refreshes the report cards and sends them back for form-teacher review.
                 </p>
             </div>
 

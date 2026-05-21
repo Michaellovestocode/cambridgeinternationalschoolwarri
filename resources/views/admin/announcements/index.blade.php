@@ -104,6 +104,7 @@
                         <a href="{{ route('admin.announcements.edit', $announcement) }}" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl font-semibold">Edit</a>
                         @if($announcement->is_published)
                             <a href="{{ route('announcements.show', $announcement) }}" target="_blank" class="border border-slate-200 text-slate-700 hover:bg-slate-50 px-4 py-2 rounded-xl font-semibold">View Public</a>
+                            <button type="button" data-copy-url="{{ route('announcements.show', $announcement) }}" class="copy-announcement-link border border-emerald-200 text-emerald-700 hover:bg-emerald-50 px-4 py-2 rounded-xl font-semibold">Copy Link</button>
                         @endif
                         <form method="POST" action="{{ route('admin.announcements.destroy', $announcement) }}" onsubmit="return confirm('Delete this website update?');">
                             @csrf
@@ -125,4 +126,15 @@
         {{ $announcements->links() }}
     </div>
 </div>
+
+<script>
+    document.querySelectorAll('.copy-announcement-link').forEach((button) => {
+        button.addEventListener('click', async () => {
+            await navigator.clipboard.writeText(button.dataset.copyUrl);
+            const originalText = button.textContent;
+            button.textContent = 'Copied';
+            setTimeout(() => button.textContent = originalText, 1600);
+        });
+    });
+</script>
 @endsection

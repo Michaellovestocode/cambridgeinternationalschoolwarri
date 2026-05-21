@@ -683,18 +683,24 @@ public function storeManualExamScores(Request $request, $examId)
         }
 
         $attempts = $exam->attempts()
-            ->whereIn('status', ['submitted', 'graded'])
+            ->whereIn('status', [
+                ExamAttempt::STATUS_SUBMITTED,
+                ExamAttempt::STATUS_GRADED,
+                ExamAttempt::STATUS_REJECTED,
+            ])
             ->with('user')
+            ->latest()
             ->get();
 
         // Calculate statistics
-        $gradedAttempts = $attempts->where('status', 'graded');
+        $gradedAttempts = $attempts->where('status', ExamAttempt::STATUS_GRADED);
         $scores = $gradedAttempts->pluck('total_score')->filter();
         
         $statistics = [
-            'total_students' => $attempts->count(),
+            'total_students' => $attempts->where('status', '!=', ExamAttempt::STATUS_REJECTED)->count(),
             'graded' => $gradedAttempts->count(),
-            'pending' => $attempts->where('status', 'submitted')->count(),
+            'pending' => $attempts->where('status', ExamAttempt::STATUS_SUBMITTED)->count(),
+            'rejected' => $attempts->where('status', ExamAttempt::STATUS_REJECTED)->count(),
             'average' => $scores->count() > 0 ? round($scores->average(), 2) : 0,
             'highest' => $scores->count() > 0 ? $scores->max() : 0,
             'lowest' => $scores->count() > 0 ? $scores->min() : 0,
@@ -725,12 +731,43 @@ public function storeManualExamScores(Request $request, $examId)
         return redirect()->route('admin.exam.results', $exam->id)->with('success', $message);
     }
 
+    public function rejectAttempt(Request $request, $attemptId)
+    {
+        $attempt = ExamAttempt::with(['exam.subjectModel', 'user'])->findOrFail($attemptId);
+
+        abort_unless($this->canManageAttempt($attempt), 403);
+
+        if ($attempt->isRejected()) {
+            return redirect()->route('admin.exam.results', $attempt->exam_id)
+                ->with('info', 'This attempt has already been rejected.');
+        }
+
+        DB::transaction(function () use ($attempt) {
+            $wasGraded = $attempt->isGraded();
+
+            $attempt->update([
+                'status' => ExamAttempt::STATUS_REJECTED,
+                'total_score' => null,
+                'objective_score' => null,
+                'subjective_score' => null,
+            ]);
+
+            if ($wasGraded) {
+                $this->removeRejectedAttemptFromReportCard($attempt);
+            }
+        });
+
+        return redirect()->route('admin.exam.results', $attempt->exam_id)
+            ->with('success', "{$attempt->user->name}'s attempt was rejected. The student can now retake this exam.");
+    }
+
     public function gradeAttempt($attemptId)
     {
         $attempt = ExamAttempt::with(['exam', 'user', 'answers.question'])
             ->findOrFail($attemptId);
         
         abort_unless($this->canManageAttempt($attempt), 403);
+        abort_if($attempt->isRejected(), 403, 'Rejected attempts cannot be graded. The student should retake the exam.');
 
         return view('admin.exams.grade', compact('attempt'));
     }
@@ -740,6 +777,7 @@ public function storeManualExamScores(Request $request, $examId)
         $attempt = ExamAttempt::with(['answers', 'exam', 'user'])->findOrFail($attemptId);
         
         abort_unless($this->canManageAttempt($attempt), 403);
+        abort_if($attempt->isRejected(), 403, 'Rejected attempts cannot be graded. The student should retake the exam.');
 
         $validated = $request->validate([
             'final_score' => ['nullable', 'numeric', 'min:0', 'max:' . max((float) $attempt->exam->total_marks, 1)],
@@ -1479,5 +1517,92 @@ private function refreshReportCardsForClass(int $classId, Session $session, Term
     }
 
     return $generated;
+}
+
+private function removeRejectedAttemptFromReportCard(ExamAttempt $attempt): void
+{
+    $attempt->loadMissing(['exam.subjectModel', 'user']);
+
+    $session = Session::getActive();
+    $term = Term::getActive();
+
+    if (!$session || !$term || !$attempt->user?->class_id) {
+        return;
+    }
+
+    $subject = $attempt->exam->subjectModel;
+
+    if (!$subject && $attempt->exam->subject) {
+        $subject = Subject::where('name', $attempt->exam->subject)
+            ->orWhere('code', $attempt->exam->subject)
+            ->first();
+    }
+
+    if (!$subject) {
+        return;
+    }
+
+    $score = Score::where('student_id', $attempt->user_id)
+        ->where('subject_id', $subject->id)
+        ->where('session_id', $session->id)
+        ->where('term_id', $term->id)
+        ->first();
+
+    if ($score) {
+        $hasTests = ((float) $score->ca1 > 0) || ((float) $score->ca2 > 0) || ((float) $score->ca3 > 0);
+
+        if ($hasTests) {
+            $score->update([
+                'exam' => 0,
+                'status' => 'submitted',
+            ]);
+        } else {
+            $score->delete();
+        }
+
+        Score::calculatePositions($subject->id, $attempt->user->class_id, $session->id, $term->id);
+
+        $classAverage = Score::calculateClassAverage($subject->id, $attempt->user->class_id, $session->id, $term->id);
+
+        Score::where('subject_id', $subject->id)
+            ->where('class_id', $attempt->user->class_id)
+            ->where('session_id', $session->id)
+            ->where('term_id', $term->id)
+            ->update(['class_average' => $classAverage]);
+    }
+
+    $summary = ReportCard::generateForStudent($attempt->user_id, $session->id, $term->id);
+    $reportCard = ReportCard::firstOrNew([
+        'student_id' => $attempt->user_id,
+        'session_id' => $session->id,
+        'term_id' => $term->id,
+    ]);
+
+    if ($summary) {
+        $reportCard->fill(array_merge($summary, [
+            'class_id' => $attempt->user->class_id,
+        ]));
+    }
+
+    if ($reportCard->exists || $summary) {
+        $reportCard->fill([
+            'status' => 'generated',
+            'review_required' => true,
+            'published_at' => null,
+            'scores_updated_at' => now(),
+        ]);
+
+        if (!$reportCard->exists) {
+            $reportCard->fill([
+                'days_school_opened' => 0,
+                'days_present' => 0,
+                'days_absent' => 0,
+                'attendance_percentage' => 0,
+                'next_term_begins' => $term->next_term_begins,
+            ]);
+        }
+
+        $reportCard->save();
+    }
 }
 }
