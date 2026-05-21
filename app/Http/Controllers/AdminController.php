@@ -1081,10 +1081,13 @@ public function classes()
 {
     $classes = SchoolClass::withCount(['students', 'exams'])
         ->get()
-        ->sort(fn (SchoolClass $first, SchoolClass $second) => strnatcasecmp($first->display_name, $second->display_name))
+        ->sort(fn (SchoolClass $first, SchoolClass $second) => $first->classSortKey() <=> $second->classSortKey())
         ->values();
 
-    return view('admin.classes.index', compact('classes'));
+    $sectionDefinitions = SchoolClass::sectionDefinitions();
+    $groupedClasses = $classes->groupBy('section_key');
+
+    return view('admin.classes.index', compact('classes', 'groupedClasses', 'sectionDefinitions'));
 }
 
 public function storeClass(Request $request)

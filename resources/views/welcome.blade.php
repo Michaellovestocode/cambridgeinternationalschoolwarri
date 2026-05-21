@@ -1129,29 +1129,89 @@
      GALLERY SECTION
 â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
 <section id="gallery" class="py-16 sm:py-24 bg-white">
+    @php
+        $fallbackGalleryAlbums = collect([
+            (object) [
+                'title' => 'Sports & Team Spirit',
+                'category' => 'sports',
+                'description' => 'Energetic school activities and student teamwork.',
+                'cover_image_url' => asset('images/sport.jpg'),
+                'display_date' => null,
+                'images' => collect([(object) ['image_url' => asset('images/sport.jpg'), 'caption' => 'Sports and team activities']]),
+            ],
+            (object) [
+                'title' => 'School Life',
+                'category' => 'campus life',
+                'description' => 'Everyday learning moments across the Cambridge community.',
+                'cover_image_url' => asset('images/school life1.jpg'),
+                'display_date' => null,
+                'images' => collect([(object) ['image_url' => asset('images/school life1.jpg'), 'caption' => 'Campus life at Cambridge']]),
+            ],
+            (object) [
+                'title' => 'ICT & Learning',
+                'category' => 'classrooms',
+                'description' => 'Students building confidence through digital learning.',
+                'cover_image_url' => asset('images/boycomputer.jpg'),
+                'display_date' => null,
+                'images' => collect([(object) ['image_url' => asset('images/boycomputer.jpg'), 'caption' => 'ICT learning session']]),
+            ],
+            (object) [
+                'title' => 'Events & Moments',
+                'category' => 'events',
+                'description' => 'Special events, clubs, and memorable school moments.',
+                'cover_image_url' => asset('images/lifee.jpg'),
+                'display_date' => null,
+                'images' => collect([(object) ['image_url' => asset('images/lifee.jpg'), 'caption' => 'School events and moments']]),
+            ],
+        ]);
+
+        $homepageGalleryAlbums = ($galleryAlbums ?? collect())->isNotEmpty() ? $galleryAlbums : $fallbackGalleryAlbums;
+        $featuredGalleryAlbum = $homepageGalleryAlbums->first();
+        $galleryTiles = $homepageGalleryAlbums->skip(1)->take(5);
+    @endphp
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center max-w-3xl mx-auto mb-12 sm:mb-16 fade-in-up">
             <h2 class="text-4xl sm:text-5xl md:text-6xl font-black text-gray-900 mb-4">School Life</h2>
-            <p class="text-lg sm:text-xl text-gray-600">Experience the vibrant Cambridge community</p>
+            <p class="text-lg sm:text-xl text-gray-600">Experience the vibrant Cambridge community through albums, events, and everyday learning moments.</p>
         </div>
 
-        <div class="grid grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
-            <div class="card-hover rounded-3xl overflow-hidden shadow-lg cursor-pointer fade-in-up" onclick="openLightbox(this)">
-                <img src="{{ asset('images/sport.jpg') }}" alt="Students" class="w-full h-48 sm:h-64 object-cover hover:scale-105 transition duration-500">
-            </div>
-            <div class="card-hover rounded-3xl overflow-hidden shadow-lg cursor-pointer fade-in-up" onclick="openLightbox(this)" style="transition-delay:.05s">
-                <img src="{{ asset('images/school life1.jpg') }}" alt="Classroom" class="w-full h-48 sm:h-64 object-cover hover:scale-105 transition duration-500">
-            </div>
-            <div class="card-hover rounded-3xl overflow-hidden shadow-lg cursor-pointer fade-in-up" onclick="openLightbox(this)" style="transition-delay:.1s">
-                <img src="{{ asset('images/boycomputer.jpg') }}" alt="Learning" class="w-full h-48 sm:h-64 object-cover hover:scale-105 transition duration-500">
-            </div>
-            <div class="card-hover rounded-3xl overflow-hidden shadow-lg cursor-pointer fade-in-up md:col-span-2" onclick="openLightbox(this)" style="transition-delay:.15s">
-                <img src="{{ asset('images/lifee.jpg') }}" alt="Technology" class="w-full h-48 sm:h-64 object-cover hover:scale-105 transition duration-500">
-            </div>
-            <div class="card-hover rounded-3xl overflow-hidden shadow-lg cursor-pointer fade-in-up" onclick="openLightbox(this)" style="transition-delay:.2s">
-                <img src="https://images.unsplash.com/photo-1546410531-bb4caa6b424d?w=400&q=80" alt="Group learning" class="w-full h-48 sm:h-64 object-cover hover:scale-105 transition duration-500">
+        <div class="grid gap-5 lg:grid-cols-[1.2fr_.8fr]">
+            @if($featuredGalleryAlbum)
+                <article class="card-hover group relative min-h-[24rem] overflow-hidden rounded-3xl shadow-xl fade-in-up cursor-pointer" onclick="openLightbox(this)">
+                    <img src="{{ $featuredGalleryAlbum->cover_image_url }}" alt="{{ $featuredGalleryAlbum->title }}" class="absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-105">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/25 to-transparent"></div>
+                    <div class="absolute bottom-0 left-0 right-0 p-6 sm:p-8 text-white">
+                        <span class="inline-flex rounded-full bg-white/20 px-3 py-1 text-xs font-black uppercase backdrop-blur">{{ ucfirst($featuredGalleryAlbum->category) }}</span>
+                        <h3 class="mt-4 text-3xl font-black sm:text-4xl">{{ $featuredGalleryAlbum->title }}</h3>
+                        <p class="mt-3 max-w-xl text-sm leading-6 text-white/85">{{ $featuredGalleryAlbum->description }}</p>
+                    </div>
+                </article>
+            @endif
+
+            <div class="grid grid-cols-2 gap-4">
+                @foreach($galleryTiles as $index => $album)
+                    <article class="card-hover group relative min-h-44 overflow-hidden rounded-3xl shadow-lg fade-in-up cursor-pointer {{ $index === 2 ? 'col-span-2' : '' }}" onclick="openLightbox(this)" style="transition-delay:.{{ $index + 1 }}s">
+                        <img src="{{ $album->cover_image_url }}" alt="{{ $album->title }}" class="absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-105">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/75 via-black/10 to-transparent"></div>
+                        <div class="absolute bottom-0 left-0 right-0 p-4 text-white">
+                            <p class="text-xs font-black uppercase text-amber-200">{{ ucfirst($album->category) }}</p>
+                            <h3 class="mt-1 text-sm font-black sm:text-base">{{ $album->title }}</h3>
+                        </div>
+                    </article>
+                @endforeach
             </div>
         </div>
+
+        @if(($galleryAlbums ?? collect())->isNotEmpty())
+            <div class="mt-8 flex gap-3 overflow-x-auto pb-2 sm:hidden">
+                @foreach($homepageGalleryAlbums as $album)
+                    <button type="button" onclick="openLightbox(this)" class="shrink-0 overflow-hidden rounded-2xl border border-gray-100 bg-white shadow">
+                        <img src="{{ $album->cover_image_url }}" alt="{{ $album->title }}" class="h-24 w-36 object-cover">
+                        <span class="block max-w-36 truncate px-3 py-2 text-left text-xs font-bold text-gray-700">{{ $album->title }}</span>
+                    </button>
+                @endforeach
+            </div>
+        @endif
     </div>
 </section>
 

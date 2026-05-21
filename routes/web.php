@@ -21,7 +21,9 @@ use App\Http\Controllers\StudentLearningSessionController;
 use App\Http\Controllers\AdminFeeClearanceController;
 use App\Http\Controllers\BlogPostController;
 use App\Http\Controllers\BlogImageController;
+use App\Http\Controllers\GalleryController;
 use App\Models\Announcement;
+use App\Models\GalleryAlbum;
 
 /*
 |--------------------------------------------------------------------------
@@ -56,7 +58,13 @@ Route::get('/', function () {
         ->take(6)
         ->get();
 
-    return view('welcome', compact('announcements', 'tickerAnnouncements'));
+    $galleryAlbums = GalleryAlbum::published()
+        ->with('images')
+        ->homepageOrder()
+        ->take(6)
+        ->get();
+
+    return view('welcome', compact('announcements', 'tickerAnnouncements', 'galleryAlbums'));
 });
 
 Route::get('/apply', [AdmissionEnquiryController::class, 'create'])->name('apply.create');
@@ -154,6 +162,12 @@ Route::get('/teacher/scores/my-scores', [TeacherScoreController::class, 'myScore
         Route::get('/announcements/{announcement}/edit', [AnnouncementController::class, 'edit'])->name('announcements.edit');
         Route::put('/announcements/{announcement}', [AnnouncementController::class, 'update'])->name('announcements.update');
         Route::delete('/announcements/{announcement}', [AnnouncementController::class, 'destroy'])->name('announcements.destroy');
+        Route::get('/gallery', [GalleryController::class, 'index'])->name('gallery.index');
+        Route::get('/gallery/create', [GalleryController::class, 'create'])->name('gallery.create');
+        Route::post('/gallery', [GalleryController::class, 'store'])->name('gallery.store');
+        Route::get('/gallery/{album}/edit', [GalleryController::class, 'edit'])->name('gallery.edit');
+        Route::put('/gallery/{album}', [GalleryController::class, 'update'])->name('gallery.update');
+        Route::delete('/gallery/{album}', [GalleryController::class, 'destroy'])->name('gallery.destroy');
     });
 
     // Admin/Teacher routes
