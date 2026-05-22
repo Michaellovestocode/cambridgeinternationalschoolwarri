@@ -114,7 +114,11 @@
                                     name="question_{{ $question->id }}" 
                                     value="{{ $key }}"
                                     {{ $savedAnswer && $savedAnswer->answer_text == $key ? 'checked' : '' }}
-                                    @change="saveAnswer({{ $question->id }}, $event.target.value)"
+                                    @change="saveAnswer({{ $question->id }}, $event.target.value); $event.target.blur()"
+                                    @keydown.arrow-up.prevent="window.scrollBy({ top: -120, behavior: 'smooth' })"
+                                    @keydown.arrow-down.prevent="window.scrollBy({ top: 120, behavior: 'smooth' })"
+                                    @keydown.arrow-left.prevent
+                                    @keydown.arrow-right.prevent
                                     class="mr-3 h-4 w-4 text-green-600">
                                 <span><strong>{{ $key }}.</strong> {{ $option }}</span>
                             </label>
