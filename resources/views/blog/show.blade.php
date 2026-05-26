@@ -26,7 +26,7 @@
     .blog-gist {
         min-height: 100vh;
         background:
-            linear-gradient(135deg, rgba(219, 234, 254, .72), rgba(255, 255, 255, .96) 35%, rgba(254, 226, 226, .42) 100%),
+            linear-gradient(180deg, rgba(239, 246, 255, .96), rgba(255, 255, 255, .98) 28rem),
             #f8fafc;
         color: #0f172a;
         overflow-x: hidden;
@@ -52,7 +52,6 @@
     .gist-card {
         background: #ffffff;
         border: 1px solid rgba(15, 23, 42, .1);
-        border-top: 3px solid rgba(37, 99, 235, .22);
         box-shadow: 0 18px 45px rgba(15, 23, 42, .08);
     }
 
@@ -65,6 +64,14 @@
 
     .blog-nav-shell.drawer-open {
         z-index: 9999;
+    }
+
+    .blog-mobile-brand {
+        font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
+        letter-spacing: .018em;
+        font-size: 1rem;
+        line-height: 1;
+        white-space: nowrap;
     }
 
     .blog-logo-mark {
@@ -100,9 +107,30 @@
 
     @media (max-width: 767px) {
         .gist-logo {
-            font-size: 1.08rem;
+            font-size: .95rem;
             line-height: 1;
-            letter-spacing: .025em;
+            letter-spacing: .015em;
+        }
+    }
+
+    @media (max-width: 380px) {
+        .gist-wrap {
+            padding-inline: .75rem;
+        }
+
+        .gist-logo {
+            font-size: .82rem;
+            max-width: 8.2rem;
+        }
+
+        .blog-logo-mark {
+            width: 2.25rem;
+            height: 2.25rem;
+            border-radius: .85rem;
+        }
+
+        .blog-mobile-panel {
+            width: 90vw;
         }
     }
 </style>
@@ -121,7 +149,7 @@
                     <img src="{{ asset('images/schoollogo.jpg') }}" alt="Cambridge International School logo" class="h-full w-full object-cover">
                 </span>
                 <span class="gist-logo max-w-[8.8rem] truncate text-3xl uppercase text-slate-950 sm:max-w-none">
-                    Cambridge<span class="text-blue-700">Blog</span>
+                    Cambridge<span class="text-blue-700">Magazine</span>
                 </span>
             </a>
             <div class="flex items-center gap-3">
@@ -135,14 +163,16 @@
             </div>
         </div>
 
-        <div id="mobileBlogNav" class="blog-mobile-drawer fixed inset-0 z-50 bg-slate-950/45 backdrop-blur-sm md:hidden" onclick="if (event.target.id === 'mobileBlogNav') toggleBlogMenu(false)">
+    </header>
+
+    <div id="mobileBlogNav" class="blog-mobile-drawer fixed inset-0 z-[10000] bg-slate-950/45 backdrop-blur-sm md:hidden" onclick="if (event.target.id === 'mobileBlogNav') toggleBlogMenu(false)">
             <div class="blog-mobile-panel h-full w-[86vw] max-w-sm overflow-y-auto bg-white shadow-2xl">
                 <div class="flex items-center justify-between border-b border-slate-200 p-5">
                     <a href="{{ route('blog.index') }}" class="flex min-w-0 items-center gap-3">
                         <span class="blog-logo-mark flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-2xl shadow-md">
-                            <img src="{{ asset('images/schoollogo.jpg') }}" alt="Cambridge International School logo" class="h-full w-full object-cover">
+                            <img src="{{ asset('images/schoollogo.jpg') }}" alt="Cambridge International School logo" loading="lazy" class="h-full w-full object-cover">
                         </span>
-                        <span class="gist-logo truncate text-2xl uppercase text-slate-950">Cambridge<span class="text-blue-700">Blog</span></span>
+                        <span class="blog-mobile-brand text-slate-950">Cambridge <span class="text-blue-700">Magazine</span></span>
                     </a>
                     <button type="button" onclick="toggleBlogMenu(false)" class="rounded-full bg-slate-100 px-4 py-3 text-xl font-black text-slate-700" aria-label="Close menu">&times;</button>
                 </div>
@@ -155,7 +185,6 @@
                 </div>
             </div>
         </div>
-    </header>
 
     <article>
         <section class="relative min-h-[34rem] overflow-hidden border-b border-slate-200">
@@ -163,7 +192,7 @@
             <div class="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-slate-900/55 to-blue-950/20"></div>
             <div class="gist-wrap relative flex min-h-[34rem] items-end py-10">
                 <div class="max-w-4xl">
-                    <span class="inline-flex rounded-md bg-red-600 px-3 py-2 text-[11px] font-black uppercase tracking-wider text-white">{{ \Illuminate\Support\Str::headline($post->category) }}</span>
+                    <span class="inline-flex rounded-md bg-blue-700 px-3 py-2 text-[11px] font-black uppercase tracking-wider text-white">{{ \Illuminate\Support\Str::headline($post->category) }}</span>
                     <h1 class="gist-headline mt-5 text-4xl font-black leading-[1.02] text-white md:text-6xl">{{ $post->title }}</h1>
                     @if($post->excerpt)
                         <p class="mt-5 max-w-3xl text-lg leading-8 text-white/72">{{ $post->excerpt }}</p>
@@ -188,7 +217,7 @@
                         <h2 class="gist-headline text-3xl font-black text-slate-950">Photo Gallery</h2>
                         <div class="mt-5 grid gap-4 sm:grid-cols-2">
                             @foreach($post->gallery_image_urls as $galleryImage)
-                                <img src="{{ $galleryImage }}" alt="{{ $post->title }} photo" class="h-72 w-full rounded-xl object-cover">
+                                <img src="{{ $galleryImage }}" alt="{{ $post->title }} photo" loading="lazy" class="h-72 w-full rounded-xl object-cover">
                             @endforeach
                         </div>
                     </section>
@@ -208,7 +237,7 @@
                         <div class="mt-4 divide-y divide-slate-100">
                             @foreach($relatedPosts as $related)
                                 <a href="{{ route('blog.show', $related) }}" class="grid grid-cols-[4.5rem_1fr] gap-3 py-4">
-                                    <img src="{{ $related->image_url ?: $fallbackImage }}" alt="{{ $related->title }}" class="h-16 w-20 rounded-lg object-cover">
+                                    <img src="{{ $related->image_url ?: $fallbackImage }}" alt="{{ $related->title }}" loading="lazy" class="h-16 w-20 rounded-lg object-cover">
                                     <span>
                                         <span class="line-clamp-2 text-sm font-black leading-snug text-slate-800">{{ $related->title }}</span>
                                         <span class="mt-1 block text-xs text-slate-500">{{ $related->display_date }}</span>

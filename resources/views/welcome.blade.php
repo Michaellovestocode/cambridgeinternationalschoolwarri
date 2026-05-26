@@ -681,7 +681,7 @@
 
             <div class="fade-in-up" style="transition-delay:.15s">
                 <div class="relative">
-                    <img src="{{ asset('images/school life9.jpg') }}" alt="Cambridge students learning" class="w-full h-72 sm:h-[420px] object-cover rounded-[2rem] shadow-2xl border border-white/15">
+                    <img src="{{ asset('images/school life9.jpg') }}" alt="Cambridge students learning" loading="lazy" class="w-full h-72 sm:h-[420px] object-cover rounded-[2rem] shadow-2xl border border-white/15">
                     <div class="about-vision-card absolute -bottom-6 left-6 right-6 bg-white text-gray-900 rounded-3xl shadow-2xl p-5">
                         <div class="about-vision-grid grid grid-cols-2 gap-4">
                             <div>
@@ -780,7 +780,7 @@
             <!-- Image -->
             <div class="order-2 lg:order-1 fade-in-up">
                 <div class="relative">
-                    <img src="{{ asset('images/excursion1.jpg') }}" alt="Classroom" class="rounded-3xl shadow-2xl w-full">
+                    <img src="{{ asset('images/excursion1.jpg') }}" alt="Classroom" loading="lazy" class="rounded-3xl shadow-2xl w-full">
                     <div class="absolute -bottom-6 -right-6 bg-gradient-to-br from-yellow-400 to-orange-500 p-6 rounded-2xl shadow-2xl">
                         <div class="text-white">
                             <div class="text-4xl font-black mb-1">98%</div>
@@ -870,7 +870,7 @@
              <!-- Staff Member 1 -->
             <div class="bg-white rounded-3xl shadow-lg overflow-hidden card-hover fade-in-up">
                 <div class="relative">
-    <img src="{{ asset('images/director2.png') }}" alt="Director" class="w-full h-64 object-cover">
+    <img src="{{ asset('images/director2.png') }}" alt="Director" loading="lazy" class="w-full h-64 object-cover">
     
     <div class="absolute top-4 right-4 bg-gradient-to-r from-blue-600 to-green-600 text-white px-3 py-1 rounded-full text-xs font-bold">
         Director
@@ -887,7 +887,7 @@
 
             <div class="bg-white rounded-3xl shadow-lg overflow-hidden card-hover fade-in-up">
                 <div class="relative">
-    <img src="{{ asset('images/Director.png') }}" alt="Director" class="w-full h-64 object-cover">
+    <img src="{{ asset('images/Director.png') }}" alt="Director" loading="lazy" class="w-full h-64 object-cover">
     
     <div class="absolute top-4 right-4 bg-gradient-to-r from-blue-600 to-green-600 text-white px-3 py-1 rounded-full text-xs font-bold">
         Director
@@ -903,7 +903,7 @@
             <!-- Staff Member 2 -->
             <div class="bg-white rounded-3xl shadow-lg overflow-hidden card-hover fade-in-up" style="transition-delay:.1s">
                 <div class="relative">
-    <img src="{{ asset('images/principal.jpg') }}" alt="Principal" class="w-full h-64 object-cover">
+    <img src="{{ asset('images/principal.jpg') }}" alt="Principal" loading="lazy" class="w-full h-64 object-cover">
     
     <div class="absolute top-4 right-4 bg-gradient-to-r from-blue-600 to-green-600 text-white px-3 py-1 rounded-full text-xs font-bold">
         Principal
@@ -919,7 +919,7 @@
             <!-- Staff Member 3 -->
             <div class="bg-white rounded-3xl shadow-lg overflow-hidden card-hover fade-in-up" style="transition-delay:.2s">
                 <div class="relative">
-    <img src="{{ asset('images/admin1.jpg') }}" alt="Principal" class="w-full h-64 object-cover">
+    <img src="{{ asset('images/admin1.jpg') }}" alt="Principal" loading="lazy" class="w-full h-64 object-cover">
     
     <div class="absolute top-4 right-4 bg-gradient-to-r from-blue-600 to-green-600 text-white px-3 py-1 rounded-full text-xs font-bold">
         Administrator
@@ -935,7 +935,7 @@
             <!-- Staff Member 4 -->
             <div class="bg-white rounded-3xl shadow-lg overflow-hidden card-hover fade-in-up" style="transition-delay:.3s">
                 <div class="relative">
-    <img src="{{ asset('images/vice-principal1.jpg') }}" alt="Principal" class="w-full h-64 object-cover">
+    <img src="{{ asset('images/vice-principal1.jpg') }}" alt="Principal" loading="lazy" class="w-full h-64 object-cover">
     
     <div class="absolute top-4 right-4 bg-gradient-to-r from-blue-600 to-green-600 text-white px-3 py-1 rounded-full text-xs font-bold">
         Vice Principal
@@ -1056,7 +1056,7 @@
                     }
                 @endphp
                 <article class="bg-white rounded-3xl shadow-lg overflow-hidden card-hover fade-in-up border border-gray-100" style="{{ $cardDelayStyle }}">
-                    <img src="{{ $imageUrl }}" alt="{{ $announcement->title }}" class="w-full h-60 object-cover" onerror="this.onerror=null;this.src='{{ $fallbackImageUrl }}';">
+                    <img src="{{ $imageUrl }}" alt="{{ $announcement->title }}" loading="lazy" class="w-full h-60 object-cover" onerror="this.onerror=null;this.src='{{ $fallbackImageUrl }}';">
                     <div class="p-6">
                         <div class="mb-3 flex flex-wrap items-center gap-2">
                             <span class="inline-block text-xs font-bold {{ $style["badge"] }} px-3 py-1 rounded-full">{{ $announcement->category_label }}</span>
@@ -1211,6 +1211,7 @@
         <div class="text-center max-w-3xl mx-auto mb-12 sm:mb-16 fade-in-up">
             <h2 class="text-4xl sm:text-5xl md:text-6xl font-black text-gray-900 mb-4">School Life</h2>
             <p class="text-lg sm:text-xl text-gray-600">Experience the vibrant Cambridge community through albums, events, and everyday learning moments.</p>
+            <a href="{{ route('gallery.public') }}" class="mt-5 inline-flex rounded-full bg-blue-700 px-5 py-3 text-sm font-black text-white shadow-lg transition hover:bg-blue-600">View All Albums</a>
         </div>
 
         <div class="grid gap-5 lg:grid-cols-[1.2fr_.8fr]">
@@ -1230,7 +1231,7 @@
             <div class="grid grid-cols-2 gap-4">
                 @foreach($galleryTiles as $index => $album)
                     <article class="card-hover group relative min-h-44 overflow-hidden rounded-3xl shadow-lg fade-in-up cursor-pointer {{ $index === 2 ? 'col-span-2' : '' }}" onclick='openGalleryAlbum(@js($galleryLightboxImages($album)))' style="transition-delay:.{{ $index + 1 }}s">
-                        <img src="{{ $galleryCoverImage($album) }}" alt="{{ $album->title }}" class="absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-105">
+                        <img src="{{ $galleryCoverImage($album) }}" alt="{{ $album->title }}" loading="lazy" class="absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-105">
                         <div class="absolute inset-0 bg-gradient-to-t from-black/75 via-black/10 to-transparent"></div>
                         <div class="absolute bottom-0 left-0 right-0 p-4 text-white">
                             <p class="text-xs font-black uppercase text-amber-200">{{ ucfirst($album->category) }}</p>
@@ -1245,7 +1246,7 @@
             <div class="mt-8 flex gap-3 overflow-x-auto pb-2 sm:hidden">
                 @foreach($homepageGalleryAlbums as $album)
                     <button type="button" onclick='openGalleryAlbum(@js($galleryLightboxImages($album)))' class="shrink-0 overflow-hidden rounded-2xl border border-gray-100 bg-white shadow">
-                        <img src="{{ $galleryCoverImage($album) }}" alt="{{ $album->title }}" class="h-24 w-36 object-cover">
+                        <img src="{{ $galleryCoverImage($album) }}" alt="{{ $album->title }}" loading="lazy" class="h-24 w-36 object-cover">
                         <span class="block max-w-36 truncate px-3 py-2 text-left text-xs font-bold text-gray-700">{{ $album->title }}</span>
                     </button>
                 @endforeach

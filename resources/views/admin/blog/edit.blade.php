@@ -62,6 +62,14 @@
                 @error('published_at')<p class="text-sm text-rose-600">{{ $message }}</p>@enderror
             </div>
 
+            <label class="flex items-center gap-3 rounded-2xl border border-blue-100 bg-blue-50 p-4">
+                <input type="checkbox" name="is_featured" value="1" @checked(old('is_featured', $post->is_featured)) class="h-4 w-4 rounded border-blue-200 text-blue-700 focus:ring-blue-500">
+                <span>
+                    <span class="block text-sm font-black text-blue-950">Feature on blog homepage</span>
+                    <span class="mt-1 block text-xs text-blue-700/70">Only one post can be featured at a time.</span>
+                </span>
+            </label>
+
             <div class="space-y-2">
                 <label for="image" class="block text-sm font-semibold text-gray-700">Cover Image</label>
                 <p class="text-xs text-gray-500">JPEG, PNG, GIF, or WEBP, up to 10MB.</p>

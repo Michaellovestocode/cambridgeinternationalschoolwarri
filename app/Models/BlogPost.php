@@ -23,6 +23,7 @@ class BlogPost extends Model
         'body',
         'image_path',
         'gallery_images',
+        'is_featured',
         'status',
         'admin_note',
         'submitted_at',
@@ -33,6 +34,7 @@ class BlogPost extends Model
         'submitted_at' => 'datetime',
         'published_at' => 'datetime',
         'gallery_images' => 'array',
+        'is_featured' => 'boolean',
     ];
 
     public static function statuses(): array
@@ -83,6 +85,7 @@ class BlogPost extends Model
     public function scopePublicOrder(Builder $query): Builder
     {
         return $query
+            ->orderByDesc('is_featured')
             ->orderByDesc('published_at')
             ->orderByDesc('created_at');
     }

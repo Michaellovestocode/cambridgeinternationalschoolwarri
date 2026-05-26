@@ -30,6 +30,14 @@
                     <input type="datetime-local" name="published_at" value="{{ old('published_at') }}" class="mt-3 w-full rounded-2xl border-0 bg-white px-4 py-3 text-sm font-bold text-slate-950 focus:ring-4 focus:ring-emerald-300/40">
                     @error('published_at') <span class="mt-2 block text-sm text-rose-200">{{ $message }}</span> @enderror
                 </label>
+
+                <label class="mt-5 flex items-center gap-3 rounded-2xl border border-white/10 bg-white/10 p-4">
+                    <input type="checkbox" name="is_featured" value="1" @checked(old('is_featured', $post->is_featured ?? false)) class="h-4 w-4 rounded border-white/30 text-emerald-400 focus:ring-emerald-300">
+                    <span>
+                        <span class="block text-sm font-black text-white">Feature on blog homepage</span>
+                        <span class="mt-1 block text-xs text-white/55">Only one post can be featured at a time.</span>
+                    </span>
+                </label>
             </div>
         </div>
     </section>

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\BlogPost;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
@@ -230,6 +231,7 @@ class BlogPostController extends Controller
         $data['submitted_at'] = in_array($status, [BlogPost::STATUS_PENDING, BlogPost::STATUS_PUBLISHED], true) ? now() : null;
         $data['image_path'] = $this->storeImage($request);
         $data['gallery_images'] = $this->storeGalleryImages($request);
+        $data['is_featured'] = $request->boolean('is_featured');
 
         if ($status === BlogPost::STATUS_PUBLISHED && !$request->filled('published_at')) {
             $data['published_at'] = now();
@@ -240,6 +242,7 @@ class BlogPostController extends Controller
         }
 
         $post = BlogPost::create($data);
+        $this->syncFeaturedPost($post);
 
         return redirect()
             ->route('admin.blog.edit', $post)
@@ -253,8 +256,10 @@ class BlogPostController extends Controller
         $data = $this->validatedAdminData($request);
         $status = $data['status'];
         $data['reviewed_by'] = Auth::id();
+        $data['is_featured'] = $request->boolean('is_featured');
 
         if ($request->hasFile('image')) {
+            $this->deletePublicFile($post->image_path);
             $data['image_path'] = $this->storeImage($request);
         }
 
@@ -282,6 +287,7 @@ class BlogPostController extends Controller
         }
 
         $post->update($data);
+        $this->syncFeaturedPost($post);
 
         return redirect()
             ->route('admin.blog.index')
@@ -321,6 +327,7 @@ class BlogPostController extends Controller
             'body' => ['required', 'string', 'min:50'],
             'status' => ['required', 'string', 'in:' . implode(',', BlogPost::statuses())],
             'published_at' => ['nullable', 'date'],
+            'is_featured' => ['nullable', 'boolean'],
             'admin_note' => ['nullable', 'string', 'max:1000'],
             'image' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif,webp', 'max:' . self::IMAGE_MAX_KB],
             'gallery_images' => ['nullable', 'array', 'max:10'],
@@ -369,7 +376,7 @@ class BlogPostController extends Controller
             return null;
         }
 
-        return $request->file('image')->store('blog', 'public');
+        return $this->storeOptimizedImage($request->file('image'), 'blog', 1600);
     }
 
     private function storeGalleryImages(Request $request): array
@@ -380,9 +387,86 @@ class BlogPostController extends Controller
 
         return collect($request->file('gallery_images'))
             ->filter(fn ($file) => $file && $file->isValid())
-            ->map(fn ($file) => $file->store('blog/gallery', 'public'))
+            ->map(fn ($file) => $this->storeOptimizedImage($file, 'blog/gallery', 1800))
             ->values()
             ->all();
+    }
+
+    private function syncFeaturedPost(BlogPost $post): void
+    {
+        if (!$post->is_featured) {
+            return;
+        }
+
+        BlogPost::whereKeyNot($post->id)->update(['is_featured' => false]);
+    }
+
+    private function storeOptimizedImage(UploadedFile $file, string $directory, int $maxWidth): string
+    {
+        $imageInfo = @getimagesize($file->getRealPath());
+        $mime = $imageInfo['mime'] ?? null;
+
+        if (!$imageInfo || $mime === 'image/gif' || !function_exists('imagewebp')) {
+            return $file->store($directory, 'public');
+        }
+
+        $source = match ($mime) {
+            'image/jpeg' => @imagecreatefromjpeg($file->getRealPath()),
+            'image/png' => @imagecreatefrompng($file->getRealPath()),
+            'image/webp' => function_exists('imagecreatefromwebp') ? @imagecreatefromwebp($file->getRealPath()) : false,
+            default => false,
+        };
+
+        if (!$source) {
+            return $file->store($directory, 'public');
+        }
+
+        if ($mime === 'image/jpeg') {
+            $source = $this->applyJpegOrientation($source, $file->getRealPath()) ?: $source;
+        }
+
+        $width = imagesx($source);
+        $height = imagesy($source);
+        $targetWidth = min($width, $maxWidth);
+        $targetHeight = (int) round($height * ($targetWidth / $width));
+
+        $target = imagecreatetruecolor($targetWidth, $targetHeight);
+        imagealphablending($target, false);
+        imagesavealpha($target, true);
+        imagecopyresampled($target, $source, 0, 0, 0, 0, $targetWidth, $targetHeight, $width, $height);
+
+        ob_start();
+        $encoded = imagewebp($target, null, 82);
+        $contents = ob_get_clean();
+
+        imagedestroy($source);
+        imagedestroy($target);
+
+        if (!$encoded || !$contents) {
+            return $file->store($directory, 'public');
+        }
+
+        $path = trim($directory, '/') . '/' . Str::uuid() . '.webp';
+        Storage::disk('public')->put($path, $contents);
+
+        return $path;
+    }
+
+    private function applyJpegOrientation($image, string $path): mixed
+    {
+        if (!function_exists('exif_read_data')) {
+            return $image;
+        }
+
+        $exif = @exif_read_data($path);
+        $orientation = (int) ($exif['Orientation'] ?? 1);
+
+        return match ($orientation) {
+            3 => imagerotate($image, 180, 0),
+            6 => imagerotate($image, -90, 0),
+            8 => imagerotate($image, 90, 0),
+            default => $image,
+        };
     }
 
     private function deleteStoredMedia(BlogPost $post): void

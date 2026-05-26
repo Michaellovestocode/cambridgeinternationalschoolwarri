@@ -73,6 +73,7 @@ Route::post('/admission-enquiries', [AdmissionEnquiryController::class, 'store']
 Route::get('/announcements/{announcement}', [AnnouncementController::class, 'show'])->name('announcements.show');
 Route::get('/blog', [BlogPostController::class, 'publicIndex'])->name('blog.index');
 Route::get('/blog/{post}', [BlogPostController::class, 'publicShow'])->name('blog.show');
+Route::get('/gallery', [GalleryController::class, 'publicIndex'])->name('gallery.public');
 Route::get('/blog-images/{path}', [BlogImageController::class, 'show'])
     ->where('path', '.*')
     ->name('blog-images.show');

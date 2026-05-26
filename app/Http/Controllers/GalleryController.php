@@ -10,6 +10,16 @@ use Illuminate\Support\Str;
 
 class GalleryController extends Controller
 {
+    public function publicIndex()
+    {
+        $albums = GalleryAlbum::published()
+            ->with('images')
+            ->homepageOrder()
+            ->paginate(12);
+
+        return view('gallery.index', compact('albums'));
+    }
+
     public function index()
     {
         $albums = GalleryAlbum::with('images')
