@@ -408,8 +408,8 @@
 <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
      MOBILE MENU OVERLAY
 â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
-<div id="mobileMenu" class="fixed inset-0 z-50 hidden bg-slate-950/45 p-3 backdrop-blur-sm sm:p-4" onclick="if (event.target.id === 'mobileMenu') toggleMenu(false)">
-    <div class="mobile-menu-panel flex h-full flex-col overflow-hidden rounded-[1.5rem] border border-white/70 p-4 shadow-2xl sm:rounded-[2rem]">
+<div id="mobileMenu" class="fixed inset-0 z-[10000] hidden bg-slate-950/45 px-3 pb-3 pt-20 backdrop-blur-sm sm:p-4 sm:pt-20" onclick="if (event.target.id === 'mobileMenu') toggleMenu(false)">
+    <div class="mobile-menu-panel flex h-full max-h-[calc(100vh-5.75rem)] flex-col overflow-hidden rounded-[1.5rem] border border-white/70 p-4 shadow-2xl sm:rounded-[2rem]">
         <div class="mb-3 flex items-center justify-between">
             <p class="text-xs font-black uppercase text-slate-500" style="letter-spacing:.18em;">Explore</p>
             <button onclick="toggleMenu()" class="rounded-full bg-white p-2.5 text-slate-700 shadow-lg" aria-label="Close menu">

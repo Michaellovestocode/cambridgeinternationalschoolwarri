@@ -26,7 +26,7 @@
     .blog-gist {
         min-height: 100vh;
         background:
-            linear-gradient(180deg, rgba(239, 246, 255, .96), rgba(255, 255, 255, .98) 28rem),
+            linear-gradient(135deg, rgba(219, 234, 254, .72), rgba(255, 255, 255, .96) 35%, rgba(254, 226, 226, .42) 100%),
             #f8fafc;
         color: #0f172a;
         overflow-x: hidden;
@@ -52,6 +52,7 @@
     .gist-card {
         background: #ffffff;
         border: 1px solid rgba(15, 23, 42, .1);
+        border-top: 3px solid rgba(37, 99, 235, .22);
         box-shadow: 0 18px 45px rgba(15, 23, 42, .08);
     }
 
@@ -59,6 +60,11 @@
         background:
             linear-gradient(135deg, rgba(255, 255, 255, .98), rgba(239, 246, 255, .94)),
             #ffffff;
+        box-shadow: 0 14px 34px rgba(15, 23, 42, .10), 0 1px 0 rgba(37, 99, 235, .08);
+    }
+
+    .blog-nav-shell.drawer-open {
+        z-index: 9999;
     }
 
     .blog-logo-mark {
@@ -94,9 +100,9 @@
 
     @media (max-width: 767px) {
         .gist-logo {
-            font-size: 1.45rem;
+            font-size: 1.08rem;
             line-height: 1;
-            letter-spacing: .05em;
+            letter-spacing: .025em;
         }
     }
 </style>
@@ -111,15 +117,15 @@
     <header class="blog-nav-shell sticky top-0 z-40 border-b border-slate-200 shadow-sm backdrop-blur">
         <div class="gist-wrap flex h-[72px] items-center justify-between gap-3">
             <a href="{{ route('blog.index') }}" class="flex min-w-0 items-center gap-3">
-                <span class="blog-logo-mark flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-2xl shadow-md">
+                <span class="blog-logo-mark flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-2xl shadow-md sm:h-11 sm:w-11">
                     <img src="{{ asset('images/schoollogo.jpg') }}" alt="Cambridge International School logo" class="h-full w-full object-cover">
                 </span>
-                <span class="gist-logo truncate text-3xl uppercase text-slate-950">
+                <span class="gist-logo max-w-[8.8rem] truncate text-3xl uppercase text-slate-950 sm:max-w-none">
                     Cambridge<span class="text-blue-700">Blog</span>
                 </span>
             </a>
             <div class="flex items-center gap-3">
-                <a href="{{ route('blog.index') }}" class="rounded-lg border border-slate-200 px-4 py-2 text-sm font-black text-slate-600 hover:text-slate-950">Blog</a>
+                <a href="{{ route('blog.index') }}" class="hidden rounded-lg border border-slate-200 px-4 py-2 text-sm font-black text-slate-600 hover:text-slate-950 sm:inline-flex">Blog</a>
                 <a href="{{ url('/') }}" class="hidden rounded-lg bg-blue-700 px-4 py-2 text-sm font-black text-white hover:bg-blue-600 sm:inline-flex">Home</a>
                 <button type="button" class="grid h-11 w-11 place-items-center rounded-full border border-slate-200 bg-white text-slate-700 shadow-sm md:hidden" onclick="toggleBlogMenu(true)" aria-label="Menu">
                     <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -133,7 +139,7 @@
             <div class="blog-mobile-panel h-full w-[86vw] max-w-sm overflow-y-auto bg-white shadow-2xl">
                 <div class="flex items-center justify-between border-b border-slate-200 p-5">
                     <a href="{{ route('blog.index') }}" class="flex min-w-0 items-center gap-3">
-                        <span class="blog-logo-mark flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-2xl shadow-md">
+                        <span class="blog-logo-mark flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-2xl shadow-md">
                             <img src="{{ asset('images/schoollogo.jpg') }}" alt="Cambridge International School logo" class="h-full w-full object-cover">
                         </span>
                         <span class="gist-logo truncate text-2xl uppercase text-slate-950">Cambridge<span class="text-blue-700">Blog</span></span>
@@ -157,7 +163,7 @@
             <div class="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-slate-900/55 to-blue-950/20"></div>
             <div class="gist-wrap relative flex min-h-[34rem] items-end py-10">
                 <div class="max-w-4xl">
-                    <span class="inline-flex rounded-md bg-blue-700 px-3 py-2 text-[11px] font-black uppercase tracking-wider text-white">{{ \Illuminate\Support\Str::headline($post->category) }}</span>
+                    <span class="inline-flex rounded-md bg-red-600 px-3 py-2 text-[11px] font-black uppercase tracking-wider text-white">{{ \Illuminate\Support\Str::headline($post->category) }}</span>
                     <h1 class="gist-headline mt-5 text-4xl font-black leading-[1.02] text-white md:text-6xl">{{ $post->title }}</h1>
                     @if($post->excerpt)
                         <p class="mt-5 max-w-3xl text-lg leading-8 text-white/72">{{ $post->excerpt }}</p>
@@ -220,9 +226,11 @@
 <script>
     function toggleBlogMenu(forceOpen = null) {
         const menu = document.getElementById('mobileBlogNav');
+        const header = document.querySelector('.blog-nav-shell');
         const open = forceOpen === null ? !menu.classList.contains('open') : forceOpen;
 
         menu.classList.toggle('open', open);
+        header?.classList.toggle('drawer-open', open);
         document.body.classList.toggle('overflow-hidden', open);
     }
 

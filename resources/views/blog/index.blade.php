@@ -18,7 +18,7 @@
     .blog-gist {
         min-height: 100vh;
         background:
-            linear-gradient(180deg, rgba(239, 246, 255, .96), rgba(255, 255, 255, .98) 28rem),
+            linear-gradient(135deg, rgba(219, 234, 254, .72), rgba(255, 255, 255, .96) 35%, rgba(254, 226, 226, .42) 100%),
             #f8fafc;
         color: #0f172a;
         overflow-x: hidden;
@@ -44,6 +44,7 @@
     .gist-card {
         background: #ffffff;
         border: 1px solid rgba(15, 23, 42, .1);
+        border-top: 3px solid rgba(37, 99, 235, .22);
         box-shadow: 0 18px 45px rgba(15, 23, 42, .08);
     }
 
@@ -89,6 +90,11 @@
         background:
             linear-gradient(135deg, rgba(255, 255, 255, .98), rgba(239, 246, 255, .94)),
             #ffffff;
+        box-shadow: 0 14px 34px rgba(15, 23, 42, .10), 0 1px 0 rgba(37, 99, 235, .08);
+    }
+
+    .blog-nav-shell.drawer-open {
+        z-index: 9999;
     }
 
     .blog-logo-mark {
@@ -121,9 +127,9 @@
         }
 
         .gist-logo {
-            font-size: 1.45rem;
+            font-size: 1.08rem;
             line-height: 1;
-            letter-spacing: .05em;
+            letter-spacing: .025em;
         }
 
         .gist-mobile-scroll {
@@ -167,7 +173,7 @@
 @endphp
 
 <div class="blog-gist">
-    <div class="bg-blue-700 text-white">
+    <div class="bg-gradient-to-r from-blue-700 via-blue-600 to-red-600 text-white">
         <div class="flex h-9 items-center overflow-hidden text-xs font-black">
             <div class="flex h-full shrink-0 items-center bg-slate-950 px-4 text-[10px] uppercase tracking-[.24em] text-amber-300">Notice</div>
             <div class="min-w-0 flex-1 overflow-hidden">
@@ -186,10 +192,10 @@
     <header class="blog-nav-shell sticky top-0 z-40 border-b border-slate-200 shadow-sm backdrop-blur">
         <div class="gist-wrap flex h-[72px] items-center justify-between gap-3">
             <a href="{{ route('blog.index') }}" class="flex min-w-0 items-center gap-3">
-                <span class="blog-logo-mark flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-2xl shadow-md">
+                <span class="blog-logo-mark flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-2xl shadow-md sm:h-11 sm:w-11">
                     <img src="{{ asset('images/schoollogo.jpg') }}" alt="Cambridge International School logo" class="h-full w-full object-cover">
                 </span>
-                <span class="gist-logo truncate text-3xl uppercase text-slate-950">
+                <span class="gist-logo max-w-[8.8rem] truncate text-3xl uppercase text-slate-950 sm:max-w-none">
                     Cambridge<span class="text-blue-700">Blog</span>
                 </span>
             </a>
@@ -237,7 +243,7 @@
             <div class="blog-mobile-panel h-full w-[86vw] max-w-sm overflow-y-auto bg-white shadow-2xl">
                 <div class="flex items-center justify-between border-b border-slate-200 p-5">
                     <a href="{{ route('blog.index') }}" class="flex min-w-0 items-center gap-3">
-                        <span class="blog-logo-mark flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-2xl shadow-md">
+                <span class="blog-logo-mark flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-2xl shadow-md">
                             <img src="{{ asset('images/schoollogo.jpg') }}" alt="Cambridge International School logo" class="h-full w-full object-cover">
                         </span>
                         <span class="gist-logo truncate text-2xl uppercase text-slate-950">Cambridge<span class="text-blue-700">Blog</span></span>
@@ -265,7 +271,7 @@
                     <img src="{{ $featuredPost->image_url ?: $fallbackImage }}" alt="{{ $featuredPost->title }}" class="absolute inset-0 h-full w-full object-cover opacity-80 transition duration-700 group-hover:scale-105">
                     <div class="absolute inset-0 bg-gradient-to-t from-black via-black/35 to-transparent"></div>
                     <div class="absolute bottom-0 left-0 right-0 p-5 md:p-8">
-                        <span class="inline-flex rounded-md bg-blue-700 px-3 py-2 text-[11px] font-black uppercase tracking-wider text-white">{{ \Illuminate\Support\Str::headline($featuredPost->category) }}</span>
+                        <span class="inline-flex rounded-md bg-red-600 px-3 py-2 text-[11px] font-black uppercase tracking-wider text-white">{{ \Illuminate\Support\Str::headline($featuredPost->category) }}</span>
                         <h1 class="gist-headline mt-5 max-w-4xl text-3xl font-black leading-[1.03] text-white md:text-5xl">{{ $featuredPost->title }}</h1>
                         <div class="mt-4 flex flex-wrap gap-3 text-xs font-semibold text-white/75 md:text-sm">
                             <span>By {{ $featuredPost->author?->name ?? 'Cambridge Teacher' }}</span>
@@ -313,7 +319,7 @@
                                 <a href="{{ route('blog.show', $post) }}" class="group block">
                                     <div class="relative h-64 overflow-hidden">
                                         <img src="{{ $post->image_url ?: $fallbackImage }}" alt="{{ $post->title }}" class="h-full w-full object-cover opacity-85 transition duration-700 group-hover:scale-105">
-                                        <span class="absolute left-4 top-4 rounded-md bg-blue-700 px-3 py-2 text-[11px] font-black uppercase tracking-wider text-white">{{ \Illuminate\Support\Str::headline($post->category) }}</span>
+                                        <span class="absolute left-4 top-4 rounded-md bg-red-600 px-3 py-2 text-[11px] font-black uppercase tracking-wider text-white">{{ \Illuminate\Support\Str::headline($post->category) }}</span>
                                     </div>
                                     <div class="p-5">
                                         <h3 class="gist-headline line-clamp-2 text-2xl font-black leading-tight text-slate-950">{{ $post->title }}</h3>
@@ -375,9 +381,11 @@
 <script>
     function toggleBlogMenu(forceOpen = null) {
         const menu = document.getElementById('mobileBlogNav');
+        const header = document.querySelector('.blog-nav-shell');
         const open = forceOpen === null ? !menu.classList.contains('open') : forceOpen;
 
         menu.classList.toggle('open', open);
+        header?.classList.toggle('drawer-open', open);
         document.body.classList.toggle('overflow-hidden', open);
     }
 </script>
