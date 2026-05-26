@@ -232,6 +232,21 @@
                 radial-gradient(circle at top left, rgba(252, 211, 77, .26), transparent 34%),
                 radial-gradient(circle at bottom right, rgba(16, 185, 129, .20), transparent 34%),
                 linear-gradient(145deg, rgba(255,255,255,.98), rgba(239,246,255,.96));
+            max-width: 26rem;
+            transform: translateX(-108%);
+            transition: transform .44s cubic-bezier(.22, 1, .36, 1);
+        }
+        #mobileMenu {
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity .28s ease;
+        }
+        #mobileMenu.open {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        #mobileMenu.open .mobile-menu-panel {
+            transform: translateX(0);
         }
         .mobile-menu-link {
             display: flex;
@@ -241,7 +256,7 @@
             border: 1px solid rgba(226, 232, 240, .95);
             border-radius: 1rem;
             background: rgba(255,255,255,.78);
-            padding: .85rem 1rem;
+            padding: .68rem .85rem;
             color: #0f172a;
             font-weight: 800;
             box-shadow: 0 10px 24px rgba(15, 23, 42, .06);
@@ -256,13 +271,24 @@
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            width: 2rem;
-            height: 2rem;
+            width: 1.75rem;
+            height: 1.75rem;
             border-radius: .8rem;
             background: linear-gradient(135deg, #dbeafe, #dcfce7);
             color: #1d4ed8;
+            font-size: .75rem;
+            font-weight: 900;
+        }
+        .mobile-menu-action {
+            border-radius: .9rem;
+            padding: .85rem .5rem;
+            text-align: center;
             font-size: .82rem;
             font-weight: 900;
+            transition: transform .2s ease, background .2s ease;
+        }
+        .mobile-menu-action:hover {
+            transform: translateY(-1px);
         }
         .mobile-menu-toggle .menu-line {
             transform-origin: center;
@@ -382,28 +408,19 @@
 <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
      MOBILE MENU OVERLAY
 â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
-<div id="mobileMenu" class="fixed inset-0 z-50 hidden bg-slate-950/45 p-4 backdrop-blur-sm">
-    <div class="mobile-menu-panel min-h-full rounded-[2rem] border border-white/70 shadow-2xl">
-        <div class="flex items-center justify-between border-b border-slate-200/80 p-5">
-            <div class="flex items-center gap-3">
-                <div class="h-12 w-12 overflow-hidden rounded-2xl bg-white shadow">
-                    <img src="{{ asset('images/schoollogo.jpg') }}" alt="Cambridge International School logo" class="h-full w-full object-cover">
-                </div>
-                <div>
-                    <p class="text-lg font-black leading-tight text-slate-950">Cambridge</p>
-                    <p class="text-xs font-bold uppercase text-blue-700" style="letter-spacing:.12em;">International School</p>
-                </div>
-            </div>
-            <button onclick="toggleMenu()" class="rounded-full bg-white p-3 text-slate-700 shadow-lg" aria-label="Close menu">
+<div id="mobileMenu" class="fixed inset-0 z-50 hidden bg-slate-950/45 p-3 backdrop-blur-sm sm:p-4" onclick="if (event.target.id === 'mobileMenu') toggleMenu(false)">
+    <div class="mobile-menu-panel flex h-full flex-col overflow-hidden rounded-[1.5rem] border border-white/70 p-4 shadow-2xl sm:rounded-[2rem]">
+        <div class="mb-3 flex items-center justify-between">
+            <p class="text-xs font-black uppercase text-slate-500" style="letter-spacing:.18em;">Explore</p>
+            <button onclick="toggleMenu()" class="rounded-full bg-white p-2.5 text-slate-700 shadow-lg" aria-label="Close menu">
                 <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.4" d="M6 18L18 6M6 6l12 12"/>
                 </svg>
             </button>
         </div>
 
-        <div class="px-5 py-6">
-            <p class="mb-4 text-xs font-black uppercase text-slate-500" style="letter-spacing:.18em;">Explore</p>
-            <div class="grid gap-3">
+        <div class="flex min-h-0 flex-1 flex-col justify-between gap-3">
+            <div class="grid gap-2">
                 <a href="#home" onclick="toggleMenu()" class="mobile-menu-link"><span>01</span><strong>Home</strong><em class="not-italic text-blue-500">Open</em></a>
                 <a href="#programs" onclick="toggleMenu()" class="mobile-menu-link"><span>02</span><strong>Programs</strong><em class="not-italic text-green-500">Learn</em></a>
                 <a href="#about" onclick="toggleMenu()" class="mobile-menu-link"><span>03</span><strong>About</strong><em class="not-italic text-amber-500">Story</em></a>
@@ -413,11 +430,11 @@
                 <a href="#contact" onclick="toggleMenu()" class="mobile-menu-link"><span>07</span><strong>Contact</strong><em class="not-italic text-emerald-500">Reach us</em></a>
             </div>
 
-            <div class="mt-6 rounded-2xl bg-slate-950 p-3 shadow-xl">
+            <div class="rounded-2xl bg-slate-950 p-2.5 shadow-xl">
                 <div class="grid grid-cols-3 gap-2">
-                    <a href="{{ route('blog.index') }}" class="rounded-xl bg-white/10 px-3 py-3 text-center text-sm font-black text-white transition hover:bg-white/20">Blog</a>
-                    <a href="{{ route('apply.create') }}" class="rounded-xl bg-amber-400 px-3 py-3 text-center text-sm font-black text-slate-950 transition hover:bg-amber-300">Apply</a>
-                    <a href="/login" class="rounded-xl bg-blue-600 px-3 py-3 text-center text-sm font-black text-white transition hover:bg-blue-500">Login</a>
+                    <a href="{{ route('blog.index') }}" class="mobile-menu-action bg-white/10 text-white hover:bg-white/20">Blog</a>
+                    <a href="{{ route('apply.create') }}" class="mobile-menu-action bg-amber-400 text-slate-950 hover:bg-amber-300">Apply</a>
+                    <a href="/login" class="mobile-menu-action bg-blue-600 text-white hover:bg-blue-500">Login</a>
                 </div>
             </div>
         </div>
@@ -1560,14 +1577,23 @@
 â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
 <script>
     /* â”€â”€ Mobile Menu â”€â”€ */
-    function toggleMenu() {
+    function toggleMenu(forceOpen = null) {
         const menu = document.getElementById('mobileMenu');
         const button = document.getElementById('mobileMenuButton');
-        const isOpening = menu.classList.contains('hidden');
+        const isOpening = forceOpen === null ? menu.classList.contains('hidden') || !menu.classList.contains('open') : forceOpen;
 
-        menu.classList.toggle('hidden');
-        button?.classList.toggle('is-open', isOpening);
-        document.body.classList.toggle('overflow-hidden', isOpening);
+        if (isOpening) {
+            menu.classList.remove('hidden');
+            requestAnimationFrame(() => menu.classList.add('open'));
+            button?.classList.add('is-open');
+            document.body.classList.add('overflow-hidden');
+            return;
+        }
+
+        menu.classList.remove('open');
+        button?.classList.remove('is-open');
+        document.body.classList.remove('overflow-hidden');
+        setTimeout(() => menu.classList.add('hidden'), 320);
     }
 
     /* â”€â”€ Counter Animation â”€â”€ */

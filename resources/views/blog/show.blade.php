@@ -29,11 +29,14 @@
             linear-gradient(180deg, rgba(239, 246, 255, .96), rgba(255, 255, 255, .98) 28rem),
             #f8fafc;
         color: #0f172a;
+        overflow-x: hidden;
     }
 
     .gist-wrap {
-        width: min(1060px, calc(100% - 2rem));
+        width: min(1060px, 100%);
         margin-inline: auto;
+        padding-inline: 1rem;
+        box-sizing: border-box;
     }
 
     .gist-logo {
@@ -52,11 +55,49 @@
         box-shadow: 0 18px 45px rgba(15, 23, 42, .08);
     }
 
+    .blog-nav-shell {
+        background:
+            linear-gradient(135deg, rgba(255, 255, 255, .98), rgba(239, 246, 255, .94)),
+            #ffffff;
+    }
+
+    .blog-logo-mark {
+        background: linear-gradient(135deg, #2563eb, #facc15 52%, #16a34a);
+    }
+
+    .blog-mobile-drawer {
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity .28s ease;
+    }
+
+    .blog-mobile-drawer.open {
+        opacity: 1;
+        pointer-events: auto;
+    }
+
+    .blog-mobile-panel {
+        transform: translateX(-105%);
+        transition: transform .42s cubic-bezier(.22, 1, .36, 1);
+    }
+
+    .blog-mobile-drawer.open .blog-mobile-panel {
+        transform: translateX(0);
+    }
+
     .article-body p,
     .article-body {
         font-size: 1.075rem;
         line-height: 1.95;
         color: #334155;
+    }
+
+    @media (max-width: 767px) {
+        .gist-logo {
+            font-size: 1.45rem;
+            line-height: 1;
+            letter-spacing: .05em;
+        }
     }
 </style>
 @endpush
@@ -67,14 +108,45 @@
 @endphp
 
 <div class="blog-gist">
-    <header class="sticky top-0 z-40 border-b border-slate-200 bg-white/95 shadow-sm backdrop-blur">
-        <div class="gist-wrap flex h-[70px] items-center justify-between gap-4">
-            <a href="{{ route('blog.index') }}" class="gist-logo text-3xl uppercase text-slate-950">
-                Cambridge<span class="text-blue-700">Blog</span>
+    <header class="blog-nav-shell sticky top-0 z-40 border-b border-slate-200 shadow-sm backdrop-blur">
+        <div class="gist-wrap flex h-[72px] items-center justify-between gap-3">
+            <a href="{{ route('blog.index') }}" class="flex min-w-0 items-center gap-3">
+                <span class="blog-logo-mark flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-2xl shadow-md">
+                    <img src="{{ asset('images/schoollogo.jpg') }}" alt="Cambridge International School logo" class="h-full w-full object-cover">
+                </span>
+                <span class="gist-logo truncate text-3xl uppercase text-slate-950">
+                    Cambridge<span class="text-blue-700">Blog</span>
+                </span>
             </a>
             <div class="flex items-center gap-3">
                 <a href="{{ route('blog.index') }}" class="rounded-lg border border-slate-200 px-4 py-2 text-sm font-black text-slate-600 hover:text-slate-950">Blog</a>
                 <a href="{{ url('/') }}" class="hidden rounded-lg bg-blue-700 px-4 py-2 text-sm font-black text-white hover:bg-blue-600 sm:inline-flex">Home</a>
+                <button type="button" class="grid h-11 w-11 place-items-center rounded-full border border-slate-200 bg-white text-slate-700 shadow-sm md:hidden" onclick="toggleBlogMenu(true)" aria-label="Menu">
+                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.4" d="M4 7h16M4 12h16M4 17h16"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <div id="mobileBlogNav" class="blog-mobile-drawer fixed inset-0 z-50 bg-slate-950/45 backdrop-blur-sm md:hidden" onclick="if (event.target.id === 'mobileBlogNav') toggleBlogMenu(false)">
+            <div class="blog-mobile-panel h-full w-[86vw] max-w-sm overflow-y-auto bg-white shadow-2xl">
+                <div class="flex items-center justify-between border-b border-slate-200 p-5">
+                    <a href="{{ route('blog.index') }}" class="flex min-w-0 items-center gap-3">
+                        <span class="blog-logo-mark flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-2xl shadow-md">
+                            <img src="{{ asset('images/schoollogo.jpg') }}" alt="Cambridge International School logo" class="h-full w-full object-cover">
+                        </span>
+                        <span class="gist-logo truncate text-2xl uppercase text-slate-950">Cambridge<span class="text-blue-700">Blog</span></span>
+                    </a>
+                    <button type="button" onclick="toggleBlogMenu(false)" class="rounded-full bg-slate-100 px-4 py-3 text-xl font-black text-slate-700" aria-label="Close menu">&times;</button>
+                </div>
+                <div class="grid gap-3 p-5">
+                    <a href="{{ route('blog.index') }}" class="rounded-2xl border border-slate-200 bg-blue-50 px-4 py-4 text-sm font-black text-blue-700">Blog Home</a>
+                    <a href="{{ url('/') }}" class="rounded-2xl border border-slate-200 bg-white px-4 py-4 text-sm font-black text-slate-700">School Website</a>
+                    @foreach(\App\Models\BlogPost::categories() as $category)
+                        <a href="{{ route('blog.index', ['category' => $category]) }}" class="rounded-2xl border border-slate-200 bg-white px-4 py-4 text-sm font-black text-slate-700">{{ \Illuminate\Support\Str::headline($category) }}</a>
+                    @endforeach
+                </div>
             </div>
         </div>
     </header>
@@ -146,6 +218,14 @@
 </div>
 
 <script>
+    function toggleBlogMenu(forceOpen = null) {
+        const menu = document.getElementById('mobileBlogNav');
+        const open = forceOpen === null ? !menu.classList.contains('open') : forceOpen;
+
+        menu.classList.toggle('open', open);
+        document.body.classList.toggle('overflow-hidden', open);
+    }
+
     document.getElementById('copyBlogLink')?.addEventListener('click', async function () {
         await navigator.clipboard.writeText(this.dataset.copyUrl);
         const originalText = this.textContent;

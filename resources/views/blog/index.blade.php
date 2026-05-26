@@ -21,11 +21,14 @@
             linear-gradient(180deg, rgba(239, 246, 255, .96), rgba(255, 255, 255, .98) 28rem),
             #f8fafc;
         color: #0f172a;
+        overflow-x: hidden;
     }
 
     .gist-wrap {
-        width: min(1200px, calc(100% - 2rem));
+        width: min(1200px, 100%);
         margin-inline: auto;
+        padding-inline: 1rem;
+        box-sizing: border-box;
     }
 
     .gist-logo {
@@ -82,10 +85,45 @@
         background: rgba(15, 23, 42, .12);
     }
 
+    .blog-nav-shell {
+        background:
+            linear-gradient(135deg, rgba(255, 255, 255, .98), rgba(239, 246, 255, .94)),
+            #ffffff;
+    }
+
+    .blog-logo-mark {
+        background: linear-gradient(135deg, #2563eb, #facc15 52%, #16a34a);
+    }
+
+    .blog-mobile-drawer {
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity .28s ease;
+    }
+
+    .blog-mobile-drawer.open {
+        opacity: 1;
+        pointer-events: auto;
+    }
+
+    .blog-mobile-panel {
+        transform: translateX(-105%);
+        transition: transform .42s cubic-bezier(.22, 1, .36, 1);
+    }
+
+    .blog-mobile-drawer.open .blog-mobile-panel {
+        transform: translateX(0);
+    }
+
     @media (max-width: 767px) {
         .gist-wrap {
-            width: 100%;
             padding-inline: 1rem;
+        }
+
+        .gist-logo {
+            font-size: 1.45rem;
+            line-height: 1;
+            letter-spacing: .05em;
         }
 
         .gist-mobile-scroll {
@@ -145,10 +183,15 @@
         </div>
     </div>
 
-    <header class="sticky top-0 z-40 border-b border-slate-200 bg-white/95 shadow-sm backdrop-blur">
-        <div class="gist-wrap flex h-[70px] items-center justify-between gap-4">
-            <a href="{{ route('blog.index') }}" class="gist-logo text-3xl uppercase text-slate-950">
-                Cambridge<span class="text-blue-700">Blog</span>
+    <header class="blog-nav-shell sticky top-0 z-40 border-b border-slate-200 shadow-sm backdrop-blur">
+        <div class="gist-wrap flex h-[72px] items-center justify-between gap-3">
+            <a href="{{ route('blog.index') }}" class="flex min-w-0 items-center gap-3">
+                <span class="blog-logo-mark flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-2xl shadow-md">
+                    <img src="{{ asset('images/schoollogo.jpg') }}" alt="Cambridge International School logo" class="h-full w-full object-cover">
+                </span>
+                <span class="gist-logo truncate text-3xl uppercase text-slate-950">
+                    Cambridge<span class="text-blue-700">Blog</span>
+                </span>
             </a>
 
             <nav class="hidden items-center gap-3 md:flex">
@@ -166,9 +209,17 @@
                 <input name="search" value="{{ $filters['search'] }}" class="w-full bg-transparent text-sm text-slate-800 outline-none placeholder:text-slate-400" placeholder="Search blog...">
             </form>
 
-            <div class="flex items-center gap-4 md:hidden">
-                <button type="button" class="text-2xl text-slate-700" onclick="document.getElementById('mobileBlogSearch').classList.toggle('hidden')" aria-label="Search">⌕</button>
-                <button type="button" class="text-2xl text-slate-700" onclick="document.getElementById('mobileBlogNav').classList.toggle('hidden')" aria-label="Menu">☰</button>
+            <div class="flex shrink-0 items-center gap-2 md:hidden">
+                <button type="button" class="grid h-11 w-11 place-items-center rounded-full border border-slate-200 bg-white text-slate-700 shadow-sm" onclick="document.getElementById('mobileBlogSearch').classList.toggle('hidden')" aria-label="Search">
+                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="m21 21-4.3-4.3M10.8 18a7.2 7.2 0 1 1 0-14.4 7.2 7.2 0 0 1 0 14.4Z"/>
+                    </svg>
+                </button>
+                <button type="button" class="grid h-11 w-11 place-items-center rounded-full border border-slate-200 bg-white text-slate-700 shadow-sm" onclick="toggleBlogMenu(true)" aria-label="Menu">
+                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.4" d="M4 7h16M4 12h16M4 17h16"/>
+                    </svg>
+                </button>
             </div>
         </div>
 
@@ -182,12 +233,27 @@
             </form>
         </div>
 
-        <div id="mobileBlogNav" class="hidden border-t border-slate-200 px-4 py-3 md:hidden">
-            <div class="grid grid-cols-2 gap-2">
-                <a href="{{ route('blog.index') }}" class="rounded-xl border border-slate-200 px-3 py-3 text-center text-sm font-bold text-slate-800">Home</a>
-                @foreach($categories as $category)
-                    <a href="{{ route('blog.index', ['category' => $category]) }}" class="rounded-xl border border-slate-200 px-3 py-3 text-center text-sm font-bold text-slate-600">{{ \Illuminate\Support\Str::headline($category) }}</a>
-                @endforeach
+        <div id="mobileBlogNav" class="blog-mobile-drawer fixed inset-0 z-50 bg-slate-950/45 backdrop-blur-sm md:hidden" onclick="if (event.target.id === 'mobileBlogNav') toggleBlogMenu(false)">
+            <div class="blog-mobile-panel h-full w-[86vw] max-w-sm overflow-y-auto bg-white shadow-2xl">
+                <div class="flex items-center justify-between border-b border-slate-200 p-5">
+                    <a href="{{ route('blog.index') }}" class="flex min-w-0 items-center gap-3">
+                        <span class="blog-logo-mark flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-2xl shadow-md">
+                            <img src="{{ asset('images/schoollogo.jpg') }}" alt="Cambridge International School logo" class="h-full w-full object-cover">
+                        </span>
+                        <span class="gist-logo truncate text-2xl uppercase text-slate-950">Cambridge<span class="text-blue-700">Blog</span></span>
+                    </a>
+                    <button type="button" onclick="toggleBlogMenu(false)" class="rounded-full bg-slate-100 px-4 py-3 text-xl font-black text-slate-700" aria-label="Close menu">&times;</button>
+                </div>
+
+                <div class="p-5">
+                    <p class="mb-4 text-xs font-black uppercase tracking-[.18em] text-slate-500">Explore</p>
+                    <div class="grid gap-3">
+                        <a href="{{ route('blog.index') }}" class="rounded-2xl border border-slate-200 bg-blue-50 px-4 py-4 text-sm font-black text-blue-700">Home</a>
+                        @foreach($categories as $category)
+                            <a href="{{ route('blog.index', ['category' => $category]) }}" class="rounded-2xl border border-slate-200 bg-white px-4 py-4 text-sm font-black text-slate-700">{{ \Illuminate\Support\Str::headline($category) }}</a>
+                        @endforeach
+                    </div>
+                </div>
             </div>
         </div>
     </header>
@@ -306,4 +372,13 @@
 
     <a href="#" class="fixed bottom-5 right-5 z-40 flex h-12 w-12 items-center justify-center rounded-xl bg-blue-700 text-2xl font-black text-white shadow-xl hover:bg-blue-600" aria-label="Back to top">⌃</a>
 </div>
+<script>
+    function toggleBlogMenu(forceOpen = null) {
+        const menu = document.getElementById('mobileBlogNav');
+        const open = forceOpen === null ? !menu.classList.contains('open') : forceOpen;
+
+        menu.classList.toggle('open', open);
+        document.body.classList.toggle('overflow-hidden', open);
+    }
+</script>
 @endsection
