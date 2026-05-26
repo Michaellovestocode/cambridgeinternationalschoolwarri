@@ -32,13 +32,17 @@
     }
 
     .gist-logo {
-        font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
-        letter-spacing: .08em;
+        font-family: 'Sora', system-ui, sans-serif;
+        font-size: 1.32rem;
+        font-weight: 900;
+        letter-spacing: .02em;
+        line-height: 1;
+        white-space: nowrap;
     }
 
     .gist-headline {
-        font-family: Georgia, 'Times New Roman', serif;
-        letter-spacing: -.02em;
+        font-family: 'Sora', system-ui, sans-serif;
+        letter-spacing: -.03em;
     }
 
     .gist-card {
@@ -47,8 +51,14 @@
         box-shadow: 0 18px 45px rgba(15, 23, 42, .08);
     }
 
-    .gist-img {
+    .magazine-image {
+        aspect-ratio: 16 / 10;
+        height: auto;
         background: linear-gradient(135deg, #dbeafe, #f8fafc);
+    }
+
+    .school-accent {
+        background: linear-gradient(90deg, #2563eb, #facc15 55%, #16a34a);
     }
 
     .gist-ticker-track {
@@ -97,15 +107,23 @@
     }
 
     .blog-mobile-brand {
-        font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
+        font-family: 'Sora', system-ui, sans-serif;
         letter-spacing: .018em;
-        font-size: 1rem;
+        font-size: .95rem;
+        font-weight: 900;
         line-height: 1;
         white-space: nowrap;
     }
 
     .blog-logo-mark {
         background: linear-gradient(135deg, #2563eb, #facc15 52%, #16a34a);
+    }
+
+    .blog-nav-shell::after {
+        content: '';
+        display: block;
+        height: 3px;
+        background: linear-gradient(90deg, #2563eb, #facc15 55%, #16a34a);
     }
 
     .blog-mobile-drawer {
@@ -134,9 +152,9 @@
         }
 
         .gist-logo {
-            font-size: .95rem;
+            font-size: .78rem;
             line-height: 1;
-            letter-spacing: .015em;
+            letter-spacing: .005em;
         }
 
         .gist-mobile-scroll {
@@ -157,6 +175,23 @@
         .gist-mobile-scroll > * {
             scroll-snap-align: start;
         }
+
+        .blog-mobile-muted {
+            display: none;
+        }
+
+        .mobile-feature-card {
+            min-height: 23rem;
+        }
+
+        .mobile-feature-title {
+            font-size: 1.65rem;
+            line-height: 1.08;
+        }
+
+        .magazine-image {
+            aspect-ratio: 4 / 3;
+        }
     }
 
     @media (max-width: 380px) {
@@ -165,8 +200,7 @@
         }
 
         .gist-logo {
-            font-size: .82rem;
-            max-width: 8.2rem;
+            font-size: .72rem;
         }
 
         .blog-logo-mark {
@@ -203,7 +237,7 @@
 <div class="blog-gist">
     <div class="bg-blue-700 text-white">
         <div class="flex h-9 items-center overflow-hidden text-xs font-black">
-            <div class="flex h-full shrink-0 items-center bg-slate-950 px-4 text-[10px] uppercase tracking-[.24em] text-amber-300">Notice</div>
+            <div class="flex h-full shrink-0 items-center bg-slate-950 px-4 text-[10px] uppercase tracking-[.24em] text-amber-300">Magazine</div>
             <div class="min-w-0 flex-1 overflow-hidden">
                 <div class="gist-ticker-track flex w-max items-center gap-8 whitespace-nowrap px-4">
                     @forelse($breakingPosts->concat($breakingPosts) as $post)
@@ -223,19 +257,19 @@
                 <span class="blog-logo-mark flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-2xl shadow-md sm:h-11 sm:w-11">
                     <img src="{{ asset('images/schoollogo.jpg') }}" alt="Cambridge International School logo" class="h-full w-full object-cover">
                 </span>
-                <span class="gist-logo max-w-[8.8rem] truncate text-3xl uppercase text-slate-950 sm:max-w-none">
+                <span class="gist-logo text-slate-950">
                     Cambridge<span class="text-blue-700">Magazine</span>
                 </span>
             </a>
 
-            <nav class="hidden items-center gap-3 md:flex">
+            <nav class="hidden items-center gap-2 xl:flex">
                 <a href="{{ route('blog.index') }}" class="rounded-lg px-4 py-3 text-sm font-bold {{ $filters['category'] ? 'text-slate-500 hover:text-slate-950' : 'bg-blue-50 text-blue-700' }}">Home</a>
                 @foreach($categories as $category)
-                    <a href="{{ route('blog.index', ['category' => $category]) }}" class="rounded-lg px-4 py-3 text-sm font-bold {{ $filters['category'] === $category ? 'bg-blue-50 text-blue-700' : 'text-slate-500 hover:text-slate-950' }}">{{ \Illuminate\Support\Str::headline($category) }}</a>
+                    <a href="{{ route('blog.index', ['category' => $category]) }}" class="rounded-lg px-3 py-3 text-xs font-bold {{ $filters['category'] === $category ? 'bg-blue-50 text-blue-700' : 'text-slate-500 hover:text-slate-950' }}">{{ \Illuminate\Support\Str::headline($category) }}</a>
                 @endforeach
             </nav>
 
-            <form method="GET" action="{{ route('blog.index') }}" class="hidden w-56 items-center rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 md:flex">
+            <form method="GET" action="{{ route('blog.index') }}" class="hidden w-52 items-center rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 lg:flex">
                 @if($filters['category'])
                     <input type="hidden" name="category" value="{{ $filters['category'] }}">
                 @endif
@@ -243,7 +277,7 @@
                 <input name="search" value="{{ $filters['search'] }}" class="w-full bg-transparent text-sm text-slate-800 outline-none placeholder:text-slate-400" placeholder="Search blog...">
             </form>
 
-            <div class="flex shrink-0 items-center gap-2 md:hidden">
+            <div class="flex shrink-0 items-center gap-2 xl:hidden">
                 <button type="button" class="grid h-11 w-11 place-items-center rounded-full border border-slate-200 bg-white text-slate-700 shadow-sm" onclick="document.getElementById('mobileBlogSearch').classList.toggle('hidden')" aria-label="Search">
                     <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="m21 21-4.3-4.3M10.8 18a7.2 7.2 0 1 1 0-14.4 7.2 7.2 0 0 1 0 14.4Z"/>
@@ -257,7 +291,7 @@
             </div>
         </div>
 
-        <div id="mobileBlogSearch" class="hidden border-t border-slate-200 px-4 py-3 md:hidden">
+        <div id="mobileBlogSearch" class="hidden border-t border-slate-200 px-4 py-3 xl:hidden">
             <form method="GET" action="{{ route('blog.index') }}" class="flex items-center rounded-xl border border-slate-200 bg-slate-50 px-3 py-3">
                 @if($filters['category'])
                     <input type="hidden" name="category" value="{{ $filters['category'] }}">
@@ -269,7 +303,7 @@
 
     </header>
 
-    <div id="mobileBlogNav" class="blog-mobile-drawer fixed inset-0 z-[10000] bg-slate-950/45 backdrop-blur-sm md:hidden" onclick="if (event.target.id === 'mobileBlogNav') toggleBlogMenu(false)">
+    <div id="mobileBlogNav" class="blog-mobile-drawer fixed inset-0 z-[10000] bg-slate-950/45 backdrop-blur-sm xl:hidden" onclick="if (event.target.id === 'mobileBlogNav') toggleBlogMenu(false)">
             <div class="blog-mobile-panel h-full w-[86vw] max-w-sm overflow-y-auto bg-white shadow-2xl">
                 <div class="flex items-center justify-between border-b border-slate-200 p-5">
                     <a href="{{ route('blog.index') }}" class="flex min-w-0 items-center gap-3">
@@ -296,12 +330,12 @@
     <main class="gist-wrap py-8 md:py-10">
         @if($featuredPost)
             <section class="grid gap-5 lg:grid-cols-[1.9fr_.85fr]">
-                <a href="{{ route('blog.show', $featuredPost) }}" class="group relative min-h-[27rem] overflow-hidden rounded-2xl border border-slate-200 bg-slate-900 shadow-xl md:min-h-[31rem]">
+                <a href="{{ route('blog.show', $featuredPost) }}" class="mobile-feature-card group relative min-h-[27rem] overflow-hidden rounded-2xl border border-slate-200 bg-slate-900 shadow-xl md:min-h-[31rem]">
                     <img src="{{ $featuredPost->image_url ?: $fallbackImage }}" alt="{{ $featuredPost->title }}" class="absolute inset-0 h-full w-full object-cover opacity-80 transition duration-700 group-hover:scale-105">
                     <div class="absolute inset-0 bg-gradient-to-t from-black via-black/35 to-transparent"></div>
                     <div class="absolute bottom-0 left-0 right-0 p-5 md:p-8">
-                        <span class="inline-flex rounded-md bg-blue-700 px-3 py-2 text-[11px] font-black uppercase tracking-wider text-white">{{ \Illuminate\Support\Str::headline($featuredPost->category) }}</span>
-                        <h1 class="gist-headline mt-5 max-w-4xl text-3xl font-black leading-[1.03] text-white md:text-5xl">{{ $featuredPost->title }}</h1>
+                        <span class="inline-flex rounded-md bg-blue-700 px-3 py-2 text-[11px] font-black uppercase tracking-wider text-white">{{ $featuredPost->is_featured ? 'Featured' : \Illuminate\Support\Str::headline($featuredPost->category) }}</span>
+                        <h1 class="mobile-feature-title gist-headline mt-5 max-w-4xl text-3xl font-black leading-[1.03] text-white md:text-5xl">{{ $featuredPost->title }}</h1>
                         <div class="mt-4 flex flex-wrap gap-3 text-xs font-semibold text-white/75 md:text-sm">
                             <span>By {{ $featuredPost->author?->name ?? 'Cambridge Teacher' }}</span>
                             <span>•</span>
@@ -319,7 +353,7 @@
                             <div class="flex min-w-0 flex-col justify-center p-4">
                                 <span class="w-max rounded bg-blue-50 px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-blue-700">{{ \Illuminate\Support\Str::headline($post->category) }}</span>
                                 <h2 class="gist-headline mt-3 line-clamp-3 text-base font-black leading-tight text-slate-950">{{ $post->title }}</h2>
-                                <p class="mt-2 text-xs text-slate-500">{{ $post->reading_minutes }} min read</p>
+                                <p class="mt-2 text-xs text-slate-500"><span class="blog-mobile-muted">{{ $post->author?->name ?? 'Cambridge Teacher' }} • </span>{{ $post->reading_minutes }} min read</p>
                             </div>
                         </a>
                     @endforeach
@@ -346,7 +380,7 @@
                         @forelse($latestPosts as $post)
                             <article class="gist-card overflow-hidden rounded-xl transition hover:border-blue-500/50">
                                 <a href="{{ route('blog.show', $post) }}" class="group block">
-                                    <div class="relative h-64 overflow-hidden">
+                                    <div class="magazine-image relative overflow-hidden">
                                         <img src="{{ $post->image_url ?: $fallbackImage }}" alt="{{ $post->title }}" loading="lazy" class="h-full w-full object-cover opacity-85 transition duration-700 group-hover:scale-105">
                                         <span class="absolute left-4 top-4 rounded-md bg-blue-700 px-3 py-2 text-[11px] font-black uppercase tracking-wider text-white">{{ \Illuminate\Support\Str::headline($post->category) }}</span>
                                     </div>
@@ -357,6 +391,7 @@
                                             <span>{{ $post->author?->name ?? 'Cambridge Teacher' }}</span>
                                             <span>{{ $post->reading_minutes }} min read</span>
                                         </div>
+                                        <div class="school-accent mt-5 h-1 w-16 rounded-full"></div>
                                     </div>
                                 </a>
                             </article>

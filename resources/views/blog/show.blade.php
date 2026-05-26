@@ -40,13 +40,17 @@
     }
 
     .gist-logo {
-        font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
-        letter-spacing: .08em;
+        font-family: 'Sora', system-ui, sans-serif;
+        font-size: 1.32rem;
+        font-weight: 900;
+        letter-spacing: .02em;
+        line-height: 1;
+        white-space: nowrap;
     }
 
     .gist-headline {
-        font-family: Georgia, 'Times New Roman', serif;
-        letter-spacing: -.02em;
+        font-family: 'Sora', system-ui, sans-serif;
+        letter-spacing: -.03em;
     }
 
     .gist-card {
@@ -67,15 +71,27 @@
     }
 
     .blog-mobile-brand {
-        font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
+        font-family: 'Sora', system-ui, sans-serif;
         letter-spacing: .018em;
-        font-size: 1rem;
+        font-size: .95rem;
+        font-weight: 900;
         line-height: 1;
         white-space: nowrap;
     }
 
     .blog-logo-mark {
         background: linear-gradient(135deg, #2563eb, #facc15 52%, #16a34a);
+    }
+
+    .blog-nav-shell::after {
+        content: '';
+        display: block;
+        height: 3px;
+        background: linear-gradient(90deg, #2563eb, #facc15 55%, #16a34a);
+    }
+
+    .school-accent {
+        background: linear-gradient(90deg, #2563eb, #facc15 55%, #16a34a);
     }
 
     .blog-mobile-drawer {
@@ -107,9 +123,18 @@
 
     @media (max-width: 767px) {
         .gist-logo {
-            font-size: .95rem;
+            font-size: .78rem;
             line-height: 1;
-            letter-spacing: .015em;
+            letter-spacing: .005em;
+        }
+
+        .blog-mobile-muted {
+            display: none;
+        }
+
+        .mobile-article-title {
+            font-size: 2rem;
+            line-height: 1.08;
         }
     }
 
@@ -119,8 +144,7 @@
         }
 
         .gist-logo {
-            font-size: .82rem;
-            max-width: 8.2rem;
+            font-size: .72rem;
         }
 
         .blog-logo-mark {
@@ -148,7 +172,7 @@
                 <span class="blog-logo-mark flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-2xl shadow-md sm:h-11 sm:w-11">
                     <img src="{{ asset('images/schoollogo.jpg') }}" alt="Cambridge International School logo" class="h-full w-full object-cover">
                 </span>
-                <span class="gist-logo max-w-[8.8rem] truncate text-3xl uppercase text-slate-950 sm:max-w-none">
+                <span class="gist-logo text-slate-950">
                     Cambridge<span class="text-blue-700">Magazine</span>
                 </span>
             </a>
@@ -193,7 +217,7 @@
             <div class="gist-wrap relative flex min-h-[34rem] items-end py-10">
                 <div class="max-w-4xl">
                     <span class="inline-flex rounded-md bg-blue-700 px-3 py-2 text-[11px] font-black uppercase tracking-wider text-white">{{ \Illuminate\Support\Str::headline($post->category) }}</span>
-                    <h1 class="gist-headline mt-5 text-4xl font-black leading-[1.02] text-white md:text-6xl">{{ $post->title }}</h1>
+                    <h1 class="mobile-article-title gist-headline mt-5 text-4xl font-black leading-[1.02] text-white md:text-6xl">{{ $post->title }}</h1>
                     @if($post->excerpt)
                         <p class="mt-5 max-w-3xl text-lg leading-8 text-white/72">{{ $post->excerpt }}</p>
                     @endif
@@ -210,6 +234,7 @@
 
         <section class="gist-wrap grid gap-8 py-10 lg:grid-cols-[1fr_280px]">
             <div class="gist-card rounded-2xl p-6 md:p-9">
+                <div class="school-accent mb-7 h-1 w-20 rounded-full"></div>
                 <div class="article-body whitespace-pre-line">{{ $post->body }}</div>
 
                 @if($post->gallery_image_urls)
