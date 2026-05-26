@@ -60,8 +60,9 @@
 
                 <div>
                     <label class="block text-sm font-bold text-slate-700">Add Photos</label>
-                    <input type="file" name="images[]" accept="image/*" multiple class="mt-2 w-full rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-4 text-sm">
+                    <input id="galleryImagesInput" type="file" name="images[]" accept="image/*" multiple class="mt-2 w-full rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-4 text-sm">
                     <p class="mt-2 text-xs text-slate-500">You can upload up to 20 photos at once. Each image should be below 4MB.</p>
+                    <div id="newGalleryImageDetails" class="mt-4 space-y-3"></div>
                 </div>
             </div>
         </section>
@@ -83,6 +84,10 @@
                                     Featured
                                 </label>
                             </div>
+                            <label class="flex items-center gap-2 rounded-xl bg-rose-50 px-3 py-2 text-sm font-bold text-rose-700">
+                                <input type="checkbox" name="delete_image_ids[]" value="{{ $image->id }}">
+                                Delete this photo
+                            </label>
                         </div>
                     </div>
                 @endforeach
@@ -97,3 +102,47 @@
         </button>
     </div>
 </form>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const input = document.getElementById('galleryImagesInput');
+        const details = document.getElementById('newGalleryImageDetails');
+
+        if (!input || !details) {
+            return;
+        }
+
+        input.addEventListener('change', () => {
+            details.innerHTML = '';
+
+            Array.from(input.files || []).forEach((file, index) => {
+                const row = document.createElement('div');
+                row.className = 'rounded-2xl border border-slate-200 bg-white p-3';
+
+                const name = document.createElement('p');
+                name.className = 'truncate text-sm font-black text-slate-800';
+                name.textContent = file.name;
+
+                const fields = document.createElement('div');
+                fields.className = 'mt-3 grid gap-3 sm:grid-cols-[1fr_7rem]';
+
+                const caption = document.createElement('input');
+                caption.name = `new_image_captions[${index}]`;
+                caption.className = 'rounded-xl border border-slate-200 px-3 py-2 text-sm';
+                caption.placeholder = 'Caption';
+
+                const order = document.createElement('input');
+                order.type = 'number';
+                order.min = '0';
+                order.name = `new_image_orders[${index}]`;
+                order.value = index;
+                order.className = 'rounded-xl border border-slate-200 px-3 py-2 text-sm';
+                order.setAttribute('aria-label', 'Sort order');
+
+                fields.append(caption, order);
+                row.append(name, fields);
+                details.appendChild(row);
+            });
+        });
+    });
+</script>

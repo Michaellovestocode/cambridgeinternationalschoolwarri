@@ -4,13 +4,16 @@ namespace App\Http\Controllers;
 
 use App\Models\GalleryAlbum;
 use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class GalleryController extends Controller
 {
     public function index()
     {
-        $albums = GalleryAlbum::withCount('images')
+        $albums = GalleryAlbum::with('images')
+            ->withCount('images')
             ->homepageOrder()
             ->paginate(12);
 
@@ -35,7 +38,7 @@ class GalleryController extends Controller
         $data['slug'] = GalleryAlbum::uniqueSlug($data['title']);
 
         if ($request->hasFile('cover_image')) {
-            $data['cover_image_path'] = $request->file('cover_image')->store('gallery/covers', 'public');
+            $data['cover_image_path'] = $this->storeOptimizedImage($request->file('cover_image'), 'gallery/covers', 1600);
         }
 
         $album = GalleryAlbum::create($data);
@@ -61,11 +64,12 @@ class GalleryController extends Controller
 
         if ($request->hasFile('cover_image')) {
             $this->deletePublicFile($album->cover_image_path);
-            $data['cover_image_path'] = $request->file('cover_image')->store('gallery/covers', 'public');
+            $data['cover_image_path'] = $this->storeOptimizedImage($request->file('cover_image'), 'gallery/covers', 1600);
         }
 
         $album->update($data);
         $this->storeImages($request, $album);
+        $this->deleteSelectedImages($request, $album);
         $this->syncImageDetails($request, $album);
 
         return redirect()->route('admin.gallery.edit', $album)->with('success', 'Gallery album updated successfully.');
@@ -98,13 +102,26 @@ class GalleryController extends Controller
             'images.*' => ['image', 'mimes:jpeg,png,jpg,gif,webp', 'max:4096'],
             'image_captions' => ['nullable', 'array'],
             'image_orders' => ['nullable', 'array'],
+            'new_image_captions' => ['nullable', 'array'],
+            'new_image_orders' => ['nullable', 'array'],
             'featured_image_id' => ['nullable', 'integer'],
+            'delete_image_ids' => ['nullable', 'array'],
+            'delete_image_ids.*' => ['integer'],
         ]);
 
         $data['is_published'] = $request->boolean('is_published');
         $data['sort_order'] = $data['sort_order'] ?? 0;
 
-        unset($data['cover_image'], $data['images'], $data['image_captions'], $data['image_orders'], $data['featured_image_id']);
+        unset(
+            $data['cover_image'],
+            $data['images'],
+            $data['image_captions'],
+            $data['image_orders'],
+            $data['new_image_captions'],
+            $data['new_image_orders'],
+            $data['featured_image_id'],
+            $data['delete_image_ids']
+        );
 
         return $data;
     }
@@ -121,12 +138,101 @@ class GalleryController extends Controller
             }
 
             $album->images()->create([
-                'image_path' => $file->store('gallery/images', 'public'),
+                'image_path' => $this->storeOptimizedImage($file, 'gallery/images', 1800),
                 'caption' => $request->input("new_image_captions.{$index}"),
                 'sort_order' => (int) $request->input("new_image_orders.{$index}", 0),
                 'is_featured' => false,
             ]);
         }
+    }
+
+    private function storeOptimizedImage(UploadedFile $file, string $directory, int $maxWidth): string
+    {
+        $imageInfo = @getimagesize($file->getRealPath());
+        $mime = $imageInfo['mime'] ?? null;
+
+        if (!$imageInfo || $mime === 'image/gif' || !function_exists('imagewebp')) {
+            return $file->store($directory, 'public');
+        }
+
+        $source = match ($mime) {
+            'image/jpeg' => @imagecreatefromjpeg($file->getRealPath()),
+            'image/png' => @imagecreatefrompng($file->getRealPath()),
+            'image/webp' => function_exists('imagecreatefromwebp') ? @imagecreatefromwebp($file->getRealPath()) : false,
+            default => false,
+        };
+
+        if (!$source) {
+            return $file->store($directory, 'public');
+        }
+
+        if ($mime === 'image/jpeg') {
+            $source = $this->applyJpegOrientation($source, $file->getRealPath()) ?: $source;
+        }
+
+        $width = imagesx($source);
+        $height = imagesy($source);
+        $targetWidth = min($width, $maxWidth);
+        $targetHeight = (int) round($height * ($targetWidth / $width));
+
+        $target = imagecreatetruecolor($targetWidth, $targetHeight);
+        imagealphablending($target, false);
+        imagesavealpha($target, true);
+        imagecopyresampled($target, $source, 0, 0, 0, 0, $targetWidth, $targetHeight, $width, $height);
+
+        ob_start();
+        $encoded = imagewebp($target, null, 82);
+        $contents = ob_get_clean();
+
+        imagedestroy($source);
+        imagedestroy($target);
+
+        if (!$encoded || !$contents) {
+            return $file->store($directory, 'public');
+        }
+
+        $path = trim($directory, '/') . '/' . Str::uuid() . '.webp';
+        Storage::disk('public')->put($path, $contents);
+
+        return $path;
+    }
+
+    private function applyJpegOrientation($image, string $path): mixed
+    {
+        if (!function_exists('exif_read_data')) {
+            return $image;
+        }
+
+        $exif = @exif_read_data($path);
+        $orientation = (int) ($exif['Orientation'] ?? 1);
+
+        return match ($orientation) {
+            3 => imagerotate($image, 180, 0),
+            6 => imagerotate($image, -90, 0),
+            8 => imagerotate($image, 90, 0),
+            default => $image,
+        };
+    }
+
+    private function deleteSelectedImages(Request $request, GalleryAlbum $album): void
+    {
+        $imageIds = collect($request->input('delete_image_ids', []))
+            ->map(fn ($id) => (int) $id)
+            ->filter()
+            ->unique()
+            ->values();
+
+        if ($imageIds->isEmpty()) {
+            return;
+        }
+
+        $album->images()
+            ->whereIn('id', $imageIds)
+            ->get()
+            ->each(function ($image) {
+                $this->deletePublicFile($image->image_path);
+                $image->delete();
+            });
     }
 
     private function syncImageDetails(Request $request, GalleryAlbum $album): void

@@ -33,6 +33,15 @@ class BlogPostController extends Controller
         return view('blog.index', [
             'posts' => $query->publicOrder()->paginate(9)->withQueryString(),
             'categories' => BlogPost::categories(),
+            'categoryCounts' => BlogPost::published()
+                ->selectRaw('category, count(*) as total')
+                ->groupBy('category')
+                ->pluck('total', 'category'),
+            'trendingPosts' => BlogPost::with('author')
+                ->published()
+                ->publicOrder()
+                ->take(5)
+                ->get(),
             'filters' => [
                 'category' => $request->string('category')->value(''),
                 'search' => $request->string('search')->value(''),

@@ -219,8 +219,10 @@
             z-index: 9999;
             align-items: center;
             justify-content: center;
+            padding: 1rem;
         }
         #lightbox.open { display: flex; }
+        #lightboxCaption { min-height: 1.5rem; }
 
         /* â”€â”€ Sticky nav shadow on scroll â”€â”€ */
         .nav-scrolled { box-shadow: 0 4px 24px rgba(0,0,0,.12) !important; }
@@ -1168,6 +1170,25 @@
         $homepageGalleryAlbums = ($galleryAlbums ?? collect())->isNotEmpty() ? $galleryAlbums : $fallbackGalleryAlbums;
         $featuredGalleryAlbum = $homepageGalleryAlbums->first();
         $galleryTiles = $homepageGalleryAlbums->skip(1)->take(5);
+        $galleryCoverImage = fn ($album) => $album->cover_image_url ?: asset('images/school life1.jpg');
+        $galleryLightboxImages = function ($album) {
+            $images = collect($album->images ?? [])
+                ->map(fn ($image) => [
+                    'src' => $image->image_url ?? null,
+                    'caption' => $image->caption ?? $album->title,
+                ])
+                ->filter(fn ($image) => !empty($image['src']))
+                ->values();
+
+            if ($images->isEmpty()) {
+                $images->push([
+                    'src' => $album->cover_image_url ?: asset('images/school life1.jpg'),
+                    'caption' => $album->title,
+                ]);
+            }
+
+            return $images->values();
+        };
     @endphp
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center max-w-3xl mx-auto mb-12 sm:mb-16 fade-in-up">
@@ -1177,21 +1198,22 @@
 
         <div class="grid gap-5 lg:grid-cols-[1.2fr_.8fr]">
             @if($featuredGalleryAlbum)
-                <article class="card-hover group relative min-h-[24rem] overflow-hidden rounded-3xl shadow-xl fade-in-up cursor-pointer" onclick="openLightbox(this)">
-                    <img src="{{ $featuredGalleryAlbum->cover_image_url }}" alt="{{ $featuredGalleryAlbum->title }}" class="absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-105">
+                <article class="card-hover group relative min-h-[24rem] overflow-hidden rounded-3xl shadow-xl fade-in-up cursor-pointer" onclick='openGalleryAlbum(@js($galleryLightboxImages($featuredGalleryAlbum)))'>
+                    <img src="{{ $galleryCoverImage($featuredGalleryAlbum) }}" alt="{{ $featuredGalleryAlbum->title }}" class="absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-105">
                     <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/25 to-transparent"></div>
                     <div class="absolute bottom-0 left-0 right-0 p-6 sm:p-8 text-white">
                         <span class="inline-flex rounded-full bg-white/20 px-3 py-1 text-xs font-black uppercase backdrop-blur">{{ ucfirst($featuredGalleryAlbum->category) }}</span>
                         <h3 class="mt-4 text-3xl font-black sm:text-4xl">{{ $featuredGalleryAlbum->title }}</h3>
                         <p class="mt-3 max-w-xl text-sm leading-6 text-white/85">{{ $featuredGalleryAlbum->description }}</p>
+                        <p class="mt-4 text-xs font-black uppercase text-white/75">{{ $galleryLightboxImages($featuredGalleryAlbum)->count() }} photo{{ $galleryLightboxImages($featuredGalleryAlbum)->count() === 1 ? '' : 's' }}</p>
                     </div>
                 </article>
             @endif
 
             <div class="grid grid-cols-2 gap-4">
                 @foreach($galleryTiles as $index => $album)
-                    <article class="card-hover group relative min-h-44 overflow-hidden rounded-3xl shadow-lg fade-in-up cursor-pointer {{ $index === 2 ? 'col-span-2' : '' }}" onclick="openLightbox(this)" style="transition-delay:.{{ $index + 1 }}s">
-                        <img src="{{ $album->cover_image_url }}" alt="{{ $album->title }}" class="absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-105">
+                    <article class="card-hover group relative min-h-44 overflow-hidden rounded-3xl shadow-lg fade-in-up cursor-pointer {{ $index === 2 ? 'col-span-2' : '' }}" onclick='openGalleryAlbum(@js($galleryLightboxImages($album)))' style="transition-delay:.{{ $index + 1 }}s">
+                        <img src="{{ $galleryCoverImage($album) }}" alt="{{ $album->title }}" class="absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-105">
                         <div class="absolute inset-0 bg-gradient-to-t from-black/75 via-black/10 to-transparent"></div>
                         <div class="absolute bottom-0 left-0 right-0 p-4 text-white">
                             <p class="text-xs font-black uppercase text-amber-200">{{ ucfirst($album->category) }}</p>
@@ -1205,8 +1227,8 @@
         @if(($galleryAlbums ?? collect())->isNotEmpty())
             <div class="mt-8 flex gap-3 overflow-x-auto pb-2 sm:hidden">
                 @foreach($homepageGalleryAlbums as $album)
-                    <button type="button" onclick="openLightbox(this)" class="shrink-0 overflow-hidden rounded-2xl border border-gray-100 bg-white shadow">
-                        <img src="{{ $album->cover_image_url }}" alt="{{ $album->title }}" class="h-24 w-36 object-cover">
+                    <button type="button" onclick='openGalleryAlbum(@js($galleryLightboxImages($album)))' class="shrink-0 overflow-hidden rounded-2xl border border-gray-100 bg-white shadow">
+                        <img src="{{ $galleryCoverImage($album) }}" alt="{{ $album->title }}" class="h-24 w-36 object-cover">
                         <span class="block max-w-36 truncate px-3 py-2 text-left text-xs font-bold text-gray-700">{{ $album->title }}</span>
                     </button>
                 @endforeach
@@ -1216,9 +1238,14 @@
 </section>
 
 <!-- Lightbox -->
-<div id="lightbox" onclick="closeLightbox()">
-    <button class="absolute top-6 right-6 text-white text-4xl z-10 leading-none" onclick="closeLightbox()">âœ•</button>
-    <img id="lightboxImg" src="" alt="Gallery" class="max-w-[90vw] max-h-[90vh] rounded-2xl shadow-2xl object-contain">
+<div id="lightbox" onclick="handleLightboxBackdrop(event)">
+    <button class="absolute top-6 right-6 text-white text-4xl z-10 leading-none" onclick="closeLightbox()" aria-label="Close gallery">&times;</button>
+    <button id="lightboxPrev" class="absolute left-4 top-1/2 z-10 hidden -translate-y-1/2 rounded-full bg-white/15 px-4 py-3 text-3xl leading-none text-white backdrop-blur hover:bg-white/25 sm:left-8" onclick="changeLightboxImage(-1, event)" aria-label="Previous photo">&lsaquo;</button>
+    <figure class="m-0 flex max-h-[92vh] max-w-[92vw] flex-col items-center gap-4">
+        <img id="lightboxImg" src="" alt="Gallery" class="max-h-[82vh] max-w-[92vw] rounded-2xl object-contain shadow-2xl">
+        <figcaption id="lightboxCaption" class="max-w-3xl text-center text-sm font-semibold text-white/85"></figcaption>
+    </figure>
+    <button id="lightboxNext" class="absolute right-4 top-1/2 z-10 hidden -translate-y-1/2 rounded-full bg-white/15 px-4 py-3 text-3xl leading-none text-white backdrop-blur hover:bg-white/25 sm:right-8" onclick="changeLightboxImage(1, event)" aria-label="Next photo">&rsaquo;</button>
 </div>
 
 <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
@@ -1633,17 +1660,65 @@
     setInterval(() => setSlide((currentSlide + 1) % 3), 5000);
 
     /* â”€â”€ Gallery Lightbox â”€â”€ */
-    function openLightbox(el) {
-        const src = el.querySelector('img').src;
-        document.getElementById('lightboxImg').src = src;
+    let galleryLightboxImages = [];
+    let galleryLightboxIndex = 0;
+
+    function openGalleryAlbum(images, startIndex = 0) {
+        galleryLightboxImages = Array.isArray(images) ? images.filter(image => image && image.src) : [];
+
+        if (!galleryLightboxImages.length) {
+            return;
+        }
+
+        galleryLightboxIndex = Math.min(Math.max(startIndex, 0), galleryLightboxImages.length - 1);
+        showGalleryImage();
         document.getElementById('lightbox').classList.add('open');
         document.body.style.overflow = 'hidden';
     }
+
+    function showGalleryImage() {
+        const image = galleryLightboxImages[galleryLightboxIndex];
+        const hasMultiple = galleryLightboxImages.length > 1;
+
+        document.getElementById('lightboxImg').src = image.src;
+        document.getElementById('lightboxImg').alt = image.caption || 'Gallery photo';
+        document.getElementById('lightboxCaption').textContent = image.caption || '';
+        document.getElementById('lightboxPrev').classList.toggle('hidden', !hasMultiple);
+        document.getElementById('lightboxNext').classList.toggle('hidden', !hasMultiple);
+    }
+
+    function changeLightboxImage(direction, event) {
+        if (event) {
+            event.stopPropagation();
+        }
+
+        if (!galleryLightboxImages.length) {
+            return;
+        }
+
+        galleryLightboxIndex = (galleryLightboxIndex + direction + galleryLightboxImages.length) % galleryLightboxImages.length;
+        showGalleryImage();
+    }
+
+    function handleLightboxBackdrop(event) {
+        if (event.target.id === 'lightbox') {
+            closeLightbox();
+        }
+    }
+
     function closeLightbox() {
         document.getElementById('lightbox').classList.remove('open');
         document.body.style.overflow = '';
     }
-    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbox(); });
+    document.addEventListener('keydown', e => {
+        if (!document.getElementById('lightbox').classList.contains('open')) {
+            return;
+        }
+
+        if (e.key === 'Escape') closeLightbox();
+        if (e.key === 'ArrowLeft') changeLightboxImage(-1);
+        if (e.key === 'ArrowRight') changeLightboxImage(1);
+    });
 
     /* â”€â”€ FAQ Accordion â”€â”€ */
     function toggleFaq(btn) {

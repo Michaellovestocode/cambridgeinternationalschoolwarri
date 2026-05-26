@@ -1,106 +1,110 @@
 @extends('layouts.app')
 
-@section('title', 'Education Blog')
+@section('title', 'Cambridge Blog')
 
 @push('styles')
 <style>
+    main {
+        padding-top: 0 !important;
+        padding-bottom: 0 !important;
+    }
+
+    .app-shell {
+        max-width: none !important;
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+    }
+
+    .blog-gist {
+        min-height: 100vh;
+        background:
+            linear-gradient(180deg, rgba(239, 246, 255, .96), rgba(255, 255, 255, .98) 28rem),
+            #f8fafc;
+        color: #0f172a;
+    }
+
+    .gist-wrap {
+        width: min(1200px, calc(100% - 2rem));
+        margin-inline: auto;
+    }
+
+    .gist-logo {
+        font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
+        letter-spacing: .08em;
+    }
+
+    .gist-headline {
+        font-family: Georgia, 'Times New Roman', serif;
+        letter-spacing: -.02em;
+    }
+
+    .gist-card {
+        background: #ffffff;
+        border: 1px solid rgba(15, 23, 42, .1);
+        box-shadow: 0 18px 45px rgba(15, 23, 42, .08);
+    }
+
+    .gist-img {
+        background: linear-gradient(135deg, #dbeafe, #f8fafc);
+    }
+
+    .gist-ticker-track {
+        animation: gistTicker 28s linear infinite;
+    }
+
+    @keyframes gistTicker {
+        from { transform: translateX(0); }
+        to { transform: translateX(-50%); }
+    }
+
+    .gist-line-title {
+        display: flex;
+        align-items: center;
+        gap: .75rem;
+        font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
+        letter-spacing: .05em;
+        text-transform: uppercase;
+    }
+
+    .gist-line-title::before {
+        content: '';
+        width: .45rem;
+        height: .45rem;
+        border-radius: 999px;
+        background: #ef233c;
+        flex: none;
+    }
+
+    .gist-line-title::after {
+        content: '';
+        height: 1px;
+        flex: 1;
+        background: rgba(15, 23, 42, .12);
+    }
+
     @media (max-width: 767px) {
-        .blog-mobile-shell {
-            gap: 1.25rem;
+        .gist-wrap {
+            width: 100%;
+            padding-inline: 1rem;
         }
 
-        .blog-mobile-hero {
-            border-radius: 1rem;
-        }
-
-        .blog-mobile-feature-image {
-            height: 17rem;
-        }
-
-        .blog-mobile-feature-body {
-            padding: 1.25rem;
-        }
-
-        .blog-mobile-feature-title {
-            font-size: 1.65rem;
-            line-height: 1.08;
-        }
-
-        .blog-mobile-feature-excerpt {
-            font-size: .95rem;
-            line-height: 1.65;
-        }
-
-        .blog-mobile-insight-list {
+        .gist-mobile-scroll {
             display: grid;
             grid-auto-flow: column;
-            grid-auto-columns: minmax(17rem, 86%);
+            grid-auto-columns: minmax(15rem, 70vw);
             gap: .9rem;
             overflow-x: auto;
-            padding: 1rem;
+            padding-bottom: .35rem;
             scroll-snap-type: x mandatory;
             scrollbar-width: none;
         }
 
-        .blog-mobile-insight-list::-webkit-scrollbar {
+        .gist-mobile-scroll::-webkit-scrollbar {
             display: none;
         }
 
-        .blog-mobile-insight-card {
-            align-items: stretch;
-            background: rgba(255, 255, 255, .08);
-            border: 1px solid rgba(255, 255, 255, .12);
-            border-radius: 1rem;
-            display: grid;
-            grid-template-columns: 5.75rem 1fr;
-            min-height: 8.5rem;
-            padding: .75rem;
+        .gist-mobile-scroll > * {
             scroll-snap-align: start;
-        }
-
-        .blog-mobile-insight-card img,
-        .blog-mobile-insight-card .blog-mobile-insight-placeholder {
-            border-radius: .8rem;
-            height: 100%;
-            min-height: 7rem;
-            width: 5.75rem;
-        }
-
-        .blog-mobile-story-grid {
-            display: grid;
-            gap: .95rem;
-        }
-
-        .blog-mobile-story-card a {
-            display: grid;
-            grid-template-columns: 7.4rem 1fr;
-            min-height: 9.25rem;
-        }
-
-        .blog-mobile-story-image,
-        .blog-mobile-story-placeholder {
-            height: 100%;
-            min-height: 9.25rem;
-            width: 100%;
-        }
-
-        .blog-mobile-story-body {
-            padding: .95rem;
-        }
-
-        .blog-mobile-story-body h3 {
-            font-size: 1.05rem;
-            line-height: 1.18;
-            margin-top: .45rem;
-        }
-
-        .blog-mobile-story-body p.blog-mobile-excerpt {
-            display: none;
-        }
-
-        .blog-mobile-sidebars {
-            display: grid;
-            gap: .85rem;
         }
     }
 </style>
@@ -108,170 +112,198 @@
 
 @section('content')
 @php
-    $featuredPost = $posts->first();
-    $remainingPosts = $posts->getCollection()->skip(1);
+    $postCollection = $posts->getCollection();
+    $featuredPost = $postCollection->first();
+    $sidePosts = $postCollection->skip(1)->take(3);
+    $latestPosts = $postCollection->skip(4);
+    $fallbackImage = asset('images/school life1.jpg');
+    $categoryIcons = [
+        'education' => 'ED',
+        'study tips' => 'ST',
+        'parenting' => 'PA',
+        'exams' => 'EX',
+        'school life' => 'SL',
+        'leadership' => 'LD',
+    ];
+    $breakingPosts = ($trendingPosts ?? collect())->take(4);
 @endphp
 
-<div class="space-y-8 blog-mobile-shell">
-    <header class="relative overflow-hidden rounded-2xl bg-gray-950 text-white shadow-2xl blog-mobile-hero">
-        <div class="absolute inset-0 opacity-20">
-            <img src="{{ $featuredPost?->image_url ?: asset('images/school life1.jpg') }}" alt="" class="h-full w-full object-cover">
-        </div>
-        <div class="absolute inset-0 bg-gradient-to-r from-gray-950 via-gray-950/95 to-gray-950/45"></div>
-
-        <div class="relative border-b border-white/10 px-5 sm:px-8 py-4 flex flex-wrap items-center justify-between gap-3">
-            <div class="flex items-center gap-3">
-                <div class="nav-logo-mark w-14 h-14 bg-gradient-to-br from-blue-600 via-yellow-500 to-green-600 rounded-2xl flex items-center justify-center shadow-lg transform rotate-3 shrink-0">
-                    <span class="text-white font-black text-2xl -rotate-1"><img src="{{ asset('images/schoollogo.jpg') }}" alt="Vice Principal" class="w-full h-full object-cover rounded-2xl"></span>
-                </div>
-                <div>
-                    <p class="text-xs font-black uppercase text-amber-300" style="letter-spacing:.16em;">Cambridge Bulletin</p>
-                    <p class="text-sm text-white/70">Teacher-led education features</p>
+<div class="blog-gist">
+    <div class="bg-blue-700 text-white">
+        <div class="flex h-9 items-center overflow-hidden text-xs font-black">
+            <div class="flex h-full shrink-0 items-center bg-slate-950 px-4 text-[10px] uppercase tracking-[.24em] text-amber-300">Notice</div>
+            <div class="min-w-0 flex-1 overflow-hidden">
+                <div class="gist-ticker-track flex w-max items-center gap-8 whitespace-nowrap px-4">
+                    @forelse($breakingPosts->concat($breakingPosts) as $post)
+                        <a href="{{ route('blog.show', $post) }}" class="hover:underline">{{ $post->title }}</a>
+                        <span class="text-white/70">•</span>
+                    @empty
+                        <span>Latest school stories will appear here once published.</span>
+                    @endforelse
                 </div>
             </div>
-            <div class="text-sm text-white/70">{{ now()->format('l, F j, Y') }}</div>
+        </div>
+    </div>
+
+    <header class="sticky top-0 z-40 border-b border-slate-200 bg-white/95 shadow-sm backdrop-blur">
+        <div class="gist-wrap flex h-[70px] items-center justify-between gap-4">
+            <a href="{{ route('blog.index') }}" class="gist-logo text-3xl uppercase text-slate-950">
+                Cambridge<span class="text-blue-700">Blog</span>
+            </a>
+
+            <nav class="hidden items-center gap-3 md:flex">
+                <a href="{{ route('blog.index') }}" class="rounded-lg px-4 py-3 text-sm font-bold {{ $filters['category'] ? 'text-slate-500 hover:text-slate-950' : 'bg-blue-50 text-blue-700' }}">Home</a>
+                @foreach($categories as $category)
+                    <a href="{{ route('blog.index', ['category' => $category]) }}" class="rounded-lg px-4 py-3 text-sm font-bold {{ $filters['category'] === $category ? 'bg-blue-50 text-blue-700' : 'text-slate-500 hover:text-slate-950' }}">{{ \Illuminate\Support\Str::headline($category) }}</a>
+                @endforeach
+            </nav>
+
+            <form method="GET" action="{{ route('blog.index') }}" class="hidden w-56 items-center rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 md:flex">
+                @if($filters['category'])
+                    <input type="hidden" name="category" value="{{ $filters['category'] }}">
+                @endif
+                <span class="mr-2 text-slate-400">⌕</span>
+                <input name="search" value="{{ $filters['search'] }}" class="w-full bg-transparent text-sm text-slate-800 outline-none placeholder:text-slate-400" placeholder="Search blog...">
+            </form>
+
+            <div class="flex items-center gap-4 md:hidden">
+                <button type="button" class="text-2xl text-slate-700" onclick="document.getElementById('mobileBlogSearch').classList.toggle('hidden')" aria-label="Search">⌕</button>
+                <button type="button" class="text-2xl text-slate-700" onclick="document.getElementById('mobileBlogNav').classList.toggle('hidden')" aria-label="Menu">☰</button>
+            </div>
         </div>
 
-        <div class="relative grid lg:grid-cols-[1.08fr_.92fr] gap-8 px-5 sm:px-8 py-8 sm:py-12 items-end">
-            <div class="max-w-3xl">
-                <div class="inline-flex items-center gap-2 rounded-full bg-white/10 border border-white/15 px-4 py-2 text-xs font-black uppercase text-white/80" style="letter-spacing:.12em;">
-                    School Publication
-                </div>
-                <h1 class="mt-5 text-4xl sm:text-5xl lg:text-6xl font-black leading-tight">Ideas that help children learn better.</h1>
-                <p class="mt-5 max-w-2xl text-base sm:text-lg text-white/75 leading-8">Clear, practical writing from Cambridge teachers on study habits, character, exams, parenting, and everyday classroom growth.</p>
-                <div class="mt-7 flex flex-wrap gap-3">
-                    <a href="#top-stories" class="inline-flex items-center justify-center rounded-lg bg-amber-400 px-5 py-3 font-black text-gray-950 hover:bg-amber-300">Top Stories</a>
-                    <a href="{{ url('/') }}" class="inline-flex items-center justify-center rounded-lg border border-white/20 px-5 py-3 font-bold text-white hover:bg-white/10">Back to Home</a>
-                </div>
-            </div>
+        <div id="mobileBlogSearch" class="hidden border-t border-slate-200 px-4 py-3 md:hidden">
+            <form method="GET" action="{{ route('blog.index') }}" class="flex items-center rounded-xl border border-slate-200 bg-slate-50 px-3 py-3">
+                @if($filters['category'])
+                    <input type="hidden" name="category" value="{{ $filters['category'] }}">
+                @endif
+                <input name="search" value="{{ $filters['search'] }}" class="w-full bg-transparent text-base text-slate-800 outline-none placeholder:text-slate-400" placeholder="Search articles">
+                <button class="rounded-lg bg-blue-700 px-4 py-2 text-sm font-black text-white">Go</button>
+            </form>
+        </div>
 
-            @if($featuredPost)
-                <a href="{{ route('blog.show', $featuredPost) }}" class="hidden lg:block rounded-2xl overflow-hidden border border-white/15 bg-white/10 shadow-2xl group">
-                    <img src="{{ $featuredPost->image_url }}" alt="{{ $featuredPost->title }}" class="h-72 w-full object-cover group-hover:scale-105 transition duration-500">
-                    <div class="p-5">
-                        <p class="text-xs font-black uppercase text-amber-300">{{ \Illuminate\Support\Str::headline($featuredPost->category) }}</p>
-                        <h2 class="mt-2 text-2xl font-black leading-tight">{{ $featuredPost->title }}</h2>
-                        <p class="mt-2 text-sm text-white/60">{{ $featuredPost->display_date }} / {{ $featuredPost->reading_minutes }} min read</p>
-                    </div>
-                </a>
-            @endif
+        <div id="mobileBlogNav" class="hidden border-t border-slate-200 px-4 py-3 md:hidden">
+            <div class="grid grid-cols-2 gap-2">
+                <a href="{{ route('blog.index') }}" class="rounded-xl border border-slate-200 px-3 py-3 text-center text-sm font-bold text-slate-800">Home</a>
+                @foreach($categories as $category)
+                    <a href="{{ route('blog.index', ['category' => $category]) }}" class="rounded-xl border border-slate-200 px-3 py-3 text-center text-sm font-bold text-slate-600">{{ \Illuminate\Support\Str::headline($category) }}</a>
+                @endforeach
+            </div>
         </div>
     </header>
 
-    <section class="bg-white rounded-2xl shadow border border-gray-100 p-4 sm:p-5">
-        <form method="GET" action="{{ route('blog.index') }}" class="grid grid-cols-1 md:grid-cols-[1fr_220px_auto_auto] gap-3">
-            <input name="search" value="{{ $filters['search'] }}" class="w-full border border-gray-200 rounded-lg px-4 py-3 focus:ring-2 focus:ring-gray-900" placeholder="Search education articles">
-            <select name="category" class="w-full border border-gray-200 rounded-lg px-4 py-3 focus:ring-2 focus:ring-gray-900">
-                <option value="">All categories</option>
-                @foreach($categories as $category)
-                    <option value="{{ $category }}" @selected($filters['category'] === $category)>{{ \Illuminate\Support\Str::headline($category) }}</option>
-                @endforeach
-            </select>
-            <button class="bg-gray-950 text-white px-6 py-3 rounded-lg font-bold hover:bg-gray-800">Search</button>
-            <a href="{{ route('blog.index') }}" class="border border-gray-200 text-gray-700 px-6 py-3 rounded-lg font-bold text-center hover:bg-gray-50">Reset</a>
-        </form>
-    </section>
-
-    @if($featuredPost)
-        <section id="top-stories" class="grid lg:grid-cols-[1.55fr_.9fr] gap-6 scroll-mt-24">
-            <article class="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
-                <a href="{{ route('blog.show', $featuredPost) }}" class="block group">
-                    <div class="relative">
-                        @if($featuredPost->image_url)
-                            <img src="{{ $featuredPost->image_url }}" alt="{{ $featuredPost->title }}" class="w-full h-80 sm:h-[470px] object-cover blog-mobile-feature-image">
-                        @else
-                            <div class="h-80 sm:h-[470px] bg-gradient-to-br from-slate-100 to-gray-300 blog-mobile-feature-image"></div>
-                        @endif
-                        <div class="absolute left-5 top-5 bg-white text-gray-950 px-4 py-2 rounded-lg text-xs font-black uppercase shadow">{{ \Illuminate\Support\Str::headline($featuredPost->category) }}</div>
-                    </div>
-                    <div class="p-6 sm:p-8 blog-mobile-feature-body">
-                        <p class="text-sm font-bold text-gray-500">{{ $featuredPost->display_date }} / {{ $featuredPost->reading_minutes }} min read</p>
-                        <h2 class="mt-3 text-3xl sm:text-5xl font-black text-gray-950 leading-tight group-hover:text-blue-700 transition blog-mobile-feature-title">{{ $featuredPost->title }}</h2>
-                        <p class="mt-4 text-lg text-gray-600 leading-8 blog-mobile-feature-excerpt">{{ $featuredPost->excerpt ?: \Illuminate\Support\Str::limit(strip_tags($featuredPost->body), 180) }}</p>
-                        <p class="mt-5 text-sm font-bold text-gray-900">By {{ $featuredPost->author?->name ?? 'Cambridge Teacher' }}</p>
-                        <p class="mt-5 inline-flex items-center text-sm font-black text-blue-700">Read article <span class="ml-2">-&gt;</span></p>
+    <main class="gist-wrap py-8 md:py-10">
+        @if($featuredPost)
+            <section class="grid gap-5 lg:grid-cols-[1.9fr_.85fr]">
+                <a href="{{ route('blog.show', $featuredPost) }}" class="group relative min-h-[27rem] overflow-hidden rounded-2xl border border-slate-200 bg-slate-900 shadow-xl md:min-h-[31rem]">
+                    <img src="{{ $featuredPost->image_url ?: $fallbackImage }}" alt="{{ $featuredPost->title }}" class="absolute inset-0 h-full w-full object-cover opacity-80 transition duration-700 group-hover:scale-105">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black via-black/35 to-transparent"></div>
+                    <div class="absolute bottom-0 left-0 right-0 p-5 md:p-8">
+                        <span class="inline-flex rounded-md bg-blue-700 px-3 py-2 text-[11px] font-black uppercase tracking-wider text-white">{{ \Illuminate\Support\Str::headline($featuredPost->category) }}</span>
+                        <h1 class="gist-headline mt-5 max-w-4xl text-3xl font-black leading-[1.03] text-white md:text-5xl">{{ $featuredPost->title }}</h1>
+                        <div class="mt-4 flex flex-wrap gap-3 text-xs font-semibold text-white/75 md:text-sm">
+                            <span>By {{ $featuredPost->author?->name ?? 'Cambridge Teacher' }}</span>
+                            <span>•</span>
+                            <span>{{ $featuredPost->display_date }}</span>
+                            <span>•</span>
+                            <span>{{ $featuredPost->reading_minutes }} min read</span>
+                        </div>
                     </div>
                 </a>
-            </article>
 
-            <aside class="bg-gray-950 text-white rounded-2xl shadow-xl overflow-hidden">
-                <div class="px-6 py-5 border-b border-white/10">
-                    <p class="text-xs font-black uppercase text-amber-300" style="letter-spacing:.16em;">Latest Insight</p>
-                    <h3 class="text-2xl font-black mt-2">For Parents And Teachers</h3>
-                </div>
-                <div class="divide-y divide-white/10 md:divide-y blog-mobile-insight-list">
-                    @foreach($remainingPosts->take(4) as $post)
-                        <a href="{{ route('blog.show', $post) }}" class="grid grid-cols-[88px_1fr] gap-4 p-5 hover:bg-white/10 transition blog-mobile-insight-card">
-                            @if($post->image_url)
-                                <img src="{{ $post->image_url }}" alt="{{ $post->title }}" class="h-20 w-22 rounded-lg object-cover">
-                            @else
-                                <div class="h-20 w-22 rounded-lg bg-white/10 blog-mobile-insight-placeholder"></div>
-                            @endif
-                            <div>
-                                <p class="text-xs font-bold text-amber-300 uppercase">{{ \Illuminate\Support\Str::headline($post->category) }}</p>
-                                <h4 class="font-black leading-snug mt-1">{{ $post->title }}</h4>
-                                <p class="text-xs text-white/60 mt-2">{{ $post->display_date }}</p>
-                                <p class="mt-2 text-xs font-black text-white">Read more -&gt;</p>
+                <div class="gist-mobile-scroll lg:grid lg:auto-rows-fr lg:grid-flow-row lg:gap-3 lg:overflow-visible">
+                    @foreach($sidePosts as $post)
+                        <a href="{{ route('blog.show', $post) }}" class="gist-card group grid min-h-40 grid-cols-[7rem_1fr] overflow-hidden rounded-xl md:grid-cols-[8rem_1fr]">
+                            <img src="{{ $post->image_url ?: $fallbackImage }}" alt="{{ $post->title }}" class="h-full w-full object-cover opacity-80 transition duration-500 group-hover:scale-105">
+                            <div class="flex min-w-0 flex-col justify-center p-4">
+                                <span class="w-max rounded bg-blue-50 px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-blue-700">{{ \Illuminate\Support\Str::headline($post->category) }}</span>
+                                <h2 class="gist-headline mt-3 line-clamp-3 text-base font-black leading-tight text-slate-950">{{ $post->title }}</h2>
+                                <p class="mt-2 text-xs text-slate-500">{{ $post->reading_minutes }} min read</p>
                             </div>
                         </a>
                     @endforeach
                 </div>
-            </aside>
-        </section>
+            </section>
 
-        <section class="grid lg:grid-cols-[1fr_280px] gap-6">
-            <div class="grid md:grid-cols-2 gap-6 blog-mobile-story-grid">
-                @foreach($remainingPosts->skip(4) as $post)
-                    <article class="bg-white rounded-2xl shadow border border-gray-100 overflow-hidden hover:shadow-xl transition blog-mobile-story-card">
-                        <a href="{{ route('blog.show', $post) }}" class="block group">
-                            @if($post->image_url)
-                                <img src="{{ $post->image_url }}" alt="{{ $post->title }}" class="w-full h-56 object-cover blog-mobile-story-image">
-                            @else
-                                <div class="h-56 bg-gray-100 blog-mobile-story-placeholder"></div>
-                            @endif
-                            <div class="p-6 blog-mobile-story-body">
-                                <div class="flex flex-wrap items-center gap-2 text-xs font-black uppercase text-gray-500">
-                                    <span>{{ \Illuminate\Support\Str::headline($post->category) }}</span>
-                                    <span>/</span>
-                                    <span>{{ $post->reading_minutes }} min read</span>
-                                </div>
-                                <h3 class="mt-3 text-2xl font-black text-gray-950 leading-tight group-hover:text-blue-700 transition">{{ $post->title }}</h3>
-                                <p class="mt-3 text-gray-600 leading-7 blog-mobile-excerpt">{{ $post->excerpt ?: \Illuminate\Support\Str::limit(strip_tags($post->body), 130) }}</p>
-                                <div class="mt-5 flex flex-wrap items-center justify-between gap-3">
-                                    <p class="text-sm font-bold text-gray-500">{{ $post->display_date }}</p>
-                                    <p class="text-sm font-black text-blue-700">Read more -&gt;</p>
-                                </div>
-                            </div>
+            <section class="mt-10">
+                <h2 class="gist-line-title text-2xl text-slate-950">Browse Categories</h2>
+                <div class="mt-5 flex gap-3 overflow-x-auto pb-2">
+                    @foreach($categories as $category)
+                        <a href="{{ route('blog.index', ['category' => $category]) }}" class="flex shrink-0 items-center gap-3 rounded-full border border-slate-200 bg-white px-4 py-3 text-sm font-black text-slate-800 shadow-sm transition hover:border-blue-500/70">
+                            <span class="rounded bg-blue-50 px-2 py-1 text-[10px] text-blue-700">{{ $categoryIcons[$category] ?? 'BG' }}</span>
+                            <span>{{ \Illuminate\Support\Str::headline($category) }}</span>
+                            <span class="text-xs font-semibold text-slate-400">{{ number_format((int) ($categoryCounts[$category] ?? 0)) }}</span>
                         </a>
-                    </article>
-                @endforeach
-            </div>
+                    @endforeach
+                </div>
+            </section>
 
-            <aside class="space-y-5 blog-mobile-sidebars">
-                <div class="bg-white rounded-2xl shadow border border-gray-100 p-6">
-                    <h3 class="text-lg font-black text-gray-950">Sections</h3>
-                    <div class="mt-4 flex flex-wrap gap-2">
-                        @foreach($categories as $category)
-                            <a href="{{ route('blog.index', ['category' => $category]) }}" class="px-3 py-2 rounded-lg bg-gray-100 text-gray-700 text-sm font-bold hover:bg-gray-950 hover:text-white transition">{{ \Illuminate\Support\Str::headline($category) }}</a>
-                        @endforeach
+            <section class="mt-8 grid gap-8 lg:grid-cols-[1fr_320px]">
+                <div>
+                    <h2 class="gist-line-title text-2xl text-slate-950">Latest Articles</h2>
+                    <div class="mt-5 grid gap-5 md:grid-cols-2">
+                        @forelse($latestPosts as $post)
+                            <article class="gist-card overflow-hidden rounded-xl transition hover:border-blue-500/50">
+                                <a href="{{ route('blog.show', $post) }}" class="group block">
+                                    <div class="relative h-64 overflow-hidden">
+                                        <img src="{{ $post->image_url ?: $fallbackImage }}" alt="{{ $post->title }}" class="h-full w-full object-cover opacity-85 transition duration-700 group-hover:scale-105">
+                                        <span class="absolute left-4 top-4 rounded-md bg-blue-700 px-3 py-2 text-[11px] font-black uppercase tracking-wider text-white">{{ \Illuminate\Support\Str::headline($post->category) }}</span>
+                                    </div>
+                                    <div class="p-5">
+                                        <h3 class="gist-headline line-clamp-2 text-2xl font-black leading-tight text-slate-950">{{ $post->title }}</h3>
+                                        <p class="mt-3 line-clamp-2 text-sm leading-6 text-slate-600">{{ $post->excerpt ?: \Illuminate\Support\Str::limit(strip_tags($post->body), 120) }}</p>
+                                        <div class="mt-4 flex items-center justify-between gap-3 text-xs text-slate-500">
+                                            <span>{{ $post->author?->name ?? 'Cambridge Teacher' }}</span>
+                                            <span>{{ $post->reading_minutes }} min read</span>
+                                        </div>
+                                    </div>
+                                </a>
+                            </article>
+                        @empty
+                            <div class="gist-card rounded-xl p-8 text-slate-600">More articles will appear here as they are published.</div>
+                        @endforelse
                     </div>
                 </div>
-                <div class="bg-amber-50 border border-amber-100 rounded-2xl p-6">
-                    <p class="text-xs font-black uppercase text-amber-700" style="letter-spacing:.14em;">Teacher Writers</p>
-                    <h3 class="mt-2 text-xl font-black text-gray-950">Share practical classroom wisdom.</h3>
-                    <p class="mt-3 text-sm text-gray-600 leading-6">Approved articles appear here for parents, students, and the wider school community.</p>
-                </div>
-            </aside>
-        </section>
-    @else
-        <div class="bg-white rounded-2xl shadow p-12 text-center">
-            <p class="text-xl font-black text-gray-950">No published articles yet.</p>
-            <p class="text-gray-500 mt-2">Approved teacher articles will appear here.</p>
-        </div>
-    @endif
 
-    <div class="bg-white rounded-2xl shadow px-6 py-4">
-        {{ $posts->links() }}
-    </div>
+                <aside class="space-y-6">
+                    <section class="gist-card rounded-xl p-5">
+                        <h2 class="gist-line-title text-xl text-slate-950">Trending Now</h2>
+                        <div class="mt-5 divide-y divide-slate-100">
+                            @foreach(($trendingPosts ?? collect())->take(5) as $index => $post)
+                                <a href="{{ route('blog.show', $post) }}" class="grid grid-cols-[2rem_1fr_4rem] gap-3 py-4">
+                                    <span class="text-2xl font-black text-slate-200">{{ str_pad($index + 1, 2, '0', STR_PAD_LEFT) }}</span>
+                                    <span class="min-w-0">
+                                        <span class="line-clamp-2 text-sm font-black leading-snug text-slate-800">{{ $post->title }}</span>
+                                        <span class="mt-1 block text-xs text-slate-500">{{ \Illuminate\Support\Str::headline($post->category) }} · {{ $post->reading_minutes }} min read</span>
+                                    </span>
+                                    <img src="{{ $post->image_url ?: $fallbackImage }}" alt="{{ $post->title }}" class="h-14 w-16 rounded-lg object-cover">
+                                </a>
+                            @endforeach
+                        </div>
+                    </section>
+
+                    <section class="gist-card rounded-xl p-5">
+                        <h2 class="gist-line-title text-xl text-slate-950">Popular Tags</h2>
+                        <div class="mt-5 flex flex-wrap gap-2">
+                            @foreach($categories as $category)
+                                <a href="{{ route('blog.index', ['category' => $category]) }}" class="rounded-full border border-slate-200 px-3 py-2 text-xs font-bold text-slate-500 hover:border-blue-500 hover:text-blue-700">#{{ str_replace(' ', '', \Illuminate\Support\Str::headline($category)) }}</a>
+                            @endforeach
+                        </div>
+                    </section>
+                </aside>
+            </section>
+        @else
+            <div class="gist-card rounded-2xl p-12 text-center">
+                <p class="text-2xl font-black text-slate-950">No published articles yet.</p>
+                <p class="mt-2 text-slate-500">Approved teacher articles will appear here.</p>
+            </div>
+        @endif
+
+        <div class="mt-10 rounded-xl border border-slate-200 bg-white px-5 py-4 text-slate-800 shadow-sm">
+            {{ $posts->links() }}
+        </div>
+    </main>
+
+    <a href="#" class="fixed bottom-5 right-5 z-40 flex h-12 w-12 items-center justify-center rounded-xl bg-blue-700 text-2xl font-black text-white shadow-xl hover:bg-blue-600" aria-label="Back to top">⌃</a>
 </div>
 @endsection
