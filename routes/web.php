@@ -163,6 +163,9 @@ Route::get('/teacher/scores/my-scores', [TeacherScoreController::class, 'myScore
         Route::get('/announcements/{announcement}/edit', [AnnouncementController::class, 'edit'])->name('announcements.edit');
         Route::put('/announcements/{announcement}', [AnnouncementController::class, 'update'])->name('announcements.update');
         Route::delete('/announcements/{announcement}', [AnnouncementController::class, 'destroy'])->name('announcements.destroy');
+    });
+
+    Route::prefix('admin')->name('admin.')->middleware('role:admin')->group(function () {
         Route::get('/gallery', [GalleryController::class, 'index'])->name('gallery.index');
         Route::get('/gallery/create', [GalleryController::class, 'create'])->name('gallery.create');
         Route::post('/gallery', [GalleryController::class, 'store'])->name('gallery.store');

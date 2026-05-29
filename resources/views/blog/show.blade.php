@@ -1,6 +1,7 @@
 @extends('layouts.app')
 
 @section('title', $post->title)
+@section('hideAuthNav', 'true')
 
 @push('styles')
 <style>
@@ -179,6 +180,12 @@
             <div class="flex items-center gap-3">
                 <a href="{{ route('blog.index') }}" class="hidden rounded-lg border border-slate-200 px-4 py-2 text-sm font-black text-slate-600 hover:text-slate-950 sm:inline-flex">Blog</a>
                 <a href="{{ url('/') }}" class="hidden rounded-lg bg-blue-700 px-4 py-2 text-sm font-black text-white hover:bg-blue-600 sm:inline-flex">Home</a>
+                @auth
+                    <form action="{{ route('logout') }}" method="POST">
+                        @csrf
+                        <button class="rounded-lg bg-rose-600 px-4 py-2 text-sm font-black text-white shadow-sm hover:bg-rose-700">Logout</button>
+                    </form>
+                @endauth
                 <button type="button" class="grid h-11 w-11 place-items-center rounded-full border border-slate-200 bg-white text-slate-700 shadow-sm md:hidden" onclick="toggleBlogMenu(true)" aria-label="Menu">
                     <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.4" d="M4 7h16M4 12h16M4 17h16"/>
@@ -203,6 +210,12 @@
                 <div class="grid gap-3 p-5">
                     <a href="{{ route('blog.index') }}" class="rounded-2xl border border-slate-200 bg-blue-50 px-4 py-4 text-sm font-black text-blue-700">Blog Home</a>
                     <a href="{{ url('/') }}" class="rounded-2xl border border-slate-200 bg-white px-4 py-4 text-sm font-black text-slate-700">School Website</a>
+                    @auth
+                        <form action="{{ route('logout') }}" method="POST">
+                            @csrf
+                            <button class="w-full rounded-2xl border border-rose-200 bg-rose-50 px-4 py-4 text-left text-sm font-black text-rose-700">Logout</button>
+                        </form>
+                    @endauth
                     @foreach(\App\Models\BlogPost::categories() as $category)
                         <a href="{{ route('blog.index', ['category' => $category]) }}" class="rounded-2xl border border-slate-200 bg-white px-4 py-4 text-sm font-black text-slate-700">{{ \Illuminate\Support\Str::headline($category) }}</a>
                     @endforeach

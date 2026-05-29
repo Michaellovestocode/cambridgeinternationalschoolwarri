@@ -149,6 +149,7 @@
 </head>
 <body>
     @auth
+    @if(trim($__env->yieldContent('hideAuthNav')) !== 'true')
     @php
         if (auth()->user()->isStudent()) {
             $dashboardRoute = 'student.dashboard';
@@ -324,6 +325,7 @@
             </div>
         </div>
     </nav>
+    @endif
     @endauth
 
     <main class="min-h-screen py-8">

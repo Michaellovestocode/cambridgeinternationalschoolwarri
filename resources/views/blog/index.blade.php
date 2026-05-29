@@ -1,6 +1,7 @@
 @extends('layouts.app')
 
 @section('title', 'Cambridge Magazine')
+@section('hideAuthNav', 'true')
 
 @push('styles')
 <style>
@@ -222,8 +223,8 @@
     $featuredPost = $postCollection->first();
     $sidePosts = $postCollection->skip(1)->take(3);
     $latestPosts = $postCollection->count() > 4
-        ? $postCollection->skip(4)
-        : ($postCollection->count() > 1 ? $postCollection->skip(1) : $postCollection);
+        ? $postCollection->skip(4)->take(3)
+        : ($postCollection->count() > 1 ? $postCollection->skip(1)->take(3) : $postCollection->take(1));
     $fallbackImage = asset('images/school life1.jpg');
     $categoryIcons = [
         'education' => 'ED',
@@ -280,6 +281,12 @@
             </form>
 
             <div class="flex shrink-0 items-center gap-2 xl:hidden">
+                @auth
+                    <form action="{{ route('logout') }}" method="POST">
+                        @csrf
+                        <button class="rounded-full bg-rose-600 px-4 py-2 text-xs font-black text-white shadow-sm">Logout</button>
+                    </form>
+                @endauth
                 <button type="button" class="grid h-11 w-11 place-items-center rounded-full border border-slate-200 bg-white text-slate-700 shadow-sm" onclick="document.getElementById('mobileBlogSearch').classList.toggle('hidden')" aria-label="Search">
                     <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="m21 21-4.3-4.3M10.8 18a7.2 7.2 0 1 1 0-14.4 7.2 7.2 0 0 1 0 14.4Z"/>
@@ -291,6 +298,12 @@
                     </svg>
                 </button>
             </div>
+            @auth
+                <form action="{{ route('logout') }}" method="POST" class="hidden xl:block">
+                    @csrf
+                    <button class="rounded-lg bg-rose-600 px-4 py-3 text-sm font-black text-white shadow-sm hover:bg-rose-700">Logout</button>
+                </form>
+            @endauth
         </div>
 
         <div id="mobileBlogSearch" class="hidden border-t border-slate-200 px-4 py-3 xl:hidden">
