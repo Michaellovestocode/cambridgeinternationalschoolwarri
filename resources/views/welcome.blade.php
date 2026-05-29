@@ -918,7 +918,7 @@
 
         <div class="grid grid-cols-2 gap-3 lg:grid-cols-4">
             @foreach($mobileGalleryAlbums as $album)
-                <button type="button" onclick='openGalleryAlbum(@js($mobileGalleryImages($album)))' class="group overflow-hidden rounded-2xl bg-white text-left shadow-lg">
+                <button type="button" onclick="openGalleryAlbum(@js($mobileGalleryImages($album)))" class="group overflow-hidden rounded-2xl bg-white text-left shadow-lg">
                     <span class="relative block h-32 overflow-hidden bg-slate-100 sm:h-48">
                         <img src="{{ $mobileGalleryCover($album) }}" alt="{{ $album->title }}" loading="lazy" class="h-full w-full object-cover transition duration-500 group-hover:scale-105">
                         <span class="absolute bottom-2 left-2 rounded-full bg-black/60 px-2.5 py-1 text-[10px] font-black uppercase text-white">{{ $mobileGalleryImages($album)->count() }} photo{{ $mobileGalleryImages($album)->count() === 1 ? '' : 's' }}</span>
@@ -1305,7 +1305,7 @@
 
         <div class="grid gap-5 lg:grid-cols-[1.2fr_.8fr]">
             @if($featuredGalleryAlbum)
-                <article class="card-hover group relative min-h-[24rem] overflow-hidden rounded-3xl shadow-xl fade-in-up cursor-pointer" onclick='openGalleryAlbum(@js($galleryLightboxImages($featuredGalleryAlbum)))'>
+                <article class="card-hover group relative min-h-[24rem] overflow-hidden rounded-3xl shadow-xl fade-in-up cursor-pointer" onclick="openGalleryAlbum(@js($galleryLightboxImages($featuredGalleryAlbum)))">
                     <img src="{{ $galleryCoverImage($featuredGalleryAlbum) }}" alt="{{ $featuredGalleryAlbum->title }}" class="absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-105">
                     <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/25 to-transparent"></div>
                     <div class="absolute bottom-0 left-0 right-0 p-6 sm:p-8 text-white">
@@ -1319,7 +1319,7 @@
 
             <div class="grid grid-cols-2 gap-4">
                 @foreach($galleryTiles as $index => $album)
-                    <article class="card-hover group relative min-h-44 overflow-hidden rounded-3xl shadow-lg fade-in-up cursor-pointer {{ $index === 2 ? 'col-span-2' : '' }}" onclick='openGalleryAlbum(@js($galleryLightboxImages($album)))' style="transition-delay:.{{ $index + 1 }}s">
+                    <article class="card-hover group relative min-h-44 overflow-hidden rounded-3xl shadow-lg fade-in-up cursor-pointer {{ $index === 2 ? 'col-span-2' : '' }}" onclick="openGalleryAlbum(@js($galleryLightboxImages($album)))" style="transition-delay:.{{ $index + 1 }}s">
                         <img src="{{ $galleryCoverImage($album) }}" alt="{{ $album->title }}" loading="lazy" class="absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-105">
                         <div class="absolute inset-0 bg-gradient-to-t from-black/75 via-black/10 to-transparent"></div>
                         <div class="absolute bottom-0 left-0 right-0 p-4 text-white">
@@ -1334,7 +1334,7 @@
         @if(($galleryAlbums ?? collect())->isNotEmpty())
             <div class="mt-8 flex gap-3 overflow-x-auto pb-2 sm:hidden">
                 @foreach($homepageGalleryAlbums as $album)
-                    <button type="button" onclick='openGalleryAlbum(@js($galleryLightboxImages($album)))' class="shrink-0 overflow-hidden rounded-2xl border border-gray-100 bg-white shadow">
+                    <button type="button" onclick="openGalleryAlbum(@js($galleryLightboxImages($album)))" class="shrink-0 overflow-hidden rounded-2xl border border-gray-100 bg-white shadow">
                         <img src="{{ $galleryCoverImage($album) }}" alt="{{ $album->title }}" loading="lazy" class="h-24 w-36 object-cover">
                         <span class="block max-w-36 truncate px-3 py-2 text-left text-xs font-bold text-gray-700">{{ $album->title }}</span>
                     </button>
