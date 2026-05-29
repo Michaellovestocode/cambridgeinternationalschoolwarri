@@ -565,64 +565,64 @@
 <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
      PROGRAMS SECTION
 â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
-<section id="programs" class="py-16 sm:py-24 bg-white">
+<section id="programs" class="py-10 sm:py-24 bg-white">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="text-center max-w-3xl mx-auto mb-12 sm:mb-16 fade-in-up">
-            <h2 class="text-4xl sm:text-5xl md:text-6xl font-black text-gray-900 mb-4">Our Programs</h2>
-            <p class="text-lg sm:text-xl text-gray-600">Comprehensive educational programs designed to nurture every aspect of student development.</p>
+        <div class="text-center max-w-3xl mx-auto mb-8 sm:mb-16 fade-in-up">
+            <h2 class="text-3xl sm:text-5xl md:text-6xl font-black text-gray-900 mb-3 sm:mb-4">Our Programs</h2>
+            <p class="text-sm sm:text-xl text-gray-600">Comprehensive educational programs designed to nurture every aspect of student development.</p>
         </div>
 
-        <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-8">
             <!-- Primary -->
-            <div class="card-hover bg-gradient-to-br from-blue-500 to-blue-700 p-8 rounded-3xl shadow-xl text-white fade-in-up">
-                <div class="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center mb-6">
-                    <svg class="w-9 h-9 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="card-hover bg-gradient-to-br from-blue-500 to-blue-700 p-4 sm:p-8 rounded-2xl sm:rounded-3xl shadow-xl text-white fade-in-up">
+                <div class="w-10 h-10 sm:w-16 sm:h-16 bg-white/20 backdrop-blur-sm rounded-xl sm:rounded-2xl flex items-center justify-center mb-3 sm:mb-6">
+                    <svg class="w-6 h-6 sm:w-9 sm:h-9 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
                     </svg>
                 </div>
-                <h3 class="text-2xl font-black mb-3">Primary/Nursery School</h3>
-                <p class="text-blue-100 text-sm leading-relaxed mb-4">Building strong foundations for young learners</p>
-                <div class="text-xs font-semibold text-blue-200 mb-4">Ages 2-12</div>
-                <a href="#contact" class="inline-block text-xs bg-white/20 hover:bg-white/30 text-white font-bold px-4 py-2 rounded-full transition">Learn More</a>
+                <h3 class="text-base sm:text-2xl font-black mb-2 sm:mb-3 leading-tight">Primary/Nursery School</h3>
+                <p class="text-blue-100 text-xs sm:text-sm leading-relaxed mb-3 sm:mb-4">Building strong foundations for young learners</p>
+                <div class="text-[11px] sm:text-xs font-semibold text-blue-200 mb-3 sm:mb-4">Ages 2-12</div>
+                <a href="#contact" class="inline-block text-[11px] sm:text-xs bg-white/20 hover:bg-white/30 text-white font-bold px-3 sm:px-4 py-2 rounded-full transition">Learn More</a>
             </div>
 
             <!-- High School -->
-            <div class="card-hover bg-gradient-to-br from-green-500 to-emerald-700 p-8 rounded-3xl shadow-xl text-white fade-in-up" style="transition-delay:.1s">
-                <div class="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center mb-6">
-                    <svg class="w-9 h-9 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="card-hover bg-gradient-to-br from-green-500 to-emerald-700 p-4 sm:p-8 rounded-2xl sm:rounded-3xl shadow-xl text-white fade-in-up" style="transition-delay:.1s">
+                <div class="w-10 h-10 sm:w-16 sm:h-16 bg-white/20 backdrop-blur-sm rounded-xl sm:rounded-2xl flex items-center justify-center mb-3 sm:mb-6">
+                    <svg class="w-6 h-6 sm:w-9 sm:h-9 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
                     </svg>
                 </div>
-                <h3 class="text-2xl font-black mb-3">Secondary School</h3>
-                <p class="text-green-100 text-sm leading-relaxed mb-4">Preparing students for higher education and career success.</p>
-                <div class="text-xs font-semibold text-green-200 mb-4">JSS &amp; SSS</div>
-                <a href="#contact" class="inline-block text-xs bg-white/20 hover:bg-white/30 text-white font-bold px-4 py-2 rounded-full transition">Learn More</a>
+                <h3 class="text-base sm:text-2xl font-black mb-2 sm:mb-3 leading-tight">Secondary School</h3>
+                <p class="text-green-100 text-xs sm:text-sm leading-relaxed mb-3 sm:mb-4">Preparing students for higher education and career success.</p>
+                <div class="text-[11px] sm:text-xs font-semibold text-green-200 mb-3 sm:mb-4">JSS &amp; SSS</div>
+                <a href="#contact" class="inline-block text-[11px] sm:text-xs bg-white/20 hover:bg-white/30 text-white font-bold px-3 sm:px-4 py-2 rounded-full transition">Learn More</a>
             </div>
 
             <!-- Digital Learning -->
-            <div class="card-hover bg-gradient-to-br from-purple-500 to-pink-600 p-8 rounded-3xl shadow-xl text-white fade-in-up" style="transition-delay:.2s">
-                <div class="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center mb-6">
-                    <svg class="w-9 h-9 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="card-hover bg-gradient-to-br from-purple-500 to-pink-600 p-4 sm:p-8 rounded-2xl sm:rounded-3xl shadow-xl text-white fade-in-up" style="transition-delay:.2s">
+                <div class="w-10 h-10 sm:w-16 sm:h-16 bg-white/20 backdrop-blur-sm rounded-xl sm:rounded-2xl flex items-center justify-center mb-3 sm:mb-6">
+                    <svg class="w-6 h-6 sm:w-9 sm:h-9 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
                     </svg>
                 </div>
-                <h3 class="text-2xl font-black mb-3">Digital Learning</h3>
-                <p class="text-purple-100 text-sm leading-relaxed mb-4">Innovative education with modern technology and digital tools.</p>
-                <div class="text-xs font-semibold text-purple-200 mb-4">CBT Platform</div>
-                <a href="/login" class="inline-block text-xs bg-white/20 hover:bg-white/30 text-white font-bold px-4 py-2 rounded-full transition">Open Portal</a>
+                <h3 class="text-base sm:text-2xl font-black mb-2 sm:mb-3 leading-tight">Digital Learning</h3>
+                <p class="text-purple-100 text-xs sm:text-sm leading-relaxed mb-3 sm:mb-4">Innovative education with modern technology and digital tools.</p>
+                <div class="text-[11px] sm:text-xs font-semibold text-purple-200 mb-3 sm:mb-4">CBT Platform</div>
+                <a href="/login" class="inline-block text-[11px] sm:text-xs bg-white/20 hover:bg-white/30 text-white font-bold px-3 sm:px-4 py-2 rounded-full transition">Open Portal</a>
             </div>
 
             <!-- Co-Curricular -->
-            <div class="card-hover bg-gradient-to-br from-orange-500 to-red-600 p-8 rounded-3xl shadow-xl text-white fade-in-up" style="transition-delay:.3s">
-                <div class="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center mb-6">
-                    <svg class="w-9 h-9 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="card-hover bg-gradient-to-br from-orange-500 to-red-600 p-4 sm:p-8 rounded-2xl sm:rounded-3xl shadow-xl text-white fade-in-up" style="transition-delay:.3s">
+                <div class="w-10 h-10 sm:w-16 sm:h-16 bg-white/20 backdrop-blur-sm rounded-xl sm:rounded-2xl flex items-center justify-center mb-3 sm:mb-6">
+                    <svg class="w-6 h-6 sm:w-9 sm:h-9 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                     </svg>
                 </div>
-                <h3 class="text-2xl font-black mb-3">Co-Curricular</h3>
-                <p class="text-orange-100 text-sm leading-relaxed mb-4">Sports, arts, and extracurricular activities for holistic growth.</p>
-                <div class="text-xs font-semibold text-orange-200 mb-4">All Levels</div>
-                <a href="#gallery" class="inline-block text-xs bg-white/20 hover:bg-white/30 text-white font-bold px-4 py-2 rounded-full transition">See Photos</a>
+                <h3 class="text-base sm:text-2xl font-black mb-2 sm:mb-3 leading-tight">Co-Curricular</h3>
+                <p class="text-orange-100 text-xs sm:text-sm leading-relaxed mb-3 sm:mb-4">Sports, arts, and extracurricular activities for holistic growth.</p>
+                <div class="text-[11px] sm:text-xs font-semibold text-orange-200 mb-3 sm:mb-4">All Levels</div>
+                <a href="#gallery" class="inline-block text-[11px] sm:text-xs bg-white/20 hover:bg-white/30 text-white font-bold px-3 sm:px-4 py-2 rounded-full transition">See Photos</a>
             </div>
         </div>
     </div>
@@ -652,10 +652,10 @@
                     Cambridge International School, <span class="text-yellow-300">Warri</span>
                 </h2>
 
-                <p class="text-base sm:text-lg text-blue-50/90 leading-8 mb-4">
+                <p class="text-sm sm:text-lg text-blue-50/90 leading-7 sm:leading-8 mb-4">
                     Cambridge International School, Warri is a distinguished education institution committed to delivering world-class education from Creche through Secondary School level.
                 </p>
-                <p class="text-base sm:text-lg text-blue-50/90 leading-8 mb-8">
+                <p class="hidden text-base sm:block sm:text-lg text-blue-50/90 leading-8 mb-8">
                     Established in 1996 and strengthened through visionary leadership, the school has evolved into a centre of excellence known for nurturing well-rounded, disciplined, excellence-driven students who are academically sound, morally upright, and globally competitive.
                 </p>
 
@@ -698,25 +698,25 @@
             </div>
         </div>
 
-        <div class="mt-20 grid sm:grid-cols-2 lg:grid-cols-4 gap-4 fade-in-up">
+        <div class="mt-10 sm:mt-20 grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 fade-in-up">
             @foreach(['Leadership', 'Excellence', 'Accountability', 'Discipline'] as $valueIndex => $value)
-                <div class="bg-white/10 border border-white/15 rounded-2xl p-5">
-                    <div class="w-10 h-10 rounded-full bg-yellow-300 text-blue-950 flex items-center justify-center text-sm font-black mb-4">
+                <div class="bg-white/10 border border-white/15 rounded-2xl p-3 sm:p-5">
+                    <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-yellow-300 text-blue-950 flex items-center justify-center text-xs sm:text-sm font-black mb-2 sm:mb-4">
                         {{ $valueIndex + 1 }}
                     </div>
-                    <h3 class="text-lg font-black">{{ $value }}</h3>
+                    <h3 class="text-sm sm:text-lg font-black leading-tight">{{ $value }}</h3>
                 </div>
             @endforeach
         </div>
 
-        <div class="mt-8 grid lg:grid-cols-3 gap-6">
-            <div class="lg:col-span-1 bg-white rounded-3xl p-7 shadow-xl fade-in-up">
+        <div class="mt-6 sm:mt-8 grid lg:grid-cols-3 gap-4 sm:gap-6">
+            <div class="lg:col-span-1 bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-7 shadow-xl fade-in-up">
                 <div class="text-xs font-black uppercase text-blue-600 mb-3" style="letter-spacing:.16em;">Unique Approach</div>
-                <h3 class="text-2xl font-black text-gray-900 mb-4">Blended learning for global readiness</h3>
-                <p class="text-gray-600 leading-7">A blended and enriched curriculum integrating Nigerian, British, and Montessori methodologies so students build strong foundations, independence, critical thinking, and readiness for local and international opportunities.</p>
+                <h3 class="text-lg sm:text-2xl font-black text-gray-900 mb-2 sm:mb-4">Blended learning for global readiness</h3>
+                <p class="hidden text-gray-600 leading-7 sm:block">A blended and enriched curriculum integrating Nigerian, British, and Montessori methodologies so students build strong foundations, independence, critical thinking, and readiness for local and international opportunities.</p>
             </div>
 
-            <div class="bg-white rounded-3xl p-7 shadow-xl fade-in-up" style="transition-delay:.1s">
+            <div class="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-7 shadow-xl fade-in-up" style="transition-delay:.1s">
                 <div class="text-xs font-black uppercase text-emerald-600 mb-4" style="letter-spacing:.16em;">Academic Programmes</div>
                 <div class="space-y-4">
                     <div class="flex gap-3">
@@ -734,7 +734,7 @@
                 </div>
             </div>
 
-            <div class="bg-white rounded-3xl p-7 shadow-xl fade-in-up" style="transition-delay:.2s">
+            <div class="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-7 shadow-xl fade-in-up" style="transition-delay:.2s">
                 <div class="text-xs font-black uppercase text-amber-600 mb-4" style="letter-spacing:.16em;">Facilities</div>
                 <div class="grid grid-cols-2 gap-3">
                     <div class="rounded-2xl bg-amber-50 p-4 text-sm font-bold text-gray-800">Science laboratories</div>
@@ -747,8 +747,8 @@
             </div>
         </div>
 
-        <div class="mt-6 grid lg:grid-cols-2 gap-6">
-            <div class="bg-white/10 border border-white/15 rounded-3xl p-7 fade-in-up">
+        <div class="mt-4 sm:mt-6 grid lg:grid-cols-2 gap-4 sm:gap-6">
+            <div class="bg-white/10 border border-white/15 rounded-2xl sm:rounded-3xl p-4 sm:p-7 fade-in-up">
                 <div class="text-xs font-black uppercase text-yellow-200 mb-4" style="letter-spacing:.16em;">Co-Curricular Development</div>
                 <div class="grid sm:grid-cols-2 gap-3 text-sm font-semibold text-blue-50">
                     <div class="rounded-2xl bg-white/10 p-4">Leadership and personal development</div>
@@ -760,10 +760,10 @@
                 </div>
             </div>
 
-            <div class="bg-white/10 border border-white/15 rounded-3xl p-7 fade-in-up" style="transition-delay:.1s">
+            <div class="bg-white/10 border border-white/15 rounded-2xl sm:rounded-3xl p-4 sm:p-7 fade-in-up" style="transition-delay:.1s">
                 <div class="text-xs font-black uppercase text-emerald-200 mb-4" style="letter-spacing:.16em;">Community Impact</div>
-                <p class="text-blue-50/90 leading-7 mb-5">Cambridge International School is committed to contributing meaningfully to society through scholarship opportunities, educational outreach, and community engagement initiatives.</p>
-                <div class="rounded-2xl bg-yellow-300 text-blue-950 p-5 font-black">
+                <p class="hidden text-blue-50/90 leading-7 mb-5 sm:block">Cambridge International School is committed to contributing meaningfully to society through scholarship opportunities, educational outreach, and community engagement initiatives.</p>
+                <div class="rounded-2xl bg-yellow-300 text-blue-950 p-4 sm:p-5 text-sm sm:text-base font-black">
                     "Building Future Leaders Through Excellence, Character, and Innovation."
                 </div>
             </div>
@@ -774,11 +774,11 @@
 <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
      FEATURES / WHY CAMBRIDGE
 â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
-<section id="why-cambridge" class="py-16 sm:py-24 bg-gradient-to-br from-gray-50 to-blue-50">
+<section id="why-cambridge" class="py-10 sm:py-24 bg-gradient-to-br from-gray-50 to-blue-50">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="grid lg:grid-cols-2 gap-12 items-center">
+        <div class="grid lg:grid-cols-2 gap-8 sm:gap-12 items-center">
             <!-- Image -->
-            <div class="order-2 lg:order-1 fade-in-up">
+            <div class="order-2 hidden sm:block lg:order-1 fade-in-up">
                 <div class="relative">
                     <img src="{{ asset('images/excursion1.jpg') }}" alt="Classroom" loading="lazy" class="rounded-3xl shadow-2xl w-full">
                     <div class="absolute -bottom-6 -right-6 bg-gradient-to-br from-yellow-400 to-orange-500 p-6 rounded-2xl shadow-2xl">
@@ -792,59 +792,59 @@
 
             <!-- Content -->
             <div class="order-1 lg:order-2 fade-in-up" style="transition-delay:.15s">
-                <h2 class="text-4xl sm:text-5xl font-black text-gray-900 mb-6">
+                <h2 class="text-3xl sm:text-5xl font-black text-gray-900 mb-5 sm:mb-6">
                     Why Choose <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-green-600">Cambridge?</span>
                 </h2>
 
-                <div class="space-y-4">
-                    <div class="flex items-start space-x-4 bg-white p-5 rounded-2xl shadow-md card-hover">
-                        <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center flex-shrink-0">
-                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                <div class="grid grid-cols-2 gap-3 sm:block sm:space-y-4">
+                    <div class="bg-white p-3 sm:p-5 rounded-2xl shadow-md card-hover sm:flex sm:items-start sm:space-x-4">
+                        <div class="w-9 h-9 sm:w-12 sm:h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center flex-shrink-0 mb-3 sm:mb-0">
+                            <svg class="w-5 h-5 sm:w-6 sm:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
                         </div>
                         <div>
-                            <h4 class="font-bold text-gray-900 mb-1">Government Approved</h4>
-                            <p class="text-sm text-gray-600">Approved at all levels, with preparation for WAEC, NECO, IGCSE, and international academic pathways.</p>
+                            <h4 class="text-sm sm:text-base font-bold text-gray-900 mb-1 leading-tight">Government Approved</h4>
+                            <p class="hidden text-sm text-gray-600 sm:block">Approved at all levels, with preparation for WAEC, NECO, IGCSE, and international academic pathways.</p>
                         </div>
                     </div>
 
-                    <div class="flex items-start space-x-4 bg-white p-5 rounded-2xl shadow-md card-hover">
-                        <div class="w-12 h-12 bg-gradient-to-br from-green-500 to-green-600 rounded-xl flex items-center justify-center flex-shrink-0">
-                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                    <div class="bg-white p-3 sm:p-5 rounded-2xl shadow-md card-hover sm:flex sm:items-start sm:space-x-4">
+                        <div class="w-9 h-9 sm:w-12 sm:h-12 bg-gradient-to-br from-green-500 to-green-600 rounded-xl flex items-center justify-center flex-shrink-0 mb-3 sm:mb-0">
+                            <svg class="w-5 h-5 sm:w-6 sm:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
                         </div>
                         <div>
-                            <h4 class="font-bold text-gray-900 mb-1">Blended Curriculum</h4>
-                            <p class="text-sm text-gray-600">Nigerian and British curriculum strengths supported by Montessori methods, ICT, AI, and robotics.</p>
+                            <h4 class="text-sm sm:text-base font-bold text-gray-900 mb-1 leading-tight">Blended Curriculum</h4>
+                            <p class="hidden text-sm text-gray-600 sm:block">Nigerian and British curriculum strengths supported by Montessori methods, ICT, AI, and robotics.</p>
                         </div>
                     </div>
 
-                    <div class="flex items-start space-x-4 bg-white p-5 rounded-2xl shadow-md card-hover">
-                        <div class="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center flex-shrink-0">
-                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                    <div class="bg-white p-3 sm:p-5 rounded-2xl shadow-md card-hover sm:flex sm:items-start sm:space-x-4">
+                        <div class="w-9 h-9 sm:w-12 sm:h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center flex-shrink-0 mb-3 sm:mb-0">
+                            <svg class="w-5 h-5 sm:w-6 sm:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
                         </div>
                         <div>
-                            <h4 class="font-bold text-gray-900 mb-1">Expert Teachers</h4>
-                            <p class="text-sm text-gray-600">Experienced and dedicated educators across Nursery, Primary, Secondary, ICT, and administration.</p>
+                            <h4 class="text-sm sm:text-base font-bold text-gray-900 mb-1 leading-tight">Expert Teachers</h4>
+                            <p class="hidden text-sm text-gray-600 sm:block">Experienced and dedicated educators across Nursery, Primary, Secondary, ICT, and administration.</p>
                         </div>
                     </div>
 
-                    <div class="flex items-start space-x-4 bg-white p-5 rounded-2xl shadow-md card-hover">
-                        <div class="w-12 h-12 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center flex-shrink-0">
-                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                    <div class="bg-white p-3 sm:p-5 rounded-2xl shadow-md card-hover sm:flex sm:items-start sm:space-x-4">
+                        <div class="w-9 h-9 sm:w-12 sm:h-12 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center flex-shrink-0 mb-3 sm:mb-0">
+                            <svg class="w-5 h-5 sm:w-6 sm:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
                         </div>
                         <div>
-                            <h4 class="font-bold text-gray-900 mb-1">Character and Leadership</h4>
-                            <p class="text-sm text-gray-600">A strong moral foundation with leadership, personal development, and faith-based growth.</p>
+                            <h4 class="text-sm sm:text-base font-bold text-gray-900 mb-1 leading-tight">Character and Leadership</h4>
+                            <p class="hidden text-sm text-gray-600 sm:block">A strong moral foundation with leadership, personal development, and faith-based growth.</p>
                         </div>
                     </div>
 
                     <!-- NEW: School bus / safety feature -->
-                    <div class="flex items-start space-x-4 bg-white p-5 rounded-2xl shadow-md card-hover">
-                        <div class="w-12 h-12 bg-gradient-to-br from-cyan-500 to-cyan-600 rounded-xl flex items-center justify-center flex-shrink-0">
-                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 17h8M8 17v-2a4 4 0 014-4h0a4 4 0 014 4v2M3 12l2-7h14l2 7M5 12h14"/></svg>
+                    <div class="col-span-2 bg-white p-3 sm:p-5 rounded-2xl shadow-md card-hover sm:flex sm:items-start sm:space-x-4">
+                        <div class="w-9 h-9 sm:w-12 sm:h-12 bg-gradient-to-br from-cyan-500 to-cyan-600 rounded-xl flex items-center justify-center flex-shrink-0 mb-3 sm:mb-0">
+                            <svg class="w-5 h-5 sm:w-6 sm:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 17h8M8 17v-2a4 4 0 014-4h0a4 4 0 014 4v2M3 12l2-7h14l2 7M5 12h14"/></svg>
                         </div>
                         <div>
-                            <h4 class="font-bold text-gray-900 mb-1">Safe Learning Environment</h4>
-                            <p class="text-sm text-gray-600">Structured classrooms, boarding facilities, sports, clinic support, and a child-focused school culture.</p>
+                            <h4 class="text-sm sm:text-base font-bold text-gray-900 mb-1 leading-tight">Safe Learning Environment</h4>
+                            <p class="hidden text-sm text-gray-600 sm:block">Structured classrooms, boarding facilities, sports, clinic support, and a child-focused school culture.</p>
                         </div>
                     </div>
                 </div>
@@ -853,98 +853,175 @@
     </div>
 </section>
 
+<div id="gallery" class="relative -top-20"></div>
+<section class="py-10 sm:py-16 bg-white">
+    @php
+        $mobileGalleryFallbackAlbums = collect([
+            (object) [
+                'title' => 'Sports & Team Spirit',
+                'category' => 'sports',
+                'cover_image_url' => asset('images/sport.jpg'),
+                'images' => collect([(object) ['image_url' => asset('images/sport.jpg'), 'caption' => 'Sports and team activities']]),
+            ],
+            (object) [
+                'title' => 'School Life',
+                'category' => 'campus life',
+                'cover_image_url' => asset('images/school life1.jpg'),
+                'images' => collect([(object) ['image_url' => asset('images/school life1.jpg'), 'caption' => 'Campus life at Cambridge']]),
+            ],
+            (object) [
+                'title' => 'ICT & Learning',
+                'category' => 'classrooms',
+                'cover_image_url' => asset('images/boycomputer.jpg'),
+                'images' => collect([(object) ['image_url' => asset('images/boycomputer.jpg'), 'caption' => 'ICT learning session']]),
+            ],
+        ]);
+        $mobileGalleryAlbums = ($galleryAlbums ?? collect())->isNotEmpty() ? $galleryAlbums->take(4) : $mobileGalleryFallbackAlbums;
+        $mobileGalleryCover = function ($album) {
+            if (!empty($album->cover_image_path)) {
+                return str_starts_with($album->cover_image_path, 'http://') || str_starts_with($album->cover_image_path, 'https://')
+                    ? $album->cover_image_path
+                    : url('storage/' . ltrim($album->cover_image_path, '/'));
+            }
+
+            return $album instanceof \App\Models\GalleryAlbum
+                ? asset('images/school life1.jpg')
+                : ($album->cover_image_url ?? asset('images/school life1.jpg'));
+        };
+        $mobileGalleryImages = function ($album) {
+            $images = collect($album->images ?? [])
+                ->map(fn ($image) => [
+                    'src' => $image->image_url ?? null,
+                    'caption' => $image->caption ?? $album->title,
+                ])
+                ->filter(fn ($image) => !empty($image['src']))
+                ->values();
+
+            if ($images->isEmpty()) {
+                $images->push([
+                    'src' => $album->cover_image_url ?: asset('images/school life1.jpg'),
+                    'caption' => $album->title,
+                ]);
+            }
+
+            return $images;
+        };
+    @endphp
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="mb-5 flex items-end justify-between gap-4">
+            <div>
+                <h2 class="text-3xl sm:text-5xl font-black text-gray-900">School Life</h2>
+                <p class="mt-1 text-sm sm:text-lg text-gray-600">Tap an album cover to view photos.</p>
+            </div>
+            <a href="{{ route('gallery.public') }}" class="shrink-0 rounded-full bg-blue-700 px-4 py-2 text-xs font-black text-white">All Albums</a>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3 lg:grid-cols-4">
+            @foreach($mobileGalleryAlbums as $album)
+                <button type="button" onclick='openGalleryAlbum(@js($mobileGalleryImages($album)))' class="group overflow-hidden rounded-2xl bg-white text-left shadow-lg">
+                    <span class="relative block h-32 overflow-hidden bg-slate-100 sm:h-48">
+                        <img src="{{ $mobileGalleryCover($album) }}" alt="{{ $album->title }}" loading="lazy" class="h-full w-full object-cover transition duration-500 group-hover:scale-105">
+                        <span class="absolute bottom-2 left-2 rounded-full bg-black/60 px-2.5 py-1 text-[10px] font-black uppercase text-white">{{ $mobileGalleryImages($album)->count() }} photo{{ $mobileGalleryImages($album)->count() === 1 ? '' : 's' }}</span>
+                    </span>
+                    <span class="block truncate px-3 py-2 text-xs sm:text-sm font-black text-gray-800">{{ $album->title }}</span>
+                </button>
+            @endforeach
+        </div>
+    </div>
+</section>
+
 <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
      STAFF SECTION  (NEW)
 â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
-<section class="py-16 sm:py-24 bg-gradient-to-br from-gray-50 to-blue-50">
+<section class="py-10 sm:py-24 bg-gradient-to-br from-gray-50 to-blue-50">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="text-center max-w-3xl mx-auto mb-12 sm:mb-16 fade-in-up">
-            <h2 class="text-4xl sm:text-5xl md:text-6xl font-black text-gray-900 mb-4">Meet Our Expert Team</h2>
-            <p class="text-lg sm:text-xl text-gray-600">Dedicated educators and professionals committed to nurturing every student's potential</p>
+        <div class="text-center max-w-3xl mx-auto mb-8 sm:mb-16 fade-in-up">
+            <h2 class="text-3xl sm:text-5xl md:text-6xl font-black text-gray-900 mb-3 sm:mb-4">Meet Our Expert Team</h2>
+            <p class="text-sm sm:text-xl text-gray-600">Dedicated educators and professionals committed to nurturing every student's potential</p>
         </div>
 
-        <div class="grid sm:grid-cols-2 lg:grid-cols-5 gap-6 sm:gap-8">
+        <div class="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-8">
             <!-- Staff Member 1 -->
 
 
              <!-- Staff Member 1 -->
-            <div class="bg-white rounded-3xl shadow-lg overflow-hidden card-hover fade-in-up">
+            <div class="bg-white rounded-2xl sm:rounded-3xl shadow-lg overflow-hidden card-hover fade-in-up">
                 <div class="relative">
-    <img src="{{ asset('images/director2.png') }}" alt="Director" loading="lazy" class="w-full h-64 object-cover">
+    <img src="{{ asset('images/director2.png') }}" alt="Director" loading="lazy" class="w-full h-36 sm:h-64 object-cover">
     
-    <div class="absolute top-4 right-4 bg-gradient-to-r from-blue-600 to-green-600 text-white px-3 py-1 rounded-full text-xs font-bold">
+    <div class="absolute top-2 right-2 sm:top-4 sm:right-4 bg-gradient-to-r from-blue-600 to-green-600 text-white px-2 sm:px-3 py-1 rounded-full text-[10px] sm:text-xs font-bold">
         Director
     </div>
 </div>
-                <div class="p-6 text-center">
-                    <h3 class="font-black text-gray-900 text-lg mb-1">Pst. Paul Awe</h3>
-                    <p class="text-purple-600 font-semibold text-sm mb-3">School Director</p>
-                    <p class="text-gray-600 text-sm leading-relaxed">A seasoned professional with over two decades of experience in education and banking, bringing strategic leadership, financial expertise, and operational excellence to the school.</p>
+                <div class="p-3 sm:p-6 text-center">
+                    <h3 class="font-black text-gray-900 text-sm sm:text-lg mb-1 leading-tight">Pst. Paul Awe</h3>
+                    <p class="text-purple-600 font-semibold text-xs sm:text-sm sm:mb-3">School Director</p>
+                    <p class="hidden text-gray-600 text-sm leading-relaxed sm:block">A seasoned professional with over two decades of experience in education and banking, bringing strategic leadership, financial expertise, and operational excellence to the school.</p>
                 </div>
             </div>
 
 
 
-            <div class="bg-white rounded-3xl shadow-lg overflow-hidden card-hover fade-in-up">
+            <div class="bg-white rounded-2xl sm:rounded-3xl shadow-lg overflow-hidden card-hover fade-in-up">
                 <div class="relative">
-    <img src="{{ asset('images/Director.png') }}" alt="Director" loading="lazy" class="w-full h-64 object-cover">
+    <img src="{{ asset('images/Director.png') }}" alt="Director" loading="lazy" class="w-full h-36 sm:h-64 object-cover">
     
-    <div class="absolute top-4 right-4 bg-gradient-to-r from-blue-600 to-green-600 text-white px-3 py-1 rounded-full text-xs font-bold">
+    <div class="absolute top-2 right-2 sm:top-4 sm:right-4 bg-gradient-to-r from-blue-600 to-green-600 text-white px-2 sm:px-3 py-1 rounded-full text-[10px] sm:text-xs font-bold">
         Director
     </div>
 </div>
-                <div class="p-6 text-center">
-                    <h3 class="font-black text-gray-900 text-lg mb-1">Mrs. Precious Awe</h3>
-                    <p class="text-blue-600 font-semibold text-sm mb-3">School Director</p>
-                    <p class="text-gray-600 text-sm leading-relaxed">A passionate educationist and visionary leader committed to excellence, discipline, and holistic child development in a supportive learning environment.</p>
+                <div class="p-3 sm:p-6 text-center">
+                    <h3 class="font-black text-gray-900 text-sm sm:text-lg mb-1 leading-tight">Mrs. Precious Awe</h3>
+                    <p class="text-blue-600 font-semibold text-xs sm:text-sm sm:mb-3">School Director</p>
+                    <p class="hidden text-gray-600 text-sm leading-relaxed sm:block">A passionate educationist and visionary leader committed to excellence, discipline, and holistic child development in a supportive learning environment.</p>
                 </div>
             </div>
 
             <!-- Staff Member 2 -->
-            <div class="bg-white rounded-3xl shadow-lg overflow-hidden card-hover fade-in-up" style="transition-delay:.1s">
+            <div class="bg-white rounded-2xl sm:rounded-3xl shadow-lg overflow-hidden card-hover fade-in-up" style="transition-delay:.1s">
                 <div class="relative">
-    <img src="{{ asset('images/principal.jpg') }}" alt="Principal" loading="lazy" class="w-full h-64 object-cover">
+    <img src="{{ asset('images/principal.jpg') }}" alt="Principal" loading="lazy" class="w-full h-36 sm:h-64 object-cover">
     
-    <div class="absolute top-4 right-4 bg-gradient-to-r from-blue-600 to-green-600 text-white px-3 py-1 rounded-full text-xs font-bold">
+    <div class="absolute top-2 right-2 sm:top-4 sm:right-4 bg-gradient-to-r from-blue-600 to-green-600 text-white px-2 sm:px-3 py-1 rounded-full text-[10px] sm:text-xs font-bold">
         Principal
     </div>
 </div>
-                <div class="p-6 text-center">
-                    <h3 class="font-black text-gray-900 text-lg mb-1">Mr. Eziyi John</h3>
-                    <p class="text-green-600 font-semibold text-sm mb-3">Principal</p>
-                    <p class="text-gray-600 text-sm leading-relaxed">An experienced school leader committed to academic excellence, discipline, and effective teaching practice. He works closely with staff and students to sustain high standards across the school.</p>
+                <div class="p-3 sm:p-6 text-center">
+                    <h3 class="font-black text-gray-900 text-sm sm:text-lg mb-1 leading-tight">Mr. Eziyi John</h3>
+                    <p class="text-green-600 font-semibold text-xs sm:text-sm sm:mb-3">Principal</p>
+                    <p class="hidden text-gray-600 text-sm leading-relaxed sm:block">An experienced school leader committed to academic excellence, discipline, and effective teaching practice. He works closely with staff and students to sustain high standards across the school.</p>
                 </div>
             </div>
 
             <!-- Staff Member 3 -->
-            <div class="bg-white rounded-3xl shadow-lg overflow-hidden card-hover fade-in-up" style="transition-delay:.2s">
+            <div class="bg-white rounded-2xl sm:rounded-3xl shadow-lg overflow-hidden card-hover fade-in-up" style="transition-delay:.2s">
                 <div class="relative">
-    <img src="{{ asset('images/admin1.jpg') }}" alt="Principal" loading="lazy" class="w-full h-64 object-cover">
+    <img src="{{ asset('images/admin1.jpg') }}" alt="Principal" loading="lazy" class="w-full h-36 sm:h-64 object-cover">
     
-    <div class="absolute top-4 right-4 bg-gradient-to-r from-blue-600 to-green-600 text-white px-3 py-1 rounded-full text-xs font-bold">
+    <div class="absolute top-2 right-2 sm:top-4 sm:right-4 bg-gradient-to-r from-blue-600 to-green-600 text-white px-2 sm:px-3 py-1 rounded-full text-[10px] sm:text-xs font-bold">
         Administrator
     </div>
 </div>
-                <div class="p-6 text-center">
-                    <h3 class="font-black text-gray-900 text-lg mb-1">Mrs Atibaka Toritseju Louisa</h3>
-                    <p class="text-purple-600 font-semibold text-sm mb-3">Administrator</p>
-                    <p class="text-gray-600 text-sm leading-relaxed">A dedicated administrator who supports smooth school operations, parent communication, and student services. Her work helps maintain an organized, welcoming, and efficient learning environment.</p>
+                <div class="p-3 sm:p-6 text-center">
+                    <h3 class="font-black text-gray-900 text-sm sm:text-lg mb-1 leading-tight">Mrs Atibaka Toritseju Louisa</h3>
+                    <p class="text-purple-600 font-semibold text-xs sm:text-sm sm:mb-3">Administrator</p>
+                    <p class="hidden text-gray-600 text-sm leading-relaxed sm:block">A dedicated administrator who supports smooth school operations, parent communication, and student services. Her work helps maintain an organized, welcoming, and efficient learning environment.</p>
                 </div>
             </div>
 
             <!-- Staff Member 4 -->
-            <div class="bg-white rounded-3xl shadow-lg overflow-hidden card-hover fade-in-up" style="transition-delay:.3s">
+            <div class="bg-white rounded-2xl sm:rounded-3xl shadow-lg overflow-hidden card-hover fade-in-up" style="transition-delay:.3s">
                 <div class="relative">
-    <img src="{{ asset('images/vice-principal1.jpg') }}" alt="Principal" loading="lazy" class="w-full h-64 object-cover">
+    <img src="{{ asset('images/vice-principal1.jpg') }}" alt="Principal" loading="lazy" class="w-full h-36 sm:h-64 object-cover">
     
-    <div class="absolute top-4 right-4 bg-gradient-to-r from-blue-600 to-green-600 text-white px-3 py-1 rounded-full text-xs font-bold">
+    <div class="absolute top-2 right-2 sm:top-4 sm:right-4 bg-gradient-to-r from-blue-600 to-green-600 text-white px-2 sm:px-3 py-1 rounded-full text-[10px] sm:text-xs font-bold">
         Vice Principal
     </div>
 </div>
-                <div class="p-6 text-center">
-                    <h3 class="font-black text-gray-900 text-lg mb-1">Mr. Awonuga Daniel Olalekan</h3>
-                    <p class="text-orange-600 font-semibold text-sm mb-3">Vice Principal</p>
-                    <p class="text-gray-600 text-sm leading-relaxed">A committed educational leader focused on student discipline, academic supervision, and daily school coordination. He supports teachers and learners in building a culture of excellence.</p>
+                <div class="p-3 sm:p-6 text-center">
+                    <h3 class="font-black text-gray-900 text-sm sm:text-lg mb-1 leading-tight">Mr. Awonuga Daniel Olalekan</h3>
+                    <p class="text-orange-600 font-semibold text-xs sm:text-sm sm:mb-3">Vice Principal</p>
+                    <p class="hidden text-gray-600 text-sm leading-relaxed sm:block">A committed educational leader focused on student discipline, academic supervision, and daily school coordination. He supports teachers and learners in building a culture of excellence.</p>
                 </div>
             </div>
         </div>
@@ -1147,7 +1224,7 @@
 <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
      GALLERY SECTION
 â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
-<section id="gallery" class="py-16 sm:py-24 bg-white">
+<section id="gallery-full" class="hidden py-16 sm:py-24 bg-white">
     @php
         $fallbackGalleryAlbums = collect([
             (object) [

@@ -221,7 +221,9 @@
     $postCollection = $posts->getCollection();
     $featuredPost = $postCollection->first();
     $sidePosts = $postCollection->skip(1)->take(3);
-    $latestPosts = $postCollection->skip(4);
+    $latestPosts = $postCollection->count() > 4
+        ? $postCollection->skip(4)
+        : ($postCollection->count() > 1 ? $postCollection->skip(1) : $postCollection);
     $fallbackImage = asset('images/school life1.jpg');
     $categoryIcons = [
         'education' => 'ED',
