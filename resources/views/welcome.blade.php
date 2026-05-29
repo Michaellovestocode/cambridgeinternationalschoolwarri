@@ -1187,7 +1187,19 @@
         $homepageGalleryAlbums = ($galleryAlbums ?? collect())->isNotEmpty() ? $galleryAlbums : $fallbackGalleryAlbums;
         $featuredGalleryAlbum = $homepageGalleryAlbums->first();
         $galleryTiles = $homepageGalleryAlbums->skip(1)->take(5);
-        $galleryCoverImage = fn ($album) => $album->cover_image_url ?: asset('images/school life1.jpg');
+        $galleryCoverImage = function ($album) {
+            if (!empty($album->cover_image_path)) {
+                return str_starts_with($album->cover_image_path, 'http://') || str_starts_with($album->cover_image_path, 'https://')
+                    ? $album->cover_image_path
+                    : url('storage/' . ltrim($album->cover_image_path, '/'));
+            }
+
+            if ($album instanceof \App\Models\GalleryAlbum) {
+                return asset('images/school life1.jpg');
+            }
+
+            return $album->cover_image_url ?? asset('images/school life1.jpg');
+        };
         $galleryLightboxImages = function ($album) {
             $images = collect($album->images ?? [])
                 ->map(fn ($image) => [
@@ -1261,7 +1273,11 @@
     <button id="lightboxPrev" class="absolute left-4 top-1/2 z-10 hidden -translate-y-1/2 rounded-full bg-white/15 px-4 py-3 text-3xl leading-none text-white backdrop-blur hover:bg-white/25 sm:left-8" onclick="changeLightboxImage(-1, event)" aria-label="Previous photo">&lsaquo;</button>
     <figure class="m-0 flex max-h-[92vh] max-w-[92vw] flex-col items-center gap-4">
         <img id="lightboxImg" src="" alt="Gallery" class="max-h-[82vh] max-w-[92vw] rounded-2xl object-contain shadow-2xl">
-        <figcaption id="lightboxCaption" class="max-w-3xl text-center text-sm font-semibold text-white/85"></figcaption>
+        <figcaption class="max-w-3xl text-center text-sm font-semibold text-white/85">
+            <span id="lightboxCounter" class="block text-xs font-black uppercase tracking-[.14em] text-white/60"></span>
+            <span id="lightboxCaption"></span>
+        </figcaption>
+        <div id="lightboxThumbnails" class="flex max-w-[92vw] gap-2 overflow-x-auto rounded-2xl bg-white/10 p-2 backdrop-blur"></div>
     </figure>
     <button id="lightboxNext" class="absolute right-4 top-1/2 z-10 hidden -translate-y-1/2 rounded-full bg-white/15 px-4 py-3 text-3xl leading-none text-white backdrop-blur hover:bg-white/25 sm:right-8" onclick="changeLightboxImage(1, event)" aria-label="Next photo">&rsaquo;</button>
 </div>
@@ -1710,8 +1726,37 @@
         document.getElementById('lightboxImg').src = image.src;
         document.getElementById('lightboxImg').alt = image.caption || 'Gallery photo';
         document.getElementById('lightboxCaption').textContent = image.caption || '';
+        document.getElementById('lightboxCounter').textContent = `${galleryLightboxIndex + 1} of ${galleryLightboxImages.length} photo${galleryLightboxImages.length === 1 ? '' : 's'}`;
         document.getElementById('lightboxPrev').classList.toggle('hidden', !hasMultiple);
         document.getElementById('lightboxNext').classList.toggle('hidden', !hasMultiple);
+        renderGalleryThumbnails();
+    }
+
+    function renderGalleryThumbnails() {
+        const thumbnails = document.getElementById('lightboxThumbnails');
+
+        thumbnails.innerHTML = '';
+        thumbnails.classList.toggle('hidden', galleryLightboxImages.length <= 1);
+
+        galleryLightboxImages.forEach((image, index) => {
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.className = `h-16 w-20 shrink-0 overflow-hidden rounded-xl border-2 transition ${index === galleryLightboxIndex ? 'border-white opacity-100' : 'border-transparent opacity-60 hover:opacity-100'}`;
+            button.setAttribute('aria-label', `Open photo ${index + 1}`);
+            button.onclick = event => {
+                event.stopPropagation();
+                galleryLightboxIndex = index;
+                showGalleryImage();
+            };
+
+            const thumbnail = document.createElement('img');
+            thumbnail.src = image.src;
+            thumbnail.alt = image.caption || `Gallery photo ${index + 1}`;
+            thumbnail.className = 'h-full w-full object-cover';
+
+            button.appendChild(thumbnail);
+            thumbnails.appendChild(button);
+        });
     }
 
     function changeLightboxImage(direction, event) {
