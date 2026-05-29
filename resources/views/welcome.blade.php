@@ -877,15 +877,6 @@
             ],
         ]);
         $mobileGalleryAlbums = ($galleryAlbums ?? collect())->isNotEmpty() ? $galleryAlbums->take(4) : $mobileGalleryFallbackAlbums;
-        $mobileGalleryCategoryStyles = [
-            'campus life' => 'bg-blue-600 text-white',
-            'classrooms' => 'bg-emerald-600 text-white',
-            'events' => 'bg-amber-400 text-blue-950',
-            'clubs' => 'bg-purple-600 text-white',
-            'sports' => 'bg-rose-600 text-white',
-            'awards' => 'bg-yellow-300 text-blue-950',
-            'graduation' => 'bg-slate-900 text-white',
-        ];
         $mobileGalleryCover = function ($album) {
             if (!empty($album->cover_image_path)) {
                 return str_starts_with($album->cover_image_path, 'http://') || str_starts_with($album->cover_image_path, 'https://')
@@ -927,14 +918,9 @@
 
         <div class="grid grid-cols-2 gap-3 lg:grid-cols-4">
             @foreach($mobileGalleryAlbums as $album)
-                @php
-                    $albumCategory = $album->category ?? 'campus life';
-                    $albumCategoryClass = $mobileGalleryCategoryStyles[$albumCategory] ?? 'bg-blue-600 text-white';
-                @endphp
-                <button type="button" data-gallery-images="{{ e($mobileGalleryImages($album)->toJson()) }}" class="js-gallery-album group overflow-hidden rounded-2xl bg-white text-left shadow-lg">
+                <button type="button" onclick='openGalleryAlbum(@js($mobileGalleryImages($album)))' class="group overflow-hidden rounded-2xl bg-white text-left shadow-lg">
                     <span class="relative block h-32 overflow-hidden bg-slate-100 sm:h-48">
                         <img src="{{ $mobileGalleryCover($album) }}" alt="{{ $album->title }}" loading="lazy" class="h-full w-full object-cover transition duration-500 group-hover:scale-105">
-                        <span class="absolute left-2 top-2 rounded-full px-2.5 py-1 text-[10px] font-black uppercase shadow {{ $albumCategoryClass }}">{{ ucfirst($albumCategory) }}</span>
                         <span class="absolute bottom-2 left-2 rounded-full bg-black/60 px-2.5 py-1 text-[10px] font-black uppercase text-white">{{ $mobileGalleryImages($album)->count() }} photo{{ $mobileGalleryImages($album)->count() === 1 ? '' : 's' }}</span>
                     </span>
                     <span class="block truncate px-3 py-2 text-xs sm:text-sm font-black text-gray-800">{{ $album->title }}</span>
@@ -1809,16 +1795,6 @@
         document.getElementById('lightbox').classList.add('open');
         document.body.style.overflow = 'hidden';
     }
-
-    document.querySelectorAll('.js-gallery-album').forEach(button => {
-        button.addEventListener('click', () => {
-            try {
-                openGalleryAlbum(JSON.parse(button.dataset.galleryImages || '[]'));
-            } catch (error) {
-                console.error('Could not open gallery album.', error);
-            }
-        });
-    });
 
     function showGalleryImage() {
         const image = galleryLightboxImages[galleryLightboxIndex];
