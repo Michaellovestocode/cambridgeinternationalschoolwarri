@@ -26,6 +26,14 @@
             </div>
 
             <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Attendance Card ID</label>
+                <input type="text" name="attendance_card_uid" value="{{ old('attendance_card_uid') }}"
+                       class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500"
+                       placeholder="Scan or type the card value">
+                @error('attendance_card_uid')<p class="text-red-500 text-sm mt-1">{{ $message }}</p>@enderror
+            </div>
+
+            <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Class *</label>
                 <select name="class_id" required class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500">
                     <option value="">-- Select Class --</option>

@@ -58,6 +58,124 @@
                     </div>
                 @endif
 
+                @if(!$authorizedPayment)
+                    <div class="space-y-6">
+                        <div class="rounded-3xl border border-amber-200 bg-amber-50 p-5">
+                            <p class="text-xs font-bold uppercase tracking-[0.18em] text-amber-700">Admission form fee</p>
+                            <h2 class="mt-2 text-2xl font-black text-gray-900">Pay ₦{{ number_format(config('admissions.form_fee')) }} before filling the form</h2>
+                            <p class="mt-3 text-sm leading-6 text-gray-700">
+                                Please make a manual bank transfer, submit the payment details below, then wait for admin confirmation. Once approved, the school will issue an application code for this page.
+                            </p>
+                            <div class="mt-4 grid gap-3 rounded-2xl bg-white p-4 text-sm text-gray-700 sm:grid-cols-2">
+                                <div>
+                                    <p class="text-xs font-bold uppercase text-gray-500">Bank</p>
+                                    <p class="font-semibold">{{ config('admissions.form_payment_bank_name') }}</p>
+                                </div>
+                                <div>
+                                    <p class="text-xs font-bold uppercase text-gray-500">Account Number</p>
+                                    <p class="font-semibold">{{ config('admissions.form_payment_account_number') }}</p>
+                                </div>
+                                <div class="sm:col-span-2">
+                                    <p class="text-xs font-bold uppercase text-gray-500">Account Name</p>
+                                    <p class="font-semibold">{{ config('admissions.form_payment_account_name') }}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <form method="POST" action="{{ route('apply.verify-code') }}" class="rounded-3xl border border-emerald-200 bg-emerald-50/80 p-5">
+                            @csrf
+                            <h2 class="text-lg font-black text-gray-900">Already have an application code?</h2>
+                            <div class="mt-4 flex flex-col gap-3 sm:flex-row">
+                                <div class="flex-1">
+                                    <input name="application_code" value="{{ old('application_code') }}" placeholder="e.g. CIS-26-ABC123" class="w-full rounded-2xl border border-gray-200 px-4 py-3 text-sm uppercase focus:border-emerald-500 focus:outline-none focus:ring-4 focus:ring-emerald-100" />
+                                    @error('application_code')<p class="mt-1 text-xs text-rose-600">{{ $message }}</p>@enderror
+                                </div>
+                                <button type="submit" class="rounded-2xl bg-emerald-600 px-5 py-3 text-sm font-bold text-white shadow-lg">Unlock Form</button>
+                            </div>
+                        </form>
+
+                        <form method="POST" action="{{ route('apply.payment-request') }}" class="space-y-5 rounded-3xl border border-blue-100 bg-blue-50/70 p-5">
+                            @csrf
+                            <div>
+                                <h2 class="text-lg font-black text-gray-900">Submit Payment Details</h2>
+                                <p class="mt-1 text-sm text-gray-600">Admin will confirm the transfer and generate your application code.</p>
+                            </div>
+
+                            <div class="grid gap-5 md:grid-cols-2">
+                                <div>
+                                    <label class="mb-2 block text-sm font-semibold text-gray-700">Parent / Guardian Name *</label>
+                                    <input name="parent_name" value="{{ old('parent_name') }}" class="w-full rounded-2xl border border-gray-200 px-4 py-3 text-sm focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-100" />
+                                    @error('parent_name')<p class="mt-1 text-xs text-rose-600">{{ $message }}</p>@enderror
+                                </div>
+                                <div>
+                                    <label class="mb-2 block text-sm font-semibold text-gray-700">Phone / WhatsApp *</label>
+                                    <input name="phone" value="{{ old('phone') }}" class="w-full rounded-2xl border border-gray-200 px-4 py-3 text-sm focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-100" />
+                                    @error('phone')<p class="mt-1 text-xs text-rose-600">{{ $message }}</p>@enderror
+                                </div>
+                                <div>
+                                    <label class="mb-2 block text-sm font-semibold text-gray-700">Email</label>
+                                    <input type="email" name="email" value="{{ old('email') }}" class="w-full rounded-2xl border border-gray-200 px-4 py-3 text-sm focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-100" />
+                                    @error('email')<p class="mt-1 text-xs text-rose-600">{{ $message }}</p>@enderror
+                                </div>
+                                <div>
+                                    <label class="mb-2 block text-sm font-semibold text-gray-700">Student Name *</label>
+                                    <input name="student_name" value="{{ old('student_name') }}" class="w-full rounded-2xl border border-gray-200 px-4 py-3 text-sm focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-100" />
+                                    @error('student_name')<p class="mt-1 text-xs text-rose-600">{{ $message }}</p>@enderror
+                                </div>
+                                <div>
+                                    <label class="mb-2 block text-sm font-semibold text-gray-700">Applying for Class *</label>
+                                    <select name="class_level" class="w-full rounded-2xl border border-gray-200 px-4 py-3 text-sm focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-100">
+                                        <option value="">Select class</option>
+                                        @foreach(['Creche','Nursery 1','Nursery 2','Nursery 3','Primary 1','Primary 2','Primary 3','Primary 4','Primary 5','Primary 6','JSS 1','JSS 2','JSS 3','SS 1','SS 2','SS 3'] as $level)
+                                            <option value="{{ $level }}" {{ old('class_level') === $level ? 'selected' : '' }}>{{ $level }}</option>
+                                        @endforeach
+                                    </select>
+                                    @error('class_level')<p class="mt-1 text-xs text-rose-600">{{ $message }}</p>@enderror
+                                </div>
+                                <div>
+                                    <label class="mb-2 block text-sm font-semibold text-gray-700">Depositor Name *</label>
+                                    <input name="depositor_name" value="{{ old('depositor_name') }}" class="w-full rounded-2xl border border-gray-200 px-4 py-3 text-sm focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-100" />
+                                    @error('depositor_name')<p class="mt-1 text-xs text-rose-600">{{ $message }}</p>@enderror
+                                </div>
+                                <div>
+                                    <label class="mb-2 block text-sm font-semibold text-gray-700">Payment Date</label>
+                                    <input type="date" name="payment_date" value="{{ old('payment_date') }}" class="w-full rounded-2xl border border-gray-200 px-4 py-3 text-sm focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-100" />
+                                    @error('payment_date')<p class="mt-1 text-xs text-rose-600">{{ $message }}</p>@enderror
+                                </div>
+                                <div>
+                                    <label class="mb-2 block text-sm font-semibold text-gray-700">Amount Paid *</label>
+                                    <input type="number" name="amount_paid" min="{{ config('admissions.form_fee') }}" value="{{ old('amount_paid', config('admissions.form_fee')) }}" class="w-full rounded-2xl border border-gray-200 px-4 py-3 text-sm focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-100" />
+                                    @error('amount_paid')<p class="mt-1 text-xs text-rose-600">{{ $message }}</p>@enderror
+                                </div>
+                                <div>
+                                    <label class="mb-2 block text-sm font-semibold text-gray-700">Bank Used</label>
+                                    <input name="bank_name" value="{{ old('bank_name') }}" class="w-full rounded-2xl border border-gray-200 px-4 py-3 text-sm focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-100" />
+                                    @error('bank_name')<p class="mt-1 text-xs text-rose-600">{{ $message }}</p>@enderror
+                                </div>
+                                <div>
+                                    <label class="mb-2 block text-sm font-semibold text-gray-700">Reference / Teller Number</label>
+                                    <input name="payment_reference" value="{{ old('payment_reference') }}" class="w-full rounded-2xl border border-gray-200 px-4 py-3 text-sm focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-100" />
+                                    @error('payment_reference')<p class="mt-1 text-xs text-rose-600">{{ $message }}</p>@enderror
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="mb-2 block text-sm font-semibold text-gray-700">Payment Note</label>
+                                <textarea name="payment_notes" rows="3" class="w-full rounded-2xl border border-gray-200 px-4 py-3 text-sm focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-100">{{ old('payment_notes') }}</textarea>
+                                @error('payment_notes')<p class="mt-1 text-xs text-rose-600">{{ $message }}</p>@enderror
+                            </div>
+
+                            <button type="submit" class="inline-flex w-full items-center justify-center rounded-2xl bg-blue-700 px-6 py-4 text-base font-bold text-white shadow-xl transition hover:-translate-y-0.5 hover:bg-blue-800">
+                                Submit Payment Details
+                            </button>
+                        </form>
+                    </div>
+                @else
+                <div class="mb-6 rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-4 text-sm text-emerald-800">
+                    <p class="font-bold">Application unlocked with code {{ $authorizedPayment->application_code }}.</p>
+                    <p class="mt-1">Complete and submit the full admission form below.</p>
+                </div>
+
                 <form method="POST" action="{{ route('apply.store') }}" class="space-y-8">
                     @csrf
 
@@ -325,6 +443,7 @@
                         Submit Admission Application
                     </button>
                 </form>
+                @endif
             </section>
         </div>
     </div>

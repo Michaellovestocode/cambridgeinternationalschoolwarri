@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Mail\AdmissionEnquirySubmitted;
 use App\Models\AdmissionEnquiry;
+use App\Models\AdmissionFormPayment;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -13,7 +14,61 @@ class AdmissionEnquiryController extends Controller
 {
     public function create()
     {
-        return view('apply');
+        return view('apply', [
+            'authorizedPayment' => $this->authorizedPayment(),
+        ]);
+    }
+
+    public function requestApplicationCode(Request $request)
+    {
+        $validated = $request->validate([
+            'parent_name' => ['required', 'string', 'max:255'],
+            'phone' => ['required', 'string', 'max:50'],
+            'email' => ['nullable', 'email', 'max:255'],
+            'student_name' => ['required', 'string', 'max:255'],
+            'class_level' => ['required', 'string', 'max:100'],
+            'depositor_name' => ['required', 'string', 'max:255'],
+            'payment_date' => ['nullable', 'date'],
+            'amount_paid' => ['required', 'numeric', 'min:' . config('admissions.form_fee')],
+            'bank_name' => ['nullable', 'string', 'max:255'],
+            'payment_reference' => ['nullable', 'string', 'max:255'],
+            'payment_notes' => ['nullable', 'string', 'max:2000'],
+        ]);
+
+        AdmissionFormPayment::create([
+            ...$validated,
+            'status' => AdmissionFormPayment::STATUS_PENDING,
+            'ip_address' => $request->ip(),
+            'user_agent' => substr((string) $request->userAgent(), 0, 1000),
+        ]);
+
+        return redirect()
+            ->route('apply.create')
+            ->with('success', 'Payment details submitted. The admissions team will confirm the transfer and issue your application code.');
+    }
+
+    public function verifyApplicationCode(Request $request)
+    {
+        $validated = $request->validate([
+            'application_code' => ['required', 'string', 'max:50'],
+        ]);
+
+        $payment = AdmissionFormPayment::where('application_code', strtoupper(trim($validated['application_code'])))
+            ->where('status', AdmissionFormPayment::STATUS_APPROVED)
+            ->whereNull('application_code_used_at')
+            ->first();
+
+        if (! $payment) {
+            return back()
+                ->withErrors(['application_code' => 'This application code is not valid or has not been approved yet.'])
+                ->withInput();
+        }
+
+        session(['admission_form_payment_id' => $payment->id]);
+
+        return redirect()
+            ->route('apply.create')
+            ->with('success', 'Application code accepted. You can now complete the admission form.');
     }
 
     public function store(Request $request): JsonResponse
@@ -47,12 +102,27 @@ class AdmissionEnquiryController extends Controller
 
     public function submitApplication(Request $request)
     {
+        $authorizedPayment = $this->authorizedPayment();
+
+        if (! $authorizedPayment) {
+            return redirect()
+                ->route('apply.create')
+                ->withErrors(['application_code' => 'Please enter an approved application code before submitting the admission form.']);
+        }
+
         $validated = $request->validate($this->applicationRules());
 
         $application = $this->createAdmissionRecord($request, [
             ...$validated,
             'inquiry_type' => AdmissionEnquiry::TYPE_APPLICATION,
+            'admission_form_payment_id' => $authorizedPayment->id,
         ]);
+
+        $authorizedPayment->update([
+            'application_code_used_at' => now(),
+        ]);
+
+        session()->forget('admission_form_payment_id');
 
         $flashMessage = 'Application submitted successfully. Our admissions team has been notified.';
 
@@ -169,6 +239,21 @@ class AdmissionEnquiryController extends Controller
             'ip_address' => $request->ip(),
             'user_agent' => substr((string) $request->userAgent(), 0, 1000),
         ]);
+    }
+
+    private function authorizedPayment(): ?AdmissionFormPayment
+    {
+        $paymentId = session('admission_form_payment_id');
+
+        if (! $paymentId) {
+            return null;
+        }
+
+        return AdmissionFormPayment::whereKey($paymentId)
+            ->where('status', AdmissionFormPayment::STATUS_APPROVED)
+            ->whereNotNull('application_code')
+            ->whereNull('application_code_used_at')
+            ->first();
     }
 
     private function buildWhatsappUrl(AdmissionEnquiry $enquiry): string

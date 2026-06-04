@@ -10,7 +10,9 @@ use App\Http\Controllers\TeacherScoreController;
 use App\Http\Controllers\NigerianReportCardController;
 use App\Http\Controllers\FormTeacherController;
 use App\Http\Controllers\AdminAdmissionEnquiryController;
+use App\Http\Controllers\AdminAdmissionFormPaymentController;
 use App\Http\Controllers\AdmissionEnquiryController;
+use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\AdminParentController;
 use App\Http\Controllers\AnnouncementController;
 use App\Http\Controllers\AnnouncementImageController;
@@ -39,6 +41,8 @@ Route::get('/', function () {
             return redirect()->route('student.dashboard');
         } elseif ($user->isParent()) {
             return redirect()->route('parent.dashboard');
+        } elseif ($user->isNonTeachingStaff()) {
+            return redirect()->route('attendance.my');
         } elseif ($user->isBlogManager()) {
             return redirect()->route('admin.blog.index');
         } elseif ($user->isTeacher() || $user->isAdmin()) {
@@ -68,6 +72,8 @@ Route::get('/', function () {
 });
 
 Route::get('/apply', [AdmissionEnquiryController::class, 'create'])->name('apply.create');
+Route::post('/apply/payment-request', [AdmissionEnquiryController::class, 'requestApplicationCode'])->name('apply.payment-request');
+Route::post('/apply/verify-code', [AdmissionEnquiryController::class, 'verifyApplicationCode'])->name('apply.verify-code');
 Route::post('/apply', [AdmissionEnquiryController::class, 'submitApplication'])->name('apply.store');
 Route::post('/admission-enquiries', [AdmissionEnquiryController::class, 'store'])->name('admission-enquiries.store');
 Route::get('/announcements/{announcement}', [AnnouncementController::class, 'show'])->name('announcements.show');
@@ -89,6 +95,18 @@ Route::middleware('guest')->group(function () {
 // Authenticated routes
 Route::middleware('auth')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+    Route::get('/attendance/my', [AttendanceController::class, 'myAttendance'])->name('attendance.my');
+
+    Route::prefix('admin/attendance')->name('admin.attendance.')->group(function () {
+        Route::get('/scanner', [AttendanceController::class, 'scanner'])->name('scanner');
+        Route::post('/scan', [AttendanceController::class, 'scan'])->name('scan');
+        Route::get('/today', [AttendanceController::class, 'today'])->name('today');
+        Route::get('/monthly', [AttendanceController::class, 'monthly'])->name('monthly');
+        Route::get('/people', [AttendanceController::class, 'people'])->name('people');
+        Route::put('/people/{user}', [AttendanceController::class, 'updatePerson'])->name('people.update');
+        Route::get('/non-teaching-staff/create', [AttendanceController::class, 'createNonTeachingStaff'])->name('non-teaching-staff.create');
+        Route::post('/non-teaching-staff', [AttendanceController::class, 'storeNonTeachingStaff'])->name('non-teaching-staff.store');
+    });
 
     Route::prefix('parent')->name('parent.')->middleware('role:parent')->group(function () {
         Route::get('/dashboard', [ParentPortalController::class, 'dashboard'])->name('dashboard');
@@ -231,6 +249,9 @@ Route::get('/teacher/scores/my-scores', [TeacherScoreController::class, 'myScore
             Route::get('/enquiries', [AdminAdmissionEnquiryController::class, 'index'])->name('enquiries.index');
             Route::get('/enquiries/{enquiry}', [AdminAdmissionEnquiryController::class, 'show'])->name('enquiries.show');
             Route::put('/enquiries/{enquiry}', [AdminAdmissionEnquiryController::class, 'update'])->name('enquiries.update');
+            Route::get('/admission-form-payments', [AdminAdmissionFormPaymentController::class, 'index'])->name('admission-form-payments.index');
+            Route::get('/admission-form-payments/{payment}', [AdminAdmissionFormPaymentController::class, 'show'])->name('admission-form-payments.show');
+            Route::put('/admission-form-payments/{payment}', [AdminAdmissionFormPaymentController::class, 'update'])->name('admission-form-payments.update');
 
             Route::get('/blog-managers', [AdminController::class, 'blogManagers'])->name('blog-managers.index');
             Route::get('/blog-managers/create', [AdminController::class, 'createBlogManager'])->name('blog-managers.create');
@@ -246,7 +267,7 @@ Route::get('/teacher/scores/my-scores', [TeacherScoreController::class, 'myScore
             Route::get('/fee-clearances', [AdminFeeClearanceController::class, 'index'])->name('fee-clearances.index');
             Route::put('/fee-clearances/{student}', [AdminFeeClearanceController::class, 'update'])->name('fee-clearances.update');
         });
-        
+
         // Exams (accessible by admin and teachers)
         Route::get('/exams', [AdminController::class, 'exams'])->name('exams');
         Route::get('/exams/create', [AdminController::class, 'createExam'])->name('exam.create');

@@ -9,7 +9,10 @@
             <h1 class="text-3xl font-extrabold text-gray-900">Admissions Inbox</h1>
             <p class="text-sm text-gray-500">Review website enquiries and full admission applications in one place.</p>
         </div>
-        <a href="{{ route('admin.dashboard') }}" class="text-sm text-blue-600 hover:underline">Back to dashboard</a>
+        <div class="flex items-center gap-3">
+            <a href="{{ route('admin.admission-form-payments.index') }}" class="text-sm font-semibold text-emerald-600 hover:underline">Form payment requests</a>
+            <a href="{{ route('admin.dashboard') }}" class="text-sm text-blue-600 hover:underline">Back to dashboard</a>
+        </div>
     </div>
 
     <div class="grid grid-cols-2 lg:grid-cols-5 gap-4">

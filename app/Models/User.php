@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class User extends Authenticatable
 {
@@ -14,6 +15,8 @@ class User extends Authenticatable
         'name',
         'email',
         'registration_number',
+        'attendance_card_uid',
+        'attendance_section',
         'password',
         'role',
         'class_id',
@@ -25,6 +28,7 @@ class User extends Authenticatable
         'club_society',
         'favourite_colour',
         'can_manage_blog',
+        'can_manage_attendance',
     ];
 
     protected $hidden = [
@@ -39,6 +43,7 @@ class User extends Authenticatable
             'date_of_birth' => 'date',
             'password' => 'hashed',
             'can_manage_blog' => 'boolean',
+            'can_manage_attendance' => 'boolean',
         ];
     }
 
@@ -71,9 +76,24 @@ class User extends Authenticatable
         return $this->role === 'blog_manager';
     }
 
+    public function isNonTeachingStaff(): bool
+    {
+        return $this->role === 'non_teaching_staff';
+    }
+
     public function canManageBlogStudio(): bool
     {
         return $this->isAdmin() || $this->isBlogManager() || (bool) $this->can_manage_blog;
+    }
+
+    public function canManageAttendance(): bool
+    {
+        return $this->isAdmin() || (bool) $this->can_manage_attendance;
+    }
+
+    public function participatesInAttendance(): bool
+    {
+        return in_array($this->role, ['admin', 'teacher', 'student', 'non_teaching_staff'], true);
     }
 
     public function class()
@@ -140,6 +160,11 @@ class User extends Authenticatable
     public function receivedMessages()
     {
         return $this->hasMany(Message::class, 'recipient_id');
+    }
+
+    public function attendanceRecords(): HasMany
+    {
+        return $this->hasMany(AttendanceRecord::class);
     }
 
     public function getNotificationWhatsappNumberAttribute(): ?string

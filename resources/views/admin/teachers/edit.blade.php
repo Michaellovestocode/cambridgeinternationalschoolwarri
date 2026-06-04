@@ -33,6 +33,25 @@
             </div>
 
             <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Attendance Card ID</label>
+                <input type="text" name="attendance_card_uid" value="{{ old('attendance_card_uid', $teacher->attendance_card_uid) }}"
+                       class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500"
+                       placeholder="Scan or type the card value">
+                @error('attendance_card_uid')<p class="text-red-500 text-sm mt-1">{{ $message }}</p>@enderror
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Attendance Section</label>
+                <select name="attendance_section" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500">
+                    <option value="">-- Select Section --</option>
+                    @foreach(['creche' => 'Creche / Early Years', 'primary' => 'Primary Section', 'junior_secondary' => 'Junior Secondary', 'senior_secondary' => 'Senior Secondary', 'admin_office' => 'Admin Office', 'other' => 'Other'] as $section => $label)
+                        <option value="{{ $section }}" @selected(old('attendance_section', $teacher->attendance_section) === $section)>{{ $label }}</option>
+                    @endforeach
+                </select>
+                @error('attendance_section')<p class="text-red-500 text-sm mt-1">{{ $message }}</p>@enderror
+            </div>
+
+            <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">WhatsApp Number</label>
                 <input type="text" name="whatsapp_number" value="{{ old('whatsapp_number', $teacher->whatsapp_number) }}"
                        class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500"
@@ -65,6 +84,14 @@
                 <span>
                     <span class="block font-bold text-gray-900">Allow Blog Studio management</span>
                     <span class="block text-sm text-gray-600">This teacher keeps their teacher dashboard and also gets access to the Blog Studio moderation dashboard.</span>
+                </span>
+            </label>
+
+            <label class="flex items-start gap-3 rounded-xl border border-emerald-100 bg-emerald-50 p-4">
+                <input type="checkbox" name="can_manage_attendance" value="1" @checked(old('can_manage_attendance', $teacher->can_manage_attendance)) class="mt-1 rounded border-emerald-300 text-emerald-600 focus:ring-emerald-500">
+                <span>
+                    <span class="block font-bold text-gray-900">Allow Attendance management</span>
+                    <span class="block text-sm text-gray-600">This teacher can use the scanner and view attendance reports.</span>
                 </span>
             </label>
 

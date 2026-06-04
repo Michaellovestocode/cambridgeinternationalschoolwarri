@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class AdmissionEnquiry extends Model
 {
@@ -11,6 +12,7 @@ class AdmissionEnquiry extends Model
 
     protected $fillable = [
         'inquiry_type',
+        'admission_form_payment_id',
         'parent_name',
         'phone',
         'alternate_phone',
@@ -117,5 +119,10 @@ class AdmissionEnquiry extends Model
             self::TYPE_ENQUIRY,
             self::TYPE_APPLICATION,
         ];
+    }
+
+    public function admissionFormPayment(): BelongsTo
+    {
+        return $this->belongsTo(AdmissionFormPayment::class);
     }
 }

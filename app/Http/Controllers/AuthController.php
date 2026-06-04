@@ -37,6 +37,8 @@ class AuthController extends Controller
                 return redirect()->route('admin.dashboard');
             } elseif ($user->isParent()) {
                 return redirect()->route('parent.dashboard');
+            } elseif ($user->isNonTeachingStaff()) {
+                return redirect()->route('attendance.my');
             } else {
                 return redirect()->route('student.dashboard');
             }

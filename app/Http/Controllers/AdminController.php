@@ -926,18 +926,24 @@ public function storeTeacher(Request $request)
         'name' => 'required|string|max:255',
         'email' => 'required|email|unique:users,email',
         'registration_number' => 'required|string|unique:users,registration_number',
+        'attendance_card_uid' => 'nullable|string|max:255|unique:users,attendance_card_uid',
+        'attendance_section' => 'nullable|string|max:100',
         'whatsapp_number' => 'nullable|string|max:30',
         'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:1024',
         'password' => 'required|string|min:6',
+        'can_manage_attendance' => 'nullable|boolean',
     ]);
 
     $data = [
         'name' => $validated['name'],
         'email' => $validated['email'],
         'registration_number' => $validated['registration_number'],
+        'attendance_card_uid' => $validated['attendance_card_uid'] ?? null,
+        'attendance_section' => $validated['attendance_section'] ?? null,
         'whatsapp_number' => $validated['whatsapp_number'] ?? null,
         'password' => Hash::make($validated['password']),
         'role' => 'teacher',
+        'can_manage_attendance' => $request->boolean('can_manage_attendance'),
     ];
 
     if ($request->hasFile('photo')) {
@@ -1017,18 +1023,24 @@ public function updateTeacher(Request $request, $teacherId)
         'name' => 'required|string|max:255',
         'email' => 'required|email|unique:users,email,' . $teacherId,
         'registration_number' => 'required|string|unique:users,registration_number,' . $teacherId,
+        'attendance_card_uid' => 'nullable|string|max:255|unique:users,attendance_card_uid,' . $teacherId,
+        'attendance_section' => 'nullable|string|max:100',
         'whatsapp_number' => 'nullable|string|max:30',
         'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:1024',
         'password' => 'nullable|string|min:6',
         'can_manage_blog' => 'nullable|boolean',
+        'can_manage_attendance' => 'nullable|boolean',
     ]);
 
     $data = [
         'name' => $validated['name'],
         'email' => $validated['email'],
         'registration_number' => $validated['registration_number'],
+        'attendance_card_uid' => $validated['attendance_card_uid'] ?? null,
+        'attendance_section' => $validated['attendance_section'] ?? null,
         'whatsapp_number' => $validated['whatsapp_number'] ?? null,
         'can_manage_blog' => $request->boolean('can_manage_blog'),
+        'can_manage_attendance' => $request->boolean('can_manage_attendance'),
     ];
 
     if ($request->hasFile('photo')) {
@@ -1174,6 +1186,7 @@ public function storeStudent(Request $request)
     $validated = $request->validate([
         'name' => 'required|string|max:255',
         'registration_number' => 'required|string|unique:users,registration_number',
+        'attendance_card_uid' => 'nullable|string|max:255|unique:users,attendance_card_uid',
         'class_id' => 'required|exists:school_classes,id',
         'password' => 'required|string|min:6',
         'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:1024',
@@ -1193,6 +1206,7 @@ public function storeStudent(Request $request)
     $data = [
         'name' => $validated['name'],
         'registration_number' => $validated['registration_number'],
+        'attendance_card_uid' => $validated['attendance_card_uid'] ?? null,
         'class_id' => $validated['class_id'],
         'password' => Hash::make($validated['password']),
         'role' => 'student',
@@ -1228,6 +1242,7 @@ public function updateStudent(Request $request, $studentId)
     $validated = $request->validate([
         'name' => 'required|string|max:255',
         'registration_number' => 'required|string|unique:users,registration_number,' . $studentId,
+        'attendance_card_uid' => 'nullable|string|max:255|unique:users,attendance_card_uid,' . $studentId,
         'class_id' => 'required|exists:school_classes,id',
         'password' => 'nullable|string|min:6',
         'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:1024',
@@ -1247,6 +1262,7 @@ public function updateStudent(Request $request, $studentId)
     $data = [
         'name' => $validated['name'],
         'registration_number' => $validated['registration_number'],
+        'attendance_card_uid' => $validated['attendance_card_uid'] ?? null,
         'class_id' => $validated['class_id'],
         'date_of_birth' => $dateOfBirth,
         'parent_phone_number' => $validated['parent_phone_number'] ?? null,

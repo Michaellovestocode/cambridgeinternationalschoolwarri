@@ -155,6 +155,8 @@
             $dashboardRoute = 'student.dashboard';
         } elseif (auth()->user()->isParent()) {
             $dashboardRoute = 'parent.dashboard';
+        } elseif (auth()->user()->isNonTeachingStaff()) {
+            $dashboardRoute = 'attendance.my';
         } else {
             $dashboardRoute = 'admin.dashboard';
         }
@@ -165,7 +167,7 @@
         if (auth()->user()->isParent()) {
             $messagesRoute = 'parent.messages.index';
             $unreadMessagesCount = auth()->user()->receivedMessages()->whereNull('read_at')->count();
-        } elseif (!auth()->user()->isStudent()) {
+        } elseif (auth()->user()->isAdmin() || auth()->user()->isTeacher() || auth()->user()->isBlogManager()) {
             $messagesRoute = 'admin.messages.index';
             $unreadMessagesCount = auth()->user()->receivedMessages()->whereNull('read_at')->count();
         }
@@ -207,7 +209,19 @@
                     <a href="{{ route('parent.dashboard') }}" class="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg font-semibold transition">
                         Parent Portal
                     </a>
+                    @elseif(auth()->user()->isNonTeachingStaff())
+                    <a href="{{ route('attendance.my') }}" class="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg font-semibold transition">
+                        My Attendance
+                    </a>
+                    @if(auth()->user()->canManageAttendance())
+                    <a href="{{ route('admin.attendance.scanner') }}" class="bg-teal-500 hover:bg-teal-600 text-white px-4 py-2 rounded-lg font-semibold transition">
+                        Scanner
+                    </a>
+                    @endif
                     @elseif(auth()->user()->isStudent())
+                    <a href="{{ route('attendance.my') }}" class="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg font-semibold transition">
+                        Attendance
+                    </a>
                     <a href="{{ route('student.learning.index') }}" class="bg-cyan-500 hover:bg-cyan-600 text-white px-4 py-2 rounded-lg font-semibold transition">
                         Learning
                     </a>
@@ -218,6 +232,14 @@
                     @if(auth()->user()->isTeacher())
                     <a href="{{ route('teacher.blog.index') }}" class="bg-violet-500 hover:bg-violet-600 text-white px-4 py-2 rounded-lg font-semibold transition">
                         My Blog
+                    </a>
+                    <a href="{{ route('attendance.my') }}" class="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg font-semibold transition">
+                        My Attendance
+                    </a>
+                    @endif
+                    @if(auth()->user()->canManageAttendance())
+                    <a href="{{ route('admin.attendance.scanner') }}" class="bg-teal-500 hover:bg-teal-600 text-white px-4 py-2 rounded-lg font-semibold transition">
+                        Scanner
                     </a>
                     @endif
                     @if(auth()->user()->canManageBlogStudio())
@@ -236,6 +258,9 @@
                     </a>
                     @endif
                     @if(auth()->user()->isAdmin())
+                    <a href="{{ route('attendance.my') }}" class="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg font-semibold transition">
+                        My Attendance
+                    </a>
                     <a href="{{ route('admin.blog.index') }}" class="bg-violet-500 hover:bg-violet-600 text-white px-4 py-2 rounded-lg font-semibold transition">
                         Blog
                     </a>
@@ -284,7 +309,19 @@
                     <a href="{{ route('parent.dashboard') }}" class="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg font-semibold transition text-sm">
                         Parent Portal
                     </a>
+                    @elseif(auth()->user()->isNonTeachingStaff())
+                    <a href="{{ route('attendance.my') }}" class="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg font-semibold transition text-sm">
+                        My Attendance
+                    </a>
+                    @if(auth()->user()->canManageAttendance())
+                    <a href="{{ route('admin.attendance.scanner') }}" class="bg-teal-500 hover:bg-teal-600 text-white px-4 py-2 rounded-lg font-semibold transition text-sm">
+                        Scanner
+                    </a>
+                    @endif
                     @elseif(auth()->user()->isStudent())
+                    <a href="{{ route('attendance.my') }}" class="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg font-semibold transition text-sm">
+                        Attendance
+                    </a>
                     <a href="{{ route('student.learning.index') }}" class="bg-cyan-500 hover:bg-cyan-600 text-white px-4 py-2 rounded-lg font-semibold transition text-sm">
                         Learning
                     </a>
@@ -295,6 +332,14 @@
                     @if(auth()->user()->isTeacher())
                     <a href="{{ route('teacher.blog.index') }}" class="bg-violet-500 hover:bg-violet-600 text-white px-4 py-2 rounded-lg font-semibold transition text-sm">
                         My Blog
+                    </a>
+                    <a href="{{ route('attendance.my') }}" class="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg font-semibold transition text-sm">
+                        My Attendance
+                    </a>
+                    @endif
+                    @if(auth()->user()->canManageAttendance())
+                    <a href="{{ route('admin.attendance.scanner') }}" class="bg-teal-500 hover:bg-teal-600 text-white px-4 py-2 rounded-lg font-semibold transition text-sm">
+                        Scanner
                     </a>
                     @endif
                     @if(auth()->user()->canManageBlogStudio())
@@ -313,6 +358,9 @@
                     </a>
                     @endif
                     @if(auth()->user()->isAdmin())
+                    <a href="{{ route('attendance.my') }}" class="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg font-semibold transition text-sm">
+                        My Attendance
+                    </a>
                     <a href="{{ route('admin.blog.index') }}" class="bg-violet-500 hover:bg-violet-600 text-white px-4 py-2 rounded-lg font-semibold transition text-sm">
                         Blog
                     </a>
