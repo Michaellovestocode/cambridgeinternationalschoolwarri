@@ -340,6 +340,12 @@
                 overflow-y: auto;
                 -webkit-overflow-scrolling: touch;
             }
+            #mobileMenu {
+                padding: 3.25rem .65rem .65rem;
+            }
+            #mobileMenu .mobile-menu-panel {
+                max-height: calc(100dvh - 3.9rem);
+            }
             #mainNav .nav-logo-mark { width: 2.75rem; height: 2.75rem; }
             #mainNav .nav-brand-title { font-size: 1rem; line-height: 1.25rem; }
             #mainNav .nav-brand-subtitle { font-size: .68rem; line-height: 1rem; }
@@ -410,7 +416,7 @@
 â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
 <div id="mobileMenu" class="fixed inset-0 z-[10000] hidden bg-slate-950/45 px-3 pb-3 pt-20 backdrop-blur-sm sm:p-4 sm:pt-20" onclick="if (event.target.id === 'mobileMenu') toggleMenu(false)">
     <div class="mobile-menu-panel flex h-full max-h-[calc(100vh-5.75rem)] flex-col overflow-hidden rounded-[1.5rem] border border-white/70 p-4 shadow-2xl sm:rounded-[2rem]">
-        <div class="mb-3 flex items-center justify-between">
+        <div class="mobile-menu-heading mb-3 flex items-center justify-between">
             <p class="text-xs font-black uppercase text-slate-500" style="letter-spacing:.18em;">Explore</p>
             <button onclick="toggleMenu()" class="rounded-full bg-white p-2.5 text-slate-700 shadow-lg" aria-label="Close menu">
                 <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -419,8 +425,8 @@
             </button>
         </div>
 
-        <div class="flex min-h-0 flex-1 flex-col justify-between gap-3">
-            <div class="grid gap-2">
+        <div class="mobile-menu-content flex min-h-0 flex-1 flex-col justify-between gap-3">
+            <div class="mobile-menu-links grid gap-2">
                 <a href="#home" onclick="toggleMenu()" class="mobile-menu-link"><span>01</span><strong>Home</strong><em class="not-italic text-blue-500">Open</em></a>
                 <a href="#programs" onclick="toggleMenu()" class="mobile-menu-link"><span>02</span><strong>Programs</strong><em class="not-italic text-green-500">Learn</em></a>
                 <a href="#about" onclick="toggleMenu()" class="mobile-menu-link"><span>03</span><strong>About</strong><em class="not-italic text-amber-500">Story</em></a>
@@ -430,7 +436,7 @@
                 <a href="#contact" onclick="toggleMenu()" class="mobile-menu-link"><span>07</span><strong>Contact</strong><em class="not-italic text-emerald-500">Reach us</em></a>
             </div>
 
-            <div class="rounded-2xl bg-slate-950 p-2.5 shadow-xl">
+            <div class="mobile-menu-actions-wrap rounded-2xl bg-slate-950 p-2.5 shadow-xl">
                 <div class="grid grid-cols-3 gap-2">
                     <a href="{{ route('blog.index') }}" class="mobile-menu-action bg-white/10 text-white hover:bg-white/20">Blog</a>
                     <a href="{{ route('apply.create') }}" class="mobile-menu-action bg-amber-400 text-slate-950 hover:bg-amber-300">Apply</a>
@@ -504,11 +510,6 @@
         <div class="grid lg:grid-cols-2 gap-12 items-center">
             <!-- Left -->
             <div class="text-center lg:text-left fade-in-up">
-                <div class="inline-flex items-center space-x-2 bg-gradient-to-r from-blue-100 to-green-100 border-2 border-blue-200 rounded-full px-5 py-2 mb-4 sm:mb-8">
-                    <span class="w-3 h-3 bg-green-500 rounded-full animate-pulse"></span>
-                    <span class="text-gray-800 text-sm font-bold">Top-Rated School in Warri</span>
-                </div>
-
                 <h1 class="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black text-gray-900 mb-4 sm:mb-6 leading-tight">
                     Education for<br><span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-purple-600 to-green-600">Excellence.</span>
                 </h1>
