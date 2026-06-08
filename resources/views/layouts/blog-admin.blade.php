@@ -92,6 +92,11 @@
     @stack('styles')
 </head>
 <body class="min-h-screen text-slate-900">
+    @php
+        $studioSettings = \App\Models\SchoolSettings::getSettings();
+        $canUseGalleryManager = auth()->user()->isAdmin()
+            || (auth()->user()->canManageBlogStudio() && $studioSettings->blog_manager_gallery_access_enabled);
+    @endphp
     <div class="min-h-screen lg:grid lg:grid-cols-[280px_1fr]">
         <aside class="studio-sidebar-shell bg-slate-950 text-white">
             <div class="studio-sidebar-inner sticky top-0 flex min-h-screen flex-col px-5 py-6">
@@ -114,8 +119,9 @@
                         <span class="text-xs text-slate-400">Studio</span>
                     </a>
                     <a href="{{ route('admin.blog.create') }}" class="block rounded-2xl px-4 py-3 text-sm font-bold text-white/75 hover:bg-white/10 hover:text-white">New Post</a>
+                    <a href="{{ route('admin.homepage-notice.edit') }}" class="block rounded-2xl px-4 py-3 text-sm font-bold text-white/75 hover:bg-white/10 hover:text-white">Homepage Notice</a>
                     <a href="{{ route('admin.announcements.index') }}" class="block rounded-2xl px-4 py-3 text-sm font-bold text-white/75 hover:bg-white/10 hover:text-white">Website News & Events</a>
-                    @if(auth()->user()->isAdmin())
+                    @if($canUseGalleryManager)
                         <a href="{{ route('admin.gallery.index') }}" class="block rounded-2xl px-4 py-3 text-sm font-bold text-white/75 hover:bg-white/10 hover:text-white">Gallery Manager</a>
                     @endif
                     <a href="{{ route('blog.index') }}" target="_blank" class="block rounded-2xl px-4 py-3 text-sm font-bold text-white/75 hover:bg-white/10 hover:text-white">Public Blog</a>
@@ -145,9 +151,20 @@
                     </div>
                     <div class="studio-header-actions flex flex-wrap gap-2">
                         <a href="{{ route('admin.blog.index') }}" class="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-bold text-slate-700 hover:bg-slate-50">Posts</a>
+                        <a href="{{ route('admin.homepage-notice.edit') }}" class="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-bold text-slate-700 hover:bg-slate-50">Homepage Notice</a>
                         <a href="{{ route('admin.announcements.index') }}" class="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-bold text-slate-700 hover:bg-slate-50">News & Events</a>
-                        @if(auth()->user()->isAdmin())
+                        @if($canUseGalleryManager)
                             <a href="{{ route('admin.gallery.index') }}" class="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-bold text-slate-700 hover:bg-slate-50">Gallery</a>
+                        @endif
+                        @if(auth()->user()->isAdmin())
+                            <form method="POST" action="{{ route('admin.gallery-access.update') }}">
+                                @csrf
+                                @method('PUT')
+                                <input type="hidden" name="blog_manager_gallery_access_enabled" value="{{ $studioSettings->blog_manager_gallery_access_enabled ? 0 : 1 }}">
+                                <button class="rounded-xl border px-4 py-2.5 text-sm font-bold {{ $studioSettings->blog_manager_gallery_access_enabled ? 'border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100' : 'border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100' }}">
+                                    {{ $studioSettings->blog_manager_gallery_access_enabled ? 'Restrict Gallery' : 'Allow Gallery' }}
+                                </button>
+                            </form>
                         @endif
                         <a href="{{ url('/') }}" target="_blank" class="rounded-xl bg-slate-950 px-4 py-2.5 text-sm font-bold text-white hover:bg-slate-800">Visit Site</a>
                     </div>

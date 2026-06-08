@@ -9,6 +9,11 @@
             padding: 0;
             box-sizing: border-box;
         }
+
+        @page {
+            margin: 0;
+            size: A4 portrait;
+        }
         
         body {
             font-family: Arial, Helvetica, sans-serif;
@@ -19,11 +24,12 @@
         }
         
         .page {
-            width: 210mm;
+            width: {{ ($renderMode ?? 'pdf') === 'browser' ? '210mm' : '204mm' }};
             padding: 9mm;
             position: relative;
             border: 2px solid {{ $selectedColor['primary'] }};
             background: #fff;
+            overflow: hidden;
         }
 
         @media screen {

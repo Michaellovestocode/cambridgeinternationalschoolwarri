@@ -64,6 +64,14 @@
         .mobile-safe-scroll {
             -webkit-overflow-scrolling: touch;
         }
+        .desktop-nav-links {
+            scrollbar-width: thin;
+            -webkit-overflow-scrolling: touch;
+        }
+        .desktop-nav-links a {
+            flex: 0 0 auto;
+            white-space: nowrap;
+        }
         .overflow-x-auto {
             -webkit-overflow-scrolling: touch;
         }
@@ -179,19 +187,19 @@
 
     <nav class="nav-gradient text-white shadow-2xl sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="auth-nav-row flex justify-between items-center h-20 gap-3">
-                <div class="flex min-w-0 items-center space-x-3">
-                    <div class="flex items-center justify-center w-12 h-12 bg-white/20 rounded-2xl backdrop-blur-lg">
+            <div class="auth-nav-row flex flex-wrap items-center justify-between gap-3 py-3 xl:h-20 xl:flex-nowrap xl:py-0">
+                <div class="flex shrink-0 items-center space-x-3">
+                    <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-lg">
                         <img src="{{ asset('images/schoollogo.jpg') }}" alt="School Logo" class="w-8 h-8 rounded-full object-cover">
                         <span class="sr-only">Cambridge International School</span>
                     </div>
-                    <div class="min-w-0">
-                        <h1 class="text-lg font-black">CAMBRIDGE</h1>
-                        <p class="text-xs text-white/70 font-medium">International School</p>
+                    <div class="min-w-0 leading-tight">
+                        <h1 class="text-base font-black lg:text-lg">CAMBRIDGE</h1>
+                        <p class="hidden text-xs font-medium text-white/70 lg:block">International School</p>
                     </div>
                 </div>
 
-                <div class="hidden md:flex items-center space-x-1">
+                <div class="desktop-nav-links order-3 hidden w-full min-w-0 flex-1 items-center gap-1 overflow-x-auto px-2 md:flex xl:order-none xl:w-auto">
                     <a href="{{ route($dashboardRoute) }}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-semibold transition">
                         Dashboard
                     </a>

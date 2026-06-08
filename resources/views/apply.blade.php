@@ -66,19 +66,23 @@
                             <p class="mt-3 text-sm leading-6 text-gray-700">
                                 Please make a manual bank transfer, submit the payment details below, then wait for admin confirmation. Once approved, the school will issue an application code for this page.
                             </p>
-                            <div class="mt-4 grid gap-3 rounded-2xl bg-white p-4 text-sm text-gray-700 sm:grid-cols-2">
-                                <div>
-                                    <p class="text-xs font-bold uppercase text-gray-500">Bank</p>
-                                    <p class="font-semibold">{{ config('admissions.form_payment_bank_name') }}</p>
-                                </div>
-                                <div>
-                                    <p class="text-xs font-bold uppercase text-gray-500">Account Number</p>
-                                    <p class="font-semibold">{{ config('admissions.form_payment_account_number') }}</p>
-                                </div>
-                                <div class="sm:col-span-2">
-                                    <p class="text-xs font-bold uppercase text-gray-500">Account Name</p>
-                                    <p class="font-semibold">{{ config('admissions.form_payment_account_name') }}</p>
-                                </div>
+                            <div class="mt-4 grid gap-3 text-sm text-gray-700">
+                                @foreach(config('admissions.form_payment_accounts') as $account)
+                                    <div class="grid gap-3 rounded-2xl bg-white p-4 sm:grid-cols-2">
+                                        <div>
+                                            <p class="text-xs font-bold uppercase text-gray-500">Bank</p>
+                                            <p class="font-semibold">{{ $account['bank_name'] }}</p>
+                                        </div>
+                                        <div>
+                                            <p class="text-xs font-bold uppercase text-gray-500">Account Number</p>
+                                            <p class="font-semibold">{{ $account['account_number'] }}</p>
+                                        </div>
+                                        <div class="sm:col-span-2">
+                                            <p class="text-xs font-bold uppercase text-gray-500">Account Name</p>
+                                            <p class="font-semibold">{{ $account['account_name'] }}</p>
+                                        </div>
+                                    </div>
+                                @endforeach
                             </div>
                         </div>
 

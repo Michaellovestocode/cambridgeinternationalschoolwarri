@@ -20,6 +20,16 @@ class SchoolSettings extends Model
         'school_motto',
         'principal_name',
         'principal_signature',
+        'homepage_notice_enabled',
+        'homepage_notice_label',
+        'homepage_notice_text',
+        'homepage_notice_url',
+        'blog_manager_gallery_access_enabled',
+    ];
+
+    protected $casts = [
+        'homepage_notice_enabled' => 'boolean',
+        'blog_manager_gallery_access_enabled' => 'boolean',
     ];
 
     // Get logo URL
@@ -55,6 +65,11 @@ class SchoolSettings extends Model
                 'school_email' => 'info@cambridge.edu.ng',
                 'school_motto' => 'Excellence in Education',
                 'principal_name' => 'Mr./Mrs. Principal',
+                'homepage_notice_enabled' => true,
+                'homepage_notice_label' => 'Admissions Notice',
+                'homepage_notice_text' => '2026/2027 admission still ongoing',
+                'homepage_notice_url' => '/apply',
+                'blog_manager_gallery_access_enabled' => false,
             ]);
         }
         

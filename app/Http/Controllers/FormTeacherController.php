@@ -120,6 +120,59 @@ class FormTeacherController extends Controller
         return view('admin.form-teachers.show', compact('formTeacher', 'students', 'exams', 'attemptsByExam'));
     }
 
+    public function myLearners(Request $request)
+    {
+        $formTeacher = $this->activeAssignmentFor($request);
+
+        $students = $formTeacher->schoolClass
+            ->students()
+            ->when($request->filled('search'), function ($query) use ($request) {
+                $search = trim($request->search);
+
+                $query->where(function ($subQuery) use ($search) {
+                    $subQuery->where('name', 'like', '%' . $search . '%')
+                        ->orWhere('registration_number', 'like', '%' . $search . '%');
+                });
+            })
+            ->orderBy('name')
+            ->get();
+
+        return view('teacher.form-teacher.learners', compact('formTeacher', 'students'));
+    }
+
+    public function updateLearnerName(Request $request, User $student)
+    {
+        $formTeacher = $this->activeAssignmentFor($request);
+
+        abort_unless(
+            $student->role === 'student' && (int) $student->class_id === (int) $formTeacher->class_id,
+            403,
+            'You can only edit learners in your assigned class.'
+        );
+
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+        ]);
+
+        $student->update([
+            'name' => $validated['name'],
+        ]);
+
+        return back()->with('success', "{$student->name}'s name has been updated.");
+    }
+
+    private function activeAssignmentFor(Request $request): FormTeacher
+    {
+        $formTeacher = FormTeacher::with('schoolClass')
+            ->where('teacher_id', $request->user()->id)
+            ->where('is_active', true)
+            ->first();
+
+        abort_unless($formTeacher, 403, 'Only active form teachers can manage class learners.');
+
+        return $formTeacher;
+    }
+
     /**
      * Show the form for editing the specified form teacher assignment
      */

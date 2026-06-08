@@ -510,6 +510,14 @@
         <div class="grid lg:grid-cols-2 gap-12 items-center">
             <!-- Left -->
             <div class="text-center lg:text-left fade-in-up">
+                <a href="{{ route('apply.create') }}" class="mb-5 inline-flex max-w-full items-center gap-2 rounded-2xl border border-amber-200 bg-white/90 px-4 py-3 text-left text-sm font-black text-slate-900 shadow-xl shadow-amber-100/60 transition hover:-translate-y-0.5 hover:border-amber-300 hover:bg-amber-50 sm:mb-6 sm:rounded-full sm:px-5">
+                    <span class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-amber-400 to-orange-500 text-xs font-black text-white shadow-md">AD</span>
+                    <span class="min-w-0">
+                        <span class="block truncate text-[11px] uppercase tracking-[0.18em] text-amber-700">Admissions Notice</span>
+                        <span class="block text-sm leading-snug sm:text-base">2026/2027 admission still ongoing</span>
+                    </span>
+                </a>
+
                 <h1 class="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black text-gray-900 mb-4 sm:mb-6 leading-tight">
                     Education for<br><span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-purple-600 to-green-600">Excellence.</span>
                 </h1>
@@ -877,7 +885,7 @@
                 'images' => collect([(object) ['image_url' => asset('images/boycomputer.jpg'), 'caption' => 'ICT learning session']]),
             ],
         ]);
-        $mobileGalleryAlbums = ($galleryAlbums ?? collect())->isNotEmpty() ? $galleryAlbums->take(4) : $mobileGalleryFallbackAlbums;
+        $mobileGalleryAlbums = ($galleryAlbums ?? collect())->isNotEmpty() ? $galleryAlbums->take(10) : $mobileGalleryFallbackAlbums;
         $mobileGalleryCover = function ($album) {
             if (!empty($album->cover_image_path)) {
                 return str_starts_with($album->cover_image_path, 'http://') || str_starts_with($album->cover_image_path, 'https://')
@@ -938,7 +946,7 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center max-w-3xl mx-auto mb-8 sm:mb-16 fade-in-up">
             <h2 class="text-3xl sm:text-5xl md:text-6xl font-black text-gray-900 mb-3 sm:mb-4">Meet Our Expert Team</h2>
-            <p class="text-sm sm:text-xl text-gray-600">Dedicated educators and professionals committed to nurturing every student's potential</p>
+            <p class="text-sm sm:text-xl text-gray-600">Dedicated educators and professionals committed to nurturing every student's potential.</p>
         </div>
 
         <div class="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-8">
@@ -971,10 +979,10 @@
         Director
     </div>
 </div>
-                <div class="p-3 sm:p-6 text-center">
+                <div class="p-3 sm:p-6 text-center">kjb 
                     <h3 class="font-black text-gray-900 text-sm sm:text-lg mb-1 leading-tight">Mrs. Precious Awe</h3>
                     <p class="text-blue-600 font-semibold text-xs sm:text-sm sm:mb-3">School Director</p>
-                    <p class="hidden text-gray-600 text-sm leading-relaxed sm:block">A passionate educationist and visionary leader committed to excellence, discipline, and holistic child development in a supportive learning environment.</p>
+                    <p class="hidden text-gray-600 text-sm leading-relaxed sm:block">A passionate educationist and visionary leader committed to excellence, diligent, and holistic child development in a supportive learning environment.</p>
                 </div>
             </div>
 
@@ -1073,7 +1081,7 @@
                 'category' => 'achievement',
                 'category_label' => 'Achievement',
                 'title' => 'Students are making Cambridge proud across academics and co-curricular life.',
-                'summary' => 'Fresh success stories, school highlights, and student achievements will appear here once published by the admin team.',
+                'summary' => 'Fresh success stories, school highlights, and student achievements will appear here once published by the administrative team.',
                 'display_date' => now()->format('F j, Y'),
                 'button_url' => '#contact',
                 'button_label' => 'Contact us',
@@ -1108,7 +1116,7 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center max-w-3xl mx-auto mb-12 fade-in-up">
             <h2 class="text-4xl sm:text-5xl font-black text-gray-900 mb-4">Latest News &amp; Events</h2>
-            <p class="text-lg text-gray-600">Stay up to date with everything happening at Cambridge through live updates from the school admin team.</p>
+            <p class="text-lg text-gray-600">Stay up to date with everything happening at Cambridge through live updates from the school administrative team.</p>
         </div>
 
         <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -1264,7 +1272,7 @@
 
         $homepageGalleryAlbums = ($galleryAlbums ?? collect())->isNotEmpty() ? $galleryAlbums : $fallbackGalleryAlbums;
         $featuredGalleryAlbum = $homepageGalleryAlbums->first();
-        $galleryTiles = $homepageGalleryAlbums->skip(1)->take(5);
+        $galleryTiles = $homepageGalleryAlbums->skip(1)->take(9);
         $galleryCoverImage = function ($album) {
             if (!empty($album->cover_image_path)) {
                 return str_starts_with($album->cover_image_path, 'http://') || str_starts_with($album->cover_image_path, 'https://')

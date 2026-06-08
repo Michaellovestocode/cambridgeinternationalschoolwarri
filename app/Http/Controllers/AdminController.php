@@ -45,6 +45,10 @@ class AdminController extends Controller
                 ->first();
         }
 
+        $teachingClasses = $user->isTeacher()
+            ? $user->teachingClasses()->withCount('students')->orderBy('name')->get()
+            : collect();
+
         $classStudents = $formTeacherAssignment
             ? $formTeacherAssignment->schoolClass->students()->orderBy('name')->get()
             : collect();
@@ -57,7 +61,7 @@ class AdminController extends Controller
             return $query->where('created_by', $user->id);
         })->latest()->take(5)->get();
 
-        $recentAttempts = ExamAttempt::with(['user', 'exam'])
+        $recentAttempts = ExamAttempt::with(['user.class', 'exam'])
             ->whereHas('exam', function($query) use ($user) {
                 if (!$user->isAdmin()) {
                     $query->where('created_by', $user->id);
@@ -68,19 +72,22 @@ class AdminController extends Controller
             ->get();
 
         // Group attempts by class
-        $groupedAttempts = collect();
-        foreach ($recentAttempts as $attempt) {
-            $className = $attempt->user->class ? $attempt->user->class->display_name : 'No Class';
-            if (!$groupedAttempts->has($className)) {
-                $groupedAttempts[$className] = collect();
-            }
-            $groupedAttempts[$className]->push($attempt);
-        }
+        $recentAttemptsCount = $recentAttempts->count();
+        $groupedAttempts = $recentAttempts
+            ->groupBy(fn ($attempt) => $attempt->user?->class_id ?: 'unassigned')
+            ->map(function ($attempts) {
+                $class = $attempts->first()?->user?->class;
 
-        // Sort classes and limit attempts per class to 5
-        $groupedAttempts = $groupedAttempts->map(function ($attempts) {
-            return $attempts->take(5);
-        })->sortKeys();
+                return [
+                    'class' => $class,
+                    'class_name' => $class?->display_name ?? 'No Class',
+                    'attempts_count' => $attempts->count(),
+                    'pending_count' => $attempts->where('status', ExamAttempt::STATUS_SUBMITTED)->count(),
+                    'graded_count' => $attempts->where('status', ExamAttempt::STATUS_GRADED)->count(),
+                    'latest_attempt_at' => $attempts->max('created_at'),
+                ];
+            })
+            ->sortBy('class_name');
 
         // Check if user is a form teacher
         $isFormTeacher = $formTeacherAssignment !== null;
@@ -95,11 +102,13 @@ class AdminController extends Controller
             'studentsCount',
             'recentExams',
             'groupedAttempts',
+            'recentAttemptsCount',
             'isFormTeacher',
             'newEnquiriesCount',
             'unreadMessagesCount',
             'formTeacherAssignment',
-            'classStudents'
+            'classStudents',
+            'teachingClasses'
         ));
     }
 
@@ -115,6 +124,25 @@ class AdminController extends Controller
             ->get();
 
         return view('admin.exams.index', compact('exams'));
+    }
+
+    public function classAttempts(SchoolClass $class)
+    {
+        $user = Auth::user();
+
+        $attempts = ExamAttempt::with(['user', 'exam'])
+            ->whereHas('user', function ($query) use ($class) {
+                $query->where('class_id', $class->id);
+            })
+            ->whereHas('exam', function ($query) use ($user) {
+                if (! $user->isAdmin()) {
+                    $query->where('created_by', $user->id);
+                }
+            })
+            ->latest()
+            ->paginate(30);
+
+        return view('admin.attempts.class', compact('class', 'attempts'));
     }
 
     public function createExam()

@@ -129,6 +129,10 @@
                 <p class="text-white/90">You are assigned as a form teacher. Access score entry and report cards for your class from here.</p>
                 </div>
                 <div class="flex flex-col sm:flex-row gap-3 md:ml-4">
+                    <a href="{{ route('admin.form-teacher.learners') }}"
+                       class="bg-emerald-300 text-indigo-900 hover:bg-emerald-200 px-6 py-3 rounded-lg font-bold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all whitespace-nowrap">
+                        My Learners
+                    </a>
                     <a href="{{ route('teacher.scores.dashboard') }}" 
                        class="bg-white text-indigo-600 hover:bg-indigo-50 px-6 py-3 rounded-lg font-bold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all whitespace-nowrap">
                         📚 Score Entry
@@ -211,7 +215,7 @@
                     </svg>
                 </div>
                 <div class="text-right">
-                    <div class="admin-stat-number text-4xl font-bold">{{ $groupedAttempts->flatten()->count() }}</div>
+                    <div class="admin-stat-number text-4xl font-bold">{{ $recentAttemptsCount ?? 0 }}</div>
                 </div>
             </div>
             <div class="admin-stat-title text-white/90 font-semibold text-lg">Recent Attempts</div>
@@ -304,6 +308,24 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
                     </svg>
                 </a>
+
+                @if(auth()->user()->isTeacher())
+                <a href="{{ route('admin.teaching-learners.index') }}"
+                   class="flex items-center justify-between bg-gradient-to-r from-emerald-500 to-cyan-600 hover:from-emerald-600 hover:to-cyan-700 text-white px-6 py-4 rounded-xl font-bold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all group">
+                    <span class="flex items-center">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a4 4 0 00-4-4h-1M9 20H4v-2a4 4 0 014-4h1m4-4a4 4 0 11-8 0 4 4 0 018 0zm8 0a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        </svg>
+                        Teaching Learners
+                    </span>
+                    <span class="inline-flex items-center gap-2">
+                        <span class="bg-white/20 text-white text-xs px-2 py-1 rounded-full">{{ ($teachingClasses ?? collect())->count() }} classes</span>
+                        <svg class="w-5 h-5 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                        </svg>
+                    </span>
+                </a>
+                @endif
 
                 @if(auth()->user()->isAdmin() || $isFormTeacher)
                 <a href="{{ route('admin.report-cards') }}" 
@@ -576,22 +598,46 @@
         <div class="admin-section-body p-6">
             @if($groupedAttempts->isNotEmpty())
                 <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-                    @foreach($groupedAttempts as $className => $attempts)
+                    @foreach($groupedAttempts as $classGroup)
                     <div class="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl border border-blue-200 overflow-hidden">
                         <div class="bg-gradient-to-r from-blue-600 to-indigo-600 px-4 py-3">
                             <h4 class="text-white font-bold text-lg flex items-center">
                                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
                                 </svg>
-                                {{ $className }}
+                                {{ $classGroup['class_name'] }}
                                 <span class="ml-auto bg-white/20 text-white text-sm px-2 py-1 rounded-full">
-                                    {{ $attempts->count() }}
+                                    {{ $classGroup['attempts_count'] }}
                                 </span>
                             </h4>
                         </div>
-                        <div class="p-4 space-y-3">
-                            @foreach($attempts as $attempt)
-                            <div class="bg-white rounded-lg p-3 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+                        <div class="p-4">
+                            <div class="grid grid-cols-2 gap-3 text-center">
+                                <div class="rounded-xl bg-white p-3 shadow-sm">
+                                    <p class="text-2xl font-black text-yellow-700">{{ $classGroup['pending_count'] }}</p>
+                                    <p class="text-xs font-semibold text-gray-500">Pending</p>
+                                </div>
+                                <div class="rounded-xl bg-white p-3 shadow-sm">
+                                    <p class="text-2xl font-black text-green-700">{{ $classGroup['graded_count'] }}</p>
+                                    <p class="text-xs font-semibold text-gray-500">Graded</p>
+                                </div>
+                            </div>
+                            <p class="mt-3 text-xs text-gray-500">
+                                Latest attempt:
+                                {{ $classGroup['latest_attempt_at'] ? \Carbon\Carbon::parse($classGroup['latest_attempt_at'])->format('d M, H:i') : 'N/A' }}
+                            </p>
+                            @if($classGroup['class'])
+                                <a href="{{ route('admin.attempts.class', $classGroup['class']) }}"
+                                   class="mt-4 inline-flex w-full items-center justify-center rounded-xl bg-blue-600 px-4 py-3 text-sm font-bold text-white hover:bg-blue-700">
+                                    View Class Attempts
+                                </a>
+                            @else
+                                <div class="mt-4 rounded-xl bg-gray-200 px-4 py-3 text-center text-sm font-bold text-gray-500">
+                                    No class assigned
+                                </div>
+                            @endif
+                            {{--
+                            <div class="hidden">
                                 <div class="flex justify-between items-start mb-2">
                                     <div class="flex-1">
                                         <div class="font-semibold text-gray-800 text-sm">{{ $attempt->user->name }}</div>
@@ -642,7 +688,7 @@
                                     @endif
                                 </div>
                             </div>
-                            @endforeach
+                            --}}
                         </div>
                     </div>
                     @endforeach
@@ -664,9 +710,14 @@
                     <h3 class="text-xl font-bold text-gray-800">My Class Students</h3>
                     <p class="text-sm text-gray-500 mt-1">{{ $formTeacherAssignment?->schoolClass?->display_name ?? 'Assigned class' }}</p>
                 </div>
-                <span class="text-xs font-semibold px-3 py-1 rounded-full bg-emerald-100 text-emerald-700">
-                    {{ $classStudents->count() }} students
-                </span>
+                <div class="flex flex-wrap items-center gap-2">
+                    <span class="text-xs font-semibold px-3 py-1 rounded-full bg-emerald-100 text-emerald-700">
+                        {{ $classStudents->count() }} students
+                    </span>
+                    <a href="{{ route('admin.form-teacher.learners') }}" class="rounded-full bg-emerald-600 px-4 py-2 text-xs font-black text-white hover:bg-emerald-700">
+                        Manage Names
+                    </a>
+                </div>
             </div>
         </div>
         <div class="admin-section-body p-6">

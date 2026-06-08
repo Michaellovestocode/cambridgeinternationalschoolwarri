@@ -24,8 +24,12 @@ use App\Http\Controllers\AdminFeeClearanceController;
 use App\Http\Controllers\BlogPostController;
 use App\Http\Controllers\BlogImageController;
 use App\Http\Controllers\GalleryController;
+use App\Http\Controllers\GalleryAccessController;
+use App\Http\Controllers\HomepageNoticeController;
+use App\Http\Controllers\TeacherLearnerController;
 use App\Models\Announcement;
 use App\Models\GalleryAlbum;
+use App\Models\SchoolSettings;
 
 /*
 |--------------------------------------------------------------------------
@@ -65,10 +69,12 @@ Route::get('/', function () {
     $galleryAlbums = GalleryAlbum::published()
         ->with('images')
         ->homepageOrder()
-        ->take(6)
+        ->take(10)
         ->get();
 
-    return view('welcome', compact('announcements', 'tickerAnnouncements', 'galleryAlbums'));
+    $schoolSettings = SchoolSettings::getSettings();
+
+    return view('welcome', compact('announcements', 'tickerAnnouncements', 'galleryAlbums', 'schoolSettings'));
 });
 
 Route::get('/apply', [AdmissionEnquiryController::class, 'create'])->name('apply.create');
@@ -175,6 +181,12 @@ Route::get('/teacher/scores/my-scores', [TeacherScoreController::class, 'myScore
     });
 
     Route::prefix('admin')->name('admin.')->middleware('blog.studio')->group(function () {
+        Route::get('/homepage-notice', [HomepageNoticeController::class, 'edit'])->name('homepage-notice.edit');
+        Route::put('/homepage-notice', [HomepageNoticeController::class, 'update'])->name('homepage-notice.update');
+        Route::put('/gallery-access', [GalleryAccessController::class, 'update'])
+            ->middleware('role:admin')
+            ->name('gallery-access.update');
+
         Route::get('/announcements', [AnnouncementController::class, 'index'])->name('announcements.index');
         Route::get('/announcements/create', [AnnouncementController::class, 'create'])->name('announcements.create');
         Route::post('/announcements', [AnnouncementController::class, 'store'])->name('announcements.store');
@@ -183,7 +195,7 @@ Route::get('/teacher/scores/my-scores', [TeacherScoreController::class, 'myScore
         Route::delete('/announcements/{announcement}', [AnnouncementController::class, 'destroy'])->name('announcements.destroy');
     });
 
-    Route::prefix('admin')->name('admin.')->middleware('role:admin')->group(function () {
+    Route::prefix('admin')->name('admin.')->middleware('gallery.studio')->group(function () {
         Route::get('/gallery', [GalleryController::class, 'index'])->name('gallery.index');
         Route::get('/gallery/create', [GalleryController::class, 'create'])->name('gallery.create');
         Route::post('/gallery', [GalleryController::class, 'store'])->name('gallery.store');
@@ -195,6 +207,9 @@ Route::get('/teacher/scores/my-scores', [TeacherScoreController::class, 'myScore
     // Admin/Teacher routes
     Route::prefix('admin')->name('admin.')->middleware('role:admin,teacher')->group(function () {
         Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
+        Route::get('/my-learners', [FormTeacherController::class, 'myLearners'])->name('form-teacher.learners');
+        Route::patch('/my-learners/{student}/name', [FormTeacherController::class, 'updateLearnerName'])->name('form-teacher.learners.update-name');
+        Route::get('/teaching-learners', [TeacherLearnerController::class, 'index'])->name('teaching-learners.index');
         Route::get('/messages', [MessageController::class, 'adminIndex'])->name('messages.index');
         Route::post('/messages', [MessageController::class, 'adminStore'])->name('messages.store');
         
@@ -299,6 +314,7 @@ Route::get('/teacher/scores/my-scores', [TeacherScoreController::class, 'myScore
         // Results & Grading
         Route::get('/exams/{exam}/results', [AdminController::class, 'examResults'])->name('exam.results');
         Route::put('/exams/{exam}/result-release', [AdminController::class, 'updateResultRelease'])->name('exam.result-release');
+        Route::get('/attempts/class/{class}', [AdminController::class, 'classAttempts'])->name('attempts.class');
         Route::get('/attempts/{attempt}/grade', [AdminController::class, 'gradeAttempt'])->name('attempt.grade');
         Route::post('/attempts/{attempt}/grade', [AdminController::class, 'updateGrading'])->name('attempt.update-grade');
         Route::post('/attempts/{attempt}/reject', [AdminController::class, 'rejectAttempt'])->name('attempt.reject');

@@ -32,7 +32,7 @@ class BlogPostController extends Controller
         }
 
         return view('blog.index', [
-            'posts' => $query->publicOrder()->paginate(9)->withQueryString(),
+            'posts' => $query->publicOrder()->paginate(12)->withQueryString(),
             'categories' => BlogPost::categories(),
             'categoryCounts' => BlogPost::published()
                 ->selectRaw('category, count(*) as total')

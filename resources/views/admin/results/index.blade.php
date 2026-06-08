@@ -6,16 +6,16 @@
 <div class="space-y-6">
     <!-- Header -->
     <div class="bg-gradient-to-r from-blue-600 to-blue-800 text-white rounded-lg shadow p-6">
-        <div class="flex justify-between items-center">
-            <div>
-                <h1 class="text-3xl font-bold">Results Portal</h1>
+        <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            <div class="min-w-0">
+                <h1 class="text-2xl font-bold sm:text-3xl">Results Portal</h1>
                 <p class="text-blue-100 mt-1">Comprehensive examination results management and analysis</p>
             </div>
-            <div class="flex gap-2">
-                <a href="{{ route('admin.results.statistics') }}" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold">
+            <div class="flex flex-col gap-2 sm:flex-row">
+                <a href="{{ route('admin.results.statistics') }}" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold text-center">
                     📊 Statistics
                 </a>
-                <a href="{{ route('admin.dashboard') }}" class="bg-blue-400 hover:bg-blue-500 text-white px-4 py-2 rounded-lg">
+                <a href="{{ route('admin.dashboard') }}" class="bg-blue-400 hover:bg-blue-500 text-white px-4 py-2 rounded-lg text-center">
                     ← Back
                 </a>
             </div>
@@ -110,7 +110,7 @@
             </div>
 
             <!-- Buttons -->
-            <div class="flex gap-2 md:col-span-2 lg:col-span-4">
+            <div class="grid grid-cols-2 gap-2 md:col-span-2 lg:col-span-4 md:flex">
                 <button type="submit" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-semibold">
                     🔍 Apply Filters
                 </button>
@@ -133,7 +133,7 @@
             <h2 class="text-xl font-bold text-gray-800">📋 Exam Attempts ({{ $attempts->total() }} total)</h2>
         </div>
 
-        <div class="overflow-x-auto">
+        <div class="hidden overflow-x-auto md:block">
             <table class="w-full">
                 <thead class="bg-gray-50 border-b">
                     <tr>
@@ -222,6 +222,75 @@
                     @endforelse
                 </tbody>
             </table>
+        </div>
+
+        <div class="divide-y divide-gray-100 md:hidden">
+            @forelse($attempts as $attempt)
+                <article class="p-4">
+                    <div class="flex items-start justify-between gap-3">
+                        <div class="min-w-0">
+                            <h3 class="font-black text-gray-900">{{ $attempt->user->name }}</h3>
+                            <p class="mt-1 text-xs text-gray-500">{{ $attempt->user->registration_number }}</p>
+                            <p class="mt-2 text-sm font-semibold text-gray-800">{{ $attempt->exam->title }}</p>
+                            <p class="text-xs text-gray-500">{{ $attempt->exam->subject }} | {{ $attempt->user->class->display_name ?? 'N/A' }}</p>
+                        </div>
+                        <div class="shrink-0 text-right">
+                            @switch($attempt->status)
+                                @case('in_progress')
+                                    <span class="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-xs font-semibold">In Progress</span>
+                                    @break
+                                @case('submitted')
+                                    <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-xs font-semibold">Submitted</span>
+                                    @break
+                                @case('graded')
+                                    <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-xs font-semibold">Graded</span>
+                                    @break
+                            @endswitch
+                        </div>
+                    </div>
+
+                    <div class="mt-4 grid grid-cols-3 gap-2 text-center">
+                        <div class="rounded-xl bg-gray-50 p-3">
+                            <p class="text-[11px] font-bold uppercase text-gray-500">Score</p>
+                            @if($attempt->total_score !== null)
+                                <p class="mt-1 text-sm font-black text-gray-900">{{ $attempt->total_score }}/{{ $attempt->exam->total_marks }}</p>
+                                <p class="text-[11px] text-gray-500">{{ $attempt->exam->total_marks > 0 ? round(($attempt->total_score / $attempt->exam->total_marks) * 100, 1) : 0 }}%</p>
+                            @else
+                                <p class="mt-1 text-sm font-black text-gray-400">-</p>
+                            @endif
+                        </div>
+                        <div class="rounded-xl bg-gray-50 p-3">
+                            <p class="text-[11px] font-bold uppercase text-gray-500">Result</p>
+                            @if($attempt->status === 'graded')
+                                <p class="mt-1 text-sm font-black {{ $attempt->total_score >= $attempt->exam->pass_mark ? 'text-green-700' : 'text-red-700' }}">
+                                    {{ $attempt->total_score >= $attempt->exam->pass_mark ? 'Pass' : 'Fail' }}
+                                </p>
+                            @else
+                                <p class="mt-1 text-sm font-black text-gray-400">-</p>
+                            @endif
+                        </div>
+                        <div class="rounded-xl bg-gray-50 p-3">
+                            <p class="text-[11px] font-bold uppercase text-gray-500">Date</p>
+                            <p class="mt-1 text-xs font-bold text-gray-700">{{ $attempt->submitted_at?->format('M d, Y') ?? 'N/A' }}</p>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 flex gap-2">
+                        <a href="{{ route('admin.results.student', $attempt->user->id) }}" class="flex-1 rounded-xl bg-blue-50 px-4 py-2 text-center text-sm font-black text-blue-700">
+                            View
+                        </a>
+                        @if(in_array($attempt->status, ['submitted', 'graded']))
+                            <a href="{{ route('admin.attempt.grade', $attempt->id) }}" class="flex-1 rounded-xl bg-orange-50 px-4 py-2 text-center text-sm font-black text-orange-700">
+                                {{ $attempt->status === 'graded' ? 'View/Edit' : 'Grade' }}
+                            </a>
+                        @endif
+                    </div>
+                </article>
+            @empty
+                <div class="px-6 py-8 text-center text-gray-500">
+                    No results found. Try adjusting your filters.
+                </div>
+            @endforelse
         </div>
 
         <!-- Pagination -->
