@@ -510,15 +510,7 @@
         <div class="grid lg:grid-cols-2 gap-12 items-center">
             <!-- Left -->
             <div class="text-center lg:text-left fade-in-up">
-                <a href="{{ route('apply.create') }}" class="mb-4 inline-flex max-w-full items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50/90 px-3 py-1.5 text-left text-xs font-black text-slate-900 shadow-sm transition hover:border-amber-300 hover:bg-amber-100 sm:mb-5">
-                    <span class="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-amber-500 text-[9px] font-black text-white">AD</span>
-                    <span class="min-w-0 truncate">
-                        <span class="text-amber-700">Admissions Notice:</span>
-                        <span>2026/2027 admission still ongoing</span>
-                    </span>
-                </a>
-
-                <h1 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black text-gray-900 mb-4 sm:mb-6 leading-tight">
+                <h1 class="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black text-gray-900 mb-4 sm:mb-6 leading-tight">
                     Education for<br><span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-purple-600 to-green-600">Excellence.</span>
                 </h1>
 
