@@ -510,15 +510,15 @@
         <div class="grid lg:grid-cols-2 gap-12 items-center">
             <!-- Left -->
             <div class="text-center lg:text-left fade-in-up">
-                <a href="{{ route('apply.create') }}" class="mb-5 inline-flex max-w-full items-center gap-2 rounded-2xl border border-amber-200 bg-white/90 px-4 py-3 text-left text-sm font-black text-slate-900 shadow-xl shadow-amber-100/60 transition hover:-translate-y-0.5 hover:border-amber-300 hover:bg-amber-50 sm:mb-6 sm:rounded-full sm:px-5">
-                    <span class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-amber-400 to-orange-500 text-xs font-black text-white shadow-md">AD</span>
-                    <span class="min-w-0">
-                        <span class="block truncate text-[11px] uppercase tracking-[0.18em] text-amber-700">Admissions Notice</span>
-                        <span class="block text-sm leading-snug sm:text-base">2026/2027 admission still ongoing</span>
+                <a href="{{ route('apply.create') }}" class="mb-4 inline-flex max-w-full items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50/90 px-3 py-1.5 text-left text-xs font-black text-slate-900 shadow-sm transition hover:border-amber-300 hover:bg-amber-100 sm:mb-5">
+                    <span class="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-amber-500 text-[9px] font-black text-white">AD</span>
+                    <span class="min-w-0 truncate">
+                        <span class="text-amber-700">Admissions Notice:</span>
+                        <span>2026/2027 admission still ongoing</span>
                     </span>
                 </a>
 
-                <h1 class="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black text-gray-900 mb-4 sm:mb-6 leading-tight">
+                <h1 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black text-gray-900 mb-4 sm:mb-6 leading-tight">
                     Education for<br><span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-purple-600 to-green-600">Excellence.</span>
                 </h1>
 
@@ -958,7 +958,7 @@
                 <div class="relative">
     <img src="{{ asset('images/director2.png') }}" alt="Director" loading="lazy" class="w-full h-36 sm:h-64 object-cover">
     
-    <div class="absolute top-2 right-2 sm:top-4 sm:right-4 bg-gradient-to-r from-blue-600 to-green-600 text-white px-2 sm:px-3 py-1 rounded-full text-[10px] sm:text-xs font-bold">
+    <div class="absolute bottom-2 left-2 sm:bottom-auto sm:left-auto sm:top-4 sm:right-4 bg-gradient-to-r from-blue-600 to-green-600 text-white px-2 sm:px-3 py-1 rounded-full text-[10px] sm:text-xs font-bold">
         Director
     </div>
 </div>
@@ -975,11 +975,11 @@
                 <div class="relative">
     <img src="{{ asset('images/Director.png') }}" alt="Director" loading="lazy" class="w-full h-36 sm:h-64 object-cover">
     
-    <div class="absolute top-2 right-2 sm:top-4 sm:right-4 bg-gradient-to-r from-blue-600 to-green-600 text-white px-2 sm:px-3 py-1 rounded-full text-[10px] sm:text-xs font-bold">
+    <div class="absolute bottom-2 left-2 sm:bottom-auto sm:left-auto sm:top-4 sm:right-4 bg-gradient-to-r from-blue-600 to-green-600 text-white px-2 sm:px-3 py-1 rounded-full text-[10px] sm:text-xs font-bold">
         Director
     </div>
 </div>
-                <div class="p-3 sm:p-6 text-center">kjb 
+                <div class="p-3 sm:p-6 text-center">
                     <h3 class="font-black text-gray-900 text-sm sm:text-lg mb-1 leading-tight">Mrs. Precious Awe</h3>
                     <p class="text-blue-600 font-semibold text-xs sm:text-sm sm:mb-3">School Director</p>
                     <p class="hidden text-gray-600 text-sm leading-relaxed sm:block">A passionate educationist and visionary leader committed to excellence, diligent, and holistic child development in a supportive learning environment.</p>
@@ -991,7 +991,7 @@
                 <div class="relative">
     <img src="{{ asset('images/principal.jpg') }}" alt="Principal" loading="lazy" class="w-full h-36 sm:h-64 object-cover">
     
-    <div class="absolute top-2 right-2 sm:top-4 sm:right-4 bg-gradient-to-r from-blue-600 to-green-600 text-white px-2 sm:px-3 py-1 rounded-full text-[10px] sm:text-xs font-bold">
+    <div class="absolute bottom-2 left-2 sm:bottom-auto sm:left-auto sm:top-4 sm:right-4 bg-gradient-to-r from-blue-600 to-green-600 text-white px-2 sm:px-3 py-1 rounded-full text-[10px] sm:text-xs font-bold">
         Principal
     </div>
 </div>
@@ -1007,7 +1007,7 @@
                 <div class="relative">
     <img src="{{ asset('images/admin1.jpg') }}" alt="Principal" loading="lazy" class="w-full h-36 sm:h-64 object-cover">
     
-    <div class="absolute top-2 right-2 sm:top-4 sm:right-4 bg-gradient-to-r from-blue-600 to-green-600 text-white px-2 sm:px-3 py-1 rounded-full text-[10px] sm:text-xs font-bold">
+    <div class="absolute bottom-2 left-2 sm:bottom-auto sm:left-auto sm:top-4 sm:right-4 bg-gradient-to-r from-blue-600 to-green-600 text-white px-2 sm:px-3 py-1 rounded-full text-[10px] sm:text-xs font-bold">
         Administrator
     </div>
 </div>
@@ -1023,7 +1023,7 @@
                 <div class="relative">
     <img src="{{ asset('images/vice-principal1.jpg') }}" alt="Principal" loading="lazy" class="w-full h-36 sm:h-64 object-cover">
     
-    <div class="absolute top-2 right-2 sm:top-4 sm:right-4 bg-gradient-to-r from-blue-600 to-green-600 text-white px-2 sm:px-3 py-1 rounded-full text-[10px] sm:text-xs font-bold">
+    <div class="absolute bottom-2 left-2 sm:bottom-auto sm:left-auto sm:top-4 sm:right-4 bg-gradient-to-r from-blue-600 to-green-600 text-white px-2 sm:px-3 py-1 rounded-full text-[10px] sm:text-xs font-bold">
         Vice Principal
     </div>
 </div>
