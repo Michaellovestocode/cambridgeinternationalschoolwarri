@@ -396,18 +396,19 @@
         }
 
         @media (max-width: 1023px) {
-            #home {
-                background-image: linear-gradient(rgba(15, 23, 42, .48), rgba(15, 23, 42, .58)), url('/images/schoolphoto.png');
-                background-size: cover;
-                background-position: center;
-                background-repeat: no-repeat;
-            }
             .mobile-hero-photo {
                 position: relative;
-                overflow: visible;
+                width: calc(100% + 2rem);
+                margin-left: -1rem;
+                margin-right: -1rem;
+                overflow: hidden;
                 border-radius: 0;
-                padding: 2rem 0;
-                background: transparent;
+                padding: 2.25rem 1rem 2rem;
+                background-image: linear-gradient(rgba(15, 23, 42, .42), rgba(15, 23, 42, .56)), url('/images/schoolphoto.png');
+                background-size: 100% auto;
+                background-position: center top;
+                background-repeat: no-repeat;
+                background-color: #0f172a;
                 box-shadow: none;
             }
             .mobile-hero-photo h1,
