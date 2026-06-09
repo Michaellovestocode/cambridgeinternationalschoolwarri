@@ -76,6 +76,7 @@ class CbtReportCardSyncService
             $reportCard->fill(array_merge($summary, [
                 'class_id' => $student->class_id,
                 'status' => 'generated',
+                'workflow_status' => ReportCard::WORKFLOW_DRAFT,
                 'review_required' => true,
                 'published_at' => null,
                 'scores_updated_at' => now(),

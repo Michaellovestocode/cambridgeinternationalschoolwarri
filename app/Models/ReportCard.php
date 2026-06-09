@@ -9,6 +9,12 @@ class ReportCard extends Model
 {
     use HasFactory;
 
+    public const WORKFLOW_DRAFT = 'draft';
+    public const WORKFLOW_SUBMITTED = 'submitted_for_review';
+    public const WORKFLOW_REJECTED = 'rejected_by_reviewer';
+    public const WORKFLOW_ACADEMIC_APPROVED = 'academic_approved';
+    public const WORKFLOW_PUBLISHED = 'published';
+
     protected $fillable = [
         'student_id',
         'session_id',
@@ -42,11 +48,16 @@ class ReportCard extends Model
         'pdf_path',
         'word_path',
         'status',
+        'workflow_status',
         'review_required',
         'published_at',
         'scores_updated_at',
+        'submitted_for_review_at',
         'reviewed_at',
         'reviewed_by',
+        'academic_reviewed_by',
+        'academic_reviewed_at',
+        'academic_rejection_reason',
         'created_by',
     ];
 
@@ -64,7 +75,9 @@ class ReportCard extends Model
         'review_required' => 'boolean',
         'published_at' => 'datetime',
         'scores_updated_at' => 'datetime',
+        'submitted_for_review_at' => 'datetime',
         'reviewed_at' => 'datetime',
+        'academic_reviewed_at' => 'datetime',
     ];
 
     // Relationships
@@ -93,6 +106,11 @@ class ReportCard extends Model
         return $this->belongsTo(User::class, 'reviewed_by');
     }
 
+    public function academicReviewer()
+    {
+        return $this->belongsTo(User::class, 'academic_reviewed_by');
+    }
+
     // Get all scores for this report
     public function scores()
     {
@@ -109,6 +127,7 @@ class ReportCard extends Model
     {
         $this->update([
             'status' => 'published',
+            'workflow_status' => self::WORKFLOW_PUBLISHED,
             'published_at' => now(),
             'review_required' => false,
             'reviewed_at' => now(),
@@ -120,6 +139,7 @@ class ReportCard extends Model
     {
         $this->update([
             'status' => 'draft',
+            'workflow_status' => self::WORKFLOW_ACADEMIC_APPROVED,
             'published_at' => null,
             'review_required' => false,
         ]);
@@ -133,6 +153,7 @@ class ReportCard extends Model
 
         if ($forceReview || $this->isPublished()) {
             $attributes['status'] = 'generated';
+            $attributes['workflow_status'] = self::WORKFLOW_DRAFT;
             $attributes['published_at'] = null;
             $attributes['review_required'] = true;
         }
@@ -143,6 +164,32 @@ class ReportCard extends Model
     public function isPublished()
     {
         return $this->status === 'published';
+    }
+
+    public function isSubmittedForReview(): bool
+    {
+        return $this->workflow_status === self::WORKFLOW_SUBMITTED;
+    }
+
+    public function isRejectedByReviewer(): bool
+    {
+        return $this->workflow_status === self::WORKFLOW_REJECTED;
+    }
+
+    public function isAcademicallyApproved(): bool
+    {
+        return in_array($this->workflow_status, [self::WORKFLOW_ACADEMIC_APPROVED, self::WORKFLOW_PUBLISHED], true);
+    }
+
+    public function workflowLabel(): string
+    {
+        return match ($this->workflow_status) {
+            self::WORKFLOW_SUBMITTED => 'Submitted for Review',
+            self::WORKFLOW_REJECTED => 'Rejected by Reviewer',
+            self::WORKFLOW_ACADEMIC_APPROVED => 'Academic Approved',
+            self::WORKFLOW_PUBLISHED => 'Published',
+            default => 'Draft',
+        };
     }
 
     public function scopePublished($query)

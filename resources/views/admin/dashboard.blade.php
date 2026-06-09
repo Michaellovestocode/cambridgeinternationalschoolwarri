@@ -188,6 +188,7 @@
             <div class="text-white/70 text-sm mt-1">All exams in system</div>
         </div>
 
+        @if(Auth::user()->isAdmin())
         <!-- Total Students -->
         <div class="admin-stat-card bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl shadow-lg p-6 text-white transform hover:scale-105 transition-transform duration-200">
             <div class="flex items-center justify-between mb-4">
@@ -205,6 +206,7 @@
                 {{ $isFormTeacher ? ($formTeacherAssignment?->schoolClass?->display_name ?? 'Assigned class') : 'Registered students' }}
             </div>
         </div>
+        @endif
 
         <!-- Recent Attempts -->
         <div class="admin-stat-card admin-stat-secondary bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl shadow-lg p-6 text-white transform hover:scale-105 transition-transform duration-200">

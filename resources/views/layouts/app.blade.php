@@ -65,18 +65,41 @@
             -webkit-overflow-scrolling: touch;
         }
         .desktop-nav-links {
-            scrollbar-width: thin;
-            -webkit-overflow-scrolling: touch;
+            flex-wrap: wrap;
+            overflow-x: visible !important;
+            scrollbar-width: none;
         }
         .desktop-nav-links a {
-            flex: 0 0 auto;
+            flex: 0 1 auto;
             white-space: nowrap;
+            padding: .45rem .65rem !important;
+            border-radius: .55rem !important;
+            font-size: .75rem !important;
+            line-height: 1.1rem !important;
         }
         .overflow-x-auto {
             -webkit-overflow-scrolling: touch;
         }
         .overflow-x-auto > table {
             min-width: 680px;
+        }
+        @media (min-width: 768px) {
+            .auth-nav-row {
+                height: auto !important;
+                min-height: 4.5rem;
+            }
+            .desktop-nav-links {
+                gap: .35rem !important;
+                padding-left: .25rem !important;
+                padding-right: .25rem !important;
+            }
+            .auth-actions {
+                gap: .5rem !important;
+            }
+            .auth-actions button {
+                padding: .45rem .7rem !important;
+                font-size: .75rem !important;
+            }
         }
         @media (max-width: 640px) {
             body {
@@ -92,15 +115,29 @@
             }
             .auth-nav-row {
                 height: auto;
-                min-height: 4.5rem;
-                padding-top: .75rem;
-                padding-bottom: .75rem;
+                min-height: 3.75rem;
+                padding-top: .55rem;
+                padding-bottom: .55rem;
                 align-items: flex-start;
+            }
+            .auth-nav-row .h-12 {
+                width: 2.25rem !important;
+                height: 2.25rem !important;
+                border-radius: .85rem !important;
+            }
+            .auth-nav-row .w-8,
+            .auth-nav-row .h-8 {
+                width: 1.6rem !important;
+                height: 1.6rem !important;
+            }
+            .auth-nav-row h1 {
+                font-size: .82rem !important;
+                line-height: 1rem !important;
             }
             .mobile-nav-shell {
                 margin-left: -1rem;
                 margin-right: -1rem;
-                padding: .75rem .875rem 1rem;
+                padding: .5rem .75rem .7rem;
                 background: rgba(15, 23, 42, .24);
                 border-top: 1px solid rgba(255, 255, 255, .16);
                 box-shadow: inset 0 1px 0 rgba(255, 255, 255, .08);
@@ -113,24 +150,32 @@
                 width: auto;
             }
             .auth-actions button {
-                padding-left: .75rem;
-                padding-right: .75rem;
+                padding: .4rem .62rem !important;
+                border-radius: .6rem !important;
+                font-size: .72rem !important;
+            }
+            .auth-actions .w-10 {
+                width: 2rem !important;
+                height: 2rem !important;
+                font-size: .8rem !important;
             }
             .mobile-nav-links {
                 display: grid;
                 grid-template-columns: repeat(2, minmax(0, 1fr));
-                gap: .65rem;
+                gap: .45rem;
             }
             .mobile-nav-links a {
                 display: flex;
-                min-height: 3.05rem;
+                min-height: 2.35rem;
                 align-items: center;
                 justify-content: center;
                 white-space: normal;
                 text-align: center;
-                border-radius: .95rem;
-                padding: .75rem .65rem;
-                box-shadow: 0 10px 22px rgba(15, 23, 42, .16);
+                border-radius: .7rem;
+                padding: .45rem .4rem !important;
+                font-size: .72rem !important;
+                line-height: .95rem !important;
+                box-shadow: 0 7px 16px rgba(15, 23, 42, .14);
             }
             .mobile-action-stack {
                 flex-direction: column;
@@ -181,6 +226,7 @@
         }
 
         $canManageReportCards = auth()->user()->isAdmin()
+            || auth()->user()->canReviewReportCards()
             || (auth()->user()->isTeacher()
                 && \App\Models\FormTeacher::where('teacher_id', auth()->id())->where('is_active', true)->exists());
     @endphp
@@ -199,7 +245,7 @@
                     </div>
                 </div>
 
-                <div class="desktop-nav-links order-3 hidden w-full min-w-0 flex-1 items-center gap-1 overflow-x-auto px-2 md:flex xl:order-none xl:w-auto">
+                <div class="desktop-nav-links order-3 hidden w-full min-w-0 flex-1 items-center gap-1 overflow-visible px-2 md:flex xl:order-none xl:w-auto">
                     <a href="{{ route($dashboardRoute) }}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-semibold transition">
                         Dashboard
                     </a>
@@ -263,6 +309,11 @@
                     @if($canManageReportCards)
                     <a href="{{ route('admin.report-cards') }}" class="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-lg font-semibold transition">
                         Report Cards
+                    </a>
+                    @endif
+                    @if(auth()->user()->canReviewReportCards())
+                    <a href="{{ route('admin.report-cards.reviews') }}" class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg font-semibold transition">
+                        Reviews
                     </a>
                     @endif
                     @if(auth()->user()->isAdmin())
@@ -363,6 +414,11 @@
                     @if($canManageReportCards)
                     <a href="{{ route('admin.report-cards') }}" class="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-lg font-semibold transition text-sm">
                         Report Cards
+                    </a>
+                    @endif
+                    @if(auth()->user()->canReviewReportCards())
+                    <a href="{{ route('admin.report-cards.reviews') }}" class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg font-semibold transition text-sm">
+                        Reviews
                     </a>
                     @endif
                     @if(auth()->user()->isAdmin())

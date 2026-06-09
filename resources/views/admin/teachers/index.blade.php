@@ -22,6 +22,7 @@
                         <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Subjects</th>
                         <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Classes</th>
                         <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Exams</th>
+                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Reviewer</th>
                         <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Actions</th>
                     </tr>
                 </thead>
@@ -60,6 +61,17 @@
                                 {{ $teacher->exams->count() }}
                             </span>
                         </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-center">
+                            @if($teacher->can_review_report_cards)
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-800">
+                                    {{ $teacher->reportReviewClasses->count() }} class{{ $teacher->reportReviewClasses->count() === 1 ? '' : 'es' }}
+                                </span>
+                            @else
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-600">
+                                    No
+                                </span>
+                            @endif
+                        </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm">
                             <div class="flex gap-1 justify-center items-center">
                                 <a href="{{ route('admin.subjects.assign-subjects', $teacher->id) }}" 
@@ -90,7 +102,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="7" class="px-6 py-12 text-center text-gray-500">
+                        <td colspan="8" class="px-6 py-12 text-center text-gray-500">
                             No teachers yet. Click "Add New Teacher" to get started.
                         </td>
                     </tr>

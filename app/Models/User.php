@@ -29,6 +29,7 @@ class User extends Authenticatable
         'favourite_colour',
         'can_manage_blog',
         'can_manage_attendance',
+        'can_review_report_cards',
     ];
 
     protected $hidden = [
@@ -44,6 +45,7 @@ class User extends Authenticatable
             'password' => 'hashed',
             'can_manage_blog' => 'boolean',
             'can_manage_attendance' => 'boolean',
+            'can_review_report_cards' => 'boolean',
         ];
     }
 
@@ -91,6 +93,11 @@ class User extends Authenticatable
         return $this->isAdmin() || (bool) $this->can_manage_attendance;
     }
 
+    public function canReviewReportCards(): bool
+    {
+        return $this->isAdmin() || ($this->isTeacher() && (bool) $this->can_review_report_cards);
+    }
+
     public function participatesInAttendance(): bool
     {
         return in_array($this->role, ['admin', 'teacher', 'student', 'non_teaching_staff'], true);
@@ -120,6 +127,12 @@ class User extends Authenticatable
     public function teachingClasses()
     {
         return $this->belongsToMany(SchoolClass::class, 'teacher_class', 'teacher_id', 'school_class_id')
+                    ->withTimestamps();
+    }
+
+    public function reportReviewClasses()
+    {
+        return $this->belongsToMany(SchoolClass::class, 'report_card_reviewer_class', 'teacher_id', 'school_class_id')
                     ->withTimestamps();
     }
 

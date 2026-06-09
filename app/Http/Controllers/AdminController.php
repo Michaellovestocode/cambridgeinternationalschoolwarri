@@ -939,13 +939,15 @@ public function storeManualExamScores(Request $request, $examId)
     // Teacher Management
 public function teachers()
 {
-    $teachers = User::where('role', 'teacher')->with('exams', 'subjects', 'teachingClasses')->get();
+    $teachers = User::where('role', 'teacher')->with('exams', 'subjects', 'teachingClasses', 'reportReviewClasses')->get();
     return view('admin.teachers.index', compact('teachers'));
 }
 
 public function createTeacher()
 {
-    return view('admin.teachers.create');
+    $classes = SchoolClass::orderBy('name')->get();
+
+    return view('admin.teachers.create', compact('classes'));
 }
 
 public function storeTeacher(Request $request)
@@ -960,6 +962,9 @@ public function storeTeacher(Request $request)
         'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:1024',
         'password' => 'required|string|min:6',
         'can_manage_attendance' => 'nullable|boolean',
+        'can_review_report_cards' => 'nullable|boolean',
+        'review_class_ids' => 'nullable|array',
+        'review_class_ids.*' => 'exists:school_classes,id',
     ]);
 
     $data = [
@@ -972,13 +977,15 @@ public function storeTeacher(Request $request)
         'password' => Hash::make($validated['password']),
         'role' => 'teacher',
         'can_manage_attendance' => $request->boolean('can_manage_attendance'),
+        'can_review_report_cards' => $request->boolean('can_review_report_cards'),
     ];
 
     if ($request->hasFile('photo')) {
         $data['photo'] = $request->file('photo')->store('photos', 'public');
     }
 
-    User::create($data);
+    $teacher = User::create($data);
+    $teacher->reportReviewClasses()->sync($request->boolean('can_review_report_cards') ? ($validated['review_class_ids'] ?? []) : []);
 
     return redirect()->route('admin.teachers')->with('success', 'Teacher added successfully!');
 }
@@ -1039,8 +1046,10 @@ public function revokeBlogManager(User $manager)
 
 public function editTeacher($teacherId)
 {
-    $teacher = User::where('role', 'teacher')->findOrFail($teacherId);
-    return view('admin.teachers.edit', compact('teacher'));
+    $teacher = User::where('role', 'teacher')->with('reportReviewClasses')->findOrFail($teacherId);
+    $classes = SchoolClass::orderBy('name')->get();
+
+    return view('admin.teachers.edit', compact('teacher', 'classes'));
 }
 
 public function updateTeacher(Request $request, $teacherId)
@@ -1058,6 +1067,9 @@ public function updateTeacher(Request $request, $teacherId)
         'password' => 'nullable|string|min:6',
         'can_manage_blog' => 'nullable|boolean',
         'can_manage_attendance' => 'nullable|boolean',
+        'can_review_report_cards' => 'nullable|boolean',
+        'review_class_ids' => 'nullable|array',
+        'review_class_ids.*' => 'exists:school_classes,id',
     ]);
 
     $data = [
@@ -1069,6 +1081,7 @@ public function updateTeacher(Request $request, $teacherId)
         'whatsapp_number' => $validated['whatsapp_number'] ?? null,
         'can_manage_blog' => $request->boolean('can_manage_blog'),
         'can_manage_attendance' => $request->boolean('can_manage_attendance'),
+        'can_review_report_cards' => $request->boolean('can_review_report_cards'),
     ];
 
     if ($request->hasFile('photo')) {
@@ -1076,6 +1089,7 @@ public function updateTeacher(Request $request, $teacherId)
     }
 
     $teacher->update($data);
+    $teacher->reportReviewClasses()->sync($request->boolean('can_review_report_cards') ? ($validated['review_class_ids'] ?? []) : []);
 
     if ($request->filled('password')) {
         $teacher->update(['password' => Hash::make($validated['password'])]);
@@ -1544,6 +1558,7 @@ private function refreshReportCardsForClass(int $classId, Session $session, Term
         $reportCard->fill(array_merge($summary, [
             'class_id' => $classId,
             'status' => 'generated',
+            'workflow_status' => ReportCard::WORKFLOW_DRAFT,
             'review_required' => true,
             'published_at' => null,
             'scores_updated_at' => now(),
@@ -1634,6 +1649,7 @@ private function removeRejectedAttemptFromReportCard(ExamAttempt $attempt): void
     if ($reportCard->exists || $summary) {
         $reportCard->fill([
             'status' => 'generated',
+            'workflow_status' => ReportCard::WORKFLOW_DRAFT,
             'review_required' => true,
             'published_at' => null,
             'scores_updated_at' => now(),

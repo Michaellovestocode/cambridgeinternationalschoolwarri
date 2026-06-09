@@ -422,6 +422,7 @@ class TeacherScoreController extends Controller
             $reportCard->fill(array_merge($summary, [
                 'class_id' => $classId,
                 'status' => 'generated',
+                'workflow_status' => ReportCard::WORKFLOW_DRAFT,
                 'review_required' => true,
                 'published_at' => null,
                 'scores_updated_at' => now(),

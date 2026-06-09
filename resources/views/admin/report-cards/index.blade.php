@@ -98,6 +98,17 @@
                     <option value="published" {{ request('status') === 'published' ? 'selected' : '' }}>Published</option>
                 </select>
             </div>
+            <div>
+                <label for="workflow_status" class="block text-sm font-medium text-gray-700 mb-2">Workflow</label>
+                <select id="workflow_status" name="workflow_status" class="w-full border border-gray-300 rounded-lg px-4 py-3">
+                    <option value="">All workflows</option>
+                    <option value="draft" {{ request('workflow_status') === 'draft' ? 'selected' : '' }}>Draft</option>
+                    <option value="submitted_for_review" {{ request('workflow_status') === 'submitted_for_review' ? 'selected' : '' }}>Submitted for Review</option>
+                    <option value="rejected_by_reviewer" {{ request('workflow_status') === 'rejected_by_reviewer' ? 'selected' : '' }}>Rejected by Reviewer</option>
+                    <option value="academic_approved" {{ request('workflow_status') === 'academic_approved' ? 'selected' : '' }}>Academic Approved</option>
+                    <option value="published" {{ request('workflow_status') === 'published' ? 'selected' : '' }}>Published</option>
+                </select>
+            </div>
             <div class="lg:col-span-4 flex flex-wrap gap-3">
                 <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-3 rounded-lg font-medium">
                     Search
@@ -105,6 +116,11 @@
                 <a href="{{ route('admin.report-cards') }}" class="bg-gray-200 hover:bg-gray-300 text-gray-800 px-5 py-3 rounded-lg font-medium">
                     Reset
                 </a>
+                @if(auth()->user()->canReviewReportCards())
+                <a href="{{ route('admin.report-cards.reviews') }}" class="bg-orange-600 hover:bg-orange-700 text-white px-5 py-3 rounded-lg font-medium">
+                    Review Queue
+                </a>
+                @endif
             </div>
         </form>
     </div>
@@ -218,6 +234,9 @@
                                     <span class="px-3 py-1 rounded-full text-xs {{ $reportCard->isPublished() ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800' }}">
                                         {{ ucfirst($reportCard->status) }}
                                     </span>
+                                    <span class="px-3 py-1 rounded-full text-xs bg-blue-100 text-blue-800">
+                                        {{ $reportCard->workflowLabel() }}
+                                    </span>
                                     @if($reportCard->review_required)
                                         <span class="px-3 py-1 rounded-full text-xs bg-red-100 text-red-800">
                                             Needs Review
@@ -230,6 +249,7 @@
                             </td>
                             <td class="px-4 py-3 text-right">
                                 <div class="flex flex-wrap justify-end gap-2">
+                                    @if(auth()->user()->isAdmin())
                                     <form method="POST" action="{{ route('admin.report-cards.publication', $reportCard->id) }}">
                                         @csrf
                                         @method('PUT')
@@ -239,6 +259,7 @@
                                             {{ $reportCard->isPublished() ? 'Hide' : 'Publish' }}
                                         </button>
                                     </form>
+                                    @endif
                                     <a href="{{ route('admin.report-cards.preview', $reportCard->id) }}"
                                        class="bg-gray-900 hover:bg-black text-white px-4 py-2 rounded-lg text-sm font-medium">
                                         Edit Details

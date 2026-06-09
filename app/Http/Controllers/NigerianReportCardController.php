@@ -10,6 +10,7 @@ use App\Models\User;
 use App\Models\SchoolClass;
 use App\Models\FormTeacher;
 use App\Models\Subject;
+use App\Models\Message;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -29,9 +30,13 @@ class NigerianReportCardController extends Controller
         $selectedTermId = $request->input('term_id', $activeTerm?->id);
 
         $user = auth()->user();
+        $reviewClassIds = $this->reviewerClassIdsFor($user);
         $reportCards = ReportCard::with(['student', 'session', 'term', 'class'])
-            ->when($user->isTeacher(), function ($query) use ($user) {
+            ->when($user->isTeacher() && ! $user->canReviewReportCards(), function ($query) use ($user) {
                 $query->whereIn('class_id', $this->formTeacherClassIdsFor($user->id));
+            })
+            ->when($user->isTeacher() && $user->canReviewReportCards(), function ($query) use ($reviewClassIds) {
+                $query->whereIn('class_id', $reviewClassIds);
             })
             ->when($selectedSessionId, fn ($query) => $query->where('session_id', $selectedSessionId))
             ->when($selectedTermId, fn ($query) => $query->where('term_id', $selectedTermId))
@@ -51,14 +56,20 @@ class NigerianReportCardController extends Controller
             ->when($request->filled('status'), function ($query) use ($request) {
                 $query->where('status', $request->status);
             })
+            ->when($request->filled('workflow_status'), function ($query) use ($request) {
+                $query->where('workflow_status', $request->workflow_status);
+            })
             ->latest()
             ->paginate(20);
 
         $reportCards->appends($request->query());
 
         $students = User::where('role', 'student')
-            ->when($user->isTeacher(), function ($query) use ($user) {
+            ->when($user->isTeacher() && ! $user->canReviewReportCards(), function ($query) use ($user) {
                 $query->whereIn('class_id', $this->formTeacherClassIdsFor($user->id));
+            })
+            ->when($user->isTeacher() && $user->canReviewReportCards(), function ($query) use ($reviewClassIds) {
+                $query->whereIn('class_id', $reviewClassIds);
             })
             ->when($request->filled('search'), function ($query) use ($request) {
                 $search = trim($request->search);
@@ -71,8 +82,10 @@ class NigerianReportCardController extends Controller
             ->orderBy('name')
             ->get();
 
-        $classes = SchoolClass::when($user->isTeacher(), function ($query) use ($user) {
+        $classes = SchoolClass::when($user->isTeacher() && ! $user->canReviewReportCards(), function ($query) use ($user) {
             $query->whereIn('id', $this->formTeacherClassIdsFor($user->id));
+        })->when($user->isTeacher() && $user->canReviewReportCards(), function ($query) use ($reviewClassIds) {
+            $query->whereIn('id', $reviewClassIds);
         })->orderBy('name')->get();
 
         $sessions = Session::orderByDesc('start_date')->get();
@@ -93,6 +106,36 @@ class NigerianReportCardController extends Controller
         ));
     }
 
+    public function reviews(Request $request)
+    {
+        $this->authorizeAcademicReview();
+
+        $activeSession = Session::getActive();
+        $activeTerm = Term::getActive();
+        $selectedSessionId = $request->input('session_id', $activeSession?->id);
+        $selectedTermId = $request->input('term_id', $activeTerm?->id);
+        $reviewClassIds = $this->reviewerClassIdsFor(auth()->user());
+
+        $reportCards = ReportCard::with(['student', 'session', 'term', 'class', 'academicReviewer'])
+            ->whereIn('class_id', $reviewClassIds)
+            ->when($selectedSessionId, fn ($query) => $query->where('session_id', $selectedSessionId))
+            ->when($selectedTermId, fn ($query) => $query->where('term_id', $selectedTermId))
+            ->whereIn('workflow_status', [
+                ReportCard::WORKFLOW_SUBMITTED,
+                ReportCard::WORKFLOW_REJECTED,
+                ReportCard::WORKFLOW_ACADEMIC_APPROVED,
+            ])
+            ->latest()
+            ->paginate(20);
+
+        $sessions = Session::orderByDesc('start_date')->get();
+        $terms = Term::with('session')->orderByDesc('start_date')->get();
+        $selectedSession = $sessions->firstWhere('id', (int) $selectedSessionId);
+        $selectedTerm = $terms->firstWhere('id', (int) $selectedTermId);
+
+        return view('admin.report-cards.reviews', compact('reportCards', 'sessions', 'terms', 'selectedSession', 'selectedTerm'));
+    }
+
     public function manual(Request $request)
     {
         $this->authorizeReportCardManagement();
@@ -104,6 +147,7 @@ class NigerianReportCardController extends Controller
         $selectedTermId = $request->input('term_id', $activeTerm?->id);
         $selectedClassId = $request->input('class_id');
         $selectedStudentId = $request->input('student_id');
+        $reviewClassIds = $this->reviewerClassIdsFor($user);
 
         if ($selectedStudentId && !$selectedClassId) {
             $selectedClassId = User::where('role', 'student')
@@ -115,13 +159,18 @@ class NigerianReportCardController extends Controller
             $this->authorizeClassAccess((int) $selectedClassId);
         }
 
-        $classes = SchoolClass::when($user->isTeacher(), function ($query) use ($user) {
+        $classes = SchoolClass::when($user->isTeacher() && ! $user->canReviewReportCards(), function ($query) use ($user) {
             $query->whereIn('id', $this->formTeacherClassIdsFor($user->id));
+        })->when($user->isTeacher() && $user->canReviewReportCards(), function ($query) use ($reviewClassIds) {
+            $query->whereIn('id', $reviewClassIds);
         })->orderBy('name')->get();
 
         $students = User::where('role', 'student')
-            ->when($user->isTeacher(), function ($query) use ($user) {
+            ->when($user->isTeacher() && ! $user->canReviewReportCards(), function ($query) use ($user) {
                 $query->whereIn('class_id', $this->formTeacherClassIdsFor($user->id));
+            })
+            ->when($user->isTeacher() && $user->canReviewReportCards(), function ($query) use ($reviewClassIds) {
+                $query->whereIn('class_id', $reviewClassIds);
             })
             ->with('class')
             ->orderBy('name')
@@ -279,6 +328,7 @@ class NigerianReportCardController extends Controller
                 array_merge($summary, [
                     'class_id' => $validated['class_id'],
                     'status' => 'generated',
+                    'workflow_status' => ReportCard::WORKFLOW_DRAFT,
                     'review_required' => true,
                     'published_at' => null,
                     'scores_updated_at' => now(),
@@ -349,6 +399,7 @@ class NigerianReportCardController extends Controller
             array_merge($summary, [
                 'class_id' => $student->class_id,
                 'status' => 'generated',
+                'workflow_status' => ReportCard::WORKFLOW_DRAFT,
                 'review_required' => true,
                 'published_at' => null,
                 'scores_updated_at' => now(),
@@ -372,9 +423,9 @@ class NigerianReportCardController extends Controller
     {
         $this->authorizeReportCardManagement();
 
-        $reportCard = ReportCard::with(['student.class', 'session', 'term', 'reviewer'])
+        $reportCard = ReportCard::with(['student.class', 'session', 'term', 'reviewer', 'academicReviewer'])
             ->findOrFail($reportCardId);
-        $this->authorizeClassAccess($reportCard->class_id);
+        $this->authorizeReportCardAccess($reportCard);
         
         // Get scores
         $scores = Score::where('student_id', $reportCard->student_id)
@@ -399,7 +450,10 @@ class NigerianReportCardController extends Controller
         $selectedColor = $colorSchemes[$reportCard->theme_color ?? 'blue'] ?? $colorSchemes['blue'];
         $colors = ['blue', 'green', 'brown', 'pink', 'purple'];
         
-        return view('admin.report-cards.preview', compact('reportCard', 'scores', 'colors', 'schoolSettings', 'selectedColor'));
+        $canEditScores = auth()->user()->canReviewReportCards() && $reportCard->isSubmittedForReview();
+        $canSubmitForReview = $this->canCurrentUserSubmitForReview($reportCard);
+
+        return view('admin.report-cards.preview', compact('reportCard', 'scores', 'colors', 'schoolSettings', 'selectedColor', 'canEditScores', 'canSubmitForReview'));
     }
 
     public function visualPreview($reportCardId)
@@ -408,7 +462,7 @@ class NigerianReportCardController extends Controller
 
         $reportCard = ReportCard::with(['student.class', 'session', 'term'])
             ->findOrFail($reportCardId);
-        $this->authorizeClassAccess($reportCard->class_id);
+        $this->authorizeReportCardAccess($reportCard);
 
         $scores = Score::where('student_id', $reportCard->student_id)
             ->where('session_id', $reportCard->session_id)
@@ -447,7 +501,7 @@ class NigerianReportCardController extends Controller
 
         $reportCard = ReportCard::with(['student.class', 'session', 'term'])
             ->findOrFail($reportCardId);
-        $this->authorizeClassAccess($reportCard->class_id);
+        $this->authorizeReportCardAccess($reportCard);
         
         // Get color theme
         $color = $request->get('color', $reportCard->theme_color ?? 'blue');
@@ -515,7 +569,7 @@ class NigerianReportCardController extends Controller
         $this->authorizeReportCardManagement();
 
         $reportCard = ReportCard::findOrFail($reportCardId);
-        $this->authorizeClassAccess($reportCard->class_id);
+        $this->authorizeReportCardAccess($reportCard);
 
         $validated = $request->validate([
             'days_school_opened' => 'required|integer|min:0',
@@ -563,7 +617,11 @@ class NigerianReportCardController extends Controller
             ->map(fn ($value) => (int) $value)
             ->all();
 
-        $validated['review_required'] = false;
+        if (! auth()->user()->canReviewReportCards()) {
+            $validated['workflow_status'] = ReportCard::WORKFLOW_DRAFT;
+            $validated['review_required'] = true;
+        }
+
         $validated['reviewed_at'] = now();
         $validated['reviewed_by'] = auth()->id();
 
@@ -573,12 +631,147 @@ class NigerianReportCardController extends Controller
             ->with('success', 'Report card details updated successfully.');
     }
 
+    public function updateScores(Request $request, $reportCardId)
+    {
+        $this->authorizeAcademicReview();
+
+        $reportCard = ReportCard::findOrFail($reportCardId);
+        $this->authorizeReviewerClassAccess($reportCard);
+        abort_unless($reportCard->isSubmittedForReview(), 403, 'Scores can be edited only while the report card is submitted for academic review.');
+
+        $validated = $request->validate([
+            'scores' => 'required|array',
+            'scores.*.id' => 'required|exists:scores,id',
+            'scores.*.ca1' => 'nullable|numeric|min:0|max:30',
+            'scores.*.ca2' => 'nullable|numeric|min:0|max:10',
+            'scores.*.exam' => 'nullable|numeric|min:0|max:60',
+        ]);
+
+        DB::transaction(function () use ($validated, $reportCard) {
+            foreach ($validated['scores'] as $scoreData) {
+                $score = Score::where('student_id', $reportCard->student_id)
+                    ->where('session_id', $reportCard->session_id)
+                    ->where('term_id', $reportCard->term_id)
+                    ->findOrFail($scoreData['id']);
+
+                $score->update([
+                    'ca1' => $scoreData['ca1'] ?? 0,
+                    'ca2' => $scoreData['ca2'] ?? 0,
+                    'exam' => $scoreData['exam'] ?? 0,
+                    'status' => 'submitted',
+                ]);
+
+                Score::calculatePositions($score->subject_id, $score->class_id, $score->session_id, $score->term_id);
+                $classAverage = Score::calculateClassAverage($score->subject_id, $score->class_id, $score->session_id, $score->term_id);
+                Score::where('subject_id', $score->subject_id)
+                    ->where('class_id', $score->class_id)
+                    ->where('session_id', $score->session_id)
+                    ->where('term_id', $score->term_id)
+                    ->update(['class_average' => $classAverage]);
+            }
+
+            $summary = ReportCard::generateForStudent($reportCard->student_id, $reportCard->session_id, $reportCard->term_id);
+            if ($summary) {
+                $reportCard->fill(array_merge($summary, [
+                    'review_required' => true,
+                    'scores_updated_at' => now(),
+                    'academic_reviewed_by' => null,
+                    'academic_reviewed_at' => null,
+                    'academic_rejection_reason' => null,
+                    'published_at' => null,
+                    'status' => 'generated',
+                ]))->save();
+            }
+        });
+
+        return redirect()->route('admin.report-cards.preview', $reportCard->id)
+            ->with('success', 'Scores updated. Please review the refreshed report card before approving.');
+    }
+
+    public function submitForReview($reportCardId)
+    {
+        $reportCard = ReportCard::with(['student', 'session', 'term', 'class'])->findOrFail($reportCardId);
+        abort_unless($this->canCurrentUserSubmitForReview($reportCard), 403);
+
+        $reportCard->update([
+            'workflow_status' => ReportCard::WORKFLOW_SUBMITTED,
+            'submitted_for_review_at' => now(),
+            'academic_reviewed_by' => null,
+            'academic_reviewed_at' => null,
+            'academic_rejection_reason' => null,
+            'status' => 'generated',
+            'published_at' => null,
+            'review_required' => true,
+        ]);
+
+        $this->notifyAcademicReviewers($reportCard);
+
+        return redirect()->back()->with('success', 'Report card submitted for academic review. Reviewers have been notified.');
+    }
+
+    public function approveAcademicReview($reportCardId)
+    {
+        $this->authorizeAcademicReview();
+
+        $reportCard = ReportCard::with(['student', 'session', 'term', 'class'])->findOrFail($reportCardId);
+        $this->authorizeReviewerClassAccess($reportCard);
+        abort_unless($reportCard->isSubmittedForReview(), 403);
+
+        $readinessErrors = $this->publicationReadinessErrors($reportCard, false);
+        if ($readinessErrors->isNotEmpty()) {
+            return back()->withErrors(['review' => $readinessErrors->implode(' ')]);
+        }
+
+        $reportCard->update([
+            'workflow_status' => ReportCard::WORKFLOW_ACADEMIC_APPROVED,
+            'review_required' => false,
+            'reviewed_at' => now(),
+            'reviewed_by' => auth()->id(),
+            'academic_reviewed_by' => auth()->id(),
+            'academic_reviewed_at' => now(),
+            'academic_rejection_reason' => null,
+        ]);
+
+        $this->notifyAdmins($reportCard, 'Report card ready for fee verification', "{$reportCard->student->name}'s report card has been academically approved and is ready for fee clearance/final publishing.");
+
+        return redirect()->back()->with('success', 'Academic review approved. Admin can now verify fee clearance and publish.');
+    }
+
+    public function rejectAcademicReview(Request $request, $reportCardId)
+    {
+        $this->authorizeAcademicReview();
+
+        $validated = $request->validate([
+            'academic_rejection_reason' => 'required|string|max:2000',
+        ]);
+
+        $reportCard = ReportCard::with(['student', 'session', 'term', 'class'])->findOrFail($reportCardId);
+        $this->authorizeReviewerClassAccess($reportCard);
+        abort_unless($reportCard->isSubmittedForReview(), 403);
+
+        $reportCard->update([
+            'workflow_status' => ReportCard::WORKFLOW_REJECTED,
+            'review_required' => true,
+            'reviewed_at' => now(),
+            'reviewed_by' => auth()->id(),
+            'academic_reviewed_by' => auth()->id(),
+            'academic_reviewed_at' => now(),
+            'academic_rejection_reason' => $validated['academic_rejection_reason'],
+            'published_at' => null,
+            'status' => 'generated',
+        ]);
+
+        $this->notifyFormTeacher($reportCard, 'Report card rejected', "{$reportCard->student->name}'s report card was rejected. Reason: {$validated['academic_rejection_reason']}");
+
+        return redirect()->back()->with('success', 'Report card rejected. The form teacher has been notified.');
+    }
+
     public function updatePublication(Request $request, $reportCardId)
     {
         $this->authorizeReportCardManagement();
 
         $reportCard = ReportCard::findOrFail($reportCardId);
-        $this->authorizeClassAccess($reportCard->class_id);
+        abort_unless(auth()->user()->isAdmin(), 403, 'Only admin can publish final report cards.');
 
         if ($request->boolean('published')) {
             $publishErrors = $this->publicationReadinessErrors($reportCard);
@@ -599,14 +792,22 @@ class NigerianReportCardController extends Controller
         return redirect()->back()->with('success', $message);
     }
 
-    private function publicationReadinessErrors(ReportCard $reportCard): \Illuminate\Support\Collection
+    private function publicationReadinessErrors(ReportCard $reportCard, bool $requireAcademicApproval = true): \Illuminate\Support\Collection
     {
         $reportCard->loadMissing(['class.subjects', 'student', 'session', 'term']);
 
         $errors = collect();
 
-        if ($reportCard->review_required) {
+        if ($requireAcademicApproval && $reportCard->review_required) {
             $errors->push('This report card has updated scores and must be reviewed before publishing.');
+        }
+
+        if ($requireAcademicApproval && ! $reportCard->isAcademicallyApproved()) {
+            $errors->push('Academic reviewer must approve this report card before final publishing.');
+        }
+
+        if ($requireAcademicApproval && ! $reportCard->hasFeeClearance()) {
+            $errors->push('Fee clearance must be approved before final publishing.');
         }
 
         if ((int) $reportCard->days_school_opened <= 0) {
@@ -687,6 +888,7 @@ class NigerianReportCardController extends Controller
                     array_merge($summary, [
                         'class_id' => $request->class_id,
                         'status' => 'generated',
+                        'workflow_status' => ReportCard::WORKFLOW_DRAFT,
                         'review_required' => true,
                         'published_at' => null,
                         'scores_updated_at' => now(),
@@ -718,15 +920,106 @@ class NigerianReportCardController extends Controller
         abort_unless($classId && in_array($classId, $classIds, true), 403, 'Only admins and the assigned form teacher can manage this report card.');
     }
 
+    private function authorizeReportCardAccess(ReportCard $reportCard): void
+    {
+        $user = auth()->user();
+        if ($user->isAdmin() || $user->canReviewReportCards()) {
+            if ($user->isTeacher() && $user->canReviewReportCards()) {
+                abort_unless(in_array($reportCard->class_id, $this->reviewerClassIdsFor($user), true), 403, 'You are not assigned to review this class.');
+            }
+            return;
+        }
+
+        $this->authorizeClassAccess($reportCard->class_id);
+    }
+
     private function authorizeReportCardManagement(): void
     {
         $user = auth()->user();
 
         abort_unless(
-            $user->isAdmin() || ! empty($this->formTeacherClassIdsFor($user->id)),
+            $user->isAdmin() || $user->canReviewReportCards() || ! empty($this->formTeacherClassIdsFor($user->id)),
             403,
-            'Only admins and active form teachers can manage report cards.'
+            'Only admins, academic reviewers, and active form teachers can manage report cards.'
         );
+    }
+
+    private function authorizeAcademicReview(): void
+    {
+        abort_unless(auth()->user()->canReviewReportCards(), 403, 'Only assigned academic reviewers can review report cards.');
+    }
+
+    private function authorizeReviewerClassAccess(ReportCard $reportCard): void
+    {
+        $user = auth()->user();
+
+        if ($user->isAdmin()) {
+            return;
+        }
+
+        abort_unless(
+            $user->canReviewReportCards() && in_array($reportCard->class_id, $this->reviewerClassIdsFor($user), true),
+            403,
+            'You are not assigned to review this class.'
+        );
+    }
+
+    private function canCurrentUserSubmitForReview(ReportCard $reportCard): bool
+    {
+        $user = auth()->user();
+
+        if ($user->isAdmin()) {
+            return in_array($reportCard->workflow_status, [ReportCard::WORKFLOW_DRAFT, ReportCard::WORKFLOW_REJECTED, null], true);
+        }
+
+        return $user->isTeacher()
+            && in_array($reportCard->class_id, $this->formTeacherClassIdsFor($user->id), true)
+            && in_array($reportCard->workflow_status, [ReportCard::WORKFLOW_DRAFT, ReportCard::WORKFLOW_REJECTED, null], true);
+    }
+
+    private function notifyAcademicReviewers(ReportCard $reportCard): void
+    {
+        $reviewers = User::where('role', 'teacher')
+            ->where('can_review_report_cards', true)
+            ->whereHas('reportReviewClasses', fn ($query) => $query->whereKey($reportCard->class_id))
+            ->get();
+
+        foreach ($reviewers as $reviewer) {
+            Message::create([
+                'sender_id' => auth()->id(),
+                'recipient_id' => $reviewer->id,
+                'subject' => 'Report card submitted for review',
+                'body' => "{$reportCard->student->name}'s report card for {$reportCard->class->display_name} has been submitted for academic review.",
+            ]);
+        }
+    }
+
+    private function notifyFormTeacher(ReportCard $reportCard, string $subject, string $body): void
+    {
+        $teacherId = FormTeacher::where('class_id', $reportCard->class_id)
+            ->where('is_active', true)
+            ->value('teacher_id');
+
+        if ($teacherId) {
+            Message::create([
+                'sender_id' => auth()->id(),
+                'recipient_id' => $teacherId,
+                'subject' => $subject,
+                'body' => $body,
+            ]);
+        }
+    }
+
+    private function notifyAdmins(ReportCard $reportCard, string $subject, string $body): void
+    {
+        User::where('role', 'admin')->get()->each(function (User $admin) use ($subject, $body) {
+            Message::create([
+                'sender_id' => auth()->id(),
+                'recipient_id' => $admin->id,
+                'subject' => $subject,
+                'body' => $body,
+            ]);
+        });
     }
 
     private function formTeacherClassIdsFor(int $teacherId): array
@@ -734,6 +1027,22 @@ class NigerianReportCardController extends Controller
         return FormTeacher::where('teacher_id', $teacherId)
             ->where('is_active', true)
             ->pluck('class_id')
+            ->map(fn ($id) => (int) $id)
+            ->all();
+    }
+
+    private function reviewerClassIdsFor(User $user): array
+    {
+        if (! $user->canReviewReportCards()) {
+            return [];
+        }
+
+        if ($user->isAdmin()) {
+            return SchoolClass::pluck('id')->map(fn ($id) => (int) $id)->all();
+        }
+
+        return $user->reportReviewClasses()
+            ->pluck('school_classes.id')
             ->map(fn ($id) => (int) $id)
             ->all();
     }

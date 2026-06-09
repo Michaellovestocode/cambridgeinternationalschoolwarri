@@ -291,6 +291,10 @@ class ResultController extends Controller
                         array_merge($summary, [
                             'class_id' => $request->class_id,
                             'status' => 'generated',
+                            'workflow_status' => ReportCard::WORKFLOW_DRAFT,
+                            'review_required' => true,
+                            'published_at' => null,
+                            'scores_updated_at' => now(),
                         ])
                     );
                 }

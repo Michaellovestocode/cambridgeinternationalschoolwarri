@@ -511,7 +511,7 @@
             <!-- Left -->
             <div class="text-center lg:text-left fade-in-up">
                 <h1 class="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black text-gray-900 mb-4 sm:mb-6 leading-tight">
-                    Education for<br><span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-purple-600 to-green-600">Excellence.</span>
+                    Education <br> for<br><span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-purple-600 to-green-600">Excellence.</span>
                 </h1>
 
                 <p class="text-base sm:text-xl text-gray-600 mb-5 sm:mb-10 max-w-xl mx-auto lg:mx-0">
@@ -700,7 +700,7 @@
         </div>
 
         <div class="mt-10 sm:mt-20 grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 fade-in-up">
-            @foreach(['Leadership', 'Excellence', 'Accountability', 'Discipline'] as $valueIndex => $value)
+            @foreach(['Leadership', 'Excellence', 'Accountability', 'Diligence'] as $valueIndex => $value)
                 <div class="bg-white/10 border border-white/15 rounded-2xl p-3 sm:p-5">
                     <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-yellow-300 text-blue-950 flex items-center justify-center text-xs sm:text-sm font-black mb-2 sm:mb-4">
                         {{ $valueIndex + 1 }}

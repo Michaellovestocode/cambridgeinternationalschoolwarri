@@ -158,6 +158,7 @@ Route::get('/teacher/scores/my-scores', [TeacherScoreController::class, 'myScore
     // Nigerian Report Cards
     Route::middleware('role:admin,teacher')->group(function () {
         Route::get('/admin/report-cards', [NigerianReportCardController::class, 'index'])->name('admin.report-cards');
+        Route::get('/admin/report-card-reviews', [NigerianReportCardController::class, 'reviews'])->name('admin.report-cards.reviews');
         Route::get('/admin/report-cards/manual', [NigerianReportCardController::class, 'manual'])->name('admin.report-cards.manual');
         Route::post('/admin/report-cards/manual', [NigerianReportCardController::class, 'storeManual'])->name('admin.report-cards.manual.store');
         Route::get('/admin/report-cards/generate/{student}', [NigerianReportCardController::class, 'generate'])->name('admin.report-cards.generate');
@@ -166,6 +167,10 @@ Route::get('/teacher/scores/my-scores', [TeacherScoreController::class, 'myScore
         Route::get('/admin/report-cards/{id}/download', [NigerianReportCardController::class, 'downloadPDF'])->name('admin.report-cards.download');
         Route::post('/admin/report-cards/bulk', [NigerianReportCardController::class, 'bulkGenerate'])->name('admin.report-cards.bulk');
         Route::put('/admin/report-cards/{id}', [NigerianReportCardController::class, 'update'])->name('admin.report-cards.update');
+        Route::put('/admin/report-cards/{id}/scores', [NigerianReportCardController::class, 'updateScores'])->name('admin.report-cards.scores');
+        Route::put('/admin/report-cards/{id}/submit-review', [NigerianReportCardController::class, 'submitForReview'])->name('admin.report-cards.submit-review');
+        Route::put('/admin/report-cards/{id}/approve-review', [NigerianReportCardController::class, 'approveAcademicReview'])->name('admin.report-cards.approve-review');
+        Route::put('/admin/report-cards/{id}/reject-review', [NigerianReportCardController::class, 'rejectAcademicReview'])->name('admin.report-cards.reject-review');
         Route::put('/admin/report-cards/{id}/publication', [NigerianReportCardController::class, 'updatePublication'])->name('admin.report-cards.publication');
     });
 

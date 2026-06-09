@@ -81,6 +81,28 @@
                 </span>
             </label>
 
+            <label class="flex items-start gap-3 rounded-xl border border-amber-100 bg-amber-50 p-4">
+                <input type="checkbox" name="can_review_report_cards" value="1" @checked(old('can_review_report_cards')) class="mt-1 rounded border-amber-300 text-amber-600 focus:ring-amber-500">
+                <span>
+                    <span class="block font-bold text-gray-900">Allow Academic report review</span>
+                    <span class="block text-sm text-gray-600">This teacher can review, edit scores, approve, or reject submitted report cards.</span>
+                </span>
+            </label>
+
+            <div class="rounded-xl border border-amber-100 bg-white p-4">
+                <p class="font-bold text-gray-900">Classes this reviewer can review</p>
+                <p class="mt-1 text-sm text-gray-600">Tick only the classes this teacher is allowed to review.</p>
+                <div class="mt-4 grid sm:grid-cols-2 gap-3">
+                    @foreach($classes as $class)
+                        <label class="flex items-center gap-2 rounded-lg border border-gray-200 px-3 py-2 text-sm font-semibold text-gray-700">
+                            <input type="checkbox" name="review_class_ids[]" value="{{ $class->id }}" @checked(collect(old('review_class_ids', []))->contains((string) $class->id)) class="rounded border-amber-300 text-amber-600 focus:ring-amber-500">
+                            <span>{{ $class->display_name }}</span>
+                        </label>
+                    @endforeach
+                </div>
+                @error('review_class_ids')<p class="text-red-500 text-sm mt-2">{{ $message }}</p>@enderror
+            </div>
+
             <div class="flex gap-4">
                 <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-lg font-semibold">
                     Add Teacher
