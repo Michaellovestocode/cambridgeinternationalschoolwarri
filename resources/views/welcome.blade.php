@@ -396,15 +396,19 @@
         }
 
         @media (max-width: 1023px) {
-            .mobile-hero-photo {
-                position: relative;
-                overflow: hidden;
-                border-radius: 1.5rem;
-                padding: 2rem 1rem;
+            #home {
                 background-image: linear-gradient(rgba(15, 23, 42, .48), rgba(15, 23, 42, .58)), url('/images/schoolphoto.png');
                 background-size: cover;
                 background-position: center;
-                box-shadow: 0 24px 50px rgba(15, 23, 42, .22);
+                background-repeat: no-repeat;
+            }
+            .mobile-hero-photo {
+                position: relative;
+                overflow: visible;
+                border-radius: 0;
+                padding: 2rem 0;
+                background: transparent;
+                box-shadow: none;
             }
             .mobile-hero-photo h1,
             .mobile-hero-photo p {
