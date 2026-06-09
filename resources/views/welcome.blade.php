@@ -435,7 +435,7 @@
                 overflow: hidden;
                 border-radius: 0;
                 padding: 2.25rem 1rem 2rem;
-                background-image: linear-gradient(rgba(15, 23, 42, .42), rgba(15, 23, 42, .56)), url('/images/schoolphoto.png');
+                background-image: linear-gradient(rgba(15, 23, 42, .66), rgba(15, 23, 42, .7)), url('/images/schoolphoto.png');
                 background-size: 100% auto;
                 background-position: center top;
                 background-repeat: no-repeat;
@@ -445,7 +445,7 @@
             .mobile-hero-photo h1,
             .mobile-hero-photo p {
                 color: #fff !important;
-                text-shadow: 0 2px 12px rgba(0, 0, 0, .32);
+                text-shadow: 0 4px 18px rgba(0, 0, 0, .75);
             }
             .mobile-hero-photo h1 span {
                 background-image: none !important;
