@@ -311,6 +311,31 @@
         }
         .faq-body.open { max-height: 300px; }
 
+        .apply-fade-text {
+            display: grid;
+            min-width: 13rem;
+        }
+        .apply-fade-text span {
+            grid-area: 1 / 1;
+            transition: opacity .55s ease;
+        }
+        .apply-fade-primary {
+            animation: applyFadePrimary 5s ease-in-out infinite;
+        }
+        .apply-fade-secondary {
+            animation: applyFadeSecondary 5s ease-in-out infinite;
+        }
+        @keyframes applyFadePrimary {
+            0%, 42% { opacity: 1; }
+            50%, 92% { opacity: 0; }
+            100% { opacity: 1; }
+        }
+        @keyframes applyFadeSecondary {
+            0%, 42% { opacity: 0; }
+            50%, 92% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+
         /* â”€â”€ Progress bar â”€â”€ */
         #pageProgress {
             position: fixed; top: 0; left: 0;
@@ -351,7 +376,10 @@
             #mainNav .nav-brand-subtitle { font-size: .68rem; line-height: 1rem; }
             #home {
                 min-height: auto;
-                padding-top: 8.5rem;
+                padding-top: 0;
+            }
+            #home > .relative.z-10 {
+                padding-top: 0 !important;
             }
             #home h1 {
                 font-size: clamp(2.25rem, 13vw, 3.75rem);
@@ -390,10 +418,13 @@
                 margin-top: 1rem;
                 border-radius: 1.25rem;
             }
-            .about-vision-grid {
-                grid-template-columns: 1fr !important;
-            }
-        }
+                    .about-vision-grid {
+                        grid-template-columns: 1fr !important;
+                    }
+                    .apply-fade-text {
+                        min-width: 12rem;
+                    }
+                }
 
         @media (max-width: 1023px) {
             .mobile-hero-photo {
@@ -568,7 +599,10 @@
 
                 <div class="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
                     <a href="{{ route('apply.create') }}" class="bg-gradient-to-r from-amber-400 via-orange-500 to-rose-500 text-white px-8 py-3.5 sm:py-4 rounded-full font-bold text-base sm:text-lg shadow-xl hover:shadow-2xl transition transform hover:scale-105 flex items-center justify-center space-x-2">
-                        <span>Apply Now</span>
+                        <span class="apply-fade-text">
+                            <span class="apply-fade-primary">Admission Ongoing</span>
+                            <span class="apply-fade-secondary">Apply Now</span>
+                        </span>
                     </a>
                     <a href="{{ route('blog.index') }}" class="bg-blue-600 text-white px-8 py-3.5 sm:py-4 rounded-full font-bold text-base sm:text-lg shadow-xl hover:bg-blue-700 transition flex items-center justify-center space-x-2">
                         <span>Read Blog</span>
