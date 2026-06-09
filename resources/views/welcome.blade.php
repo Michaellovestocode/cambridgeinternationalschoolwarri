@@ -356,6 +356,26 @@
             #home h1 {
                 font-size: clamp(2.25rem, 13vw, 3.75rem);
             }
+            .mobile-hero-photo {
+                position: relative;
+                overflow: hidden;
+                border-radius: 1.5rem;
+                padding: 2rem 1rem;
+                background-image: linear-gradient(rgba(15, 23, 42, .48), rgba(15, 23, 42, .58)), url('/images/schoolphoto.png');
+                background-size: cover;
+                background-position: center;
+                box-shadow: 0 24px 50px rgba(15, 23, 42, .22);
+            }
+            .mobile-hero-photo h1,
+            .mobile-hero-photo p {
+                color: #fff !important;
+                text-shadow: 0 2px 12px rgba(0, 0, 0, .32);
+            }
+            .mobile-hero-photo h1 span {
+                background-image: none !important;
+                color: #fde68a !important;
+                -webkit-text-fill-color: #fde68a;
+            }
             #home .absolute.rounded-full,
             #home .blob-1,
             #home .blob-2 {
@@ -372,6 +392,29 @@
             }
             .about-vision-grid {
                 grid-template-columns: 1fr !important;
+            }
+        }
+
+        @media (max-width: 1023px) {
+            .mobile-hero-photo {
+                position: relative;
+                overflow: hidden;
+                border-radius: 1.5rem;
+                padding: 2rem 1rem;
+                background-image: linear-gradient(rgba(15, 23, 42, .48), rgba(15, 23, 42, .58)), url('/images/schoolphoto.png');
+                background-size: cover;
+                background-position: center;
+                box-shadow: 0 24px 50px rgba(15, 23, 42, .22);
+            }
+            .mobile-hero-photo h1,
+            .mobile-hero-photo p {
+                color: #fff !important;
+                text-shadow: 0 2px 12px rgba(0, 0, 0, .32);
+            }
+            .mobile-hero-photo h1 span {
+                background-image: none !important;
+                color: #fde68a !important;
+                -webkit-text-fill-color: #fde68a;
             }
         }
     </style>
@@ -509,7 +552,7 @@
     <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-24">
         <div class="grid lg:grid-cols-2 gap-12 items-center">
             <!-- Left -->
-            <div class="text-center lg:text-left fade-in-up">
+            <div class="mobile-hero-photo text-center lg:text-left fade-in-up">
                 <h1 class="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black text-gray-900 mb-4 sm:mb-6 leading-tight">
                     Education <br> for<br><span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-purple-600 to-green-600">Excellence.</span>
                 </h1>
