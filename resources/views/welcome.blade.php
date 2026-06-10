@@ -403,7 +403,7 @@
                 width: calc(100% + 2rem);
                 margin-left: -1rem;
                 margin-right: -1rem;
-                overflow: hidden;
+                overflow: visible;
                 border-radius: 0;
                 padding: 11rem 1rem 2rem;
                 background-image: linear-gradient(rgba(15, 23, 42, .66), rgba(15, 23, 42, .7)), url('/images/schoolphoto.png');
@@ -431,10 +431,22 @@
                     0 7px 22px rgba(0, 0, 0, .9);
             }
             .mobile-hero-photo h1 {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: .1rem;
+                margin-top: 0 !important;
+                transform: none !important;
                 -webkit-text-stroke: 1px rgba(15, 23, 42, .48);
                 paint-order: stroke fill;
             }
-            .mobile-hero-photo h1 span {
+            .mobile-hero-photo h1 br {
+                display: none;
+            }
+            .mobile-hero-title-line {
+                display: block;
+            }
+            .mobile-hero-photo h1 .mobile-hero-title-accent {
                 background-image: none !important;
                 color: #fde68a !important;
                 -webkit-text-fill-color: #fde68a;
@@ -599,7 +611,7 @@
             <!-- Left -->
             <div class="mobile-hero-photo text-center lg:text-left fade-in-up">
                 <h1 class="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black text-gray-900 mb-4 sm:mb-6 leading-tight">
-                    Education <br> for<br><span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-purple-600 to-green-600">Excellence.</span>
+                    <span class="mobile-hero-title-line">Education</span><br> <span class="mobile-hero-title-line">for</span><br><span class="mobile-hero-title-line mobile-hero-title-accent text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-purple-600 to-green-600">Excellence.</span>
                 </h1>
 
                 <p class="text-base sm:text-xl text-gray-600 mb-5 sm:mb-10 max-w-xl mx-auto lg:mx-0">
