@@ -267,11 +267,6 @@
                     <a href="{{ route('attendance.my') }}" class="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg font-semibold transition">
                         My Attendance
                     </a>
-                    @if(auth()->user()->canManageAttendance())
-                    <a href="{{ route('admin.attendance.scanner') }}" class="bg-teal-500 hover:bg-teal-600 text-white px-4 py-2 rounded-lg font-semibold transition">
-                        Scanner
-                    </a>
-                    @endif
                     @elseif(auth()->user()->isStudent())
                     <a href="{{ route('attendance.my') }}" class="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg font-semibold transition">
                         Attendance
@@ -289,11 +284,6 @@
                     </a>
                     <a href="{{ route('attendance.my') }}" class="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg font-semibold transition">
                         My Attendance
-                    </a>
-                    @endif
-                    @if(auth()->user()->canManageAttendance())
-                    <a href="{{ route('admin.attendance.scanner') }}" class="bg-teal-500 hover:bg-teal-600 text-white px-4 py-2 rounded-lg font-semibold transition">
-                        Scanner
                     </a>
                     @endif
                     @if(auth()->user()->canManageBlogStudio())
@@ -319,9 +309,6 @@
                     @if(auth()->user()->isAdmin())
                     <a href="{{ route('attendance.my') }}" class="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg font-semibold transition">
                         My Attendance
-                    </a>
-                    <a href="{{ route('admin.blog.index') }}" class="bg-violet-500 hover:bg-violet-600 text-white px-4 py-2 rounded-lg font-semibold transition">
-                        Blog
                     </a>
                     <a href="{{ route('admin.fee-clearances.index') }}" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg font-semibold transition">
                         Fee Clearance
@@ -376,11 +363,6 @@
                     <a href="{{ route('attendance.my') }}" class="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg font-semibold transition text-sm">
                         My Attendance
                     </a>
-                    @if(auth()->user()->canManageAttendance())
-                    <a href="{{ route('admin.attendance.scanner') }}" class="bg-teal-500 hover:bg-teal-600 text-white px-4 py-2 rounded-lg font-semibold transition text-sm">
-                        Scanner
-                    </a>
-                    @endif
                     @elseif(auth()->user()->isStudent())
                     <a href="{{ route('attendance.my') }}" class="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg font-semibold transition text-sm">
                         Attendance
@@ -398,11 +380,6 @@
                     </a>
                     <a href="{{ route('attendance.my') }}" class="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg font-semibold transition text-sm">
                         My Attendance
-                    </a>
-                    @endif
-                    @if(auth()->user()->canManageAttendance())
-                    <a href="{{ route('admin.attendance.scanner') }}" class="bg-teal-500 hover:bg-teal-600 text-white px-4 py-2 rounded-lg font-semibold transition text-sm">
-                        Scanner
                     </a>
                     @endif
                     @if(auth()->user()->canManageBlogStudio())
@@ -428,9 +405,6 @@
                     @if(auth()->user()->isAdmin())
                     <a href="{{ route('attendance.my') }}" class="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg font-semibold transition text-sm">
                         My Attendance
-                    </a>
-                    <a href="{{ route('admin.blog.index') }}" class="bg-violet-500 hover:bg-violet-600 text-white px-4 py-2 rounded-lg font-semibold transition text-sm">
-                        Blog
                     </a>
                     <a href="{{ route('admin.fee-clearances.index') }}" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg font-semibold transition text-sm">
                         Fee Clearance

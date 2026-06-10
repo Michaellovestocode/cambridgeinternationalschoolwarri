@@ -395,7 +395,8 @@
                 padding-top: 0 !important;
             }
             #home h1 {
-                font-size: clamp(2.25rem, 13vw, 3.75rem);
+                font-size: clamp(2.35rem, 11.5vw, 3.35rem);
+                line-height: 1.08;
             }
             .mobile-hero-photo {
                 position: relative;
@@ -404,7 +405,7 @@
                 margin-right: -1rem;
                 overflow: hidden;
                 border-radius: 0;
-                padding: 4.75rem 1rem 2rem;
+                padding: 11rem 1rem 2rem;
                 background-image: linear-gradient(rgba(15, 23, 42, .66), rgba(15, 23, 42, .7)), url('/images/schoolphoto.png');
                 background-size: 100% auto;
                 background-position: center top;
@@ -1817,7 +1818,14 @@
             }
         });
     }, { threshold: 0.12 });
-    document.querySelectorAll('.fade-in-up').forEach(el => fadeObserver.observe(el));
+    const isPhoneViewport = window.matchMedia('(max-width: 640px)').matches;
+    document.querySelectorAll('.fade-in-up').forEach(el => {
+        if (isPhoneViewport && el.classList.contains('mobile-hero-gallery')) {
+            el.classList.add('visible');
+            return;
+        }
+        fadeObserver.observe(el);
+    });
 
     /* â”€â”€ Smooth scroll â”€â”€ */
     document.querySelectorAll('a[href^="#"]').forEach(a => {
