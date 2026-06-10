@@ -32,7 +32,7 @@
                     </div>
                     <div class="rounded-2xl bg-white/10 p-4 backdrop-blur">
                         <p class="text-sm font-semibold">Admissions workflow</p>
-                        <p class="mt-2 text-sm text-white/80">Admin can mark your application as new, under review, approved, rejected, or contacted.</p>
+                        <p class="mt-2 text-sm text-white/80">After payment confirmation, your application code will be sent to the WhatsApp number or email address you provide.</p>
                     </div>
                     <div class="rounded-2xl bg-white/10 p-4 backdrop-blur">
                         <p class="text-sm font-semibold">Admissions email</p>
@@ -103,6 +103,9 @@
                             <div>
                                 <h2 class="text-lg font-black text-gray-900">Submit Payment Details</h2>
                                 <p class="mt-1 text-sm text-gray-600">Admin will confirm the transfer and generate your application code.</p>
+                                <div class="mt-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold leading-6 text-amber-900">
+                                    Your application code will be sent to the WhatsApp number or email address you enter below. Please use a working WhatsApp number or an email you can access.
+                                </div>
                             </div>
 
                             <div class="grid gap-5 md:grid-cols-2">

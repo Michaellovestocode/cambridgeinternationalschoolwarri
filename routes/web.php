@@ -289,6 +289,8 @@ Route::get('/teacher/scores/my-scores', [TeacherScoreController::class, 'myScore
         });
 
         // Exams (accessible by admin and teachers)
+        Route::get('/manual-result-filling', [AdminController::class, 'manualResultFilling'])->name('manual-result-filling');
+        Route::post('/manual-result-filling', [AdminController::class, 'startManualResultFilling'])->name('manual-result-filling.start');
         Route::get('/exams', [AdminController::class, 'exams'])->name('exams');
         Route::get('/exams/create', [AdminController::class, 'createExam'])->name('exam.create');
         Route::post('/exams', [AdminController::class, 'storeExam'])->name('exam.store');

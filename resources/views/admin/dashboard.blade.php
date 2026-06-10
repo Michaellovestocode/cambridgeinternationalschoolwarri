@@ -146,6 +146,7 @@
         </div>
     @endif
 
+    @if(! $isFormTeacher)
     <!-- Welcome Header with Background -->
     <div class="admin-mobile-hero relative bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 rounded-3xl shadow-2xl overflow-hidden">
         <div class="absolute inset-0 bg-black opacity-10"></div>
@@ -169,6 +170,7 @@
             </div>
         </div>
     </div>
+    @endif
 
     <!-- Quick Stats -->
     <div class="admin-mobile-stats grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
@@ -312,6 +314,19 @@
                 </a>
 
                 @if(auth()->user()->isTeacher())
+                <a href="{{ route('admin.manual-result-filling') }}"
+                   class="flex items-center justify-between bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white px-6 py-4 rounded-xl font-bold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all group">
+                    <span class="flex items-center">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-6a2 2 0 012-2h8M9 17H5a2 2 0 01-2-2V7a2 2 0 012-2h4m0 12v2m4-10v10m4-7v7"></path>
+                        </svg>
+                        Manual Result Filling
+                    </span>
+                    <svg class="w-5 h-5 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                    </svg>
+                </a>
+
                 <a href="{{ route('admin.teaching-learners.index') }}"
                    class="flex items-center justify-between bg-gradient-to-r from-emerald-500 to-cyan-600 hover:from-emerald-600 hover:to-cyan-700 text-white px-6 py-4 rounded-xl font-bold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all group">
                     <span class="flex items-center">
@@ -322,6 +337,24 @@
                     </span>
                     <span class="inline-flex items-center gap-2">
                         <span class="bg-white/20 text-white text-xs px-2 py-1 rounded-full">{{ ($teachingClasses ?? collect())->count() }} classes</span>
+                        <svg class="w-5 h-5 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                        </svg>
+                    </span>
+                </a>
+                @endif
+
+                @if($isFormTeacher)
+                <a href="{{ route('admin.form-teacher.learners') }}"
+                   class="flex items-center justify-between bg-gradient-to-r from-lime-500 to-emerald-600 hover:from-lime-600 hover:to-emerald-700 text-white px-6 py-4 rounded-xl font-bold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all group">
+                    <span class="flex items-center">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 14a4 4 0 10-8 0M4 20a8 8 0 0116 0M12 10a4 4 0 100-8 4 4 0 000 8z"></path>
+                        </svg>
+                        My Class Students
+                    </span>
+                    <span class="inline-flex items-center gap-2">
+                        <span class="bg-white/20 text-white text-xs px-2 py-1 rounded-full">{{ $classStudents->count() }} students</span>
                         <svg class="w-5 h-5 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
                         </svg>
@@ -704,54 +737,5 @@
             @endif
         </div>
     </div>
-    @if($isFormTeacher)
-    <div class="admin-mobile-class admin-section-card bg-white rounded-2xl shadow-lg overflow-hidden">
-        <div class="bg-gradient-to-r from-emerald-50 to-cyan-50 px-6 py-4 border-b border-gray-100">
-            <div class="flex items-center justify-between gap-3">
-                <div>
-                    <h3 class="text-xl font-bold text-gray-800">My Class Students</h3>
-                    <p class="text-sm text-gray-500 mt-1">{{ $formTeacherAssignment?->schoolClass?->display_name ?? 'Assigned class' }}</p>
-                </div>
-                <div class="flex flex-wrap items-center gap-2">
-                    <span class="text-xs font-semibold px-3 py-1 rounded-full bg-emerald-100 text-emerald-700">
-                        {{ $classStudents->count() }} students
-                    </span>
-                    <a href="{{ route('admin.form-teacher.learners') }}" class="rounded-full bg-emerald-600 px-4 py-2 text-xs font-black text-white hover:bg-emerald-700">
-                        Manage Names
-                    </a>
-                </div>
-            </div>
-        </div>
-        <div class="admin-section-body p-6">
-            @if($classStudents->isNotEmpty())
-                <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
-                    @foreach($classStudents as $student)
-                    <div class="border border-gray-100 rounded-2xl p-4 flex items-center gap-4 hover:shadow-md transition-shadow">
-                        @if($student->photo)
-                            <img src="{{ asset('storage/' . $student->photo) }}" alt="{{ $student->name }}" class="w-16 h-16 rounded-2xl object-cover border border-gray-200 shadow-sm">
-                        @else
-                            <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-100 to-cyan-100 text-emerald-700 flex items-center justify-center text-xl font-black border border-emerald-200">
-                                {{ strtoupper(substr($student->name, 0, 1)) }}
-                            </div>
-                        @endif
-                        <div class="min-w-0">
-                            <p class="font-semibold text-gray-900 truncate">{{ $student->name }}</p>
-                            <p class="text-xs text-gray-500 mt-1">{{ $student->registration_number }}</p>
-                            @if($student->sex)
-                                <p class="text-xs text-gray-500 mt-1">Sex: {{ ucfirst($student->sex) }}</p>
-                            @endif
-                            @if($student->date_of_birth)
-                                <p class="text-xs text-gray-400 mt-1">{{ $student->date_of_birth->format('d/m/Y') }}</p>
-                            @endif
-                        </div>
-                    </div>
-                    @endforeach
-                </div>
-            @else
-                <p class="text-sm text-gray-500">No students are currently assigned to this class.</p>
-            @endif
-        </div>
-    </div>
-    @endif
 </div>
 @endsection

@@ -391,7 +391,7 @@
                 margin-right: -1rem;
                 overflow: hidden;
                 border-radius: 0;
-                padding: 2.25rem 1rem 2rem;
+                padding: 4.75rem 1rem 2rem;
                 background-image: linear-gradient(rgba(15, 23, 42, .66), rgba(15, 23, 42, .7)), url('/images/schoolphoto.png');
                 background-size: 100% auto;
                 background-position: center top;
