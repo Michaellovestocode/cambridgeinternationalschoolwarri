@@ -336,9 +336,13 @@
                         <span class="text-xs text-white/70 font-medium">{{ ucfirst(auth()->user()->role) }}</span>
                     </div>
 
+                    @if(auth()->user()->photo)
+                    <img src="{{ asset('storage/' . auth()->user()->photo) }}" alt="{{ auth()->user()->name }}" class="w-10 h-10 rounded-full object-cover border-2 border-white/40 shadow-sm">
+                    @else
                     <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center font-bold text-white">
                         {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
                     </div>
+                    @endif
 
                     <form action="{{ route('logout') }}" method="POST" class="inline">
                         @csrf

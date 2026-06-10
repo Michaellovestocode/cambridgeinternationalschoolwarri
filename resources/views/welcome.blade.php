@@ -386,23 +386,35 @@
             }
             .mobile-hero-photo {
                 position: relative;
+                width: calc(100% + 2rem);
+                margin-left: -1rem;
+                margin-right: -1rem;
                 overflow: hidden;
-                border-radius: 1.5rem;
-                padding: 2rem 1rem;
-                background-image: linear-gradient(rgba(15, 23, 42, .48), rgba(15, 23, 42, .58)), url('/images/schoolphoto.png');
-                background-size: cover;
-                background-position: center;
-                box-shadow: 0 24px 50px rgba(15, 23, 42, .22);
+                border-radius: 0;
+                padding: 2.25rem 1rem 2rem;
+                background-image: linear-gradient(rgba(15, 23, 42, .66), rgba(15, 23, 42, .7)), url('/images/schoolphoto.png');
+                background-size: 100% auto;
+                background-position: center top;
+                background-repeat: no-repeat;
+                background-color: #0f172a;
+                box-shadow: none;
             }
             .mobile-hero-photo h1,
             .mobile-hero-photo p {
                 color: #fff !important;
-                text-shadow: 0 2px 12px rgba(0, 0, 0, .32);
+                text-shadow:
+                    0 3px 0 rgba(15, 23, 42, .45),
+                    0 7px 22px rgba(0, 0, 0, .9);
+            }
+            .mobile-hero-photo h1 {
+                -webkit-text-stroke: 1px rgba(15, 23, 42, .48);
+                paint-order: stroke fill;
             }
             .mobile-hero-photo h1 span {
                 background-image: none !important;
                 color: #fde68a !important;
                 -webkit-text-fill-color: #fde68a;
+                -webkit-text-stroke: 0;
             }
             #home .absolute.rounded-full,
             #home .blob-1,
@@ -426,33 +438,6 @@
                     }
                 }
 
-        @media (max-width: 1023px) {
-            .mobile-hero-photo {
-                position: relative;
-                width: calc(100% + 2rem);
-                margin-left: -1rem;
-                margin-right: -1rem;
-                overflow: hidden;
-                border-radius: 0;
-                padding: 2.25rem 1rem 2rem;
-                background-image: linear-gradient(rgba(15, 23, 42, .66), rgba(15, 23, 42, .7)), url('/images/schoolphoto.png');
-                background-size: 100% auto;
-                background-position: center top;
-                background-repeat: no-repeat;
-                background-color: #0f172a;
-                box-shadow: none;
-            }
-            .mobile-hero-photo h1,
-            .mobile-hero-photo p {
-                color: #fff !important;
-                text-shadow: 0 4px 18px rgba(0, 0, 0, .75);
-            }
-            .mobile-hero-photo h1 span {
-                background-image: none !important;
-                color: #fde68a !important;
-                -webkit-text-fill-color: #fde68a;
-            }
-        }
     </style>
 </head>
 <body class="bg-gradient-to-br from-blue-50 via-yellow-50 to-green-50">
