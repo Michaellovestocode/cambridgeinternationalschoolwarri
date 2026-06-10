@@ -317,22 +317,35 @@
         }
         .apply-fade-text span {
             grid-area: 1 / 1;
-            transition: opacity .55s ease;
+            transition: opacity .9s ease, color .9s ease, text-shadow .9s ease;
+        }
+        .apply-hero-button {
+            background-size: 220% 100%;
+            animation: applyButtonColorShift 7s ease-in-out infinite;
         }
         .apply-fade-primary {
-            animation: applyFadePrimary 5s ease-in-out infinite;
+            color: #fff1a8;
+            text-shadow: 0 2px 14px rgba(255, 241, 168, .28);
+            animation: applyFadePrimary 7s ease-in-out infinite;
         }
         .apply-fade-secondary {
-            animation: applyFadeSecondary 5s ease-in-out infinite;
+            color: #ffffff;
+            text-shadow: 0 2px 14px rgba(255, 255, 255, .18);
+            animation: applyFadeSecondary 7s ease-in-out infinite;
+        }
+        @keyframes applyButtonColorShift {
+            0%, 38% { background-position: 0% 50%; }
+            58%, 88% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
         }
         @keyframes applyFadePrimary {
-            0%, 42% { opacity: 1; }
-            50%, 92% { opacity: 0; }
+            0%, 38% { opacity: 1; }
+            58%, 88% { opacity: 0; }
             100% { opacity: 1; }
         }
         @keyframes applyFadeSecondary {
-            0%, 42% { opacity: 0; }
-            50%, 92% { opacity: 1; }
+            0%, 38% { opacity: 0; }
+            58%, 88% { opacity: 1; }
             100% { opacity: 0; }
         }
 
@@ -398,6 +411,16 @@
                 background-repeat: no-repeat;
                 background-color: #0f172a;
                 box-shadow: none;
+            }
+            .mobile-hero-photo.fade-in-up {
+                opacity: 1;
+                transform: none;
+                transition: none;
+            }
+            .mobile-hero-gallery.fade-in-up {
+                opacity: 1;
+                transform: none;
+                transition: none;
             }
             .mobile-hero-photo h1,
             .mobile-hero-photo p {
@@ -583,7 +606,7 @@
                 </p>
 
                 <div class="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-                    <a href="{{ route('apply.create') }}" class="bg-gradient-to-r from-amber-400 via-orange-500 to-rose-500 text-white px-8 py-3.5 sm:py-4 rounded-full font-bold text-base sm:text-lg shadow-xl hover:shadow-2xl transition transform hover:scale-105 flex items-center justify-center space-x-2">
+                    <a href="{{ route('apply.create') }}" class="apply-hero-button bg-gradient-to-r from-amber-400 via-orange-500 to-rose-500 text-white px-8 py-3.5 sm:py-4 rounded-full font-bold text-base sm:text-lg shadow-xl hover:shadow-2xl transition transform hover:scale-105 flex items-center justify-center space-x-2">
                         <span class="apply-fade-text">
                             <span class="apply-fade-primary">Admission Ongoing</span>
                             <span class="apply-fade-secondary">Apply Now</span>
@@ -599,7 +622,7 @@
             </div>
 
             <!-- Right â€“ student photos -->
-            <div class="relative fade-in-up" style="transition-delay:.2s">
+            <div class="mobile-hero-gallery relative fade-in-up" style="transition-delay:.2s">
                 <div class="grid grid-cols-2 gap-4 sm:gap-6">
                     <div class="flex justify-end">
                         <div class="bg-gradient-to-br from-purple-400 to-purple-600 p-1 shadow-2xl card-hover" style="border-radius:60% 40% 60% 50%">
