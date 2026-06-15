@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Subject;
 use App\Models\User;
+use App\Models\FormTeacher;
+use App\Models\SchoolClass;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -18,6 +20,104 @@ class SubjectController extends Controller
                            ->latest()
                            ->paginate(20);
         return view('admin.subjects.index', compact('subjects'));
+    }
+
+    /**
+     * Show the logged-in teacher's assigned subjects and classes.
+     */
+    public function mySubjects()
+    {
+        $user = Auth::user();
+        abort_unless($user->isTeacher(), 403);
+
+        $teachingClasses = $user->teachingClasses()
+            ->withCount('students')
+            ->orderBy('name')
+            ->get();
+
+        $ownedEarlyPrimaryClasses = $this->earlyPrimaryFormTeacherClassesFor($user);
+        $allTeachingClasses = $teachingClasses
+            ->merge($ownedEarlyPrimaryClasses)
+            ->unique('id')
+            ->sortBy('name')
+            ->values();
+
+        $assignedSubjects = $user->subjects()
+            ->with(['classes' => fn ($query) => $query->withCount('students')->orderBy('name')])
+            ->withCount('exams')
+            ->where('is_active', true)
+            ->orderBy('name')
+            ->get();
+
+        $ownedClassSubjects = collect();
+
+        if ($ownedEarlyPrimaryClasses->isNotEmpty()) {
+            $ownedClassIds = $ownedEarlyPrimaryClasses->pluck('id')->all();
+            $ownedClassSubjects = Subject::where('is_active', true)
+                ->whereHas('classes', fn ($query) => $query->whereIn('school_classes.id', $ownedClassIds))
+                ->with(['classes' => fn ($query) => $query->withCount('students')->orderBy('name')])
+                ->withCount('exams')
+                ->orderBy('name')
+                ->get();
+
+            if ($ownedClassSubjects->isEmpty()) {
+                $ownedClassSubjects = Subject::where('is_active', true)
+                    ->with(['classes' => fn ($query) => $query->withCount('students')->orderBy('name')])
+                    ->withCount('exams')
+                    ->orderBy('name')
+                    ->get();
+            }
+        }
+
+        $subjects = $assignedSubjects
+            ->merge($ownedClassSubjects)
+            ->unique('id')
+            ->sortBy('name')
+            ->values()
+            ->map(function (Subject $subject) use ($allTeachingClasses, $ownedEarlyPrimaryClasses) {
+                $subjectClassIds = $subject->classes->pluck('id');
+                $eligibleClasses = $allTeachingClasses->filter(function (SchoolClass $class) use ($ownedEarlyPrimaryClasses) {
+                    if ($this->isEarlyYearsOrPrimaryClass($class)) {
+                        return $ownedEarlyPrimaryClasses->contains('id', $class->id);
+                    }
+
+                    return true;
+                })->values();
+
+                $assignedClasses = $subjectClassIds->isEmpty()
+                    ? $eligibleClasses
+                    : $eligibleClasses->whereIn('id', $subjectClassIds)->values();
+
+                $subject->setRelation('assignedClasses', $assignedClasses);
+
+                return $subject;
+            });
+
+        return view('admin.subjects.my-subjects', [
+            'subjects' => $subjects,
+            'teachingClasses' => $allTeachingClasses,
+            'ownedEarlyPrimaryClasses' => $ownedEarlyPrimaryClasses,
+        ]);
+    }
+
+    private function earlyPrimaryFormTeacherClassesFor(User $user)
+    {
+        if (! $user->isTeacher()) {
+            return collect();
+        }
+
+        return FormTeacher::with('schoolClass')
+            ->where('teacher_id', $user->id)
+            ->where('is_active', true)
+            ->get()
+            ->pluck('schoolClass')
+            ->filter(fn ($class) => $class && $this->isEarlyYearsOrPrimaryClass($class))
+            ->values();
+    }
+
+    private function isEarlyYearsOrPrimaryClass(SchoolClass $class): bool
+    {
+        return in_array($class->section_key, ['creche', 'primary'], true);
     }
 
     /**

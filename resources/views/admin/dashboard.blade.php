@@ -120,6 +120,46 @@
 
 @section('content')
 <div class="admin-dashboard-shell space-y-6">
+    @if(($birthdayLearners ?? collect())->isNotEmpty())
+        <div class="rounded-2xl border border-amber-100 bg-gradient-to-r from-amber-50 via-pink-50 to-blue-50 p-5 shadow-lg">
+            <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                <div>
+                    <p class="text-sm font-black uppercase text-amber-700" style="letter-spacing:.14em;">
+                        {{ $birthdayLearners->count() > 1 ? 'Birthdays Today' : 'Birthday Today' }}
+                    </p>
+                    <h2 class="mt-1 text-2xl font-black text-gray-900">
+                        Celebrate {{ $birthdayLearners->count() > 1 ? 'our learners' : $birthdayLearners->first()->name }} today
+                    </h2>
+                    <p class="mt-1 text-sm font-semibold text-gray-600">
+                        This reminder appears only on the learner's birthday.
+                    </p>
+                </div>
+                <div class="flex flex-wrap gap-3">
+                    @foreach($birthdayLearners as $learner)
+                        <div class="flex min-w-0 items-center gap-3 rounded-2xl bg-white/85 px-4 py-3 shadow-sm ring-1 ring-white">
+                            @if($learner->photo)
+                                <img src="{{ asset('storage/' . $learner->photo) }}" alt="{{ $learner->name }}" class="h-12 w-12 rounded-2xl object-cover">
+                            @else
+                                <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-amber-100 text-lg font-black text-amber-700">
+                                    {{ strtoupper(substr($learner->name, 0, 1)) }}
+                                </div>
+                            @endif
+                            <div class="min-w-0">
+                                <p class="break-words text-sm font-black text-gray-900">{{ $learner->name }}</p>
+                                <p class="text-xs font-semibold text-gray-500">
+                                    {{ $learner->class?->display_name ?? 'No class' }}
+                                    @if($learner->age)
+                                        <span class="text-amber-700">| {{ $learner->age }} today</span>
+                                    @endif
+                                </p>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+        </div>
+    @endif
+
     <!-- Form Teacher Banner -->
     @if($isFormTeacher ?? false)
         <div class="admin-mobile-form-banner bg-gradient-to-r from-green-600 to-indigo-600 rounded-2xl shadow-lg p-6 text-white">
@@ -314,6 +354,22 @@
                 </a>
 
                 @if(auth()->user()->isTeacher())
+                <a href="{{ route('admin.subjects.my') }}"
+                   class="flex items-center justify-between bg-gradient-to-r from-indigo-500 to-blue-600 hover:from-indigo-600 hover:to-blue-700 text-white px-6 py-4 rounded-xl font-bold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all group">
+                    <span class="flex items-center">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                        </svg>
+                        My Assigned Subjects
+                    </span>
+                    <span class="inline-flex items-center gap-2">
+                        <span class="bg-white/20 text-white text-xs px-2 py-1 rounded-full">{{ $assignedSubjectCount ?? auth()->user()->subjects()->count() }} subjects</span>
+                        <svg class="w-5 h-5 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                        </svg>
+                    </span>
+                </a>
+
                 <a href="{{ route('admin.manual-result-filling') }}"
                    class="flex items-center justify-between bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white px-6 py-4 rounded-xl font-bold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all group">
                     <span class="flex items-center">
@@ -345,6 +401,21 @@
                 @endif
 
                 @if($isFormTeacher)
+                @if(in_array($formTeacherAssignment?->schoolClass?->section_key, ['creche', 'primary'], true))
+                <a href="{{ route('admin.report-cards.class-score-entry') }}"
+                   class="flex items-center justify-between bg-gradient-to-r from-pink-500 to-indigo-600 hover:from-pink-600 hover:to-indigo-700 text-white px-6 py-4 rounded-xl font-bold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all group">
+                    <span class="flex items-center">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536M4 20h4.586a1 1 0 00.707-.293l9.414-9.414a2 2 0 00-2.828-2.828L6.465 16.879a1 1 0 00-.293.707V20z"></path>
+                        </svg>
+                        Fill Class Scores
+                    </span>
+                    <svg class="w-5 h-5 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                    </svg>
+                </a>
+                @endif
+
                 <a href="{{ route('admin.form-teacher.learners') }}"
                    class="flex items-center justify-between bg-gradient-to-r from-lime-500 to-emerald-600 hover:from-lime-600 hover:to-emerald-700 text-white px-6 py-4 rounded-xl font-bold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all group">
                     <span class="flex items-center">

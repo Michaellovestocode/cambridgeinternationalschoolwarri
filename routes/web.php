@@ -159,6 +159,7 @@ Route::get('/teacher/scores/my-scores', [TeacherScoreController::class, 'myScore
     Route::middleware('role:admin,teacher')->group(function () {
         Route::get('/admin/report-cards', [NigerianReportCardController::class, 'index'])->name('admin.report-cards');
         Route::get('/admin/report-card-reviews', [NigerianReportCardController::class, 'reviews'])->name('admin.report-cards.reviews');
+        Route::get('/admin/report-cards/class-score-entry', [NigerianReportCardController::class, 'earlyPrimaryLearners'])->name('admin.report-cards.class-score-entry');
         Route::get('/admin/report-cards/manual', [NigerianReportCardController::class, 'manual'])->name('admin.report-cards.manual');
         Route::post('/admin/report-cards/manual', [NigerianReportCardController::class, 'storeManual'])->name('admin.report-cards.manual.store');
         Route::get('/admin/report-cards/generate/{student}', [NigerianReportCardController::class, 'generate'])->name('admin.report-cards.generate');
@@ -215,6 +216,7 @@ Route::get('/teacher/scores/my-scores', [TeacherScoreController::class, 'myScore
         Route::get('/my-learners', [FormTeacherController::class, 'myLearners'])->name('form-teacher.learners');
         Route::patch('/my-learners/{student}/name', [FormTeacherController::class, 'updateLearnerName'])->name('form-teacher.learners.update-name');
         Route::get('/teaching-learners', [TeacherLearnerController::class, 'index'])->name('teaching-learners.index');
+        Route::get('/my-subjects', [SubjectController::class, 'mySubjects'])->name('subjects.my');
         Route::get('/messages', [MessageController::class, 'adminIndex'])->name('messages.index');
         Route::post('/messages', [MessageController::class, 'adminStore'])->name('messages.store');
         

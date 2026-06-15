@@ -136,6 +136,42 @@ class NigerianReportCardController extends Controller
         return view('admin.report-cards.reviews', compact('reportCards', 'sessions', 'terms', 'selectedSession', 'selectedTerm'));
     }
 
+    public function earlyPrimaryLearners(Request $request)
+    {
+        $user = auth()->user();
+        abort_unless($user->isTeacher(), 403);
+
+        $formClasses = $this->earlyPrimaryFormTeacherClassesFor($user);
+        abort_unless($formClasses->isNotEmpty(), 403, 'This score-entry page is for Early Years and Primary form teachers.');
+
+        $activeSession = Session::getActive();
+        $activeTerm = Term::getActive();
+        $selectedSessionId = $request->input('session_id', $activeSession?->id);
+        $selectedTermId = $request->input('term_id', $activeTerm?->id);
+        $selectedClassId = (int) $request->input('class_id', $formClasses->first()?->id);
+        $selectedClass = $formClasses->firstWhere('id', $selectedClassId) ?: $formClasses->first();
+
+        $learners = User::where('role', 'student')
+            ->where('class_id', $selectedClass?->id)
+            ->orderBy('name')
+            ->get();
+
+        $sessions = Session::orderByDesc('start_date')->get();
+        $terms = Term::with('session')->orderByDesc('start_date')->get();
+        $selectedSession = $sessions->firstWhere('id', (int) $selectedSessionId);
+        $selectedTerm = $terms->firstWhere('id', (int) $selectedTermId);
+
+        return view('admin.report-cards.early-primary-learners', compact(
+            'formClasses',
+            'learners',
+            'sessions',
+            'terms',
+            'selectedClass',
+            'selectedSession',
+            'selectedTerm'
+        ));
+    }
+
     public function manual(Request $request)
     {
         $this->authorizeReportCardManagement();
@@ -1029,6 +1065,26 @@ class NigerianReportCardController extends Controller
             ->pluck('class_id')
             ->map(fn ($id) => (int) $id)
             ->all();
+    }
+
+    private function earlyPrimaryFormTeacherClassesFor(User $user)
+    {
+        if (! $user->isTeacher()) {
+            return collect();
+        }
+
+        return FormTeacher::with('schoolClass')
+            ->where('teacher_id', $user->id)
+            ->where('is_active', true)
+            ->get()
+            ->pluck('schoolClass')
+            ->filter(fn ($class) => $class && $this->isEarlyYearsOrPrimaryClass($class))
+            ->values();
+    }
+
+    private function isEarlyYearsOrPrimaryClass(SchoolClass $class): bool
+    {
+        return in_array($class->section_key, ['creche', 'primary'], true);
     }
 
     private function reviewerClassIdsFor(User $user): array

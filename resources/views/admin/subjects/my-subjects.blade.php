@@ -1,229 +1,94 @@
 @extends('layouts.app')
 
-@section('title', 'My Subjects')
+@section('title', 'My Assigned Subjects')
 
 @section('content')
+@php
+    $totalClasses = $subjects->flatMap(fn ($subject) => $subject->assignedClasses->pluck('id'))->unique()->count();
+@endphp
+
 <div class="space-y-6">
-    <!-- Header -->
-    <div class="bg-gradient-to-r from-green-600 to-green-800 text-white rounded-lg shadow p-6">
-        <div class="flex justify-between items-center">
+    <div class="rounded-2xl bg-gradient-to-r from-indigo-600 via-blue-600 to-cyan-600 p-6 text-white shadow-xl">
+        <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-                <h1 class="text-3xl font-bold">📚 My Subjects</h1>
-                <p class="text-green-100 mt-1">View subjects assigned to you</p>
+                <p class="text-sm font-bold uppercase text-white/75" style="letter-spacing:.14em;">Teaching Load</p>
+                <h1 class="mt-2 text-2xl font-black sm:text-3xl">My Assigned Subjects</h1>
+                <p class="mt-1 text-sm text-blue-50">Subjects you teach and the classes attached to each subject.</p>
             </div>
-            <a href="{{ route('admin.dashboard') }}" class="bg-white text-green-600 hover:bg-green-50 px-6 py-2 rounded-lg font-semibold">
-                ← Back to Dashboard
+            <a href="{{ route('admin.dashboard') }}" class="inline-flex items-center justify-center rounded-xl bg-white px-5 py-3 text-sm font-black text-blue-700 shadow hover:bg-blue-50">
+                Back to Dashboard
             </a>
         </div>
     </div>
 
-    <!-- Subjects Table -->
-    <div class="bg-white rounded-lg shadow overflow-hidden">
-        <div class="p-6 border-b">
-            <h2 class="text-xl font-bold text-gray-800">Assigned Subjects</h2>
+    <div class="grid gap-4 sm:grid-cols-3">
+        <div class="rounded-2xl border border-blue-100 bg-white p-5 shadow">
+            <p class="text-sm font-bold text-gray-500">Assigned Subjects</p>
+            <p class="mt-2 text-3xl font-black text-blue-700">{{ $subjects->count() }}</p>
         </div>
-
-        <div class="overflow-x-auto">
-            <table class="w-full">
-                <thead class="bg-gray-50 border-b">
-                    <tr>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase">#</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase">Subject</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase">Code</th>
-                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-600 uppercase">Classes</th>
-                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-600 uppercase">Students</th>
-                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-600 uppercase">Exams</th>
-                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-600 uppercase">Performance</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase">Status</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase">Actions</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y">
-                    @forelse($subjects as $index => $subject)
-                    <tr class="hover:bg-gray-50">
-                        <td class="px-6 py-4 whitespace-nowrap text-sm">{{ $loop->iteration }}</td>
-                        <td class="px-6 py-4">
-                            <div class="font-medium text-gray-900">{{ $subject->name }}</div>
-                            @if($subject->description)
-                                <div class="text-xs text-gray-600">{{ Str::limit($subject->description, 50) }}</div>
-                            @endif
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            @if($subject->code)
-                                <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-xs font-semibold">
-                                    {{ $subject->code }}
-                                </span>
-                            @else
-                                <span class="text-gray-500">—</span>
-                            @endif
-                        </td>
-                        <td class="px-6 py-4 text-center">
-                            <div class="text-sm">
-                                <div class="font-semibold text-purple-600">{{ $subject->classes->count() }}</div>
-                                <div class="text-xs text-gray-500">classes</div>
-                            </div>
-                        </td>
-                        <td class="px-6 py-4 text-center">
-                            <div class="text-sm">
-                                <div class="font-semibold text-indigo-600">{{ $subject->total_students }}</div>
-                                <div class="text-xs text-gray-500">students</div>
-                            </div>
-                        </td>
-                        <td class="px-6 py-4 text-center">
-                            <div class="text-sm">
-                                <div class="font-semibold text-green-600">{{ $subject->exams_count }}</div>
-                                @if($subject->upcoming_exams_count > 0)
-                                    <div class="text-xs text-orange-600">{{ $subject->upcoming_exams_count }} upcoming</div>
-                                @endif
-                            </div>
-                        </td>
-                        <td class="px-6 py-4 text-center">
-                            @if($subject->average_performance !== null)
-                                <div class="text-sm">
-                                    <div class="font-semibold {{ $subject->average_performance >= 70 ? 'text-green-600' : ($subject->average_performance >= 50 ? 'text-yellow-600' : 'text-red-600') }}">
-                                        {{ $subject->average_performance }}%
-                                    </div>
-                                    <div class="text-xs text-gray-500">{{ $subject->recent_attempts_count }} attempts</div>
-                                </div>
-                            @else
-                                <span class="text-gray-500 text-sm">No data</span>
-                            @endif
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            @if($subject->is_active)
-                                <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-xs font-semibold">
-                                    Active
-                                </span>
-                            @else
-                                <span class="bg-gray-100 text-gray-800 px-3 py-1 rounded-full text-xs font-semibold">
-                                    Inactive
-                                </span>
-                            @endif
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="flex flex-wrap gap-1">
-                                <a href="{{ route('admin.exam.create') }}"
-                                   class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-xs font-medium">
-                                    Create Exam
-                                </a>
-                                <a href="{{ route('admin.exams') }}"
-                                   class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-xs font-medium">
-                                    View Exams
-                                </a>
-                                <a href="{{ route('admin.results.index') }}"
-                                   class="bg-purple-500 hover:bg-purple-600 text-white px-3 py-1 rounded text-xs font-medium">
-                                    Results
-                                </a>
-                            </div>
-                        </td>
-                    </tr>
-                    @empty
-                    <tr>
-                        <td colspan="9" class="px-6 py-8 text-center text-gray-500">
-                            No subjects assigned to you yet.
-                        </td>
-                    </tr>
-                    @endforelse
-                </tbody>
-            </table>
+        <div class="rounded-2xl border border-emerald-100 bg-white p-5 shadow">
+            <p class="text-sm font-bold text-gray-500">Teaching Classes</p>
+            <p class="mt-2 text-3xl font-black text-emerald-700">{{ $totalClasses }}</p>
+        </div>
+        <div class="rounded-2xl border border-amber-100 bg-white p-5 shadow">
+            <p class="text-sm font-bold text-gray-500">Created Exams</p>
+            <p class="mt-2 text-3xl font-black text-amber-700">{{ $subjects->sum('exams_count') }}</p>
         </div>
     </div>
 
-    <!-- Recent Activity & Exam Summary -->
-    @if($subjects->count() > 0)
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
-        <!-- Recent Exams -->
-        <div class="bg-white rounded-lg shadow overflow-hidden">
-            <div class="p-6 border-b">
-                <h3 class="text-lg font-bold text-gray-800">📝 Recent Exams</h3>
-            </div>
-            <div class="p-6">
-                @php
-                    $recentExams = collect();
-                    foreach($subjects as $subject) {
-                        foreach($subject->exams->take(2) as $exam) {
-                            $recentExams->push([
-                                'exam' => $exam,
-                                'subject' => $subject
-                            ]);
-                        }
-                    }
-                    $recentExams = $recentExams->sortByDesc('exam.created_at')->take(5);
-                @endphp
-
-                @if($recentExams->count() > 0)
-                    <div class="space-y-3">
-                        @foreach($recentExams as $item)
-                        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                            <div class="flex-1">
-                                <div class="font-medium text-gray-900">{{ $item['exam']->title }}</div>
-                                <div class="text-sm text-gray-600">{{ $item['subject']->name }} • {{ $item['exam']->created_at->diffForHumans() }}</div>
-                            </div>
-                            <div class="flex items-center gap-2">
-                                @if($item['exam']->start_time > now())
-                                    <span class="bg-orange-100 text-orange-800 px-2 py-1 rounded text-xs">Upcoming</span>
-                                @elseif($item['exam']->end_time < now())
-                                    <span class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs">Completed</span>
-                                @else
-                                    <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs">Active</span>
-                                @endif
-                                <a href="{{ route('admin.exam.results', $item['exam']->id) }}" class="text-blue-600 hover:text-blue-800 text-sm font-medium">
-                                    View
-                                </a>
-                            </div>
-                        </div>
-                        @endforeach
-                    </div>
-                @else
-                    <p class="text-gray-500 text-center py-4">No recent exams found.</p>
-                @endif
-            </div>
+    @if(($ownedEarlyPrimaryClasses ?? collect())->isNotEmpty())
+        <div class="rounded-2xl border border-pink-100 bg-pink-50 p-5 text-pink-900">
+            <h2 class="text-base font-black">Early Years / Primary Form Teacher Access</h2>
+            <p class="mt-1 text-sm font-semibold text-pink-800">
+                You are the form teacher for {{ $ownedEarlyPrimaryClasses->pluck('display_name')->join(', ') }}. You can fill scores for all subjects attached to your class.
+            </p>
         </div>
-
-        <!-- Performance Overview -->
-        <div class="bg-white rounded-lg shadow overflow-hidden">
-            <div class="p-6 border-b">
-                <h3 class="text-lg font-bold text-gray-800">📊 Performance Overview</h3>
-            </div>
-            <div class="p-6">
-                @php
-                    $totalSubjects = $subjects->count();
-                    $activeSubjects = $subjects->where('is_active', true)->count();
-                    $totalExams = $subjects->sum('exams_count');
-                    $totalStudents = $subjects->sum('total_students');
-                    $avgPerformance = $subjects->whereNotNull('average_performance')->avg('average_performance');
-                @endphp
-
-                <div class="grid grid-cols-2 gap-4">
-                    <div class="text-center p-4 bg-blue-50 rounded-lg">
-                        <div class="text-2xl font-bold text-blue-600">{{ $totalSubjects }}</div>
-                        <div class="text-sm text-gray-600">Total Subjects</div>
-                    </div>
-                    <div class="text-center p-4 bg-green-50 rounded-lg">
-                        <div class="text-2xl font-bold text-green-600">{{ $activeSubjects }}</div>
-                        <div class="text-sm text-gray-600">Active Subjects</div>
-                    </div>
-                    <div class="text-center p-4 bg-purple-50 rounded-lg">
-                        <div class="text-2xl font-bold text-purple-600">{{ $totalExams }}</div>
-                        <div class="text-sm text-gray-600">Total Exams</div>
-                    </div>
-                    <div class="text-center p-4 bg-indigo-50 rounded-lg">
-                        <div class="text-2xl font-bold text-indigo-600">{{ $totalStudents }}</div>
-                        <div class="text-sm text-gray-600">Total Students</div>
-                    </div>
-                </div>
-
-                @if($avgPerformance)
-                <div class="mt-4 p-4 bg-gradient-to-r from-green-50 to-blue-50 rounded-lg">
-                    <div class="text-center">
-                        <div class="text-3xl font-bold {{ $avgPerformance >= 70 ? 'text-green-600' : ($avgPerformance >= 50 ? 'text-yellow-600' : 'text-red-600') }}">
-                            {{ number_format($avgPerformance, 1) }}%
-                        </div>
-                        <div class="text-sm text-gray-600">Average Performance</div>
-                    </div>
-                </div>
-                @endif
-            </div>
-        </div>
-    </div>
     @endif
+
+    <div class="rounded-2xl bg-white shadow-lg">
+        <div class="border-b border-gray-100 px-5 py-4 sm:px-6">
+            <h2 class="text-xl font-black text-gray-900">Subject And Class List</h2>
+        </div>
+
+        <div class="divide-y divide-gray-100">
+            @forelse($subjects as $subject)
+                <div class="p-5 sm:p-6">
+                    <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                        <div>
+                            <h3 class="text-lg font-black text-gray-900">{{ $subject->name }}</h3>
+                            <div class="mt-2 flex flex-wrap items-center gap-2">
+                                @if($subject->code)
+                                    <span class="rounded-full bg-blue-50 px-3 py-1 text-xs font-bold text-blue-700">{{ $subject->code }}</span>
+                                @endif
+                                <span class="rounded-full bg-gray-100 px-3 py-1 text-xs font-bold text-gray-700">{{ $subject->assignedClasses->count() }} classes</span>
+                                <span class="rounded-full bg-amber-50 px-3 py-1 text-xs font-bold text-amber-700">{{ $subject->exams_count }} exams</span>
+                            </div>
+                        </div>
+                        <a href="{{ route('admin.manual-result-filling') }}" class="inline-flex items-center justify-center rounded-xl bg-indigo-600 px-4 py-2 text-sm font-bold text-white hover:bg-indigo-700">
+                            Fill Result
+                        </a>
+                    </div>
+
+                    <div class="mt-4 flex flex-wrap gap-2">
+                        @forelse($subject->assignedClasses as $class)
+                            <span class="rounded-xl border border-emerald-100 bg-emerald-50 px-3 py-2 text-sm font-bold text-emerald-800">
+                                {{ $class->display_name }}
+                                <span class="ml-1 text-xs font-semibold text-emerald-600">({{ $class->students_count ?? 0 }} learners)</span>
+                            </span>
+                        @empty
+                            <span class="rounded-xl border border-rose-100 bg-rose-50 px-3 py-2 text-sm font-bold text-rose-700">
+                                No class assigned for this subject yet
+                            </span>
+                        @endforelse
+                    </div>
+                </div>
+            @empty
+                <div class="p-8 text-center">
+                    <h3 class="text-lg font-black text-gray-900">No subjects assigned yet</h3>
+                    <p class="mt-2 text-sm text-gray-500">When the admin assigns subjects to you, they will appear here.</p>
+                </div>
+            @endforelse
+        </div>
+    </div>
+</div>
+@endsection

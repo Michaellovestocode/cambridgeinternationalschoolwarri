@@ -101,11 +101,20 @@
             <input type="hidden" name="student_id" value="{{ $selectedStudent->id }}">
 
             <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-                <div>
-                    <h2 class="text-xl font-semibold text-gray-900">{{ $selectedStudent->name }}</h2>
-                    <p class="text-sm text-gray-600">
-                        {{ $selectedClass->display_name }} | {{ $selectedSession->name }} | {{ $selectedTerm->name }}
-                    </p>
+                <div class="flex items-center gap-3">
+                    @if($selectedStudent->photo)
+                        <img src="{{ asset('storage/' . $selectedStudent->photo) }}" alt="{{ $selectedStudent->name }}" class="h-16 w-16 rounded-2xl object-cover">
+                    @else
+                        <div class="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-blue-100 text-xl font-black text-blue-700">
+                            {{ strtoupper(substr($selectedStudent->name, 0, 1)) }}
+                        </div>
+                    @endif
+                    <div class="min-w-0">
+                        <h2 class="break-words text-xl font-semibold text-gray-900">{{ $selectedStudent->name }}</h2>
+                        <p class="text-sm text-gray-600">
+                            {{ $selectedClass->display_name }} | {{ $selectedSession->name }} | {{ $selectedTerm->name }}
+                        </p>
+                    </div>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
                     <div class="bg-blue-50 text-blue-800 rounded-lg px-4 py-3">

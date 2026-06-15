@@ -57,8 +57,8 @@ class SchoolClass extends Model
     {
         return [
             'creche' => [
-                'label' => 'Creche',
-                'description' => 'Creche 1 to Creche 3',
+                'label' => 'Early Years',
+                'description' => 'Creche, Pre-KG, Nursery, and reception classes',
                 'color' => 'from-pink-500 to-rose-500',
                 'soft' => 'bg-pink-50 text-pink-700 border-pink-100',
             ],
@@ -109,7 +109,17 @@ class SchoolClass extends Model
         $name = strtolower($this->display_name);
         $level = $this->level_number;
 
-        if (str_contains($name, 'creche')) {
+        if (
+            str_contains($name, 'creche')
+            || str_contains($name, 'nursery')
+            || str_contains($name, 'pre kg')
+            || str_contains($name, 'pre-kg')
+            || str_contains($name, 'pre nursery')
+            || str_contains($name, 'pre-nursery')
+            || preg_match('/\bkg\b/', $name)
+            || str_contains($name, 'kindergarten')
+            || str_contains($name, 'reception')
+        ) {
             return 'creche';
         }
 

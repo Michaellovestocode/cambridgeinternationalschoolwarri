@@ -91,6 +91,25 @@ class AdminController extends Controller
 
         // Check if user is a form teacher
         $isFormTeacher = $formTeacherAssignment !== null;
+        $assignedSubjectCount = $user->isTeacher()
+            ? $this->availableExamSubjects()->count()
+            : 0;
+
+        $birthdayLearners = collect();
+        $today = now();
+
+        if ($user->isAdmin() || $isFormTeacher) {
+            $birthdayLearners = User::with('class')
+                ->where('role', 'student')
+                ->whereNotNull('date_of_birth')
+                ->whereMonth('date_of_birth', $today->month)
+                ->whereDay('date_of_birth', $today->day)
+                ->when($isFormTeacher && ! $user->isAdmin(), function ($query) use ($formTeacherAssignment) {
+                    $query->where('class_id', $formTeacherAssignment->class_id);
+                })
+                ->orderBy('name')
+                ->get();
+        }
 
         $newEnquiriesCount = AdmissionEnquiry::where('status', AdmissionEnquiry::STATUS_NEW)->count();
         $unreadMessagesCount = Message::where('recipient_id', $user->id)
@@ -108,7 +127,9 @@ class AdminController extends Controller
             'unreadMessagesCount',
             'formTeacherAssignment',
             'classStudents',
-            'teachingClasses'
+            'teachingClasses',
+            'assignedSubjectCount',
+            'birthdayLearners'
         ));
     }
 
@@ -1435,10 +1456,35 @@ private function availableExamSubjects()
             ->get();
     }
 
-    return $user->subjects()
+    $assignedSubjects = $user->subjects()
         ->where('is_active', true)
         ->orderBy('name')
         ->get();
+
+    if (! $user->isTeacher()) {
+        return $assignedSubjects;
+    }
+
+    $ownedClassIds = $this->earlyPrimaryFormTeacherClassesFor($user)->pluck('id')->all();
+
+    if (empty($ownedClassIds)) {
+        return $assignedSubjects;
+    }
+
+    $ownedClassSubjects = Subject::where('is_active', true)
+        ->whereHas('classes', fn ($query) => $query->whereIn('school_classes.id', $ownedClassIds))
+        ->orderBy('name')
+        ->get();
+
+    if ($ownedClassSubjects->isEmpty()) {
+        $ownedClassSubjects = Subject::where('is_active', true)->orderBy('name')->get();
+    }
+
+    return $assignedSubjects
+        ->merge($ownedClassSubjects)
+        ->unique('id')
+        ->sortBy('name')
+        ->values();
 }
 
 private function availableExamClasses()
@@ -1449,9 +1495,18 @@ private function availableExamClasses()
         return SchoolClass::orderBy('name')->get();
     }
 
-    return $user->teachingClasses()
+    $classes = $user->teachingClasses()
         ->orderBy('name')
         ->get();
+
+    if ($user->isTeacher()) {
+        $classes = $classes->merge($this->earlyPrimaryFormTeacherClassesFor($user));
+    }
+
+    return $classes
+        ->unique('id')
+        ->sortBy('name')
+        ->values();
 }
 
 private function classesBySubject($subjects, $classes): array
@@ -1480,23 +1535,34 @@ private function validateExamAssignment(int $subjectId, array $classIds): array
         return [];
     }
 
-    $teachesSubject = $user->subjects()
-        ->where('subjects.id', $subjectId)
-        ->exists();
+    $classes = SchoolClass::whereIn('id', array_map('intval', $classIds))->get();
+    $explicitlyTeachesSubject = $user->subjects()->where('subjects.id', $subjectId)->exists();
+    $teachingClassIds = $user->teachingClasses()->pluck('school_classes.id')->map(fn ($id) => (int) $id)->all();
+    $ownedEarlyPrimaryClassIds = $this->earlyPrimaryFormTeacherClassesFor($user)->pluck('id')->map(fn ($id) => (int) $id)->all();
+    $availableSubjectIds = $this->availableExamSubjects()->pluck('id')->map(fn ($id) => (int) $id)->all();
 
-    if (! $teachesSubject) {
-        return ['subject_id' => 'You can only create exams for your assigned subjects.'];
+    if (! in_array($subjectId, $availableSubjectIds, true)) {
+        return ['subject_id' => 'You can only create exams for your assigned subjects or your early-years/primary form class subjects.'];
     }
 
-    $allowedClassIds = collect($this->classesBySubject(
-        Subject::where('id', $subjectId)->get(),
-        $this->availableExamClasses()
-    )[$subjectId] ?? [])->pluck('id')->all();
+    $subjectClassIds = Subject::whereKey($subjectId)->first()?->classes()->pluck('school_classes.id')->map(fn ($id) => (int) $id)->all() ?? [];
 
-    $invalidClassIds = array_diff(array_map('intval', $classIds), $allowedClassIds);
+    foreach ($classes as $class) {
+        if (! empty($subjectClassIds) && ! in_array((int) $class->id, $subjectClassIds, true)) {
+            return ['classes' => 'The selected subject is not attached to one of the selected classes.'];
+        }
 
-    if (! empty($invalidClassIds)) {
-        return ['classes' => 'You can only assign this exam to classes assigned to you for the selected subject.'];
+        if ($this->isEarlyYearsOrPrimaryClass($class)) {
+            if (! in_array((int) $class->id, $ownedEarlyPrimaryClassIds, true)) {
+                return ['classes' => 'Only the assigned form teacher can fill scores for early-years and primary classes.'];
+            }
+
+            continue;
+        }
+
+        if (! $explicitlyTeachesSubject || ! in_array((int) $class->id, $teachingClassIds, true)) {
+            return ['classes' => 'You can only assign this exam to secondary classes and subjects assigned to you.'];
+        }
     }
 
     return [];
@@ -1556,6 +1622,10 @@ private function canManageAttempt(ExamAttempt $attempt): bool
             })
             ->exists();
 
+    if ($this->teacherOwnsEarlyPrimaryClass($user, (int) $classId)) {
+        return true;
+    }
+
     return $teachesSubject && $user->teachingClasses()->whereKey($classId)->exists();
 }
 
@@ -1584,7 +1654,10 @@ private function canManageManualExam(Exam $exam): bool
             })
             ->exists();
 
-    return $teachesSubject && $this->manualExamClassesFor($exam)->isNotEmpty();
+    $manageableClasses = $this->manualExamClassesFor($exam);
+    $hasOwnedEarlyPrimaryClass = $manageableClasses->contains(fn (SchoolClass $class) => $this->isEarlyYearsOrPrimaryClass($class));
+
+    return $hasOwnedEarlyPrimaryClass || ($teachesSubject && $manageableClasses->isNotEmpty());
 }
 
 private function manualExamClassesFor(Exam $exam)
@@ -1596,11 +1669,44 @@ private function manualExamClassesFor(Exam $exam)
         return $classes;
     }
 
-    $teacherClassIds = $user->teachingClasses()->pluck('school_classes.id')->all();
+    $teacherClassIds = $user->teachingClasses()->pluck('school_classes.id')->map(fn ($id) => (int) $id)->all();
+    $ownedEarlyPrimaryClassIds = $this->earlyPrimaryFormTeacherClassesFor($user)->pluck('id')->map(fn ($id) => (int) $id)->all();
 
     return $classes
-        ->whereIn('id', array_map('intval', $teacherClassIds))
+        ->filter(function (SchoolClass $class) use ($teacherClassIds, $ownedEarlyPrimaryClassIds) {
+            if ($this->isEarlyYearsOrPrimaryClass($class)) {
+                return in_array((int) $class->id, $ownedEarlyPrimaryClassIds, true);
+            }
+
+            return in_array((int) $class->id, $teacherClassIds, true);
+        })
         ->values();
+}
+
+private function earlyPrimaryFormTeacherClassesFor(User $user)
+{
+    if (! $user->isTeacher()) {
+        return collect();
+    }
+
+    return FormTeacher::with('schoolClass')
+        ->where('teacher_id', $user->id)
+        ->where('is_active', true)
+        ->get()
+        ->pluck('schoolClass')
+        ->filter(fn ($class) => $class && $this->isEarlyYearsOrPrimaryClass($class))
+        ->values();
+}
+
+private function teacherOwnsEarlyPrimaryClass(User $user, int $classId): bool
+{
+    return $this->earlyPrimaryFormTeacherClassesFor($user)
+        ->contains(fn ($class) => (int) $class->id === $classId);
+}
+
+private function isEarlyYearsOrPrimaryClass(SchoolClass $class): bool
+{
+    return in_array($class->section_key, ['creche', 'primary'], true);
 }
 
 private function refreshReportCardsForClass(int $classId, Session $session, Term $term): int
