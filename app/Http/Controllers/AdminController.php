@@ -1465,25 +1465,42 @@ private function availableExamSubjects()
         return $assignedSubjects;
     }
 
-    $ownedClassIds = $this->earlyPrimaryFormTeacherClassesFor($user)->pluck('id')->all();
+    $ownedClasses = $this->earlyPrimaryFormTeacherClassesFor($user);
+    $ownedClassIds = $ownedClasses->pluck('id')->all();
 
     if (empty($ownedClassIds)) {
         return $assignedSubjects;
     }
 
     $ownedClassSubjects = Subject::where('is_active', true)
-        ->whereHas('classes', fn ($query) => $query->whereIn('school_classes.id', $ownedClassIds))
+        ->where(function ($query) use ($ownedClassIds, $ownedClasses) {
+            $query->whereHas('classes', fn ($classQuery) => $classQuery->whereIn('school_classes.id', $ownedClassIds));
+
+            foreach ($ownedClasses as $class) {
+                $query->orWhereIn('class_level', $this->subjectClassLevelCandidates($class));
+            }
+        })
         ->orderBy('name')
         ->get();
 
-    if ($ownedClassSubjects->isEmpty()) {
-        $ownedClassSubjects = Subject::where('is_active', true)->orderBy('name')->get();
-    }
-
-    return $assignedSubjects
+    $candidateSubjects = $assignedSubjects
         ->merge($ownedClassSubjects)
         ->unique('id')
         ->sortBy('name')
+        ->values();
+
+    $availableClasses = $this->availableExamClasses();
+
+    return $candidateSubjects
+        ->filter(function (Subject $subject) use ($availableClasses) {
+            $subjectClassIds = $subject->classes()->pluck('school_classes.id')->all();
+
+            if (! empty($subjectClassIds)) {
+                return $availableClasses->whereIn('id', $subjectClassIds)->isNotEmpty();
+            }
+
+            return $availableClasses->contains(fn (SchoolClass $class) => $this->subjectMatchesClassLevel($subject, $class));
+        })
         ->values();
 }
 
@@ -1514,7 +1531,7 @@ private function classesBySubject($subjects, $classes): array
     return $subjects->mapWithKeys(function ($subject) use ($classes) {
         $subjectClassIds = $subject->classes()->pluck('school_classes.id')->all();
         $subjectClasses = empty($subjectClassIds)
-            ? $classes
+            ? $classes->filter(fn (SchoolClass $class) => $this->subjectMatchesClassLevel($subject, $class))->values()
             : $classes->whereIn('id', $subjectClassIds)->values();
 
         return [
@@ -1525,6 +1542,15 @@ private function classesBySubject($subjects, $classes): array
             ])->values()->all(),
         ];
     })->all();
+}
+
+private function subjectMatchesClassLevel(Subject $subject, SchoolClass $class): bool
+{
+    if (! filled($subject->class_level)) {
+        return false;
+    }
+
+    return in_array($subject->class_level, $this->subjectClassLevelCandidates($class), true);
 }
 
 private function validateExamAssignment(int $subjectId, array $classIds): array
@@ -1707,6 +1733,17 @@ private function teacherOwnsEarlyPrimaryClass(User $user, int $classId): bool
 private function isEarlyYearsOrPrimaryClass(SchoolClass $class): bool
 {
     return in_array($class->section_key, ['creche', 'primary'], true);
+}
+
+private function subjectClassLevelCandidates(SchoolClass $class): array
+{
+    return match ($class->section_key) {
+        'creche' => ['creche', 'Creche', 'early years', 'Early Years', 'nursery', 'Nursery', 'kg', 'KG', 'pre kg', 'Pre KG', 'pre-kg', 'Pre-KG', 'all', 'All'],
+        'primary' => ['primary', 'Primary', 'all', 'All'],
+        'junior_secondary' => ['junior', 'Junior', 'jss', 'JSS', 'all', 'All'],
+        'senior_secondary' => ['senior', 'Senior', 'sss', 'SSS', 'all', 'All'],
+        default => ['all', 'All'],
+    };
 }
 
 private function refreshReportCardsForClass(int $classId, Session $session, Term $term): int

@@ -54,19 +54,17 @@ class SubjectController extends Controller
         if ($ownedEarlyPrimaryClasses->isNotEmpty()) {
             $ownedClassIds = $ownedEarlyPrimaryClasses->pluck('id')->all();
             $ownedClassSubjects = Subject::where('is_active', true)
-                ->whereHas('classes', fn ($query) => $query->whereIn('school_classes.id', $ownedClassIds))
+                ->where(function ($query) use ($ownedClassIds, $ownedEarlyPrimaryClasses) {
+                    $query->whereHas('classes', fn ($classQuery) => $classQuery->whereIn('school_classes.id', $ownedClassIds));
+
+                    foreach ($ownedEarlyPrimaryClasses as $class) {
+                        $query->orWhereIn('class_level', $this->subjectClassLevelCandidates($class));
+                    }
+                })
                 ->with(['classes' => fn ($query) => $query->withCount('students')->orderBy('name')])
                 ->withCount('exams')
                 ->orderBy('name')
                 ->get();
-
-            if ($ownedClassSubjects->isEmpty()) {
-                $ownedClassSubjects = Subject::where('is_active', true)
-                    ->with(['classes' => fn ($query) => $query->withCount('students')->orderBy('name')])
-                    ->withCount('exams')
-                    ->orderBy('name')
-                    ->get();
-            }
         }
 
         $subjects = $assignedSubjects
@@ -85,13 +83,15 @@ class SubjectController extends Controller
                 })->values();
 
                 $assignedClasses = $subjectClassIds->isEmpty()
-                    ? $eligibleClasses
+                    ? $eligibleClasses->filter(fn (SchoolClass $class) => $this->subjectMatchesClassLevel($subject, $class))->values()
                     : $eligibleClasses->whereIn('id', $subjectClassIds)->values();
 
                 $subject->setRelation('assignedClasses', $assignedClasses);
 
                 return $subject;
-            });
+            })
+            ->filter(fn (Subject $subject) => $subject->assignedClasses->isNotEmpty())
+            ->values();
 
         return view('admin.subjects.my-subjects', [
             'subjects' => $subjects,
@@ -118,6 +118,26 @@ class SubjectController extends Controller
     private function isEarlyYearsOrPrimaryClass(SchoolClass $class): bool
     {
         return in_array($class->section_key, ['creche', 'primary'], true);
+    }
+
+    private function subjectClassLevelCandidates(SchoolClass $class): array
+    {
+        return match ($class->section_key) {
+            'creche' => ['creche', 'Creche', 'early years', 'Early Years', 'nursery', 'Nursery', 'kg', 'KG', 'pre kg', 'Pre KG', 'pre-kg', 'Pre-KG', 'all', 'All'],
+            'primary' => ['primary', 'Primary', 'all', 'All'],
+            'junior_secondary' => ['junior', 'Junior', 'jss', 'JSS', 'all', 'All'],
+            'senior_secondary' => ['senior', 'Senior', 'sss', 'SSS', 'all', 'All'],
+            default => ['all', 'All'],
+        };
+    }
+
+    private function subjectMatchesClassLevel(Subject $subject, SchoolClass $class): bool
+    {
+        if (! filled($subject->class_level)) {
+            return false;
+        }
+
+        return in_array($subject->class_level, $this->subjectClassLevelCandidates($class), true);
     }
 
     /**

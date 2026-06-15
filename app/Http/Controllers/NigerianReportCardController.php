@@ -239,7 +239,10 @@ class NigerianReportCardController extends Controller
             $subjects = $selectedClass->subjects()->active()->ordered()->get();
 
             if ($subjects->isEmpty()) {
-                $subjects = Subject::active()->ordered()->get();
+                $subjects = Subject::active()
+                    ->whereIn('class_level', $this->subjectClassLevelCandidates($selectedClass))
+                    ->ordered()
+                    ->get();
             }
 
             $scores = Score::where('student_id', $selectedStudent->id)
@@ -1085,6 +1088,17 @@ class NigerianReportCardController extends Controller
     private function isEarlyYearsOrPrimaryClass(SchoolClass $class): bool
     {
         return in_array($class->section_key, ['creche', 'primary'], true);
+    }
+
+    private function subjectClassLevelCandidates(SchoolClass $class): array
+    {
+        return match ($class->section_key) {
+            'creche' => ['creche', 'Creche', 'early years', 'Early Years', 'nursery', 'Nursery', 'kg', 'KG', 'pre kg', 'Pre KG', 'pre-kg', 'Pre-KG', 'all', 'All'],
+            'primary' => ['primary', 'Primary', 'all', 'All'],
+            'junior_secondary' => ['junior', 'Junior', 'jss', 'JSS', 'all', 'All'],
+            'senior_secondary' => ['senior', 'Senior', 'sss', 'SSS', 'all', 'All'],
+            default => ['all', 'All'],
+        };
     }
 
     private function reviewerClassIdsFor(User $user): array
