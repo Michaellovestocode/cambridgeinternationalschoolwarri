@@ -35,9 +35,12 @@ class SubjectController extends Controller
             ->orderBy('name')
             ->get();
 
-        $ownedEarlyPrimaryClasses = $this->earlyPrimaryFormTeacherClassesFor($user);
+        $ownedFormClasses = $this->formTeacherClassesFor($user);
+        $ownedEarlyPrimaryClasses = $ownedFormClasses
+            ->filter(fn (SchoolClass $class) => $this->isEarlyYearsOrPrimaryClass($class))
+            ->values();
         $allTeachingClasses = $teachingClasses
-            ->merge($ownedEarlyPrimaryClasses)
+            ->merge($ownedFormClasses)
             ->unique('id')
             ->sortBy('name')
             ->values();
@@ -51,13 +54,13 @@ class SubjectController extends Controller
 
         $ownedClassSubjects = collect();
 
-        if ($ownedEarlyPrimaryClasses->isNotEmpty()) {
-            $ownedClassIds = $ownedEarlyPrimaryClasses->pluck('id')->all();
+        if ($ownedFormClasses->isNotEmpty()) {
+            $ownedClassIds = $ownedFormClasses->pluck('id')->all();
             $ownedClassSubjects = Subject::where('is_active', true)
-                ->where(function ($query) use ($ownedClassIds, $ownedEarlyPrimaryClasses) {
+                ->where(function ($query) use ($ownedClassIds, $ownedFormClasses) {
                     $query->whereHas('classes', fn ($classQuery) => $classQuery->whereIn('school_classes.id', $ownedClassIds));
 
-                    foreach ($ownedEarlyPrimaryClasses as $class) {
+                    foreach ($ownedFormClasses as $class) {
                         $query->orWhereIn('class_level', $this->subjectClassLevelCandidates($class));
                     }
                 })
@@ -72,25 +75,25 @@ class SubjectController extends Controller
             ->unique('id')
             ->sortBy('name')
             ->values()
-            ->map(function (Subject $subject) use ($allTeachingClasses, $ownedEarlyPrimaryClasses) {
+            ->map(function (Subject $subject) use ($allTeachingClasses, $ownedEarlyPrimaryClasses, $assignedSubjects) {
                 $subjectClassIds = $subject->classes->pluck('id');
-                $eligibleClasses = $allTeachingClasses->filter(function (SchoolClass $class) use ($ownedEarlyPrimaryClasses) {
-                    if ($this->isEarlyYearsOrPrimaryClass($class)) {
-                        return $ownedEarlyPrimaryClasses->contains('id', $class->id);
-                    }
-
-                    return true;
-                })->values();
 
                 $assignedClasses = $subjectClassIds->isEmpty()
-                    ? $eligibleClasses->filter(fn (SchoolClass $class) => $this->subjectMatchesClassLevel($subject, $class))->values()
-                    : $eligibleClasses->whereIn('id', $subjectClassIds)->values();
+                    ? $allTeachingClasses->filter(fn (SchoolClass $class) => $this->subjectMatchesClassLevel($subject, $class))->values()
+                    : $allTeachingClasses->whereIn('id', $subjectClassIds)->values();
+
+                if ($assignedSubjects->contains('id', $subject->id)) {
+                    $assignedClasses = $assignedClasses
+                        ->merge($ownedEarlyPrimaryClasses)
+                        ->unique('id')
+                        ->sortBy('name')
+                        ->values();
+                }
 
                 $subject->setRelation('assignedClasses', $assignedClasses);
 
                 return $subject;
             })
-            ->filter(fn (Subject $subject) => $subject->assignedClasses->isNotEmpty())
             ->values();
 
         return view('admin.subjects.my-subjects', [
@@ -100,7 +103,7 @@ class SubjectController extends Controller
         ]);
     }
 
-    private function earlyPrimaryFormTeacherClassesFor(User $user)
+    private function formTeacherClassesFor(User $user)
     {
         if (! $user->isTeacher()) {
             return collect();
@@ -111,7 +114,7 @@ class SubjectController extends Controller
             ->where('is_active', true)
             ->get()
             ->pluck('schoolClass')
-            ->filter(fn ($class) => $class && $this->isEarlyYearsOrPrimaryClass($class))
+            ->filter()
             ->values();
     }
 

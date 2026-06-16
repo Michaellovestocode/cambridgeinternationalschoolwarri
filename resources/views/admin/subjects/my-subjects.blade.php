@@ -36,11 +36,11 @@
         </div>
     </div>
 
-    @if(($ownedEarlyPrimaryClasses ?? collect())->isNotEmpty())
+    @if(($teachingClasses ?? collect())->isNotEmpty())
         <div class="rounded-2xl border border-pink-100 bg-pink-50 p-5 text-pink-900">
-            <h2 class="text-base font-black">Early Years / Primary Form Teacher Access</h2>
+            <h2 class="text-base font-black">Form Teacher Access</h2>
             <p class="mt-1 text-sm font-semibold text-pink-800">
-                You are the form teacher for {{ $ownedEarlyPrimaryClasses->pluck('display_name')->join(', ') }}. You can fill scores for all subjects attached to your class.
+                Your teaching and form-teacher classes are shown here. For Early Years and Primary form classes, your assigned subjects are treated as the subjects for your learners.
             </p>
         </div>
     @endif

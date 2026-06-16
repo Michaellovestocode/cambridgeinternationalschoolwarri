@@ -1130,13 +1130,28 @@ class NigerianReportCardController extends Controller
             ->ordered()
             ->get();
 
-        if ($subjects->isNotEmpty() || ! $this->isEarlyYearsOrPrimaryClass($class)) {
+        if ($subjects->isNotEmpty()) {
             return $subjects;
         }
 
-        return Subject::active()
-            ->ordered()
-            ->get();
+        $user = auth()->user();
+
+        if ($user?->isTeacher() && $this->isEarlyYearsOrPrimaryClass($class) && $this->teacherOwnsClass($user, $class)) {
+            return $user->subjects()
+                ->active()
+                ->ordered()
+                ->get();
+        }
+
+        return $subjects;
+    }
+
+    private function teacherOwnsClass(User $user, SchoolClass $class): bool
+    {
+        return FormTeacher::where('teacher_id', $user->id)
+            ->where('class_id', $class->id)
+            ->where('is_active', true)
+            ->exists();
     }
 
     private function reviewerClassIdsFor(User $user): array
