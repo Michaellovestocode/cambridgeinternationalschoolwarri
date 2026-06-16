@@ -236,14 +236,7 @@ class NigerianReportCardController extends Controller
         $scores = collect();
 
         if ($selectedClass && $selectedStudent && $selectedSession && $selectedTerm) {
-            $subjects = $selectedClass->subjects()->active()->ordered()->get();
-
-            if ($subjects->isEmpty()) {
-                $subjects = Subject::active()
-                    ->whereIn('class_level', $this->subjectClassLevelCandidates($selectedClass))
-                    ->ordered()
-                    ->get();
-            }
+            $subjects = $this->subjectsForManualReportClass($selectedClass);
 
             $scores = Score::where('student_id', $selectedStudent->id)
                 ->where('session_id', $selectedSession->id)
@@ -1122,6 +1115,28 @@ class NigerianReportCardController extends Controller
         }
 
         return array_values(array_unique($candidates));
+    }
+
+    private function subjectsForManualReportClass(SchoolClass $class)
+    {
+        $subjects = $class->subjects()->active()->ordered()->get();
+
+        if ($subjects->isNotEmpty()) {
+            return $subjects;
+        }
+
+        $subjects = Subject::active()
+            ->whereIn('class_level', $this->subjectClassLevelCandidates($class))
+            ->ordered()
+            ->get();
+
+        if ($subjects->isNotEmpty() || ! $this->isEarlyYearsOrPrimaryClass($class)) {
+            return $subjects;
+        }
+
+        return Subject::active()
+            ->ordered()
+            ->get();
     }
 
     private function reviewerClassIdsFor(User $user): array
