@@ -445,6 +445,41 @@
             color: #374151;
             font-size: 8px;
         }
+
+        .lower-school .official-main .scores-table th {
+            padding-top: 4px;
+            padding-bottom: 4px;
+        }
+
+        .lower-school .official-main .scores-table tbody tr td {
+            height: 26px;
+            font-size: 8.5px;
+            padding-top: 4px;
+            padding-bottom: 4px;
+        }
+
+        .lower-school .summary-section {
+            margin-top: 7px;
+        }
+
+        .lower-school .summary-box {
+            padding: 6px;
+            margin-bottom: 7px;
+        }
+
+        .lower-school .summary-title {
+            padding: 4px;
+        }
+
+        .lower-school .summary-item {
+            padding: 2px 0;
+            font-size: 8.5px;
+        }
+
+        .lower-school .comment-box {
+            min-height: 48px;
+            margin-bottom: 5px;
+        }
     </style>
 </head>
 <body>
@@ -494,8 +529,10 @@
                 ? $studentPhotoPath
                 : null;
         }
+
+        $isLowerSchool = in_array($reportCard->class?->section_key, ['creche', 'primary'], true);
     @endphp
-    <div class="page">
+    <div class="page {{ $isLowerSchool ? 'lower-school' : '' }}">
         <div class="inner-frame"></div>
         <div class="watermark">
             <img src="{{ $schoolLogoSrc }}" alt="School Watermark">

@@ -270,9 +270,9 @@ class NigerianReportCardController extends Controller
             'term_id' => 'required|exists:terms,id',
             'scores' => 'required|array',
             'scores.*.subject_id' => 'required|exists:subjects,id',
-            'scores.*.ca1' => 'nullable|numeric|min:0|max:30',
-            'scores.*.ca2' => 'nullable|numeric|min:0|max:10',
-            'scores.*.exam' => 'nullable|numeric|min:0|max:60',
+            'scores.*.ca1' => 'required|numeric|min:0|max:30',
+            'scores.*.ca2' => 'required|numeric|min:0|max:10',
+            'scores.*.exam' => 'required|numeric|min:0|max:60',
         ]);
 
         $student = User::where('role', 'student')->findOrFail($validated['student_id']);

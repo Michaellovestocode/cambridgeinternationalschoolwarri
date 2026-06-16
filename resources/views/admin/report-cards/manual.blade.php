@@ -220,7 +220,9 @@ function validateScoreField(input) {
     const error = input.parentElement.querySelector('.score-error');
     let message = '';
 
-    if (value !== null && !Number.isNaN(value)) {
+    if (value === null || Number.isNaN(value)) {
+        message = `${label} is required.`;
+    } else {
         if (value < min) {
             message = `${label} cannot be below ${min}.`;
         } else if (value > max) {
