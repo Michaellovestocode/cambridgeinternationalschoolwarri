@@ -122,13 +122,36 @@ class SubjectController extends Controller
 
     private function subjectClassLevelCandidates(SchoolClass $class): array
     {
-        return match ($class->section_key) {
+        $name = trim((string) $class->name);
+        $displayName = trim((string) $class->display_name);
+        $level = $class->level_number;
+
+        $candidates = match ($class->section_key) {
             'creche' => ['creche', 'Creche', 'early years', 'Early Years', 'nursery', 'Nursery', 'kg', 'KG', 'pre kg', 'Pre KG', 'pre-kg', 'Pre-KG', 'all', 'All'],
             'primary' => ['primary', 'Primary', 'all', 'All'],
             'junior_secondary' => ['junior', 'Junior', 'jss', 'JSS', 'all', 'All'],
             'senior_secondary' => ['senior', 'Senior', 'sss', 'SSS', 'all', 'All'],
             default => ['all', 'All'],
         };
+
+        foreach ([$name, $displayName] as $className) {
+            if ($className !== '') {
+                $candidates[] = $className;
+                $candidates[] = strtolower($className);
+            }
+        }
+
+        if ($level) {
+            $candidates = array_merge($candidates, match ($class->section_key) {
+                'primary' => ["Primary {$level}", "primary {$level}", "Year {$level}", "year {$level}", "Basic {$level}", "basic {$level}", "Pry {$level}", "pry {$level}"],
+                'junior_secondary' => ["JSS {$level}", "jss {$level}", "Year {$level}", "year {$level}"],
+                'senior_secondary' => ["SSS {$level}", "sss {$level}", "Year {$level}", "year {$level}"],
+                'creche' => ["Creche {$level}", "creche {$level}", "Nursery {$level}", "nursery {$level}", "KG {$level}", "kg {$level}"],
+                default => [],
+            });
+        }
+
+        return array_values(array_unique($candidates));
     }
 
     private function subjectMatchesClassLevel(Subject $subject, SchoolClass $class): bool
@@ -137,7 +160,12 @@ class SubjectController extends Controller
             return false;
         }
 
-        return in_array($subject->class_level, $this->subjectClassLevelCandidates($class), true);
+        $classLevel = strtolower(trim((string) $subject->class_level));
+        $candidates = collect($this->subjectClassLevelCandidates($class))
+            ->map(fn ($candidate) => strtolower(trim((string) $candidate)))
+            ->all();
+
+        return in_array($classLevel, $candidates, true);
     }
 
     /**
