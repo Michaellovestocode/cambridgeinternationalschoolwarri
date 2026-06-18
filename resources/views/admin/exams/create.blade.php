@@ -1,11 +1,11 @@
 @extends('layouts.app')
 
-@section('title', 'Create New Exam')
+@section('title', 'Create New Assessment')
 
 @section('content')
 <div class="max-w-4xl mx-auto">
     <div class="bg-white rounded-lg shadow p-8">
-        <h2 class="text-2xl font-bold text-gray-800 mb-6">Create New Exam</h2>
+        <h2 class="text-2xl font-bold text-gray-800 mb-6">Create New Assessment</h2>
 
         @if($errors->any())
         <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
@@ -127,7 +127,7 @@
                                {{ old('grading_mode', 'auto') === 'auto' ? 'checked' : '' }}>
                         <span>
                             <span class="block font-semibold text-gray-900">Auto-gradable CBT</span>
-                            <span class="block text-sm text-gray-600">Students take the exam online. Objective questions are marked by the computer.</span>
+                            <span class="block text-sm text-gray-600">Students take the assessment online. Objective questions are marked by the computer.</span>
                         </span>
                     </label>
                     <label class="flex items-start rounded-lg border border-gray-200 p-4 cursor-pointer hover:border-green-500">
@@ -135,7 +135,29 @@
                                {{ old('grading_mode') === 'manual' ? 'checked' : '' }}>
                         <span>
                             <span class="block font-semibold text-gray-900">Manual mark entry</span>
-                            <span class="block text-sm text-gray-600">No questions needed. Enter all students' exam marks in one fast sheet.</span>
+                            <span class="block text-sm text-gray-600">No questions needed. Enter marks directly into the score sheet.</span>
+                        </span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="border border-gray-200 rounded-xl p-4">
+                <label class="block text-sm font-medium text-gray-700 mb-3">CBT Type *</label>
+                <div class="grid gap-3 md:grid-cols-2">
+                    <label class="flex items-start rounded-lg border border-gray-200 p-4 cursor-pointer hover:border-green-500">
+                        <input type="radio" name="assessment_component" value="test" class="mt-1 mr-3 text-green-600 focus:ring-green-500"
+                               {{ old('assessment_component', 'exam') === 'test' ? 'checked' : '' }}>
+                        <span>
+                            <span class="block font-semibold text-gray-900">CBT Test</span>
+                            <span class="block text-sm text-gray-600">Report card column: Test / CA1. Recommended total marks: 30.</span>
+                        </span>
+                    </label>
+                    <label class="flex items-start rounded-lg border border-gray-200 p-4 cursor-pointer hover:border-green-500">
+                        <input type="radio" name="assessment_component" value="exam" class="mt-1 mr-3 text-green-600 focus:ring-green-500"
+                               {{ old('assessment_component', 'exam') === 'exam' ? 'checked' : '' }}>
+                        <span>
+                            <span class="block font-semibold text-gray-900">CBT Exam</span>
+                            <span class="block text-sm text-gray-600">Report card column: Exam. Recommended total marks: 60.</span>
                         </span>
                     </label>
                 </div>
@@ -170,7 +192,7 @@
             <div class="flex gap-4 pt-4">
                 <button type="submit" 
                         class="bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-lg font-semibold">
-                    Create Exam
+                    Create Assessment
                 </button>
                 <a href="{{ route('admin.exams') }}" 
                    class="bg-gray-300 hover:bg-gray-400 text-gray-800 px-8 py-3 rounded-lg font-semibold">
@@ -187,6 +209,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const subjectSelect = document.getElementById('subject_id');
     const totalMarksInput = document.getElementById('total_marks');
     const gradingModeInputs = Array.from(document.querySelectorAll('input[name="grading_mode"]'));
+    const assessmentComponentInputs = Array.from(document.querySelectorAll('input[name="assessment_component"]'));
     const classOptions = Array.from(document.querySelectorAll('[data-class-option]'));
     const noClassesMessage = document.getElementById('no_classes_message');
 
@@ -217,16 +240,34 @@ document.addEventListener('DOMContentLoaded', function () {
 
     subjectSelect.addEventListener('change', syncClassOptions);
     syncClassOptions();
+    syncAssessmentDefaults();
+
+    function syncAssessmentDefaults() {
+        const selectedComponent = assessmentComponentInputs.find(function (input) { return input.checked; })?.value;
+        const currentTotal = totalMarksInput.value;
+
+        if (selectedComponent === 'test' && ['100', '60', '0', ''].includes(currentTotal)) {
+            totalMarksInput.value = '30';
+        }
+
+        if (selectedComponent === 'exam' && ['100', '30', '0', ''].includes(currentTotal)) {
+            totalMarksInput.value = '60';
+        }
+    }
 
     function syncManualDefaults() {
         const mode = gradingModeInputs.find(function (input) { return input.checked; })?.value;
-        if (mode === 'manual' && totalMarksInput.value === '100') {
-            totalMarksInput.value = '60';
+        if (mode === 'manual') {
+            syncAssessmentDefaults();
         }
     }
 
     gradingModeInputs.forEach(function (input) {
         input.addEventListener('change', syncManualDefaults);
+    });
+
+    assessmentComponentInputs.forEach(function (input) {
+        input.addEventListener('change', syncAssessmentDefaults);
     });
 });
 </script>
