@@ -64,9 +64,6 @@
                                 <span class="rounded-full bg-amber-50 px-3 py-1 text-xs font-bold text-amber-700">{{ $subject->exams_count }} exams</span>
                             </div>
                         </div>
-                        <a href="{{ route('admin.manual-result-filling') }}" class="inline-flex items-center justify-center rounded-xl bg-indigo-600 px-4 py-2 text-sm font-bold text-white hover:bg-indigo-700">
-                            Fill Result
-                        </a>
                     </div>
 
                     <div class="mt-4 flex flex-wrap gap-2">
