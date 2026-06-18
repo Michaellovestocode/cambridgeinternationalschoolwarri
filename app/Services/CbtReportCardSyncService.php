@@ -42,10 +42,14 @@ class CbtReportCardSyncService
             $score->fill([
                 'class_id' => $student->class_id,
                 'teacher_id' => $attempt->exam->created_by,
-                'ca1' => $score->exists ? $score->ca1 : 0,
+                'ca1' => $attempt->exam->assessment_component === 'test'
+                    ? $examScore
+                    : ($score->exists ? $score->ca1 : 0),
                 'ca2' => $score->exists ? $score->ca2 : 0,
                 'ca3' => 0,
-                'exam' => $examScore,
+                'exam' => $attempt->exam->assessment_component === 'exam'
+                    ? $examScore
+                    : ($score->exists ? $score->exam : 0),
                 'status' => 'submitted',
                 'teacher_comment' => $score->teacher_comment,
             ]);

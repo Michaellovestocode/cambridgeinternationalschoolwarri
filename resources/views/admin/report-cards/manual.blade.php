@@ -118,10 +118,10 @@
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
                     <div class="bg-blue-50 text-blue-800 rounded-lg px-4 py-3">
-                        <span class="font-semibold">1st Test</span> 0-30
+                        <span class="font-semibold">CA1</span> 0-30
                     </div>
                     <div class="bg-blue-50 text-blue-800 rounded-lg px-4 py-3">
-                        <span class="font-semibold">Notes</span> 0-10
+                        <span class="font-semibold">CA2</span> 0-10
                     </div>
                     <div class="bg-blue-50 text-blue-800 rounded-lg px-4 py-3">
                         <span class="font-semibold">Exam</span> 0-60
@@ -139,8 +139,8 @@
                         <thead>
                             <tr class="bg-gray-100 text-gray-700">
                                 <th class="px-4 py-3 text-left">Subject</th>
-                                <th class="px-4 py-3 text-center">1st Test</th>
-                                <th class="px-4 py-3 text-center">Notes</th>
+                                <th class="px-4 py-3 text-center">CA1</th>
+                                <th class="px-4 py-3 text-center">CA2</th>
                                 <th class="px-4 py-3 text-center">Exam</th>
                                 <th class="px-4 py-3 text-center">Total</th>
                                 <th class="px-4 py-3 text-center">Current Grade</th>
@@ -163,14 +163,14 @@
                                     <td class="px-4 py-3">
                                         <input type="number" name="scores[{{ $index }}][ca1]" value="{{ $ca1 }}"
                                                min="0" max="30" step="0.5"
-                                               data-label="1st Test"
+                                               data-label="CA1"
                                                class="score-input w-24 border border-gray-300 rounded-lg px-3 py-2 text-center">
                                         <p class="score-error mt-1 hidden text-xs font-semibold text-red-600"></p>
                                     </td>
                                     <td class="px-4 py-3">
                                         <input type="number" name="scores[{{ $index }}][ca2]" value="{{ $ca2 }}"
                                                min="0" max="10" step="0.5"
-                                               data-label="Notes"
+                                               data-label="CA2"
                                                class="score-input w-24 border border-gray-300 rounded-lg px-3 py-2 text-center">
                                         <p class="score-error mt-1 hidden text-xs font-semibold text-red-600"></p>
                                     </td>

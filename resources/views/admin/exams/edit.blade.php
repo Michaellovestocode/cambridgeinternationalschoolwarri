@@ -162,6 +162,28 @@
                 </div>
             </div>
 
+            <div class="border border-gray-200 rounded-xl p-4 mt-4">
+                <label class="block text-sm font-medium text-gray-700 mb-3">Assessment Component *</label>
+                <div class="grid gap-3 md:grid-cols-2">
+                    <label class="flex items-start rounded-lg border border-gray-200 p-4 cursor-pointer hover:border-green-500">
+                        <input type="radio" name="assessment_component" value="test" class="mt-1 mr-3 text-green-600 focus:ring-green-500"
+                               {{ old('assessment_component', $exam->assessment_component ?? 'exam') === 'test' ? 'checked' : '' }}>
+                        <span>
+                            <span class="block font-semibold text-gray-900">CBT Test</span>
+                            <span class="block text-sm text-gray-600">Report card column: Test / CA1. Recommended total marks: 30.</span>
+                        </span>
+                    </label>
+                    <label class="flex items-start rounded-lg border border-gray-200 p-4 cursor-pointer hover:border-green-500">
+                        <input type="radio" name="assessment_component" value="exam" class="mt-1 mr-3 text-green-600 focus:ring-green-500"
+                               {{ old('assessment_component', $exam->assessment_component ?? 'exam') === 'exam' ? 'checked' : '' }}>
+                        <span>
+                            <span class="block font-semibold text-gray-900">CBT Exam</span>
+                            <span class="block text-sm text-gray-600">Report card column: Exam. Recommended total marks: 60.</span>
+                        </span>
+                    </label>
+                </div>
+            </div>
+
             <div class="border-t pt-4">
                 <label class="flex items-start">
                     <input type="hidden" name="show_results_to_students" value="0">

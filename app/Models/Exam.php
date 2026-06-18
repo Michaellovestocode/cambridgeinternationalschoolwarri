@@ -18,6 +18,7 @@ class Exam extends Model
         'total_marks',
         'pass_mark',
         'grading_mode',
+        'assessment_component',
         'instructions',
         'created_by',
         'start_date',

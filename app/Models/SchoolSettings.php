@@ -60,9 +60,9 @@ class SchoolSettings extends Model
         if (!$settings) {
             $settings = self::create([
                 'school_name' => 'Cambridge International School',
-                'school_address' => 'Lagos, Nigeria',
-                'school_phone' => '+234 XXX XXX XXXX',
-                'school_email' => 'info@cambridge.edu.ng',
+                'school_address' => 'Warri, Delta, Nigeria',
+                'school_phone' => '+234 803 289 7744',
+                'school_email' => 'info@cambridgeinternationalschoolwarri.com',
                 'school_motto' => 'Excellence in Education',
                 'principal_name' => 'Mr./Mrs. Principal',
                 'homepage_notice_enabled' => true,

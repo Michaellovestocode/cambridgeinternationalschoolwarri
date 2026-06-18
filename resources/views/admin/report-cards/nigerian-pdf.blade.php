@@ -549,7 +549,7 @@
                         <div class="school-name">{{ strtoupper($schoolSettings->school_name ?: 'Cambridge International School') }}</div>
                         <div class="school-address">{{ $schoolAddress }}</div>
                         <div class="school-contact">
-                            <span class="contact-label">Tel:</span> {{ $schoolSettings->school_phone ?: '08032897744' }}
+                            <span class="contact-label">Tel:</span> {{ $schoolSettings->school_phone ?: '+234 803 289 7744' }}
                             <span class="contact-label"> | Email:</span>
                             <span class="contact-value">{{ $schoolEmail }}</span>
                         </div>
@@ -644,8 +644,8 @@
                             <th rowspan="2">REMARK</th>
                         </tr>
                         <tr>
-                            <th>1ST<br>(30)</th>
-                            <th>NOTES<br>(10)</th>
+                            <th>CA1<br>(30)</th>
+                            <th>CA2<br>(10)</th>
                         </tr>
                     </thead>
                     <tbody>
