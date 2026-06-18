@@ -119,9 +119,15 @@ class CbtReportCardSyncService
 
     private function normalisedExamScore(ExamAttempt $attempt): float
     {
-        $totalMarks = (float) ($attempt->exam->total_marks ?: 100);
+        $component = $attempt->exam->assessment_component ?? 'exam';
+        $targetMax = $component === 'test' ? 30 : 60;
+        $totalMarks = (float) ($attempt->exam->total_marks ?: $targetMax);
         $score = (float) ($attempt->total_score ?? 0);
 
-        return round(($score / max($totalMarks, 1)) * 60, 2);
+        if ($totalMarks <= 0) {
+            return 0.0;
+        }
+
+        return round(($score / $totalMarks) * $targetMax, 2);
     }
 }

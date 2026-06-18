@@ -324,6 +324,9 @@ public function deleteExam($examId)
         abort(403);
     }
 
+    // Withdraw any synced report-card scores generated from graded attempts on this exam
+    $this->withdrawExamAttemptScoresFromReportCard($exam);
+
     // Delete all associated questions' images
     foreach ($exam->questions as $question) {
         if ($question->image_path) {
@@ -339,6 +342,74 @@ public function deleteExam($examId)
 
     return redirect()->route('admin.exams')
         ->with('success', 'Exam deleted successfully!');
+}
+
+private function withdrawExamAttemptScoresFromReportCard(Exam $exam): void
+{
+    $attempts = $exam->attempts()->with(['exam.subjectModel', 'user'])->get();
+
+    foreach ($attempts as $attempt) {
+        if ($attempt->isGraded()) {
+            $this->removeAttemptScoreFromReportCard($attempt);
+        }
+    }
+}
+
+private function removeAttemptScoreFromReportCard(ExamAttempt $attempt): void
+{
+    $attempt->loadMissing(['exam.subjectModel', 'user']);
+
+    $session = Session::getActive();
+    $term = Term::getActive();
+
+    if (!$session || !$term || !$attempt->user?->class_id) {
+        return;
+    }
+
+    $subject = $attempt->exam->subjectModel;
+
+    if (!$subject && $attempt->exam->subject) {
+        $subject = Subject::where('name', $attempt->exam->subject)
+            ->orWhere('code', $attempt->exam->subject)
+            ->first();
+    }
+
+    if (!$subject) {
+        return;
+    }
+
+    $score = Score::where('student_id', $attempt->user_id)
+        ->where('subject_id', $subject->id)
+        ->where('session_id', $session->id)
+        ->where('term_id', $term->id)
+        ->first();
+
+    if (!$score) {
+        return;
+    }
+
+    if ($attempt->exam->assessment_component === 'test') {
+        $score->ca1 = 0;
+    } else {
+        $score->exam = 0;
+    }
+
+    if ((float) $score->ca1 === 0.0 && (float) $score->ca2 === 0.0 && (float) $score->ca3 === 0.0 && (float) $score->exam === 0.0) {
+        $score->delete();
+    } else {
+        $score->status = 'submitted';
+        $score->save();
+    }
+
+    Score::calculatePositions($subject->id, $attempt->user->class_id, $session->id, $term->id);
+
+    $classAverage = Score::calculateClassAverage($subject->id, $attempt->user->class_id, $session->id, $term->id);
+
+    Score::where('subject_id', $subject->id)
+        ->where('class_id', $attempt->user->class_id)
+        ->where('session_id', $session->id)
+        ->where('term_id', $term->id)
+        ->update(['class_average' => $classAverage]);
 }
 
 public function manualExamScores(Request $request, $examId)
@@ -1786,26 +1857,7 @@ private function removeRejectedAttemptFromReportCard(ExamAttempt $attempt): void
         ->first();
 
     if ($score) {
-        $hasTests = ((float) $score->ca1 > 0) || ((float) $score->ca2 > 0) || ((float) $score->ca3 > 0);
-
-        if ($hasTests) {
-            $score->update([
-                'exam' => 0,
-                'status' => 'submitted',
-            ]);
-        } else {
-            $score->delete();
-        }
-
-        Score::calculatePositions($subject->id, $attempt->user->class_id, $session->id, $term->id);
-
-        $classAverage = Score::calculateClassAverage($subject->id, $attempt->user->class_id, $session->id, $term->id);
-
-        Score::where('subject_id', $subject->id)
-            ->where('class_id', $attempt->user->class_id)
-            ->where('session_id', $session->id)
-            ->where('term_id', $term->id)
-            ->update(['class_average' => $classAverage]);
+        $this->removeAttemptScoreFromReportCard($attempt);
     }
 
     $summary = ReportCard::generateForStudent($attempt->user_id, $session->id, $term->id);
