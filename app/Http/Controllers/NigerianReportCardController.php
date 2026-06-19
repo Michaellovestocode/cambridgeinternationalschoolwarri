@@ -467,8 +467,8 @@ class NigerianReportCardController extends Controller
             ->orderBy('subject_id')
             ->get();
         
-        // Get school settings
-        $schoolSettings = \App\Models\SchoolSettings::first() ?? new \App\Models\SchoolSettings();
+        // Get school settings (use helper to ensure defaults are available)
+        $schoolSettings = \App\Models\SchoolSettings::getSettings();
         
         // Color schemes
         $colorSchemes = [
@@ -503,7 +503,7 @@ class NigerianReportCardController extends Controller
             ->orderBy('subject_id')
             ->get();
 
-        $schoolSettings = \App\Models\SchoolSettings::first() ?? new \App\Models\SchoolSettings();
+        $schoolSettings = \App\Models\SchoolSettings::getSettings();
 
         $colorSchemes = [
             'blue' => ['primary' => '#1E40AF', 'secondary' => '#3B82F6', 'light' => '#DBEAFE'],
@@ -551,8 +551,8 @@ class NigerianReportCardController extends Controller
             ->orderBy('subject_id')
             ->get();
         
-        // Get school settings
-        $schoolSettings = \App\Models\SchoolSettings::first() ?? new \App\Models\SchoolSettings();
+        // Get school settings (use helper to ensure defaults are available)
+        $schoolSettings = \App\Models\SchoolSettings::getSettings();
         
         // Color schemes
         $colorSchemes = [
