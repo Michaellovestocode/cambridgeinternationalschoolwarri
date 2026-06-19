@@ -489,7 +489,7 @@
         $studentPhotoPath = $reportCard->student->photo ? public_path('storage/' . $reportCard->student->photo) : null;
         $clubSociety = $reportCard->student->club_society ?: 'N/A';
         $favouriteColour = $reportCard->student->favourite_colour ?: 'N/A';
-        $schoolAddress = $schoolSettings->school_address ?: 'No. 2 Airport Road, By Kosini Junction, Warri, Delta State, Nigeria';
+        $schoolAddress = $schoolSettings->school_address ?: 'Delta, Nigeria';
         $schoolEmail = $schoolSettings->school_email ?: 'info@cambridgeinternationalschoolwarri.com';
         $schoolWebsite = $schoolSettings->school_website ?: 'cambridgeinternationalschoolwarri.com';
         $termReportName = str($reportCard->term->name)
