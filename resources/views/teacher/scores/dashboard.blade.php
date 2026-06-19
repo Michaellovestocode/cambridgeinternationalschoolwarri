@@ -6,7 +6,7 @@
 <div class="max-w-6xl mx-auto px-4 py-8">
     <div class="mb-8">
         <h1 class="text-4xl font-bold text-gray-800 mb-2">📊 Score Entry Dashboard</h1>
-        <p class="text-gray-600">Save 1st Test, Notes, and Exam scores as they become available, then submit when ready for report-card review.</p>
+        <p class="text-gray-600">Save CBT-linked and paper-based 1st Test, Notes, and Exam scores as they become available, then submit when ready for report-card review.</p>
     </div>
 
     <!-- Session/Term Info -->
@@ -99,12 +99,22 @@
     <div class="bg-white rounded-lg shadow-lg p-8 mb-8">
         <h2 class="text-2xl font-bold text-gray-800 mb-6">Quick Actions</h2>
         
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <!-- Manual Paper Scores -->
+            <div class="border-2 border-emerald-300 rounded-lg p-6 hover:shadow-lg transition">
+                <div class="text-5xl mb-4">P</div>
+                <h3 class="text-xl font-bold text-gray-800 mb-2">Paper / Manual Scores</h3>
+                <p class="text-gray-600 mb-4">Enter scores for tests or exams that were written on paper for your assigned classes.</p>
+                <a href="{{ route('teacher.scores.select', ['score_source' => 'paper']) }}" class="inline-block w-full text-center bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-lg font-semibold transition">
+                    Fill Paper Scores
+                </a>
+            </div>
+
             <!-- Enter Scores -->
             <div class="border-2 border-blue-300 rounded-lg p-6 hover:shadow-lg transition">
                 <div class="text-5xl mb-4">📝</div>
-                <h3 class="text-xl font-bold text-gray-800 mb-2">Continuous Assessment & Exam Scores</h3>
-                <p class="text-gray-600 mb-4">Enter 1st Test, Notes, or Exam separately for your assigned classes and subjects.</p>
+                <h3 class="text-xl font-bold text-gray-800 mb-2">Subject Score Entry</h3>
+                <p class="text-gray-600 mb-4">Continue entering 1st Test, Notes, or Exam scores separately for your subjects.</p>
                 <a href="{{ route('teacher.scores.select') }}" class="inline-block w-full text-center bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold transition">
                     Enter Scores
                 </a>
@@ -125,7 +135,7 @@
                 <div class="text-5xl mb-4">ℹ️</div>
                 <h3 class="text-xl font-bold text-gray-800 mb-2">How It Works</h3>
                 <p class="text-gray-600 mb-4">Learn about the score entry system and best practices.</p>
-                <button class="w-full text-center bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg font-semibold transition" onclick="alert('Step 1: Select your assigned class and subject\nStep 2: Enter 1st Test score out of 30\nStep 3: Enter Notes score out of 10\nStep 4: Enter Exam score out of 60\nStep 5: Save as draft or submit for approval')">
+                <button class="w-full text-center bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg font-semibold transition" onclick="alert('Step 1: Select your assigned class and subject\nStep 2: Choose 1st Test, Notes, Exam, or All Scores\nStep 3: Enter paper scores only where CBT has not already supplied a score\nStep 4: Save as draft or submit for report-card refresh')">
                     View Instructions
                 </button>
             </div>
@@ -140,6 +150,7 @@
             <li>Notes is out of 10 marks</li>
             <li>Exam score is out of 60 marks</li>
             <li>Total score per subject = 30 + 10 + 60 = 100</li>
+            <li>Manual paper entry cannot overwrite a score already supplied by CBT</li>
             <li>Save scores as draft before final submission</li>
             <li>Once submitted, scores cannot be modified</li>
         </ul>

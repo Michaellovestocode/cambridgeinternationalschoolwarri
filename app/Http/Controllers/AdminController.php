@@ -390,8 +390,10 @@ private function removeAttemptScoreFromReportCard(ExamAttempt $attempt): void
 
     if ($attempt->exam->assessment_component === 'test') {
         $score->ca1 = 0;
+        $score->ca1_source = null;
     } else {
         $score->exam = 0;
+        $score->exam_source = null;
     }
 
     if ((float) $score->ca1 === 0.0 && (float) $score->ca2 === 0.0 && (float) $score->ca3 === 0.0 && (float) $score->exam === 0.0) {
@@ -508,13 +510,19 @@ public function storeManualExamScores(Request $request, $examId)
                 'term_id' => $activeTerm->id,
             ]);
 
+            $this->guardManualEntryAgainstCbtScores($existing, $scoreData, ['ca1', 'ca2', 'exam']);
+
             $existing->fill([
                 'class_id' => $validated['class_id'],
                 'teacher_id' => Auth::id(),
                 'ca1' => $scoreData['ca1'] ?? 0,
+                'ca1_source' => $this->scoreDataHasFieldValue($scoreData, 'ca1') ? 'paper' : ($existing->exists ? $existing->ca1_source : null),
                 'ca2' => $scoreData['ca2'] ?? 0,
+                'ca2_source' => $this->scoreDataHasFieldValue($scoreData, 'ca2') ? 'paper' : ($existing->exists ? $existing->ca2_source : null),
                 'ca3' => 0,
+                'ca3_source' => $existing->exists ? $existing->ca3_source : null,
                 'exam' => $scoreData['exam'] ?? 0,
+                'exam_source' => $this->scoreDataHasFieldValue($scoreData, 'exam') ? 'paper' : ($existing->exists ? $existing->exam_source : null),
                 'status' => 'submitted',
             ]);
             $existing->save();
@@ -538,6 +546,9 @@ public function storeManualExamScores(Request $request, $examId)
         return redirect()
             ->route('admin.exam.manual-scores', ['exam' => $exam->id, 'class_id' => $validated['class_id']])
             ->with('success', "{$saved} scores saved. {$generated} report cards refreshed.");
+    } catch (\Illuminate\Validation\ValidationException $e) {
+        DB::rollBack();
+        throw $e;
     } catch (\Throwable $e) {
         DB::rollBack();
 
@@ -1664,6 +1675,39 @@ private function canManageAttempt(ExamAttempt $attempt): bool
     }
 
     return $teachesSubject && $user->teachingClasses()->whereKey($classId)->exists();
+}
+
+private function guardManualEntryAgainstCbtScores(Score $score, array $scoreData, array $fields): void
+{
+    if (! $score->exists) {
+        return;
+    }
+
+    foreach ($fields as $field) {
+        if (! $this->scoreDataHasFieldValue($scoreData, $field)) {
+            continue;
+        }
+
+        if ($score->{$field . '_source'} === 'cbt') {
+            $label = match ($field) {
+                'ca1' => '1st Test',
+                'ca2' => 'Notes',
+                'exam' => 'Exam',
+                default => strtoupper($field),
+            };
+
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'scores' => "{$label} already has a CBT score for {$score->student?->name}. Manual paper entry cannot overwrite CBT scores.",
+            ]);
+        }
+    }
+}
+
+private function scoreDataHasFieldValue(array $scoreData, string $field): bool
+{
+    return array_key_exists($field, $scoreData)
+        && $scoreData[$field] !== null
+        && $scoreData[$field] !== '';
 }
 
 private function canManageManualExam(Exam $exam): bool

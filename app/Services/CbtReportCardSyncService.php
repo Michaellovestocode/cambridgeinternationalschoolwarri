@@ -39,17 +39,36 @@ class CbtReportCardSyncService
                 'term_id' => $term->id,
             ]);
 
+            $isTestComponent = $attempt->exam->assessment_component === 'test';
+            $isExamComponent = $attempt->exam->assessment_component === 'exam';
+
             $score->fill([
                 'class_id' => $student->class_id,
                 'teacher_id' => $attempt->exam->created_by,
-                'ca1' => $attempt->exam->assessment_component === 'test'
+                'ca1' => $isTestComponent
                     ? $examScore
                     : ($score->exists ? $score->ca1 : 0),
+                'ca1_source' => $isTestComponent ? 'cbt' : ($score->exists ? $score->ca1_source : null),
+                'ca1_original_cbt_score' => $isTestComponent ? null : ($score->exists ? $score->ca1_original_cbt_score : null),
+                'ca1_overridden_by' => $isTestComponent ? null : ($score->exists ? $score->ca1_overridden_by : null),
+                'ca1_overridden_at' => $isTestComponent ? null : ($score->exists ? $score->ca1_overridden_at : null),
                 'ca2' => $score->exists ? $score->ca2 : 0,
+                'ca2_source' => $score->exists ? $score->ca2_source : null,
+                'ca2_original_cbt_score' => $score->exists ? $score->ca2_original_cbt_score : null,
+                'ca2_overridden_by' => $score->exists ? $score->ca2_overridden_by : null,
+                'ca2_overridden_at' => $score->exists ? $score->ca2_overridden_at : null,
                 'ca3' => 0,
-                'exam' => $attempt->exam->assessment_component === 'exam'
+                'ca3_source' => $score->exists ? $score->ca3_source : null,
+                'ca3_original_cbt_score' => $score->exists ? $score->ca3_original_cbt_score : null,
+                'ca3_overridden_by' => $score->exists ? $score->ca3_overridden_by : null,
+                'ca3_overridden_at' => $score->exists ? $score->ca3_overridden_at : null,
+                'exam' => $isExamComponent
                     ? $examScore
                     : ($score->exists ? $score->exam : 0),
+                'exam_source' => $isExamComponent ? 'cbt' : ($score->exists ? $score->exam_source : null),
+                'exam_original_cbt_score' => $isExamComponent ? null : ($score->exists ? $score->exam_original_cbt_score : null),
+                'exam_overridden_by' => $isExamComponent ? null : ($score->exists ? $score->exam_overridden_by : null),
+                'exam_overridden_at' => $isExamComponent ? null : ($score->exists ? $score->exam_overridden_at : null),
                 'status' => 'submitted',
                 'teacher_comment' => $score->teacher_comment,
             ]);

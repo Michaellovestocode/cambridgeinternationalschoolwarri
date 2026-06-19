@@ -11,10 +11,12 @@
                 Generate and manage report cards for the active session and term.
             </p>
         </div>
-        <a href="{{ route('admin.report-cards.manual') }}"
-           class="bg-green-600 hover:bg-green-700 text-white px-5 py-3 rounded-lg font-medium text-center">
-            Manual Report Card Builder
-        </a>
+        @if(auth()->user()->isAdmin())
+            <a href="{{ route('admin.report-cards.manual') }}"
+               class="bg-green-600 hover:bg-green-700 text-white px-5 py-3 rounded-lg font-medium text-center">
+                Manual Report Card Builder
+            </a>
+        @endif
     </div>
 
     @if (session('success'))

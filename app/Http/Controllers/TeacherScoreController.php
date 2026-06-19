@@ -92,6 +92,7 @@ class TeacherScoreController extends Controller
             'class_id' => 'required|exists:school_classes,id',
             'subject_id' => 'required|exists:subjects,id',
             'score_mode' => 'nullable|in:all,first_test,notes,exam',
+            'score_source' => 'nullable|in:paper,manual',
             'scores' => 'sometimes|array',
             'scores.*.student_id' => 'required_with:scores|exists:users,id',
             'scores.*.ca1' => 'nullable|numeric|min:0|max:30',
@@ -142,6 +143,7 @@ class TeacherScoreController extends Controller
             'class_id' => 'required|exists:school_classes,id',
             'subject_id' => 'required|exists:subjects,id',
             'score_mode' => 'nullable|in:all,first_test,notes,exam',
+            'score_source' => 'nullable|in:paper,manual',
             'scores' => 'required|array',
             'scores.*.student_id' => 'required|exists:users,id',
             'scores.*.ca1' => 'nullable|numeric|min:0|max:30',
@@ -154,6 +156,7 @@ class TeacherScoreController extends Controller
         $activeTerm = Term::getActive();
         $scoreMode = $request->input('score_mode', 'all');
         $scoreFields = $this->scoreFieldsForMode($scoreMode);
+        $scoreSource = $request->input('score_source', 'paper');
         $this->authorizeScoreEntry($teacher, (int) $request->class_id, (int) $request->subject_id);
         
         DB::beginTransaction();
@@ -179,7 +182,8 @@ class TeacherScoreController extends Controller
                         'class_id' => $request->class_id,
                         'teacher_id' => $teacher->id,
                         'status' => 'draft',
-                    ]
+                    ],
+                    $scoreSource
                 ));
 
                 $score->save();
@@ -189,6 +193,9 @@ class TeacherScoreController extends Controller
             
             return redirect()->back()->with('success', 'Scores saved successfully!');
             
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            DB::rollBack();
+            throw $e;
         } catch (\Exception $e) {
             DB::rollBack();
             return redirect()->back()->with('error', 'Error saving scores: ' . $e->getMessage());
@@ -203,6 +210,7 @@ class TeacherScoreController extends Controller
             'class_id' => 'required|exists:school_classes,id',
             'subject_id' => 'required|exists:subjects,id',
             'score_mode' => 'nullable|in:all,first_test,notes,exam',
+            'score_source' => 'nullable|in:paper,manual',
             'scores' => 'sometimes|array',
             'scores.*.student_id' => 'required_with:scores|exists:users,id',
             'scores.*.ca1' => 'nullable|numeric|min:0|max:30',
@@ -216,6 +224,7 @@ class TeacherScoreController extends Controller
         $this->authorizeScoreEntry($teacher, (int) $request->class_id, (int) $request->subject_id);
         $scoreMode = $request->input('score_mode', 'all');
         $scoreFields = $this->scoreFieldsForMode($scoreMode);
+        $scoreSource = $request->input('score_source', 'paper');
         
         DB::beginTransaction();
 
@@ -242,7 +251,8 @@ class TeacherScoreController extends Controller
                         'class_id' => $request->class_id,
                         'teacher_id' => $teacher->id,
                         'status' => 'submitted',
-                    ]
+                    ],
+                    $scoreSource
                 ));
 
                 $score->save();
@@ -271,6 +281,9 @@ class TeacherScoreController extends Controller
             $generated = $this->refreshReportCardsForClass((int) $request->class_id, $activeSession, $activeTerm);
 
             DB::commit();
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            DB::rollBack();
+            throw $e;
         } catch (\Throwable $e) {
             DB::rollBack();
 
@@ -380,22 +393,74 @@ class TeacherScoreController extends Controller
         return false;
     }
 
-    private function scorePayloadForFields(Score $score, array $scoreData, array $fields, array $basePayload): array
+    private function scorePayloadForFields(Score $score, array $scoreData, array $fields, array $basePayload, string $source = 'paper'): array
     {
-        $payload = array_merge($basePayload, ['ca3' => 0]);
+        $payload = array_merge($basePayload, [
+            'ca3' => 0,
+            'ca3_source' => $score->exists ? $score->ca3_source : null,
+        ]);
 
         foreach (['ca1', 'ca2', 'exam'] as $field) {
             if (in_array($field, $fields, true)) {
-                $payload[$field] = $scoreData[$field] ?? 0;
+                $payload = array_merge(
+                    $payload,
+                    $this->componentPayload($score, $scoreData, $field, $source)
+                );
                 continue;
             }
 
             if (!$score->exists) {
                 $payload[$field] = 0;
+                $payload[$field . '_source'] = null;
+                $payload[$field . '_original_cbt_score'] = null;
+                $payload[$field . '_overridden_by'] = null;
+                $payload[$field . '_overridden_at'] = null;
             }
         }
 
         return $payload;
+    }
+
+    private function componentPayload(Score $score, array $scoreData, string $field, string $source): array
+    {
+        $submittedValue = $scoreData[$field] ?? 0;
+        $currentSource = $score->exists ? $score->{$field . '_source'} : null;
+        $currentValue = $score->exists ? (float) $score->{$field} : 0.0;
+
+        $payload = [
+            $field => $submittedValue,
+            $field . '_source' => $this->rowHasValueForField($scoreData, $field)
+                ? $source
+                : ($score->exists ? $currentSource : null),
+            $field . '_original_cbt_score' => $score->exists ? $score->{$field . '_original_cbt_score'} : null,
+            $field . '_overridden_by' => $score->exists ? $score->{$field . '_overridden_by'} : null,
+            $field . '_overridden_at' => $score->exists ? $score->{$field . '_overridden_at'} : null,
+        ];
+
+        if (!$this->rowHasValueForField($scoreData, $field)) {
+            return $payload;
+        }
+
+        $isCbtBacked = in_array($currentSource, ['cbt', 'cbt_overridden'], true);
+        $changedCbtValue = $isCbtBacked && round((float) $submittedValue, 2) !== round($currentValue, 2);
+
+        if ($changedCbtValue) {
+            $payload[$field . '_source'] = 'cbt_overridden';
+            $payload[$field . '_original_cbt_score'] = $score->{$field . '_original_cbt_score'} ?? $currentValue;
+            $payload[$field . '_overridden_by'] = auth()->id();
+            $payload[$field . '_overridden_at'] = now();
+        } elseif ($isCbtBacked) {
+            $payload[$field . '_source'] = $currentSource;
+        }
+
+        return $payload;
+    }
+
+    private function rowHasValueForField(array $scoreData, string $field): bool
+    {
+        return array_key_exists($field, $scoreData)
+            && $scoreData[$field] !== null
+            && $scoreData[$field] !== '';
     }
 
     private function refreshReportCardsForClass(int $classId, Session $session, Term $term): int

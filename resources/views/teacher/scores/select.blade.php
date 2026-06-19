@@ -6,7 +6,7 @@
 <div class="max-w-4xl mx-auto px-4 py-8">
     <div class="mb-8">
         <h1 class="text-3xl font-bold text-gray-800 mb-2">📋 Select Class and Subject</h1>
-        <p class="text-gray-600">Choose what you want to enter now. You can save 1st Test, Notes, and Exam separately during the term.</p>
+        <p class="text-gray-600">Choose the class, subject, and paper-score component you want to enter now.</p>
     </div>
 
     <!-- Session/Term Info -->
@@ -22,6 +22,7 @@
     <div class="bg-white rounded-lg shadow-lg p-8">
         <form action="{{ route('teacher.scores.enter') }}" method="POST" class="space-y-6">
             @csrf
+            <input type="hidden" name="score_source" value="{{ request('score_source', 'paper') }}">
 
             <!-- Class Selection -->
             <div>

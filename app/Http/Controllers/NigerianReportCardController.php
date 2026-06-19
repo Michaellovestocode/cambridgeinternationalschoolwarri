@@ -175,6 +175,7 @@ class NigerianReportCardController extends Controller
     public function manual(Request $request)
     {
         $this->authorizeReportCardManagement();
+        $this->authorizeManualReportCardBuilderAccess();
 
         $activeSession = Session::getActive();
         $activeTerm = Term::getActive();
@@ -277,6 +278,7 @@ class NigerianReportCardController extends Controller
 
         $student = User::where('role', 'student')->findOrFail($validated['student_id']);
         $this->authorizeClassAccess((int) $validated['class_id']);
+        $this->authorizeManualReportCardBuilderAccess((int) $validated['class_id']);
 
         if ((int) $student->class_id !== (int) $validated['class_id']) {
             return back()->withErrors([
@@ -973,6 +975,36 @@ class NigerianReportCardController extends Controller
             $user->isAdmin() || $user->canReviewReportCards() || ! empty($this->formTeacherClassIdsFor($user->id)),
             403,
             'Only admins, academic reviewers, and active form teachers can manage report cards.'
+        );
+    }
+
+    private function authorizeManualReportCardBuilderAccess(?int $classId = null): void
+    {
+        $user = auth()->user();
+
+        if ($user->isAdmin()) {
+            return;
+        }
+
+        $earlyPrimaryClassIds = $this->earlyPrimaryFormTeacherClassesFor($user)
+            ->pluck('id')
+            ->map(fn ($id) => (int) $id)
+            ->all();
+
+        if ($classId) {
+            abort_unless(
+                in_array($classId, $earlyPrimaryClassIds, true),
+                403,
+                'Secondary teachers should enter paper scores from Teacher Scores > Paper / Manual Scores.'
+            );
+
+            return;
+        }
+
+        abort_unless(
+            ! empty($earlyPrimaryClassIds),
+            403,
+            'Secondary teachers should enter paper scores from Teacher Scores > Paper / Manual Scores.'
         );
     }
 
