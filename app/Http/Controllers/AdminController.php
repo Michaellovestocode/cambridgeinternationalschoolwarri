@@ -49,6 +49,16 @@ class AdminController extends Controller
             ? $user->teachingClasses()->withCount('students')->orderBy('name')->get()
             : collect();
 
+        $paperScoreClasses = collect($teachingClasses->all());
+
+        if ($formTeacherAssignment?->schoolClass) {
+            $paperScoreClasses = $paperScoreClasses->push($formTeacherAssignment->schoolClass);
+        }
+
+        $canUsePaperScores = $user->isAdmin() || $paperScoreClasses
+            ->unique('id')
+            ->contains(fn (SchoolClass $class) => in_array($class->section_key, ['junior_secondary', 'senior_secondary'], true));
+
         $classStudents = $formTeacherAssignment
             ? $formTeacherAssignment->schoolClass->students()->orderBy('name')->get()
             : collect();
@@ -129,6 +139,7 @@ class AdminController extends Controller
             'classStudents',
             'teachingClasses',
             'assignedSubjectCount',
+            'canUsePaperScores',
             'birthdayLearners'
         ));
     }

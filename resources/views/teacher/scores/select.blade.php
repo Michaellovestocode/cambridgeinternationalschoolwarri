@@ -22,7 +22,7 @@
     <div class="bg-white rounded-lg shadow-lg p-8">
         <form action="{{ route('teacher.scores.enter') }}" method="POST" class="space-y-6">
             @csrf
-            <input type="hidden" name="score_source" value="{{ request('score_source', 'paper') }}">
+            <input type="hidden" name="score_source" value="{{ request('score_source', 'manual') }}">
 
             <!-- Class Selection -->
             <div>

@@ -353,7 +353,7 @@
                     </svg>
                 </a>
 
-                @if(auth()->user()->isTeacher())
+                @if($canUsePaperScores ?? false)
                 <a href="{{ route('teacher.scores.select', ['score_source' => 'paper']) }}"
                    class="flex items-center justify-between bg-gradient-to-r from-teal-500 to-emerald-600 hover:from-teal-600 hover:to-emerald-700 text-white px-6 py-4 rounded-xl font-bold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all group">
                     <span class="flex items-center">
@@ -366,7 +366,9 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
                     </svg>
                 </a>
+                @endif
 
+                @if(auth()->user()->isTeacher())
                 <a href="{{ route('admin.subjects.my') }}"
                    class="flex items-center justify-between bg-gradient-to-r from-indigo-500 to-blue-600 hover:from-indigo-600 hover:to-blue-700 text-white px-6 py-4 rounded-xl font-bold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all group">
                     <span class="flex items-center">

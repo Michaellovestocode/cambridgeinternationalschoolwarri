@@ -116,6 +116,8 @@ class TeacherScoreController extends Controller
         
         $class = SchoolClass::findOrFail($request->class_id);
         $subject = Subject::findOrFail($request->subject_id);
+        $this->authorizeScoreEntry($teacher, (int) $request->class_id, (int) $request->subject_id);
+        $this->authorizePaperScoreEntry($teacher, $class, $request->input('score_source', 'manual'));
         
         // Get all students in the class
         $students = User::where('class_id', $request->class_id)
@@ -170,8 +172,9 @@ class TeacherScoreController extends Controller
 
         $scoreMode = $request->input('score_mode', 'all');
         $scoreFields = $this->scoreFieldsForMode($scoreMode);
-        $scoreSource = $request->input('score_source', 'paper');
+        $scoreSource = $request->input('score_source', 'manual');
         $this->authorizeScoreEntry($teacher, (int) $request->class_id, (int) $request->subject_id);
+        $this->authorizePaperScoreEntry($teacher, SchoolClass::findOrFail($request->class_id), $scoreSource);
         
         DB::beginTransaction();
         
@@ -244,7 +247,8 @@ class TeacherScoreController extends Controller
         $this->authorizeScoreEntry($teacher, (int) $request->class_id, (int) $request->subject_id);
         $scoreMode = $request->input('score_mode', 'all');
         $scoreFields = $this->scoreFieldsForMode($scoreMode);
-        $scoreSource = $request->input('score_source', 'paper');
+        $scoreSource = $request->input('score_source', 'manual');
+        $this->authorizePaperScoreEntry($teacher, SchoolClass::findOrFail($request->class_id), $scoreSource);
         
         DB::beginTransaction();
 
@@ -402,6 +406,18 @@ class TeacherScoreController extends Controller
             'junior_secondary',
             'senior_secondary',
         ], true));
+    }
+
+    private function authorizePaperScoreEntry(User $teacher, SchoolClass $class, ?string $scoreSource): void
+    {
+        if ($scoreSource !== 'paper' || $teacher->isAdmin()) {
+            return;
+        }
+
+        abort_unless(in_array($class->section_key, [
+            'junior_secondary',
+            'senior_secondary',
+        ], true), 403, 'Paper score entry is only available for secondary classes.');
     }
 
     private function scoreFieldsForMode(string $mode): array

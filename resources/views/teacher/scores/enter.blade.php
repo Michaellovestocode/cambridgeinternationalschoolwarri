@@ -70,7 +70,7 @@
 
     <div class="mb-6 grid grid-cols-2 md:grid-cols-4 gap-3">
         @foreach($modeLabels as $value => $label)
-            <a href="{{ route('teacher.scores.enter') }}?class_id={{ $class->id }}&subject_id={{ $subject->id }}&score_mode={{ $value }}&score_source={{ request('score_source', 'paper') }}"
+            <a href="{{ route('teacher.scores.enter') }}?class_id={{ $class->id }}&subject_id={{ $subject->id }}&score_mode={{ $value }}&score_source={{ request('score_source', 'manual') }}"
                class="rounded-lg border-2 px-4 py-3 text-center font-bold transition {{ $scoreMode === $value ? 'border-blue-600 bg-blue-600 text-white shadow' : 'border-gray-200 bg-white text-gray-700 hover:border-blue-300' }}">
                 {{ $label }}
             </a>
@@ -85,7 +85,7 @@
             <input type="hidden" name="class_id" value="{{ $class->id }}">
             <input type="hidden" name="subject_id" value="{{ $subject->id }}">
             <input type="hidden" name="score_mode" value="{{ $scoreMode }}">
-            <input type="hidden" name="score_source" value="{{ request('score_source', 'paper') }}">
+            <input type="hidden" name="score_source" value="{{ request('score_source', 'manual') }}">
 
             <!-- Score Grading System Info -->
             <div class="bg-blue-50 border border-blue-300 rounded-lg p-4 mb-6">
