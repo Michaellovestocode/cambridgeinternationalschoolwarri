@@ -100,15 +100,17 @@
         <h2 class="text-2xl font-bold text-gray-800 mb-6">Quick Actions</h2>
         
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <!-- Manual Paper Scores -->
-            <div class="border-2 border-emerald-300 rounded-lg p-6 hover:shadow-lg transition">
-                <div class="text-5xl mb-4">P</div>
-                <h3 class="text-xl font-bold text-gray-800 mb-2">Paper / Manual Scores</h3>
-                <p class="text-gray-600 mb-4">Enter paper scores, review CBT scores, and correct CBT marks when a tracked override is needed.</p>
-                <a href="{{ route('teacher.scores.select', ['score_source' => 'paper']) }}" class="inline-block w-full text-center bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-lg font-semibold transition">
-                    Fill Paper Scores
-                </a>
-            </div>
+            @if($canUsePaperScores ?? false)
+                <!-- Manual Paper Scores -->
+                <div class="border-2 border-emerald-300 rounded-lg p-6 hover:shadow-lg transition">
+                    <div class="text-5xl mb-4">P</div>
+                    <h3 class="text-xl font-bold text-gray-800 mb-2">Paper / Manual Scores</h3>
+                    <p class="text-gray-600 mb-4">Enter paper scores, review CBT scores, and correct CBT marks when a tracked override is needed.</p>
+                    <a href="{{ route('teacher.scores.select', ['score_source' => 'paper']) }}" class="inline-block w-full text-center bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-lg font-semibold transition">
+                        Fill Paper Scores
+                    </a>
+                </div>
+            @endif
 
             <!-- Enter Scores -->
             <div class="border-2 border-blue-300 rounded-lg p-6 hover:shadow-lg transition">

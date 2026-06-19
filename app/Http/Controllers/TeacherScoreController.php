@@ -27,6 +27,7 @@ class TeacherScoreController extends Controller
         
         $teacherSubjects = $this->availableSubjectsFor($teacher);
         $classes = $this->availableClassesFor($teacher);
+        $canUsePaperScores = $this->canUsePaperScoresForClasses($teacher, $classes);
         $sessions = Session::orderByDesc('start_date')->get();
         $terms = Term::with('session')->orderByDesc('start_date')->get();
         
@@ -58,6 +59,7 @@ class TeacherScoreController extends Controller
             'selectedTerm',
             'teacherSubjects', 
             'classes',
+            'canUsePaperScores',
             'sessions',
             'terms',
             'totalScoresEntered',
@@ -388,6 +390,18 @@ class TeacherScoreController extends Controller
         $hasSubject = $teacher->subjects()->whereKey($subjectId)->exists();
 
         abort_unless($hasClass && $hasSubject, 403, 'You can only enter scores for classes and subjects assigned to you.');
+    }
+
+    private function canUsePaperScoresForClasses(User $teacher, $classes): bool
+    {
+        if ($teacher->isAdmin()) {
+            return true;
+        }
+
+        return $classes->contains(fn (SchoolClass $class) => in_array($class->section_key, [
+            'junior_secondary',
+            'senior_secondary',
+        ], true));
     }
 
     private function scoreFieldsForMode(string $mode): array

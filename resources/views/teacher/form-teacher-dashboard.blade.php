@@ -44,10 +44,12 @@
 
                 <!-- Action Buttons -->
                 <div class="flex flex-col gap-2 pt-4 border-t">
-                    <a href="{{ route('teacher.scores.select', ['score_source' => 'paper']) }}" 
-                       class="w-full bg-emerald-500 hover:bg-emerald-600 text-white py-2 rounded font-semibold text-center transition">
-                        Fill Paper Scores
-                    </a>
+                    @if(auth()->user()->isAdmin() || in_array($item['class']->section_key, ['junior_secondary', 'senior_secondary'], true))
+                        <a href="{{ route('teacher.scores.select', ['score_source' => 'paper']) }}" 
+                           class="w-full bg-emerald-500 hover:bg-emerald-600 text-white py-2 rounded font-semibold text-center transition">
+                            Fill Paper Scores
+                        </a>
+                    @endif
                     <a href="{{ route('teacher.scores.dashboard') }}" 
                        class="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 rounded font-semibold text-center transition">
                         📊 Go to Score Entry
