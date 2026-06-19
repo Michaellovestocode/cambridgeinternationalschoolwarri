@@ -103,6 +103,12 @@ class TeacherScoreController extends Controller
         $teacher = Auth::user();
         $activeSession = Session::getActive();
         $activeTerm = Term::getActive();
+
+        if (!$activeSession || !$activeTerm) {
+            return redirect()->route('teacher.scores.select')
+                ->with('error', 'No active session or term found. Please contact admin.');
+        }
+
         $scoreMode = $request->input('score_mode', 'all');
         $scoreFields = $this->scoreFieldsForMode($scoreMode);
         
@@ -154,6 +160,12 @@ class TeacherScoreController extends Controller
         $teacher = Auth::user();
         $activeSession = Session::getActive();
         $activeTerm = Term::getActive();
+
+        if (!$activeSession || !$activeTerm) {
+            return redirect()->route('teacher.scores.select')
+                ->with('error', 'No active session or term found. Please contact admin.');
+        }
+
         $scoreMode = $request->input('score_mode', 'all');
         $scoreFields = $this->scoreFieldsForMode($scoreMode);
         $scoreSource = $request->input('score_source', 'paper');
@@ -221,6 +233,12 @@ class TeacherScoreController extends Controller
         $teacher = Auth::user();
         $activeSession = Session::getActive();
         $activeTerm = Term::getActive();
+
+        if (!$activeSession || !$activeTerm) {
+            return redirect()->route('teacher.scores.select')
+                ->with('error', 'No active session or term found. Please contact admin.');
+        }
+
         $this->authorizeScoreEntry($teacher, (int) $request->class_id, (int) $request->subject_id);
         $scoreMode = $request->input('score_mode', 'all');
         $scoreFields = $this->scoreFieldsForMode($scoreMode);
