@@ -41,9 +41,9 @@
         };
     };
 @endphp
-<div class="max-w-6xl mx-auto px-4 py-8">
+<div class="max-w-6xl mx-auto px-3 py-5 sm:px-4 sm:py-8">
     <div class="mb-8">
-        <h1 class="text-3xl font-bold text-gray-800 mb-2">
+        <h1 class="text-2xl font-bold text-gray-800 mb-2 sm:text-3xl">
             📝 Enter Scores - {{ $class->name ?? 'Class' }}
         </h1>
         <p class="text-gray-600">{{ $subject->name ?? 'Subject' }} | {{ $activeSession->name ?? '' }} - {{ $activeTerm->name ?? '' }}</p>
@@ -78,7 +78,7 @@
     </div>
 
     <!-- Score Entry Form -->
-    <div class="bg-white rounded-lg shadow-lg p-8">
+    <div class="bg-white rounded-lg shadow-lg p-4 sm:p-8">
         <form id="scoresForm" method="POST" class="space-y-6">
             @csrf
 
@@ -112,22 +112,22 @@
                 </div>
             @else
                 <div class="overflow-x-auto mb-6">
-                    <table class="w-full border-collapse">
+                    <table class="w-full min-w-[760px] border-collapse text-sm sm:text-base">
                         <thead class="bg-gray-200">
                             <tr>
-                                <th class="border border-gray-300 px-4 py-3 text-left font-bold">S/N</th>
-                                <th class="border border-gray-300 px-4 py-3 text-left font-bold">Student Name</th>
+                                <th class="border border-gray-300 px-3 py-3 text-left font-bold sm:px-4">S/N</th>
+                                <th class="border border-gray-300 px-3 py-3 text-left font-bold sm:px-4">Student Name</th>
                                 @if(in_array('ca1', $scoreFields, true))
-                                    <th class="border border-gray-300 px-4 py-3 text-center font-bold">CA1 (30)</th>
+                                    <th class="border border-gray-300 px-3 py-3 text-center font-bold sm:px-4">CA1 (30)</th>
                                 @endif
                                 @if(in_array('ca2', $scoreFields, true))
-                                    <th class="border border-gray-300 px-4 py-3 text-center font-bold">CA2 (10)</th>
+                                    <th class="border border-gray-300 px-3 py-3 text-center font-bold sm:px-4">CA2 (10)</th>
                                 @endif
                                 @if(in_array('exam', $scoreFields, true))
-                                    <th class="border border-gray-300 px-4 py-3 text-center font-bold">Exam (60)</th>
+                                    <th class="border border-gray-300 px-3 py-3 text-center font-bold sm:px-4">Exam (60)</th>
                                 @endif
-                                <th class="border border-gray-300 px-4 py-3 text-center font-bold">Total (100)</th>
-                                <th class="border border-gray-300 px-4 py-3 text-center font-bold">Status</th>
+                                <th class="border border-gray-300 px-3 py-3 text-center font-bold sm:px-4">Total (100)</th>
+                                <th class="border border-gray-300 px-3 py-3 text-center font-bold sm:px-4">Status</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -142,8 +142,8 @@
                                     $examBadge = $sourceBadge($existingScore, 'exam');
                                 @endphp
                                 <tr class="hover:bg-gray-50 border-b border-gray-300">
-                                    <td class="border border-gray-300 px-4 py-3 text-center font-bold text-gray-700">{{ $index + 1 }}</td>
-                                    <td class="border border-gray-300 px-4 py-3 font-semibold text-gray-800">
+                                    <td class="border border-gray-300 px-3 py-3 text-center font-bold text-gray-700 sm:px-4">{{ $index + 1 }}</td>
+                                    <td class="border border-gray-300 px-3 py-3 font-semibold text-gray-800 sm:px-4">
                                         {{ $student->name }}
                                         <br>
                                         <span class="text-sm text-gray-500">{{ $student->registration_number }}</span>
@@ -151,7 +151,7 @@
                                     <input type="hidden" name="scores[{{ $index }}][student_id]" value="{{ $student->id }}">
 
                                     @if(in_array('ca1', $scoreFields, true))
-                                        <td class="border border-gray-300 px-4 py-3">
+                                        <td class="border border-gray-300 px-3 py-3 sm:px-4">
                                             @if($ca1Badge)
                                                 <div class="mb-2 text-center">
                                                     <span title="{{ $ca1Badge['title'] }}" class="inline-flex rounded-full border px-2 py-0.5 text-xs font-bold {{ $ca1Badge['class'] }}">
@@ -165,7 +165,7 @@
                                                 min="0" max="30" step="0.5"
                                                 data-score-limit="30"
                                                 data-score-label="CA1"
-                                                class="w-full border border-gray-400 rounded px-2 py-1 text-center focus:outline-none focus:border-blue-500"
+                                                class="w-full min-w-20 border border-gray-400 rounded px-2 py-2 text-center focus:outline-none focus:border-blue-500"
                                                 placeholder="0">
                                         </td>
                                     @else
@@ -173,7 +173,7 @@
                                     @endif
 
                                     @if(in_array('ca2', $scoreFields, true))
-                                        <td class="border border-gray-300 px-4 py-3">
+                                        <td class="border border-gray-300 px-3 py-3 sm:px-4">
                                             @if($ca2Badge)
                                                 <div class="mb-2 text-center">
                                                     <span title="{{ $ca2Badge['title'] }}" class="inline-flex rounded-full border px-2 py-0.5 text-xs font-bold {{ $ca2Badge['class'] }}">
@@ -187,7 +187,7 @@
                                                 min="0" max="10" step="0.5"
                                                 data-score-limit="10"
                                                 data-score-label="CA2"
-                                                class="w-full border border-gray-400 rounded px-2 py-1 text-center focus:outline-none focus:border-blue-500"
+                                                class="w-full min-w-20 border border-gray-400 rounded px-2 py-2 text-center focus:outline-none focus:border-blue-500"
                                                 placeholder="0">
                                         </td>
                                     @else
@@ -195,7 +195,7 @@
                                     @endif
 
                                     @if(in_array('exam', $scoreFields, true))
-                                        <td class="border border-gray-300 px-4 py-3">
+                                        <td class="border border-gray-300 px-3 py-3 sm:px-4">
                                             @if($examBadge)
                                                 <div class="mb-2 text-center">
                                                     <span title="{{ $examBadge['title'] }}" class="inline-flex rounded-full border px-2 py-0.5 text-xs font-bold {{ $examBadge['class'] }}">
@@ -209,17 +209,17 @@
                                                 min="0" max="60" step="0.5"
                                                 data-score-limit="60"
                                                 data-score-label="Exam"
-                                                class="w-full border border-gray-400 rounded px-2 py-1 text-center focus:outline-none focus:border-blue-500"
+                                                class="w-full min-w-20 border border-gray-400 rounded px-2 py-2 text-center focus:outline-none focus:border-blue-500"
                                                 placeholder="0">
                                         </td>
                                     @else
                                         <input type="hidden" name="scores[{{ $index }}][exam]" value="{{ $exam }}">
                                     @endif
-                                    <td class="border border-gray-300 px-4 py-3 text-center font-bold bg-gray-100">
+                                    <td class="border border-gray-300 px-3 py-3 text-center font-bold bg-gray-100 sm:px-4">
                                         <span class="total-score">{{ ($ca1 ?? 0) + ($ca2 ?? 0) + ($exam ?? 0) }}</span>
                                         <p class="mt-1 hidden text-xs font-semibold text-red-600" data-score-error></p>
                                     </td>
-                                    <td class="border border-gray-300 px-4 py-3 text-center">
+                                    <td class="border border-gray-300 px-3 py-3 text-center sm:px-4">
                                         @if($existingScore)
                                             <span class="inline-flex rounded-full px-3 py-1 text-xs font-bold {{ $existingScore->status === 'submitted' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700' }}">
                                                 {{ ucfirst($existingScore->status) }}
