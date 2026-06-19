@@ -75,8 +75,8 @@
         /* Header */
         .header {
             border: 2px solid {{ $selectedColor['primary'] }};
-            padding: 7px;
-            margin-bottom: 8px;
+            padding: 6px 7px;
+            margin-bottom: 7px;
             background: #fff;
         }
 
@@ -108,36 +108,36 @@
         }
         
         .school-logo {
-            width: 82px;
-            height: 88px;
+            width: 78px;
+            height: 84px;
             border: 2px solid {{ $selectedColor['primary'] }};
             object-fit: contain;
         }
         
         .student-photo {
-            width: 82px;
-            height: 88px;
+            width: 78px;
+            height: 84px;
             border: 2px solid {{ $selectedColor['primary'] }};
             object-fit: cover;
         }
 
         .student-photo-placeholder {
-            width: 82px;
-            height: 88px;
+            width: 78px;
+            height: 84px;
             border: 2px solid {{ $selectedColor['primary'] }};
             text-align: center;
-            line-height: 88px;
+            line-height: 84px;
             font-size: 10px;
             color: #666;
             display: inline-block;
         }
         
         .school-name {
-            font-size: 20px;
+            font-size: 19px;
             font-weight: bold;
             color: #0B2A4A;
             margin-bottom: 3px;
-            letter-spacing: .5px;
+            letter-spacing: .25px;
         }
         
         .school-address {
@@ -175,7 +175,7 @@
         
         /* Student Info */
         .student-info {
-            margin-bottom: 8px;
+            margin-bottom: 7px;
             font-size: 10px;
             border: 1px solid {{ $selectedColor['primary'] }};
             background: #fff;
@@ -210,7 +210,7 @@
         }
         
         th, td {
-            border: 1px solid #000;
+            border: 1px solid #1F2937;
             padding: 3px 2px;
             text-align: center;
         }
@@ -228,7 +228,7 @@
         }
 
         .scores-table tbody tr td {
-            height: 19px;
+            height: 18px;
         }
         
         .subject-name {
@@ -238,34 +238,32 @@
         }
 
         .official-layout {
-            display: table;
+            display: block;
             width: 100%;
             margin-bottom: 7px;
         }
 
         .official-main {
-            display: table-cell;
-            width: 68%;
-            padding-right: 6px;
-            vertical-align: top;
+            display: block;
+            width: 100%;
+            padding-right: 0;
         }
 
         .official-sidebar {
-            display: table-cell;
-            width: 32%;
-            vertical-align: top;
+            display: block;
+            width: 100%;
         }
 
         .official-main .scores-table {
-            font-size: 8px;
+            font-size: 8.3px;
         }
 
         .official-main .scores-table th {
-            font-size: 7.2px;
+            font-size: 7.4px;
         }
 
         .official-main .scores-table td {
-            font-size: 8px;
+            font-size: 8.2px;
         }
 
         .total-cell {
@@ -300,31 +298,31 @@
         .summary-section {
             display: table;
             width: 100%;
-            margin-bottom: 8px;
+            margin-bottom: 7px;
         }
         
         .summary-col {
             display: table-cell;
-            width: 50%;
-            padding: 5px;
+            width: 33.333%;
+            padding: 3px;
             vertical-align: top;
         }
         
         .summary-box {
             border: 1.5px solid {{ $selectedColor['primary'] }};
             padding: 4px;
-            margin-bottom: 5px;
+            margin-bottom: 4px;
             background: rgba(255, 255, 255, .88);
         }
         
         .summary-title {
             font-weight: bold;
-            background: {{ $selectedColor['light'] }};
+            background: {{ $selectedColor['primary'] }};
+            color: #fff;
             padding: 3px;
             margin-bottom: 3px;
             text-align: center;
             font-size: 9px;
-            color: #111827;
             border-bottom: 1px solid {{ $selectedColor['secondary'] }};
         }
         
@@ -349,13 +347,13 @@
         .traits-section {
             display: table;
             width: 100%;
-            margin: 2px 0 8px;
+            margin: 1px 0 6px;
         }
 
         .traits-col {
             display: table-cell;
             width: 50%;
-            padding: 4px;
+            padding: 3px;
             vertical-align: top;
         }
 
@@ -379,17 +377,50 @@
             margin-top: 3px;
             color: #111827;
         }
+
+        .scale-grade-section {
+            display: table;
+            width: 100%;
+            margin-bottom: 7px;
+        }
+
+        .scale-col {
+            display: table-cell;
+            width: 68%;
+            padding: 3px;
+            vertical-align: top;
+        }
+
+        .overall-col {
+            display: table-cell;
+            width: 32%;
+            padding: 3px;
+            vertical-align: top;
+        }
+
+        .overall-grade-box {
+            border: 1.5px solid {{ $selectedColor['primary'] }};
+            text-align: center;
+            background: rgba(255, 255, 255, .92);
+        }
+
+        .overall-grade-value {
+            font-size: 14px;
+            font-weight: bold;
+            padding: 12px 4px;
+            color: {{ $reportCard->overall_grade === 'F9' ? '#B91C1C' : $selectedColor['primary'] }};
+        }
         
         /* Comments */
         .comments-section {
-            margin-top: 8px;
+            margin-top: 4px;
         }
         
         .comment-box {
             border: 1.5px solid {{ $selectedColor['primary'] }};
-            padding: 7px;
-            margin-bottom: 6px;
-            min-height: 58px;
+            padding: 6px;
+            margin-bottom: 5px;
+            min-height: 52px;
             background: rgba(255, 255, 255, .9);
         }
         
@@ -699,82 +730,95 @@
                             <div class="summary-item">Grade: <strong>{{ $reportCard->overall_grade }}</strong></div>
                         </div>
                     </div>
+                    <div class="summary-col">
+                        <div class="summary-box">
+                            <div class="summary-title">ATTENDANCE SUMMARY</div>
+                            <div class="summary-item">No of Times School Opened: <strong>{{ $reportCard->days_school_opened }}</strong></div>
+                            <div class="summary-item">No of Times Present: <strong>{{ $reportCard->days_present }}</strong></div>
+                            <div class="summary-item">No of Times Absent: <strong>{{ $reportCard->days_absent }}</strong></div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
             <div class="official-sidebar">
-                <div class="summary-box">
-                    <div class="summary-title">ATTENDANCE SUMMARY</div>
-                    <div class="summary-item">No of Times School Opened: <strong>{{ $reportCard->days_school_opened }}</strong></div>
-                    <div class="summary-item">No of Times Present: <strong>{{ $reportCard->days_present }}</strong></div>
-                    <div class="summary-item">No of Times Absent: <strong>{{ $reportCard->days_absent }}</strong></div>
+                <div class="traits-section">
+                    <div class="traits-col">
+                        <div class="summary-box">
+                            <div class="summary-title">AFFECTIVE DOMAIN</div>
+                            <table class="traits-table">
+                                <tr>
+                                    <th>Trait</th>
+                                    <th class="rating-cell">5</th>
+                                    <th class="rating-cell">4</th>
+                                    <th class="rating-cell">3</th>
+                                    <th class="rating-cell">2</th>
+                                    <th class="rating-cell">1</th>
+                                </tr>
+                                @foreach($affectiveTraits as $key => $trait)
+                                    <tr>
+                                        <td style="text-align: left;">{{ $trait }}</td>
+                                        @for($rating = 5; $rating >= 1; $rating--)
+                                            <td>{!! (int) data_get($reportCard->affective_domain, $key) === $rating ? '&#10003;' : '' !!}</td>
+                                        @endfor
+                                    </tr>
+                                @endforeach
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="traits-col">
+                        <div class="summary-box">
+                            <div class="summary-title">PSYCHOMOTOR SKILLS</div>
+                            <table class="traits-table">
+                                <tr>
+                                    <th>Skill</th>
+                                    <th class="rating-cell">5</th>
+                                    <th class="rating-cell">4</th>
+                                    <th class="rating-cell">3</th>
+                                    <th class="rating-cell">2</th>
+                                    <th class="rating-cell">1</th>
+                                </tr>
+                                @foreach($psychomotorTraits as $key => $skill)
+                                    <tr>
+                                        <td style="text-align: left;">{{ $skill }}</td>
+                                        @for($rating = 5; $rating >= 1; $rating--)
+                                            <td>{!! (int) data_get($reportCard->psychomotor_skills, $key) === $rating ? '&#10003;' : '' !!}</td>
+                                        @endfor
+                                    </tr>
+                                @endforeach
+                            </table>
+                            <div class="rating-index"><strong>Rating:</strong> 5 Excellent, 4 Good, 3 Average, 2 Fair, 1 Needs Improvement</div>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="summary-box">
-                    <div class="summary-title">AFFECTIVE DOMAIN</div>
-                    <table class="traits-table">
-                        <tr>
-                            <th>Trait</th>
-                            <th class="rating-cell">5</th>
-                            <th class="rating-cell">4</th>
-                            <th class="rating-cell">3</th>
-                            <th class="rating-cell">2</th>
-                            <th class="rating-cell">1</th>
-                        </tr>
-                        @foreach($affectiveTraits as $key => $trait)
-                            <tr>
-                                <td style="text-align: left;">{{ $trait }}</td>
-                                @for($rating = 5; $rating >= 1; $rating--)
-                                    <td>{!! (int) data_get($reportCard->affective_domain, $key) === $rating ? '&#10003;' : '' !!}</td>
-                                @endfor
-                            </tr>
-                        @endforeach
-                    </table>
-                </div>
+                <div class="scale-grade-section">
+                    <div class="scale-col">
+                        <div class="summary-box grade-scale">
+                            <div class="summary-title">GRADE SCALE</div>
+                            <table>
+                                <tr><th>Score</th><th>Grade</th><th>Remark</th></tr>
+                                <tr><td>75-100</td><td>A1</td><td>EXCELLENT</td></tr>
+                                <tr><td>70-74</td><td>B2</td><td>VERY GOOD</td></tr>
+                                <tr><td>65-69</td><td>B3</td><td>GOOD</td></tr>
+                                <tr><td>60-64</td><td>C4</td><td>CREDIT</td></tr>
+                                <tr><td>55-59</td><td>C5</td><td>CREDIT</td></tr>
+                                <tr><td>50-54</td><td>C6</td><td>CREDIT</td></tr>
+                                <tr><td>45-49</td><td>D7</td><td>PASS</td></tr>
+                                <tr><td>40-44</td><td>E8</td><td>PASS</td></tr>
+                                <tr><td>0-39</td><td>F9</td><td>FAIL</td></tr>
+                            </table>
+                        </div>
+                    </div>
 
-                <div class="summary-box">
-                    <div class="summary-title">PSYCHOMOTOR SKILLS</div>
-                    <table class="traits-table">
-                        <tr>
-                            <th>Skill</th>
-                            <th class="rating-cell">5</th>
-                            <th class="rating-cell">4</th>
-                            <th class="rating-cell">3</th>
-                            <th class="rating-cell">2</th>
-                            <th class="rating-cell">1</th>
-                        </tr>
-                        @foreach($psychomotorTraits as $key => $skill)
-                            <tr>
-                                <td style="text-align: left;">{{ $skill }}</td>
-                                @for($rating = 5; $rating >= 1; $rating--)
-                                    <td>{!! (int) data_get($reportCard->psychomotor_skills, $key) === $rating ? '&#10003;' : '' !!}</td>
-                                @endfor
-                            </tr>
-                        @endforeach
-                    </table>
-                    <div class="rating-index"><strong>Rating:</strong> 5 Excellent, 4 Good, 3 Average, 2 Fair, 1 Needs Improvement</div>
-                </div>
-
-                <div class="summary-box grade-scale">
-                    <div class="summary-title">GRADE SCALE</div>
-                    <table>
-                        <tr><th>Score</th><th>Grade</th><th>Remark</th></tr>
-                        <tr><td>75-100</td><td>A1</td><td>EXCELLENT</td></tr>
-                        <tr><td>70-74</td><td>B2</td><td>VERY GOOD</td></tr>
-                        <tr><td>65-69</td><td>B3</td><td>GOOD</td></tr>
-                        <tr><td>60-64</td><td>C4</td><td>CREDIT</td></tr>
-                        <tr><td>55-59</td><td>C5</td><td>CREDIT</td></tr>
-                        <tr><td>50-54</td><td>C6</td><td>CREDIT</td></tr>
-                        <tr><td>45-49</td><td>D7</td><td>PASS</td></tr>
-                        <tr><td>40-44</td><td>E8</td><td>PASS</td></tr>
-                        <tr><td>0-39</td><td>F9</td><td>FAIL</td></tr>
-                    </table>
-                </div>
-
-                <div style="border: 1.5px solid {{ $selectedColor['primary'] }}; text-align: center; background: rgba(255, 255, 255, .92);">
-                    <div style="background: {{ $selectedColor['primary'] }}; color: #fff; font-weight: bold; font-size: 9px; padding: 3px;">OVERALL GRADE</div>
-                    <div style="font-size: 13px; font-weight: bold; color: #cc0000; padding: 7px 0;">
-                        {{ \App\Models\Subject::getRemark($reportCard->overall_grade) }}, {{ $reportCard->overall_grade }}
+                    <div class="overall-col">
+                        <div class="overall-grade-box">
+                            <div class="summary-title">OVERALL GRADE</div>
+                            <div class="overall-grade-value">
+                                {{ \App\Models\Subject::getRemark($reportCard->overall_grade) }}, {{ $reportCard->overall_grade }}
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
