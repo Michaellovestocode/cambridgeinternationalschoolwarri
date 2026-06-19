@@ -489,9 +489,10 @@
         $studentPhotoPath = $reportCard->student->photo ? public_path('storage/' . $reportCard->student->photo) : null;
         $clubSociety = $reportCard->student->club_society ?: 'N/A';
         $favouriteColour = $reportCard->student->favourite_colour ?: 'N/A';
-        $schoolAddress = $schoolSettings->school_address ?: 'Delta, Nigeria';
-        $schoolEmail = $schoolSettings->school_email ?: 'info@cambridgeinternationalschoolwarri.com';
-        $schoolWebsite = $schoolSettings->school_website ?: 'cambridgeinternationalschoolwarri.com';
+        $schoolAddress = 'Delta, Nigeria';
+        $schoolPhone = '+234 803 289 7744';
+        $schoolEmail = 'info@cambridgeinternationalschoolwarri.com';
+        $schoolWebsite = 'cambridgeinternationalschoolwarri.com';
         $termReportName = str($reportCard->term->name)
             ->replaceMatches('/\b1st\b/i', 'First')
             ->replaceMatches('/\b2nd\b/i', 'Second')
@@ -549,7 +550,7 @@
                         <div class="school-name">{{ strtoupper($schoolSettings->school_name ?: 'Cambridge International School') }}</div>
                         <div class="school-address">{{ $schoolAddress }}</div>
                         <div class="school-contact">
-                            <span class="contact-label">Tel:</span> {{ $schoolSettings->school_phone ?: '+234 803 289 7744' }}
+                            <span class="contact-label">Tel:</span> {{ $schoolPhone }}
                             <span class="contact-label"> | Email:</span>
                             <span class="contact-value">{{ $schoolEmail }}</span>
                         </div>
