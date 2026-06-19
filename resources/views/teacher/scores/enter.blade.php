@@ -5,8 +5,8 @@
 @section('content')
 @php
     $modeLabels = [
-        'first_test' => '1st Test',
-        'notes' => 'Notes',
+        'first_test' => 'CA1',
+        'notes' => 'CA2',
         'exam' => 'Exam',
         'all' => 'All Scores',
     ];
@@ -81,16 +81,16 @@
                 <h3 class="font-bold text-blue-800 mb-2">📊 Grading System</h3>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-blue-800 text-sm">
                     <div>
-                        <span class="font-bold">1st Test:</span> 0-30
+                        <span class="font-bold">CA1:</span> 0-30
                     </div>
                     <div>
-                        <span class="font-bold">Notes:</span> 0-10
+                        <span class="font-bold">CA2:</span> 0-10
                     </div>
                     <div>
                         <span class="font-bold">Exam:</span> 0-60
                     </div>
                 </div>
-                <p class="text-blue-800 text-sm mt-3">Total = 1st Test (30) + Notes (10) + Exam (60) = 100 marks</p>
+                <p class="text-blue-800 text-sm mt-3">Total = CA1 (30) + CA2 (10) + Exam (60) = 100 marks</p>
                 <p class="text-blue-800 text-sm mt-2">CBT scores appear already filled. If you edit a CBT score, the report card uses your new value and the original CBT mark is kept for audit.</p>
             </div>
 
@@ -107,10 +107,10 @@
                                 <th class="border border-gray-300 px-4 py-3 text-left font-bold">S/N</th>
                                 <th class="border border-gray-300 px-4 py-3 text-left font-bold">Student Name</th>
                                 @if(in_array('ca1', $scoreFields, true))
-                                    <th class="border border-gray-300 px-4 py-3 text-center font-bold">1st Test (30)</th>
+                                    <th class="border border-gray-300 px-4 py-3 text-center font-bold">CA1 (30)</th>
                                 @endif
                                 @if(in_array('ca2', $scoreFields, true))
-                                    <th class="border border-gray-300 px-4 py-3 text-center font-bold">Notes (10)</th>
+                                    <th class="border border-gray-300 px-4 py-3 text-center font-bold">CA2 (10)</th>
                                 @endif
                                 @if(in_array('exam', $scoreFields, true))
                                     <th class="border border-gray-300 px-4 py-3 text-center font-bold">Exam (60)</th>

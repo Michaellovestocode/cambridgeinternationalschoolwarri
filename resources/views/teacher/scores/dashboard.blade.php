@@ -6,7 +6,7 @@
 <div class="max-w-6xl mx-auto px-4 py-8">
     <div class="mb-8">
         <h1 class="text-4xl font-bold text-gray-800 mb-2">📊 Score Entry Dashboard</h1>
-        <p class="text-gray-600">Save CBT-linked and paper-based 1st Test, Notes, and Exam scores as they become available, then submit when ready for report-card review.</p>
+        <p class="text-gray-600">Save CBT-linked and paper-based CA1, CA2, and Exam scores as they become available, then submit when ready for report-card review.</p>
     </div>
 
     <!-- Session/Term Info -->
@@ -114,7 +114,7 @@
             <div class="border-2 border-blue-300 rounded-lg p-6 hover:shadow-lg transition">
                 <div class="text-5xl mb-4">📝</div>
                 <h3 class="text-xl font-bold text-gray-800 mb-2">Subject Score Entry</h3>
-                <p class="text-gray-600 mb-4">Continue entering 1st Test, Notes, or Exam scores separately for your subjects.</p>
+                <p class="text-gray-600 mb-4">Continue entering CA1, CA2, or Exam scores separately for your subjects.</p>
                 <a href="{{ route('teacher.scores.select') }}" class="inline-block w-full text-center bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold transition">
                     Enter Scores
                 </a>
@@ -135,7 +135,7 @@
                 <div class="text-5xl mb-4">ℹ️</div>
                 <h3 class="text-xl font-bold text-gray-800 mb-2">How It Works</h3>
                 <p class="text-gray-600 mb-4">Learn about the score entry system and best practices.</p>
-                <button class="w-full text-center bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg font-semibold transition" onclick="alert('Step 1: Select your assigned class and subject\nStep 2: Choose 1st Test, Notes, Exam, or All Scores\nStep 3: CBT scores appear already filled for review\nStep 4: If you change a CBT score, the original mark is kept as an override record\nStep 5: Save as draft or submit for report-card refresh')">
+                <button class="w-full text-center bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg font-semibold transition" onclick="alert('Step 1: Select your assigned class and subject\nStep 2: Choose CA1, CA2, Exam, or All Scores\nStep 3: CBT scores appear already filled for review\nStep 4: If you change a CBT score, the original mark is kept as an override record\nStep 5: Save as draft or submit for report-card refresh')">
                     View Instructions
                 </button>
             </div>
@@ -146,8 +146,8 @@
     <div class="bg-yellow-50 border-l-4 border-yellow-400 rounded p-6">
         <h3 class="text-lg font-bold text-yellow-800 mb-3">💡 Score Entry Tips</h3>
         <ul class="text-yellow-700 space-y-2">
-            <li>1st Test is out of 30 marks</li>
-            <li>Notes is out of 10 marks</li>
+            <li>CA1 is out of 30 marks</li>
+            <li>CA2 is out of 10 marks</li>
             <li>Exam score is out of 60 marks</li>
             <li>Total score per subject = 30 + 10 + 60 = 100</li>
             <li>CBT scores appear in the form; edited CBT marks are saved as tracked overrides</li>

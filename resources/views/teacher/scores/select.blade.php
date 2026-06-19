@@ -6,7 +6,7 @@
 <div class="max-w-4xl mx-auto px-4 py-8">
     <div class="mb-8">
         <h1 class="text-3xl font-bold text-gray-800 mb-2">📋 Select Class and Subject</h1>
-        <p class="text-gray-600">Choose the class, subject, and paper-score component you want to enter now.</p>
+        <p class="text-gray-600">Choose the class, subject, and report-card score component you want to enter now.</p>
     </div>
 
     <!-- Session/Term Info -->
@@ -72,8 +72,8 @@
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                     @php
                         $modes = [
-                            'first_test' => ['title' => '1st Test', 'detail' => 'Out of 30'],
-                            'notes' => ['title' => 'Notes', 'detail' => 'Out of 10'],
+                            'first_test' => ['title' => 'CA1', 'detail' => 'Test score, out of 30'],
+                            'notes' => ['title' => 'CA2', 'detail' => 'Note score, out of 10'],
                             'exam' => ['title' => 'Exam', 'detail' => 'Out of 60'],
                             'all' => ['title' => 'All Scores', 'detail' => '30 + 10 + 60'],
                         ];
