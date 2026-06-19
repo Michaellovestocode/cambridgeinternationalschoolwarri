@@ -14,6 +14,32 @@
     $scoreMode = $scoreMode ?? 'all';
     $scoreFields = $scoreFields ?? ['ca1', 'ca2', 'exam'];
     $modeLabel = $modeLabels[$scoreMode] ?? 'All Scores';
+    $sourceBadge = function ($score, string $field) {
+        if (!$score) {
+            return null;
+        }
+
+        $source = $score->{$field . '_source'} ?? null;
+
+        return match ($source) {
+            'cbt' => [
+                'label' => 'CBT',
+                'class' => 'bg-blue-100 text-blue-700 border-blue-200',
+                'title' => 'This score came from CBT. If you edit it, the original CBT mark will be kept for audit.',
+            ],
+            'cbt_overridden' => [
+                'label' => 'CBT override',
+                'class' => 'bg-orange-100 text-orange-700 border-orange-200',
+                'title' => 'This CBT score was manually adjusted and the original CBT mark is still stored.',
+            ],
+            'paper', 'manual' => [
+                'label' => 'Paper',
+                'class' => 'bg-emerald-100 text-emerald-700 border-emerald-200',
+                'title' => 'This score was entered manually.',
+            ],
+            default => null,
+        };
+    };
 @endphp
 <div class="max-w-6xl mx-auto px-4 py-8">
     <div class="mb-8">
@@ -65,7 +91,7 @@
                     </div>
                 </div>
                 <p class="text-blue-800 text-sm mt-3">Total = 1st Test (30) + Notes (10) + Exam (60) = 100 marks</p>
-                <p class="text-blue-800 text-sm mt-2">If CBT already supplied a score for a component, paper entry for that same component will be blocked.</p>
+                <p class="text-blue-800 text-sm mt-2">CBT scores appear already filled. If you edit a CBT score, the report card uses your new value and the original CBT mark is kept for audit.</p>
             </div>
 
             <!-- Students Score Table -->
@@ -100,6 +126,9 @@
                                     $ca1 = (float)($existingScore->ca1 ?? 0);
                                     $ca2 = (float)($existingScore->ca2 ?? 0);
                                     $exam = (float)($existingScore->exam ?? 0);
+                                    $ca1Badge = $sourceBadge($existingScore, 'ca1');
+                                    $ca2Badge = $sourceBadge($existingScore, 'ca2');
+                                    $examBadge = $sourceBadge($existingScore, 'exam');
                                 @endphp
                                 <tr class="hover:bg-gray-50 border-b border-gray-300">
                                     <td class="border border-gray-300 px-4 py-3 text-center font-bold text-gray-700">{{ $index + 1 }}</td>
@@ -112,6 +141,13 @@
 
                                     @if(in_array('ca1', $scoreFields, true))
                                         <td class="border border-gray-300 px-4 py-3">
+                                            @if($ca1Badge)
+                                                <div class="mb-2 text-center">
+                                                    <span title="{{ $ca1Badge['title'] }}" class="inline-flex rounded-full border px-2 py-0.5 text-xs font-bold {{ $ca1Badge['class'] }}">
+                                                        {{ $ca1Badge['label'] }}
+                                                    </span>
+                                                </div>
+                                            @endif
                                             <input type="number" 
                                                 name="scores[{{ $index }}][ca1]" 
                                                 value="{{ $ca1 }}"
@@ -125,6 +161,13 @@
 
                                     @if(in_array('ca2', $scoreFields, true))
                                         <td class="border border-gray-300 px-4 py-3">
+                                            @if($ca2Badge)
+                                                <div class="mb-2 text-center">
+                                                    <span title="{{ $ca2Badge['title'] }}" class="inline-flex rounded-full border px-2 py-0.5 text-xs font-bold {{ $ca2Badge['class'] }}">
+                                                        {{ $ca2Badge['label'] }}
+                                                    </span>
+                                                </div>
+                                            @endif
                                             <input type="number" 
                                                 name="scores[{{ $index }}][ca2]" 
                                                 value="{{ $ca2 }}"
@@ -138,6 +181,13 @@
 
                                     @if(in_array('exam', $scoreFields, true))
                                         <td class="border border-gray-300 px-4 py-3">
+                                            @if($examBadge)
+                                                <div class="mb-2 text-center">
+                                                    <span title="{{ $examBadge['title'] }}" class="inline-flex rounded-full border px-2 py-0.5 text-xs font-bold {{ $examBadge['class'] }}">
+                                                        {{ $examBadge['label'] }}
+                                                    </span>
+                                                </div>
+                                            @endif
                                             <input type="number" 
                                                 name="scores[{{ $index }}][exam]" 
                                                 value="{{ $exam }}"

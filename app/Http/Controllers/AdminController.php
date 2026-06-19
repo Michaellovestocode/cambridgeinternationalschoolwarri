@@ -510,21 +510,16 @@ public function storeManualExamScores(Request $request, $examId)
                 'term_id' => $activeTerm->id,
             ]);
 
-            $this->guardManualEntryAgainstCbtScores($existing, $scoreData, ['ca1', 'ca2', 'exam']);
-
-            $existing->fill([
-                'class_id' => $validated['class_id'],
-                'teacher_id' => Auth::id(),
-                'ca1' => $scoreData['ca1'] ?? 0,
-                'ca1_source' => $this->scoreDataHasFieldValue($scoreData, 'ca1') ? 'paper' : ($existing->exists ? $existing->ca1_source : null),
-                'ca2' => $scoreData['ca2'] ?? 0,
-                'ca2_source' => $this->scoreDataHasFieldValue($scoreData, 'ca2') ? 'paper' : ($existing->exists ? $existing->ca2_source : null),
-                'ca3' => 0,
-                'ca3_source' => $existing->exists ? $existing->ca3_source : null,
-                'exam' => $scoreData['exam'] ?? 0,
-                'exam_source' => $this->scoreDataHasFieldValue($scoreData, 'exam') ? 'paper' : ($existing->exists ? $existing->exam_source : null),
-                'status' => 'submitted',
-            ]);
+            $existing->fill($this->manualScorePayloadForFields(
+                $existing,
+                $scoreData,
+                ['ca1', 'ca2', 'exam'],
+                [
+                    'class_id' => $validated['class_id'],
+                    'teacher_id' => Auth::id(),
+                    'status' => 'submitted',
+                ]
+            ));
             $existing->save();
             $saved++;
         }
@@ -1677,30 +1672,56 @@ private function canManageAttempt(ExamAttempt $attempt): bool
     return $teachesSubject && $user->teachingClasses()->whereKey($classId)->exists();
 }
 
-private function guardManualEntryAgainstCbtScores(Score $score, array $scoreData, array $fields): void
+private function manualScorePayloadForFields(Score $score, array $scoreData, array $fields, array $basePayload): array
 {
-    if (! $score->exists) {
-        return;
-    }
+    $payload = array_merge($basePayload, [
+        'ca3' => 0,
+        'ca3_source' => $score->exists ? $score->ca3_source : null,
+        'ca3_original_cbt_score' => $score->exists ? $score->ca3_original_cbt_score : null,
+        'ca3_overridden_by' => $score->exists ? $score->ca3_overridden_by : null,
+        'ca3_overridden_at' => $score->exists ? $score->ca3_overridden_at : null,
+    ]);
 
     foreach ($fields as $field) {
-        if (! $this->scoreDataHasFieldValue($scoreData, $field)) {
-            continue;
-        }
-
-        if ($score->{$field . '_source'} === 'cbt') {
-            $label = match ($field) {
-                'ca1' => '1st Test',
-                'ca2' => 'Notes',
-                'exam' => 'Exam',
-                default => strtoupper($field),
-            };
-
-            throw \Illuminate\Validation\ValidationException::withMessages([
-                'scores' => "{$label} already has a CBT score for {$score->student?->name}. Manual paper entry cannot overwrite CBT scores.",
-            ]);
-        }
+        $payload = array_merge($payload, $this->manualComponentPayload($score, $scoreData, $field));
     }
+
+    return $payload;
+}
+
+private function manualComponentPayload(Score $score, array $scoreData, string $field): array
+{
+    $submittedValue = $scoreData[$field] ?? 0;
+    $currentSource = $score->exists ? $score->{$field . '_source'} : null;
+    $currentValue = $score->exists ? (float) $score->{$field} : 0.0;
+
+    $payload = [
+        $field => $submittedValue,
+        $field . '_source' => $this->scoreDataHasFieldValue($scoreData, $field)
+            ? 'paper'
+            : ($score->exists ? $currentSource : null),
+        $field . '_original_cbt_score' => $score->exists ? $score->{$field . '_original_cbt_score'} : null,
+        $field . '_overridden_by' => $score->exists ? $score->{$field . '_overridden_by'} : null,
+        $field . '_overridden_at' => $score->exists ? $score->{$field . '_overridden_at'} : null,
+    ];
+
+    if (! $this->scoreDataHasFieldValue($scoreData, $field)) {
+        return $payload;
+    }
+
+    $isCbtBacked = in_array($currentSource, ['cbt', 'cbt_overridden'], true);
+    $changedCbtValue = $isCbtBacked && round((float) $submittedValue, 2) !== round($currentValue, 2);
+
+    if ($changedCbtValue) {
+        $payload[$field . '_source'] = 'cbt_overridden';
+        $payload[$field . '_original_cbt_score'] = $score->{$field . '_original_cbt_score'} ?? $currentValue;
+        $payload[$field . '_overridden_by'] = Auth::id();
+        $payload[$field . '_overridden_at'] = now();
+    } elseif ($isCbtBacked) {
+        $payload[$field . '_source'] = $currentSource;
+    }
+
+    return $payload;
 }
 
 private function scoreDataHasFieldValue(array $scoreData, string $field): bool

@@ -104,7 +104,7 @@
             <div class="border-2 border-emerald-300 rounded-lg p-6 hover:shadow-lg transition">
                 <div class="text-5xl mb-4">P</div>
                 <h3 class="text-xl font-bold text-gray-800 mb-2">Paper / Manual Scores</h3>
-                <p class="text-gray-600 mb-4">Enter scores for tests or exams that were written on paper for your assigned classes.</p>
+                <p class="text-gray-600 mb-4">Enter paper scores, review CBT scores, and correct CBT marks when a tracked override is needed.</p>
                 <a href="{{ route('teacher.scores.select', ['score_source' => 'paper']) }}" class="inline-block w-full text-center bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-lg font-semibold transition">
                     Fill Paper Scores
                 </a>
@@ -135,7 +135,7 @@
                 <div class="text-5xl mb-4">ℹ️</div>
                 <h3 class="text-xl font-bold text-gray-800 mb-2">How It Works</h3>
                 <p class="text-gray-600 mb-4">Learn about the score entry system and best practices.</p>
-                <button class="w-full text-center bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg font-semibold transition" onclick="alert('Step 1: Select your assigned class and subject\nStep 2: Choose 1st Test, Notes, Exam, or All Scores\nStep 3: Enter paper scores only where CBT has not already supplied a score\nStep 4: Save as draft or submit for report-card refresh')">
+                <button class="w-full text-center bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg font-semibold transition" onclick="alert('Step 1: Select your assigned class and subject\nStep 2: Choose 1st Test, Notes, Exam, or All Scores\nStep 3: CBT scores appear already filled for review\nStep 4: If you change a CBT score, the original mark is kept as an override record\nStep 5: Save as draft or submit for report-card refresh')">
                     View Instructions
                 </button>
             </div>
@@ -150,7 +150,7 @@
             <li>Notes is out of 10 marks</li>
             <li>Exam score is out of 60 marks</li>
             <li>Total score per subject = 30 + 10 + 60 = 100</li>
-            <li>Manual paper entry cannot overwrite a score already supplied by CBT</li>
+            <li>CBT scores appear in the form; edited CBT marks are saved as tracked overrides</li>
             <li>Save scores as draft before final submission</li>
             <li>Once submitted, scores cannot be modified</li>
         </ul>
