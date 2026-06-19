@@ -50,6 +50,17 @@
         <p class="text-sm font-semibold text-blue-700 mt-2">Current entry mode: {{ $modeLabel }}</p>
     </div>
 
+    @if($errors->any())
+        <div class="mb-6 rounded-lg border border-red-300 bg-red-50 p-4 text-red-800">
+            <p class="font-bold">Please correct the score errors below.</p>
+            <ul class="mt-2 list-disc space-y-1 pl-5 text-sm">
+                @foreach($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
     <!-- Navigation -->
     <div class="mb-6 flex gap-3">
         <a href="{{ route('teacher.scores.dashboard') }}" class="bg-gray-600 hover:bg-gray-700 text-white px-6 py-2 rounded-lg font-semibold">
@@ -152,6 +163,8 @@
                                                 name="scores[{{ $index }}][ca1]" 
                                                 value="{{ $ca1 }}"
                                                 min="0" max="30" step="0.5"
+                                                data-score-limit="30"
+                                                data-score-label="CA1"
                                                 class="w-full border border-gray-400 rounded px-2 py-1 text-center focus:outline-none focus:border-blue-500"
                                                 placeholder="0">
                                         </td>
@@ -172,6 +185,8 @@
                                                 name="scores[{{ $index }}][ca2]" 
                                                 value="{{ $ca2 }}"
                                                 min="0" max="10" step="0.5"
+                                                data-score-limit="10"
+                                                data-score-label="CA2"
                                                 class="w-full border border-gray-400 rounded px-2 py-1 text-center focus:outline-none focus:border-blue-500"
                                                 placeholder="0">
                                         </td>
@@ -192,6 +207,8 @@
                                                 name="scores[{{ $index }}][exam]" 
                                                 value="{{ $exam }}"
                                                 min="0" max="60" step="0.5"
+                                                data-score-limit="60"
+                                                data-score-label="Exam"
                                                 class="w-full border border-gray-400 rounded px-2 py-1 text-center focus:outline-none focus:border-blue-500"
                                                 placeholder="0">
                                         </td>
@@ -200,6 +217,7 @@
                                     @endif
                                     <td class="border border-gray-300 px-4 py-3 text-center font-bold bg-gray-100">
                                         <span class="total-score">{{ ($ca1 ?? 0) + ($ca2 ?? 0) + ($exam ?? 0) }}</span>
+                                        <p class="mt-1 hidden text-xs font-semibold text-red-600" data-score-error></p>
                                     </td>
                                     <td class="border border-gray-300 px-4 py-3 text-center">
                                         @if($existingScore)
@@ -225,10 +243,10 @@
                     </a>
                 </div>
                 <div class="mobile-action-stack flex gap-4">
-                    <button type="button" onclick="submitForm('{{ route('teacher.scores.save') }}')" class="bg-yellow-600 hover:bg-yellow-700 text-white px-8 py-3 rounded-lg font-semibold">
+                    <button type="submit" formaction="{{ route('teacher.scores.save') }}" class="bg-yellow-600 hover:bg-yellow-700 text-white px-8 py-3 rounded-lg font-semibold">
                         💾 Save as Draft
                     </button>
-                    <button type="button" onclick="submitForm('{{ route('teacher.scores.submit') }}')" class="bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-lg font-semibold">
+                    <button type="submit" formaction="{{ route('teacher.scores.submit') }}" class="bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-lg font-semibold">
                         ✓ Submit for Approval
                     </button>
                 </div>
@@ -249,26 +267,50 @@
 </div>
 
 <script>
-// Calculate totals dynamically
-document.querySelectorAll('input[type="number"]').forEach(input => {
-    input.addEventListener('change', function() {
-        const row = this.closest('tr');
-        if (row) {
-            const ca1 = parseFloat(row.querySelector('input[name*="[ca1]"]').value) || 0;
-            const ca2 = parseFloat(row.querySelector('input[name*="[ca2]"]').value) || 0;
-            const exam = parseFloat(row.querySelector('input[name*="[exam]"]').value) || 0;
-            const total = ca1 + ca2 + exam;
-            row.querySelector('.total-score').textContent = total.toFixed(1);
-        }
-    });
-});
+document.querySelectorAll('#scoresForm tr').forEach((row) => {
+    const inputs = row.querySelectorAll('input[type="number"]');
 
-// Submit form with specific action
-function submitForm(action) {
-    const form = document.getElementById('scoresForm');
-    form.action = action;
-    form.submit();
-}
+    if (!inputs.length) {
+        return;
+    }
+
+    function syncRow() {
+        let hasError = false;
+        const error = row.querySelector('[data-score-error]');
+        const ca1 = parseFloat(row.querySelector('input[name*="[ca1]"]').value) || 0;
+        const ca2 = parseFloat(row.querySelector('input[name*="[ca2]"]').value) || 0;
+        const exam = parseFloat(row.querySelector('input[name*="[exam]"]').value) || 0;
+
+        inputs.forEach((field) => {
+            const value = parseFloat(field.value);
+            const limit = parseFloat(field.dataset.scoreLimit);
+            const isTooHigh = !Number.isNaN(value) && value > limit;
+            const message = isTooHigh ? `${field.dataset.scoreLabel} cannot be more than ${limit}.` : '';
+
+            field.setCustomValidity(message);
+            field.classList.toggle('border-red-500', isTooHigh);
+            field.classList.toggle('bg-red-50', isTooHigh);
+
+            if (isTooHigh && error) {
+                hasError = true;
+                error.textContent = message;
+            }
+        });
+
+        if (error) {
+            error.classList.toggle('hidden', !hasError);
+        }
+
+        row.querySelector('.total-score').textContent = (ca1 + ca2 + exam).toFixed(1);
+    }
+
+    inputs.forEach((input) => {
+        input.addEventListener('input', syncRow);
+        input.addEventListener('change', syncRow);
+    });
+
+    syncRow();
+});
 </script>
 
 @endsection

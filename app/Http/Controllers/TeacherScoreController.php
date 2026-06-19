@@ -98,7 +98,7 @@ class TeacherScoreController extends Controller
             'scores.*.ca1' => 'nullable|numeric|min:0|max:30',
             'scores.*.ca2' => 'nullable|numeric|min:0|max:10',
             'scores.*.exam' => 'nullable|numeric|min:0|max:60',
-        ]);
+        ], $this->scoreValidationMessages());
         
         $teacher = Auth::user();
         $activeSession = Session::getActive();
@@ -149,7 +149,7 @@ class TeacherScoreController extends Controller
             'scores.*.ca1' => 'nullable|numeric|min:0|max:30',
             'scores.*.ca2' => 'nullable|numeric|min:0|max:10',
             'scores.*.exam' => 'nullable|numeric|min:0|max:60',
-        ]);
+        ], $this->scoreValidationMessages());
         
         $teacher = Auth::user();
         $activeSession = Session::getActive();
@@ -216,7 +216,7 @@ class TeacherScoreController extends Controller
             'scores.*.ca1' => 'nullable|numeric|min:0|max:30',
             'scores.*.ca2' => 'nullable|numeric|min:0|max:10',
             'scores.*.exam' => 'nullable|numeric|min:0|max:60',
-        ]);
+        ], $this->scoreValidationMessages());
         
         $teacher = Auth::user();
         $activeSession = Session::getActive();
@@ -380,6 +380,21 @@ class TeacherScoreController extends Controller
             'exam' => ['exam'],
             default => ['ca1', 'ca2', 'exam'],
         };
+    }
+
+    private function scoreValidationMessages(): array
+    {
+        return [
+            'scores.*.ca1.max' => 'CA1 cannot be more than 30.',
+            'scores.*.ca2.max' => 'CA2 cannot be more than 10.',
+            'scores.*.exam.max' => 'Exam cannot be more than 60.',
+            'scores.*.ca1.min' => 'CA1 cannot be less than 0.',
+            'scores.*.ca2.min' => 'CA2 cannot be less than 0.',
+            'scores.*.exam.min' => 'Exam cannot be less than 0.',
+            'scores.*.ca1.numeric' => 'CA1 must be a number.',
+            'scores.*.ca2.numeric' => 'CA2 must be a number.',
+            'scores.*.exam.numeric' => 'Exam must be a number.',
+        ];
     }
 
     private function rowHasScoreForFields(array $scoreData, array $fields): bool
