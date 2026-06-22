@@ -9,6 +9,7 @@ use App\Models\SchoolClass;
 use App\Models\Score;
 use App\Models\ReportCard;
 use App\Models\User;
+use App\Models\FormTeacher;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -175,6 +176,7 @@ class TeacherScoreController extends Controller
         $scoreSource = $request->input('score_source', 'manual');
         $this->authorizeScoreEntry($teacher, (int) $request->class_id, (int) $request->subject_id);
         $this->authorizePaperScoreEntry($teacher, SchoolClass::findOrFail($request->class_id), $scoreSource);
+        $this->ensureScoreStudentsBelongToClass($request->input('scores', []), (int) $request->class_id);
         
         DB::beginTransaction();
         
@@ -249,6 +251,7 @@ class TeacherScoreController extends Controller
         $scoreFields = $this->scoreFieldsForMode($scoreMode);
         $scoreSource = $request->input('score_source', 'manual');
         $this->authorizePaperScoreEntry($teacher, SchoolClass::findOrFail($request->class_id), $scoreSource);
+        $this->ensureScoreStudentsBelongToClass($request->input('scores', []), (int) $request->class_id);
         
         DB::beginTransaction();
 
@@ -372,7 +375,30 @@ class TeacherScoreController extends Controller
             return Subject::active()->ordered()->get();
         }
 
-        return $teacher->subjects()->active()->ordered()->get();
+        $assignedSubjects = $teacher->subjects()->active()->ordered()->get();
+        $ownedClasses = $this->earlyPrimaryFormTeacherClassesFor($teacher);
+
+        if ($ownedClasses->isEmpty()) {
+            return $assignedSubjects;
+        }
+
+        $ownedClassIds = $ownedClasses->pluck('id')->all();
+        $ownedClassSubjects = Subject::active()
+            ->where(function ($query) use ($ownedClassIds, $ownedClasses) {
+                $query->whereHas('classes', fn ($classQuery) => $classQuery->whereIn('school_classes.id', $ownedClassIds));
+
+                foreach ($ownedClasses as $class) {
+                    $query->orWhereIn('class_level', $this->subjectClassLevelCandidates($class));
+                }
+            })
+            ->ordered()
+            ->get();
+
+        return $assignedSubjects
+            ->merge($ownedClassSubjects)
+            ->unique('id')
+            ->sortBy('name')
+            ->values();
     }
 
     private function availableClassesFor(User $teacher)
@@ -381,7 +407,13 @@ class TeacherScoreController extends Controller
             return SchoolClass::orderBy('name')->get();
         }
 
-        return $teacher->teachingClasses()->orderBy('name')->get();
+        return $teacher->teachingClasses()
+            ->orderBy('name')
+            ->get()
+            ->merge($this->earlyPrimaryFormTeacherClassesFor($teacher))
+            ->unique('id')
+            ->sortBy('name')
+            ->values();
     }
 
     private function authorizeScoreEntry(User $teacher, int $classId, int $subjectId): void
@@ -390,10 +422,89 @@ class TeacherScoreController extends Controller
             return;
         }
 
-        $hasClass = $teacher->teachingClasses()->whereKey($classId)->exists();
-        $hasSubject = $teacher->subjects()->whereKey($subjectId)->exists();
+        $class = SchoolClass::findOrFail($classId);
+        $subject = Subject::findOrFail($subjectId);
+        $isOwnedEarlyPrimaryClass = $this->teacherOwnsEarlyPrimaryClass($teacher, $classId);
+        $hasClass = $teacher->teachingClasses()->whereKey($classId)->exists() || $isOwnedEarlyPrimaryClass;
+        $hasSubject = $teacher->subjects()->whereKey($subjectId)->exists()
+            || ($isOwnedEarlyPrimaryClass && $this->subjectFitsClass($subject, $class));
 
-        abort_unless($hasClass && $hasSubject, 403, 'You can only enter scores for classes and subjects assigned to you.');
+        abort_unless($hasClass && $hasSubject && $this->subjectFitsClass($subject, $class), 403, 'You can only enter scores for classes and subjects assigned to you.');
+    }
+
+    private function earlyPrimaryFormTeacherClassesFor(User $teacher)
+    {
+        if (! $teacher->isTeacher()) {
+            return collect();
+        }
+
+        return FormTeacher::with('schoolClass')
+            ->where('teacher_id', $teacher->id)
+            ->where('is_active', true)
+            ->get()
+            ->pluck('schoolClass')
+            ->filter(fn ($class) => $class && in_array($class->section_key, ['creche', 'primary'], true))
+            ->values();
+    }
+
+    private function teacherOwnsEarlyPrimaryClass(User $teacher, int $classId): bool
+    {
+        return $this->earlyPrimaryFormTeacherClassesFor($teacher)
+            ->contains(fn (SchoolClass $class) => (int) $class->id === $classId);
+    }
+
+    private function subjectFitsClass(Subject $subject, SchoolClass $class): bool
+    {
+        $subjectClassIds = $subject->classes()->pluck('school_classes.id')->map(fn ($id) => (int) $id)->all();
+
+        if (! empty($subjectClassIds)) {
+            return in_array((int) $class->id, $subjectClassIds, true);
+        }
+
+        if (! filled($subject->class_level)) {
+            return true;
+        }
+
+        $classLevel = strtolower(trim((string) $subject->class_level));
+        $candidates = collect($this->subjectClassLevelCandidates($class))
+            ->map(fn ($candidate) => strtolower(trim((string) $candidate)))
+            ->all();
+
+        return in_array($classLevel, $candidates, true);
+    }
+
+    private function subjectClassLevelCandidates(SchoolClass $class): array
+    {
+        $name = trim((string) $class->name);
+        $displayName = trim((string) $class->display_name);
+        $level = $class->level_number;
+
+        $candidates = match ($class->section_key) {
+            'creche' => ['creche', 'Creche', 'early years', 'Early Years', 'nursery', 'Nursery', 'kg', 'KG', 'pre kg', 'Pre KG', 'pre-kg', 'Pre-KG', 'all', 'All'],
+            'primary' => ['primary', 'Primary', 'all', 'All'],
+            'junior_secondary' => ['junior', 'Junior', 'jss', 'JSS', 'all', 'All'],
+            'senior_secondary' => ['senior', 'Senior', 'sss', 'SSS', 'all', 'All'],
+            default => ['all', 'All'],
+        };
+
+        foreach ([$name, $displayName] as $className) {
+            if ($className !== '') {
+                $candidates[] = $className;
+                $candidates[] = strtolower($className);
+            }
+        }
+
+        if ($level) {
+            $candidates = array_merge($candidates, match ($class->section_key) {
+                'primary' => ["Primary {$level}", "primary {$level}", "Year {$level}", "year {$level}", "Basic {$level}", "basic {$level}", "Pry {$level}", "pry {$level}"],
+                'junior_secondary' => ["JSS {$level}", "jss {$level}", "Year {$level}", "year {$level}"],
+                'senior_secondary' => ["SSS {$level}", "sss {$level}", "Year {$level}", "year {$level}"],
+                'creche' => ["Creche {$level}", "creche {$level}", "Nursery {$level}", "nursery {$level}", "KG {$level}", "kg {$level}"],
+                default => [],
+            });
+        }
+
+        return array_values(array_unique($candidates));
     }
 
     private function canUsePaperScoresForClasses(User $teacher, $classes): bool
@@ -454,6 +565,31 @@ class TeacherScoreController extends Controller
         }
 
         return false;
+    }
+
+    private function ensureScoreStudentsBelongToClass(array $scores, int $classId): void
+    {
+        $studentIds = collect($scores)
+            ->pluck('student_id')
+            ->filter()
+            ->map(fn ($id) => (int) $id)
+            ->unique()
+            ->values();
+
+        if ($studentIds->isEmpty()) {
+            return;
+        }
+
+        $validStudentCount = User::where('role', 'student')
+            ->where('class_id', $classId)
+            ->whereIn('id', $studentIds)
+            ->count();
+
+        if ($validStudentCount !== $studentIds->count()) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'scores' => 'All submitted score rows must belong to students in the selected class.',
+            ]);
+        }
     }
 
     private function scorePayloadForFields(Score $score, array $scoreData, array $fields, array $basePayload, string $source = 'paper'): array

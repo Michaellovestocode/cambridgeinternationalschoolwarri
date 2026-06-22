@@ -188,12 +188,14 @@ class SubjectController extends Controller
             'name' => 'required|string|max:255|unique:subjects,name',
             'code' => 'nullable|string|max:50|unique:subjects,code',
             'description' => 'nullable|string',
+            'class_level' => 'nullable|string|max:255',
         ]);
 
         Subject::create([
             'name' => $validated['name'],
             'code' => $validated['code'],
             'description' => $validated['description'],
+            'class_level' => $validated['class_level'] ?? null,
             'is_active' => true,
         ]);
 
@@ -221,6 +223,7 @@ class SubjectController extends Controller
             'name' => 'required|string|max:255|unique:subjects,name,' . $id,
             'code' => 'nullable|string|max:50|unique:subjects,code,' . $id,
             'description' => 'nullable|string',
+            'class_level' => 'nullable|string|max:255',
             'is_active' => 'boolean',
         ]);
 
@@ -228,6 +231,7 @@ class SubjectController extends Controller
             'name' => $validated['name'],
             'code' => $validated['code'],
             'description' => $validated['description'],
+            'class_level' => $validated['class_level'] ?? null,
             'is_active' => $request->has('is_active'),
         ]);
 

@@ -1271,7 +1271,13 @@ public function storeClass(Request $request)
 
 public function editClass(SchoolClass $class)
 {
-    return view('admin.classes.edit', compact('class'));
+    $class->load('subjects');
+    $subjects = Subject::where('is_active', true)
+        ->orderBy('class_level')
+        ->orderBy('name')
+        ->get();
+
+    return view('admin.classes.edit', compact('class', 'subjects'));
 }
 
 public function updateClass(Request $request, SchoolClass $class)
@@ -1279,9 +1285,16 @@ public function updateClass(Request $request, SchoolClass $class)
     $validated = $request->validate([
         'name' => 'required|string|max:255',
         'description' => 'nullable|string',
+        'subjects' => 'nullable|array',
+        'subjects.*' => 'exists:subjects,id',
     ]);
 
-    $class->update($validated);
+    $class->update([
+        'name' => $validated['name'],
+        'description' => $validated['description'] ?? null,
+    ]);
+
+    $class->subjects()->sync($validated['subjects'] ?? []);
 
     return redirect()->route('admin.classes')->with('success', 'Class updated successfully!');
 }
@@ -1515,15 +1528,7 @@ private function availableExamSubjects()
     $availableClasses = $this->availableExamClasses();
 
     return $candidateSubjects
-        ->filter(function (Subject $subject) use ($availableClasses) {
-            $subjectClassIds = $subject->classes()->pluck('school_classes.id')->all();
-
-            if (! empty($subjectClassIds)) {
-                return $availableClasses->whereIn('id', $subjectClassIds)->isNotEmpty();
-            }
-
-            return $availableClasses->contains(fn (SchoolClass $class) => $this->subjectMatchesClassLevel($subject, $class));
-        })
+        ->filter(fn (Subject $subject) => $this->classesForSubjectFromAvailableClasses($subject, $availableClasses)->isNotEmpty())
         ->values();
 }
 
@@ -1552,10 +1557,7 @@ private function availableExamClasses()
 private function classesBySubject($subjects, $classes): array
 {
     return $subjects->mapWithKeys(function ($subject) use ($classes) {
-        $subjectClassIds = $subject->classes()->pluck('school_classes.id')->all();
-        $subjectClasses = empty($subjectClassIds)
-            ? $classes->filter(fn (SchoolClass $class) => $this->subjectMatchesClassLevel($subject, $class))->values()
-            : $classes->whereIn('id', $subjectClassIds)->values();
+        $subjectClasses = $this->classesForSubjectFromAvailableClasses($subject, $classes);
 
         return [
             $subject->id => $subjectClasses->map(fn ($class) => [
@@ -1565,6 +1567,30 @@ private function classesBySubject($subjects, $classes): array
             ])->values()->all(),
         ];
     })->all();
+}
+
+private function classesForSubjectFromAvailableClasses(Subject $subject, $classes)
+{
+    $subjectClassIds = $subject->classes()->pluck('school_classes.id')->map(fn ($id) => (int) $id)->all();
+    $explicitClasses = empty($subjectClassIds)
+        ? collect()
+        : $classes->whereIn('id', $subjectClassIds)->values();
+
+    if (empty($subjectClassIds) && ! filled($subject->class_level)) {
+        return $classes
+            ->sortBy('name')
+            ->values();
+    }
+
+    $levelClasses = $classes
+        ->filter(fn (SchoolClass $class) => $this->subjectMatchesClassLevel($subject, $class))
+        ->values();
+
+    return $explicitClasses
+        ->merge($levelClasses)
+        ->unique('id')
+        ->sortBy('name')
+        ->values();
 }
 
 private function subjectMatchesClassLevel(Subject $subject, SchoolClass $class): bool
@@ -1600,9 +1626,14 @@ private function validateExamAssignment(int $subjectId, array $classIds): array
     }
 
     $subjectClassIds = Subject::whereKey($subjectId)->first()?->classes()->pluck('school_classes.id')->map(fn ($id) => (int) $id)->all() ?? [];
+    $subject = Subject::findOrFail($subjectId);
 
     foreach ($classes as $class) {
-        if (! empty($subjectClassIds) && ! in_array((int) $class->id, $subjectClassIds, true)) {
+        if (
+            ! empty($subjectClassIds)
+            && ! in_array((int) $class->id, $subjectClassIds, true)
+            && ! $this->subjectMatchesClassLevel($subject, $class)
+        ) {
             return ['classes' => 'The selected subject is not attached to one of the selected classes.'];
         }
 
