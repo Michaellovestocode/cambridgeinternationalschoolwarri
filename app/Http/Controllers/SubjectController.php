@@ -40,7 +40,7 @@ class SubjectController extends Controller
             ->filter(fn (SchoolClass $class) => $this->isEarlyYearsOrPrimaryClass($class))
             ->values();
         $allTeachingClasses = $teachingClasses
-            ->merge($ownedFormClasses)
+            ->merge($ownedEarlyPrimaryClasses)
             ->unique('id')
             ->sortBy('name')
             ->values();
@@ -54,13 +54,13 @@ class SubjectController extends Controller
 
         $ownedClassSubjects = collect();
 
-        if ($ownedFormClasses->isNotEmpty()) {
-            $ownedClassIds = $ownedFormClasses->pluck('id')->all();
+        if ($ownedEarlyPrimaryClasses->isNotEmpty()) {
+            $ownedClassIds = $ownedEarlyPrimaryClasses->pluck('id')->all();
             $ownedClassSubjects = Subject::where('is_active', true)
-                ->where(function ($query) use ($ownedClassIds, $ownedFormClasses) {
+                ->where(function ($query) use ($ownedClassIds, $ownedEarlyPrimaryClasses) {
                     $query->whereHas('classes', fn ($classQuery) => $classQuery->whereIn('school_classes.id', $ownedClassIds));
 
-                    foreach ($ownedFormClasses as $class) {
+                    foreach ($ownedEarlyPrimaryClasses as $class) {
                         $query->orWhereIn('class_level', $this->subjectClassLevelCandidates($class));
                     }
                 })

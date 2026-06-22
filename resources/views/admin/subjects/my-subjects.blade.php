@@ -36,11 +36,11 @@
         </div>
     </div>
 
-    @if(($teachingClasses ?? collect())->isNotEmpty())
+    @if(($ownedEarlyPrimaryClasses ?? collect())->isNotEmpty())
         <div class="rounded-2xl border border-pink-100 bg-pink-50 p-5 text-pink-900">
             <h2 class="text-base font-black">Form Teacher Access</h2>
             <p class="mt-1 text-sm font-semibold text-pink-800">
-                Your teaching and form-teacher classes are shown here. For Early Years and Primary form classes, your assigned subjects are treated as the subjects for your learners.
+                Your Early Years and Primary form-teacher classes are shown here. In those sections, class subjects are included for your learners.
             </p>
         </div>
     @endif
