@@ -21,6 +21,7 @@ use App\Services\CbtReportCardSyncService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Barryvdh\DomPDF\Facade\Pdf;
 use PhpOffice\PhpWord\PhpWord;
 use PhpOffice\PhpWord\IOFactory;
@@ -1214,11 +1215,16 @@ public function updateTeacher(Request $request, $teacherId)
 public function assignTeacherClasses($teacherId)
 {
     $teacher = User::where('role', 'teacher')
-        ->with('teachingClasses')
+        ->with(['teachingClasses', 'subjects'])
         ->findOrFail($teacherId);
     $classes = SchoolClass::orderBy('name')->get();
+    $subjects = $teacher->subjects()
+        ->where('is_active', true)
+        ->orderBy('name')
+        ->get();
+    $teachingLoad = $this->teachingLoadForTeacher($teacher);
 
-    return view('admin.teachers.assign-classes', compact('teacher', 'classes'));
+    return view('admin.teachers.assign-classes', compact('teacher', 'classes', 'subjects', 'teachingLoad'));
 }
 
 public function updateTeacherClasses(Request $request, $teacherId)
@@ -1228,11 +1234,76 @@ public function updateTeacherClasses(Request $request, $teacherId)
     $validated = $request->validate([
         'classes' => 'nullable|array',
         'classes.*' => 'exists:school_classes,id',
+        'teaching_load' => 'nullable|array',
+        'teaching_load.*' => 'nullable|array',
+        'teaching_load.*.*' => 'exists:subjects,id',
     ]);
 
-    $teacher->teachingClasses()->sync($validated['classes'] ?? []);
+    $selectedClassIds = collect($validated['classes'] ?? [])
+        ->map(fn ($id) => (int) $id)
+        ->unique()
+        ->values()
+        ->all();
 
-    return redirect()->route('admin.teachers')->with('success', 'Classes assigned to teacher successfully!');
+    $teacher->teachingClasses()->sync($selectedClassIds);
+    $this->syncExactTeachingLoad($teacher, $selectedClassIds, $validated['teaching_load'] ?? []);
+
+    return redirect()->route('admin.teachers')->with('success', 'Teaching load assigned successfully!');
+}
+
+private function teachingLoadForTeacher(User $teacher): array
+{
+    if (! Schema::hasTable('teacher_class_subject')) {
+        return [];
+    }
+
+    return DB::table('teacher_class_subject')
+        ->where('teacher_id', $teacher->id)
+        ->get()
+        ->groupBy('school_class_id')
+        ->map(fn ($rows) => $rows->pluck('subject_id')->map(fn ($id) => (int) $id)->all())
+        ->all();
+}
+
+private function syncExactTeachingLoad(User $teacher, array $selectedClassIds, array $teachingLoad): void
+{
+    if (! Schema::hasTable('teacher_class_subject')) {
+        return;
+    }
+
+    $teacherSubjectIds = $teacher->subjects()
+        ->pluck('subjects.id')
+        ->map(fn ($id) => (int) $id)
+        ->all();
+
+    DB::table('teacher_class_subject')
+        ->where('teacher_id', $teacher->id)
+        ->delete();
+
+    $now = now();
+    $rows = [];
+
+    foreach ($selectedClassIds as $classId) {
+        $subjectIds = collect($teachingLoad[$classId] ?? [])
+            ->map(fn ($id) => (int) $id)
+            ->intersect($teacherSubjectIds)
+            ->unique()
+            ->values();
+
+        foreach ($subjectIds as $subjectId) {
+            $rows[] = [
+                'teacher_id' => $teacher->id,
+                'school_class_id' => $classId,
+                'subject_id' => $subjectId,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ];
+        }
+    }
+
+    if (! empty($rows)) {
+        DB::table('teacher_class_subject')->insert($rows);
+    }
 }
 
 public function deleteTeacher($teacherId)
@@ -1492,10 +1563,15 @@ private function availableExamSubjects()
             ->get();
     }
 
-    $assignedSubjects = $user->subjects()
-        ->where('is_active', true)
-        ->orderBy('name')
-        ->get();
+    $assignedSubjects = $this->exactTeachingLoadIsAvailable()
+        ? Subject::whereIn('id', $this->exactTeachingSubjectIds($user))
+            ->where('is_active', true)
+            ->orderBy('name')
+            ->get()
+        : $user->subjects()
+            ->where('is_active', true)
+            ->orderBy('name')
+            ->get();
 
     if (! $user->isTeacher()) {
         return $assignedSubjects;
@@ -1571,6 +1647,23 @@ private function classesBySubject($subjects, $classes): array
 
 private function classesForSubjectFromAvailableClasses(Subject $subject, $classes)
 {
+    $user = Auth::user();
+
+    if ($user?->isTeacher() && $this->exactTeachingLoadIsAvailable()) {
+        $exactClassIds = $this->exactTeachingClassIdsForSubject($user, (int) $subject->id);
+        $exactClasses = $classes->whereIn('id', $exactClassIds)->values();
+        $ownedEarlyPrimaryClasses = $this->earlyPrimaryFormTeacherClassesFor($user)
+            ->filter(fn (SchoolClass $class) => $classes->contains('id', $class->id))
+            ->filter(fn (SchoolClass $class) => $this->subjectAvailableForClass($subject, $class))
+            ->values();
+
+        return $exactClasses
+            ->merge($ownedEarlyPrimaryClasses)
+            ->unique('id')
+            ->sortBy('name')
+            ->values();
+    }
+
     $subjectClassIds = $subject->classes()->pluck('school_classes.id')->map(fn ($id) => (int) $id)->all();
     $explicitClasses = empty($subjectClassIds)
         ? collect()
@@ -1591,6 +1684,57 @@ private function classesForSubjectFromAvailableClasses(Subject $subject, $classe
         ->unique('id')
         ->sortBy('name')
         ->values();
+}
+
+private function subjectAvailableForClass(Subject $subject, SchoolClass $class): bool
+{
+    $subjectClassIds = $subject->classes()->pluck('school_classes.id')->map(fn ($id) => (int) $id)->all();
+
+    if (! empty($subjectClassIds)) {
+        return in_array((int) $class->id, $subjectClassIds, true);
+    }
+
+    if (! filled($subject->class_level)) {
+        return true;
+    }
+
+    return $this->subjectMatchesClassLevel($subject, $class);
+}
+
+private function exactTeachingLoadIsAvailable(): bool
+{
+    return Schema::hasTable('teacher_class_subject');
+}
+
+private function exactTeachingSubjectIds(User $teacher): array
+{
+    if (! $this->exactTeachingLoadIsAvailable()) {
+        return [];
+    }
+
+    return DB::table('teacher_class_subject')
+        ->where('teacher_id', $teacher->id)
+        ->pluck('subject_id')
+        ->map(fn ($id) => (int) $id)
+        ->unique()
+        ->values()
+        ->all();
+}
+
+private function exactTeachingClassIdsForSubject(User $teacher, int $subjectId): array
+{
+    if (! $this->exactTeachingLoadIsAvailable()) {
+        return [];
+    }
+
+    return DB::table('teacher_class_subject')
+        ->where('teacher_id', $teacher->id)
+        ->where('subject_id', $subjectId)
+        ->pluck('school_class_id')
+        ->map(fn ($id) => (int) $id)
+        ->unique()
+        ->values()
+        ->all();
 }
 
 private function subjectMatchesClassLevel(Subject $subject, SchoolClass $class): bool
@@ -1618,6 +1762,7 @@ private function validateExamAssignment(int $subjectId, array $classIds): array
     $classes = SchoolClass::whereIn('id', array_map('intval', $classIds))->get();
     $explicitlyTeachesSubject = $user->subjects()->where('subjects.id', $subjectId)->exists();
     $teachingClassIds = $user->teachingClasses()->pluck('school_classes.id')->map(fn ($id) => (int) $id)->all();
+    $exactTeachingClassIds = $this->exactTeachingClassIdsForSubject($user, $subjectId);
     $ownedEarlyPrimaryClassIds = $this->earlyPrimaryFormTeacherClassesFor($user)->pluck('id')->map(fn ($id) => (int) $id)->all();
     $availableSubjectIds = $this->availableExamSubjects()->pluck('id')->map(fn ($id) => (int) $id)->all();
 
@@ -1640,6 +1785,14 @@ private function validateExamAssignment(int $subjectId, array $classIds): array
         if ($this->isEarlyYearsOrPrimaryClass($class)) {
             if (! in_array((int) $class->id, $ownedEarlyPrimaryClassIds, true)) {
                 return ['classes' => 'Only the assigned form teacher can fill scores for early-years and primary classes.'];
+            }
+
+            continue;
+        }
+
+        if ($this->exactTeachingLoadIsAvailable() && ! $this->isEarlyYearsOrPrimaryClass($class)) {
+            if (! in_array((int) $class->id, $exactTeachingClassIds, true)) {
+                return ['classes' => 'You can only assign this subject to classes where your exact teaching load includes this subject.'];
             }
 
             continue;

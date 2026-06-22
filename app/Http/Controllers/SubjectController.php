@@ -8,6 +8,8 @@ use App\Models\FormTeacher;
 use App\Models\SchoolClass;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class SubjectController extends Controller
 {
@@ -45,12 +47,17 @@ class SubjectController extends Controller
             ->sortBy('name')
             ->values();
 
-        $assignedSubjects = $user->subjects()
+        $assignedSubjectsQuery = $user->subjects()
             ->with(['classes' => fn ($query) => $query->withCount('students')->orderBy('name')])
             ->withCount('exams')
             ->where('is_active', true)
-            ->orderBy('name')
-            ->get();
+            ->orderBy('name');
+
+        if (Schema::hasTable('teacher_class_subject')) {
+            $assignedSubjectsQuery->whereIn('subjects.id', $this->exactTeachingSubjectIds($user));
+        }
+
+        $assignedSubjects = $assignedSubjectsQuery->get();
 
         $ownedClassSubjects = collect();
 
@@ -75,12 +82,18 @@ class SubjectController extends Controller
             ->unique('id')
             ->sortBy('name')
             ->values()
-            ->map(function (Subject $subject) use ($allTeachingClasses, $ownedEarlyPrimaryClasses, $assignedSubjects) {
+            ->map(function (Subject $subject) use ($user, $allTeachingClasses, $ownedEarlyPrimaryClasses, $assignedSubjects) {
                 $subjectClassIds = $subject->classes->pluck('id');
 
-                $assignedClasses = $subjectClassIds->isEmpty()
-                    ? $allTeachingClasses->filter(fn (SchoolClass $class) => $this->subjectMatchesClassLevel($subject, $class))->values()
-                    : $allTeachingClasses->whereIn('id', $subjectClassIds)->values();
+                if (Schema::hasTable('teacher_class_subject')) {
+                    $assignedClasses = $allTeachingClasses
+                        ->whereIn('id', $this->exactTeachingClassIdsForSubject($user, (int) $subject->id))
+                        ->values();
+                } else {
+                    $assignedClasses = $subjectClassIds->isEmpty()
+                        ? $allTeachingClasses->filter(fn (SchoolClass $class) => $this->subjectMatchesClassLevel($subject, $class))->values()
+                        : $allTeachingClasses->whereIn('id', $subjectClassIds)->values();
+                }
 
                 if ($assignedSubjects->contains('id', $subject->id)) {
                     $assignedClasses = $assignedClasses
@@ -116,6 +129,37 @@ class SubjectController extends Controller
             ->pluck('schoolClass')
             ->filter()
             ->values();
+    }
+
+    private function exactTeachingSubjectIds(User $teacher): array
+    {
+        if (! Schema::hasTable('teacher_class_subject')) {
+            return [];
+        }
+
+        return DB::table('teacher_class_subject')
+            ->where('teacher_id', $teacher->id)
+            ->pluck('subject_id')
+            ->map(fn ($id) => (int) $id)
+            ->unique()
+            ->values()
+            ->all();
+    }
+
+    private function exactTeachingClassIdsForSubject(User $teacher, int $subjectId): array
+    {
+        if (! Schema::hasTable('teacher_class_subject')) {
+            return [];
+        }
+
+        return DB::table('teacher_class_subject')
+            ->where('teacher_id', $teacher->id)
+            ->where('subject_id', $subjectId)
+            ->pluck('school_class_id')
+            ->map(fn ($id) => (int) $id)
+            ->unique()
+            ->values()
+            ->all();
     }
 
     private function isEarlyYearsOrPrimaryClass(SchoolClass $class): bool
@@ -274,8 +318,11 @@ class SubjectController extends Controller
             'teachers.*' => 'exists:users,id',
         ]);
 
+        $previousTeacherIds = $subject->teachers()->pluck('users.id')->map(fn ($id) => (int) $id)->all();
+
         // Sync the teachers (this will add new and remove unchecked ones)
         $subject->teachers()->sync($validated['teachers']);
+        $this->syncExactLoadForSubjectTeacherSync($subject, $previousTeacherIds, $validated['teachers']);
 
         return redirect()->route('admin.subjects.index')
                        ->with('success', 'Teachers assigned to subject successfully!');
@@ -304,10 +351,83 @@ class SubjectController extends Controller
             'subjects.*' => 'exists:subjects,id',
         ]);
 
+        $previousSubjectIds = $teacher->subjects()->pluck('subjects.id')->map(fn ($id) => (int) $id)->all();
+
         // Sync the subjects
         $teacher->subjects()->sync($validated['subjects']);
+        $this->syncExactLoadForTeacherSubjectSync($teacher, $previousSubjectIds, $validated['subjects']);
 
         return redirect()->route('admin.teachers')
                        ->with('success', 'Subjects assigned to teacher successfully!');
+    }
+
+    private function syncExactLoadForSubjectTeacherSync(Subject $subject, array $previousTeacherIds, array $newTeacherIds): void
+    {
+        if (! Schema::hasTable('teacher_class_subject')) {
+            return;
+        }
+
+        $newTeacherIds = collect($newTeacherIds)->map(fn ($id) => (int) $id)->unique()->values()->all();
+        $removedTeacherIds = array_diff($previousTeacherIds, $newTeacherIds);
+
+        if (! empty($removedTeacherIds)) {
+            DB::table('teacher_class_subject')
+                ->where('subject_id', $subject->id)
+                ->whereIn('teacher_id', $removedTeacherIds)
+                ->delete();
+        }
+
+        foreach (array_diff($newTeacherIds, $previousTeacherIds) as $teacherId) {
+            $teacher = User::where('role', 'teacher')->find($teacherId);
+
+            if ($teacher) {
+                $this->backfillExactLoadForTeacherSubjects($teacher, [$subject->id]);
+            }
+        }
+    }
+
+    private function syncExactLoadForTeacherSubjectSync(User $teacher, array $previousSubjectIds, array $newSubjectIds): void
+    {
+        if (! Schema::hasTable('teacher_class_subject')) {
+            return;
+        }
+
+        $newSubjectIds = collect($newSubjectIds)->map(fn ($id) => (int) $id)->unique()->values()->all();
+        $removedSubjectIds = array_diff($previousSubjectIds, $newSubjectIds);
+
+        if (! empty($removedSubjectIds)) {
+            DB::table('teacher_class_subject')
+                ->where('teacher_id', $teacher->id)
+                ->whereIn('subject_id', $removedSubjectIds)
+                ->delete();
+        }
+
+        $this->backfillExactLoadForTeacherSubjects($teacher, array_diff($newSubjectIds, $previousSubjectIds));
+    }
+
+    private function backfillExactLoadForTeacherSubjects(User $teacher, array $subjectIds): void
+    {
+        if (empty($subjectIds) || ! Schema::hasTable('teacher_class_subject')) {
+            return;
+        }
+
+        $classIds = $teacher->teachingClasses()->pluck('school_classes.id')->map(fn ($id) => (int) $id);
+        $now = now();
+
+        foreach ($classIds as $classId) {
+            foreach ($subjectIds as $subjectId) {
+                DB::table('teacher_class_subject')->updateOrInsert(
+                    [
+                        'teacher_id' => $teacher->id,
+                        'school_class_id' => $classId,
+                        'subject_id' => (int) $subjectId,
+                    ],
+                    [
+                        'created_at' => $now,
+                        'updated_at' => $now,
+                    ]
+                );
+            }
+        }
     }
 }

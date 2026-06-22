@@ -13,6 +13,7 @@ use App\Models\FormTeacher;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class TeacherScoreController extends Controller
 {
@@ -375,7 +376,12 @@ class TeacherScoreController extends Controller
             return Subject::active()->ordered()->get();
         }
 
-        $assignedSubjects = $teacher->subjects()->active()->ordered()->get();
+        $assignedSubjects = $this->exactTeachingLoadIsAvailable()
+            ? Subject::active()
+                ->whereIn('id', $this->exactTeachingSubjectIds($teacher))
+                ->ordered()
+                ->get()
+            : $teacher->subjects()->active()->ordered()->get();
         $ownedClasses = $this->earlyPrimaryFormTeacherClassesFor($teacher);
 
         if ($ownedClasses->isEmpty()) {
@@ -425,11 +431,48 @@ class TeacherScoreController extends Controller
         $class = SchoolClass::findOrFail($classId);
         $subject = Subject::findOrFail($subjectId);
         $isOwnedEarlyPrimaryClass = $this->teacherOwnsEarlyPrimaryClass($teacher, $classId);
+        $hasExactTeachingLoad = $this->exactTeachingLoadIsAvailable()
+            && $this->teacherTeachesExactSubjectClass($teacher, $subjectId, $classId);
         $hasClass = $teacher->teachingClasses()->whereKey($classId)->exists() || $isOwnedEarlyPrimaryClass;
-        $hasSubject = $teacher->subjects()->whereKey($subjectId)->exists()
-            || ($isOwnedEarlyPrimaryClass && $this->subjectFitsClass($subject, $class));
+        $hasSubject = $this->exactTeachingLoadIsAvailable()
+            ? $hasExactTeachingLoad
+            : $teacher->subjects()->whereKey($subjectId)->exists();
+        $hasSubject = $hasSubject || ($isOwnedEarlyPrimaryClass && $this->subjectFitsClass($subject, $class));
 
         abort_unless($hasClass && $hasSubject && $this->subjectFitsClass($subject, $class), 403, 'You can only enter scores for classes and subjects assigned to you.');
+    }
+
+    private function exactTeachingLoadIsAvailable(): bool
+    {
+        return Schema::hasTable('teacher_class_subject');
+    }
+
+    private function exactTeachingSubjectIds(User $teacher): array
+    {
+        if (! $this->exactTeachingLoadIsAvailable()) {
+            return [];
+        }
+
+        return DB::table('teacher_class_subject')
+            ->where('teacher_id', $teacher->id)
+            ->pluck('subject_id')
+            ->map(fn ($id) => (int) $id)
+            ->unique()
+            ->values()
+            ->all();
+    }
+
+    private function teacherTeachesExactSubjectClass(User $teacher, int $subjectId, int $classId): bool
+    {
+        if (! $this->exactTeachingLoadIsAvailable()) {
+            return false;
+        }
+
+        return DB::table('teacher_class_subject')
+            ->where('teacher_id', $teacher->id)
+            ->where('subject_id', $subjectId)
+            ->where('school_class_id', $classId)
+            ->exists();
     }
 
     private function earlyPrimaryFormTeacherClassesFor(User $teacher)
