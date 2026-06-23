@@ -864,7 +864,7 @@ class NigerianReportCardController extends Controller
         }
 
         if (!filled($reportCard->class_teacher_comment) || !filled($reportCard->head_teacher_comment)) {
-            $errors->push('Class teacher and head teacher remarks are required before publishing.');
+            $errors->push('Form teacher and head teacher/principal remarks are required before publishing.');
         }
 
         $expectedSubjectIds = $reportCard->class?->subjects()

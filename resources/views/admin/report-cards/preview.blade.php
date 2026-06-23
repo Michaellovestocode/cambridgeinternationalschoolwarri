@@ -3,6 +3,10 @@
 @section('title', 'Report Card Preview')
 
 @section('content')
+@php
+    $isLowerSchool = in_array($reportCard->class?->section_key, ['creche', 'primary'], true);
+    $seniorStaffTitle = $isLowerSchool ? 'Head Teacher' : 'Principal';
+@endphp
 <div class="max-w-7xl mx-auto space-y-8">
     <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
         <div>
@@ -294,20 +298,20 @@
 
                 <div class="grid lg:grid-cols-2 gap-6">
                     <div class="space-y-4">
-                        <h2 class="text-xl font-semibold text-gray-900">Class Teacher Section</h2>
+                        <h2 class="text-xl font-semibold text-gray-900">Form Teacher Section</h2>
                         <div>
-                            <label for="class_teacher_comment" class="block text-sm font-medium text-gray-700 mb-2">Class Teacher's Remark</label>
+                            <label for="class_teacher_comment" class="block text-sm font-medium text-gray-700 mb-2">Form Teacher's Remark</label>
                             <textarea id="class_teacher_comment" name="class_teacher_comment" rows="4"
                                       class="w-full border border-gray-300 rounded-lg px-4 py-3">{{ old('class_teacher_comment', $reportCard->class_teacher_comment) }}</textarea>
                         </div>
                         <div>
-                            <label for="class_teacher_name" class="block text-sm font-medium text-gray-700 mb-2">Class Teacher's Name</label>
+                            <label for="class_teacher_name" class="block text-sm font-medium text-gray-700 mb-2">Form Teacher's Name</label>
                             <input id="class_teacher_name" name="class_teacher_name" type="text"
                                    value="{{ old('class_teacher_name', $reportCard->class_teacher_name) }}"
                                    class="w-full border border-gray-300 rounded-lg px-4 py-3">
                         </div>
                         <div>
-                            <label for="class_teacher_signature" class="block text-sm font-medium text-gray-700 mb-2">Class Teacher's Signature</label>
+                            <label for="class_teacher_signature" class="block text-sm font-medium text-gray-700 mb-2">Form Teacher's Signature</label>
                             <input id="class_teacher_signature" name="class_teacher_signature" type="text"
                                    value="{{ old('class_teacher_signature', $reportCard->class_teacher_signature) }}"
                                    class="w-full border border-gray-300 rounded-lg px-4 py-3">
@@ -321,20 +325,20 @@
                     </div>
 
                     <div class="space-y-4">
-                        <h2 class="text-xl font-semibold text-gray-900">Head Teacher Section</h2>
+                        <h2 class="text-xl font-semibold text-gray-900">{{ $seniorStaffTitle }} Section</h2>
                         <div>
-                            <label for="head_teacher_comment" class="block text-sm font-medium text-gray-700 mb-2">Head Teacher's Remark</label>
+                            <label for="head_teacher_comment" class="block text-sm font-medium text-gray-700 mb-2">{{ $seniorStaffTitle }}'s Remark</label>
                             <textarea id="head_teacher_comment" name="head_teacher_comment" rows="4"
                                       class="w-full border border-gray-300 rounded-lg px-4 py-3">{{ old('head_teacher_comment', $reportCard->head_teacher_comment) }}</textarea>
                         </div>
                         <div>
-                            <label for="head_teacher_name" class="block text-sm font-medium text-gray-700 mb-2">Head Teacher's Name</label>
+                            <label for="head_teacher_name" class="block text-sm font-medium text-gray-700 mb-2">{{ $seniorStaffTitle }}'s Name</label>
                             <input id="head_teacher_name" name="head_teacher_name" type="text"
                                    value="{{ old('head_teacher_name', $reportCard->head_teacher_name) }}"
                                    class="w-full border border-gray-300 rounded-lg px-4 py-3">
                         </div>
                         <div>
-                            <label for="head_teacher_signature" class="block text-sm font-medium text-gray-700 mb-2">Head Teacher's Signature</label>
+                            <label for="head_teacher_signature" class="block text-sm font-medium text-gray-700 mb-2">{{ $seniorStaffTitle }}'s Signature</label>
                             <input id="head_teacher_signature" name="head_teacher_signature" type="text"
                                    value="{{ old('head_teacher_signature', $reportCard->head_teacher_signature) }}"
                                    class="w-full border border-gray-300 rounded-lg px-4 py-3">

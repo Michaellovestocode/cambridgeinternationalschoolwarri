@@ -862,13 +862,13 @@
         <!-- Comments -->
         <div class="comments-section">
             <div class="comment-box">
-                <div class="comment-label">Class Teacher's Remark:</div>
+                <div class="comment-label">Form Teacher's Remark:</div>
                 <div class="comment-text">
                     {{ $reportCard->class_teacher_comment ?: '............................................................' }}
                 </div>
                 <div class="signature-line {{ $formTeacherSignatureSrc ? 'has-image' : 'no-image' }}">
                     @if($formTeacherSignatureSrc)
-                        <img src="{{ $formTeacherSignatureSrc }}" class="signature-image" alt="Class Teacher Signature">
+                        <img src="{{ $formTeacherSignatureSrc }}" class="signature-image" alt="Form Teacher Signature">
                     @endif
                     <strong>{{ $reportCard->class_teacher_name ?: $formTeacher?->name ?: '................................' }}</strong><br>
                     @if(! $formTeacherSignatureSrc)

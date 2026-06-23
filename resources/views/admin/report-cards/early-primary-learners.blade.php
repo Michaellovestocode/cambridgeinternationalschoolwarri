@@ -7,7 +7,7 @@
     <div class="rounded-2xl bg-gradient-to-r from-pink-600 via-indigo-600 to-blue-700 p-6 text-white shadow-xl">
         <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div>
-                <p class="text-sm font-bold uppercase text-white/75" style="letter-spacing:.14em;">Class Teacher Score Entry</p>
+                <p class="text-sm font-bold uppercase text-white/75" style="letter-spacing:.14em;">Form Teacher Score Entry</p>
                 <h1 class="mt-2 text-2xl font-black sm:text-3xl">Fill Learner Scores</h1>
                 <p class="mt-1 text-sm text-blue-50">Choose a learner, then fill all subject scores on one page.</p>
             </div>
