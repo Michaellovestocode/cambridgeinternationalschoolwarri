@@ -441,9 +441,20 @@
         .signature-line {
             border-top: 1px solid #000;
             width: 180px;
-            margin-top: 16px;
-            padding-top: 3px;
+            margin-top: 10px;
+            padding-top: 1px;
             font-size: 9px;
+            line-height: 1.2;
+        }
+
+        .signature-line.has-image {
+            margin-top: 6px;
+            padding-top: 0;
+        }
+
+        .signature-line.no-image {
+            margin-top: 8px;
+            padding-top: 1px;
         }
 
         .signature-image {
@@ -451,7 +462,7 @@
             width: 120px;
             height: 34px;
             object-fit: contain;
-            margin-bottom: 2px;
+            margin-bottom: 1px;
         }
 
         .next-term-box {
@@ -586,6 +597,7 @@
         }
 
         $isLowerSchool = in_array($reportCard->class?->section_key, ['creche', 'primary'], true);
+        $seniorRemarkLabel = $isLowerSchool ? "Head Teacher's Remark:" : "Principal's Remark:";
     @endphp
     <div class="page {{ $isLowerSchool ? 'lower-school' : '' }}">
         <div class="inner-frame"></div>
@@ -854,7 +866,7 @@
                 <div class="comment-text">
                     {{ $reportCard->class_teacher_comment ?: '............................................................' }}
                 </div>
-                <div class="signature-line">
+                <div class="signature-line {{ $formTeacherSignatureSrc ? 'has-image' : 'no-image' }}">
                     @if($formTeacherSignatureSrc)
                         <img src="{{ $formTeacherSignatureSrc }}" class="signature-image" alt="Class Teacher Signature">
                     @endif
@@ -867,11 +879,11 @@
             </div>
             
             <div class="comment-box">
-                <div class="comment-label">Head Teacher's Remark:</div>
+                <div class="comment-label">{{ $seniorRemarkLabel }}</div>
                 <div class="comment-text">
                     {{ $reportCard->head_teacher_comment ?: '............................................................' }}
                 </div>
-                <div class="signature-line">
+                <div class="signature-line {{ $principalSignatureSrc ? 'has-image' : 'no-image' }}">
                     @if($principalSignatureSrc)
                         <img src="{{ $principalSignatureSrc }}" class="signature-image" alt="Principal Signature">
                     @endif
