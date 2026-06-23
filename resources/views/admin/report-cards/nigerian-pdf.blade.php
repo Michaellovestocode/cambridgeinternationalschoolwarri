@@ -446,6 +446,14 @@
             font-size: 9px;
         }
 
+        .signature-image {
+            display: block;
+            width: 120px;
+            height: 34px;
+            object-fit: contain;
+            margin-bottom: 2px;
+        }
+
         .next-term-box {
             text-align: center;
             margin-top: 8px;
@@ -518,6 +526,9 @@
         $renderMode = $renderMode ?? 'pdf';
         $logoPath = $schoolSettings->school_logo ? public_path('storage/' . $schoolSettings->school_logo) : null;
         $studentPhotoPath = $reportCard->student->photo ? public_path('storage/' . $reportCard->student->photo) : null;
+        $formTeacher = $reportCard->class?->activeFormTeacher?->teacher ?: $reportCard->class?->formTeacher?->teacher;
+        $formTeacherSignaturePath = $formTeacher?->signature ? public_path('storage/' . $formTeacher->signature) : null;
+        $principalSignaturePath = $schoolSettings->principal_signature ? public_path('storage/' . $schoolSettings->principal_signature) : null;
         $clubSociety = $reportCard->student->club_society ?: 'N/A';
         $favouriteColour = $reportCard->student->favourite_colour ?: 'N/A';
         $schoolAddress = 'Delta, Nigeria';
@@ -553,12 +564,24 @@
             $studentPhotoSrc = $reportCard->student->photo
                 ? asset('storage/' . $reportCard->student->photo)
                 : null;
+            $formTeacherSignatureSrc = $formTeacher?->signature
+                ? asset('storage/' . $formTeacher->signature)
+                : null;
+            $principalSignatureSrc = $schoolSettings->principal_signature
+                ? asset('storage/' . $schoolSettings->principal_signature)
+                : null;
         } else {
             $schoolLogoSrc = ($logoPath && file_exists($logoPath))
                 ? $logoPath
                 : public_path('images/schoollogo.jpg');
             $studentPhotoSrc = ($studentPhotoPath && file_exists($studentPhotoPath))
                 ? $studentPhotoPath
+                : null;
+            $formTeacherSignatureSrc = ($formTeacherSignaturePath && file_exists($formTeacherSignaturePath))
+                ? $formTeacherSignaturePath
+                : null;
+            $principalSignatureSrc = ($principalSignaturePath && file_exists($principalSignaturePath))
+                ? $principalSignaturePath
                 : null;
         }
 
@@ -832,8 +855,13 @@
                     {{ $reportCard->class_teacher_comment ?: '............................................................' }}
                 </div>
                 <div class="signature-line">
-                    <strong>{{ $reportCard->class_teacher_name ?: '................................' }}</strong><br>
-                    Signature: {{ $reportCard->class_teacher_signature ?: '___________________' }}
+                    @if($formTeacherSignatureSrc)
+                        <img src="{{ $formTeacherSignatureSrc }}" class="signature-image" alt="Class Teacher Signature">
+                    @endif
+                    <strong>{{ $reportCard->class_teacher_name ?: $formTeacher?->name ?: '................................' }}</strong><br>
+                    @if(! $formTeacherSignatureSrc)
+                        Signature: {{ $reportCard->class_teacher_signature ?: '___________________' }}
+                    @endif
                     Date: {{ $reportCard->class_teacher_signature_date ? $reportCard->class_teacher_signature_date->format('d-M-Y') : '__________' }}
                 </div>
             </div>
@@ -844,8 +872,13 @@
                     {{ $reportCard->head_teacher_comment ?: '............................................................' }}
                 </div>
                 <div class="signature-line">
-                    <strong>{{ $reportCard->head_teacher_name ?: '................................' }}</strong><br>
-                    Signature: {{ $reportCard->head_teacher_signature ?: '___________________' }}
+                    @if($principalSignatureSrc)
+                        <img src="{{ $principalSignatureSrc }}" class="signature-image" alt="Principal Signature">
+                    @endif
+                    <strong>{{ $reportCard->head_teacher_name ?: $schoolSettings->principal_name ?: '................................' }}</strong><br>
+                    @if(! $principalSignatureSrc)
+                        Signature: {{ $reportCard->head_teacher_signature ?: '___________________' }}
+                    @endif
                     Date: {{ $reportCard->head_teacher_signature_date ? $reportCard->head_teacher_signature_date->format('d-M-Y') : '__________' }}
                 </div>
             </div>

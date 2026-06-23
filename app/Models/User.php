@@ -21,6 +21,7 @@ class User extends Authenticatable
         'role',
         'class_id',
         'photo',
+        'signature',
         'date_of_birth',
         'parent_phone_number',
         'whatsapp_number',

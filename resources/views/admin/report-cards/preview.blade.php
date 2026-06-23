@@ -175,7 +175,7 @@
         </div>
 
         <div class="lg:col-span-2 bg-white rounded-xl shadow p-6">
-            <form action="{{ route('admin.report-cards.update', $reportCard->id) }}" method="POST" class="space-y-8">
+            <form action="{{ route('admin.report-cards.update', $reportCard->id) }}" method="POST" enctype="multipart/form-data" class="space-y-8">
                 @csrf
                 @method('PUT')
 
@@ -339,6 +339,20 @@
                                    value="{{ old('head_teacher_signature', $reportCard->head_teacher_signature) }}"
                                    class="w-full border border-gray-300 rounded-lg px-4 py-3">
                         </div>
+                        @if(auth()->user()->isAdmin())
+                        <div>
+                            <label for="principal_signature_image" class="block text-sm font-medium text-gray-700 mb-2">Principal Signature Image</label>
+                            @if($schoolSettings->principal_signature)
+                                <div class="mb-2 rounded-lg border border-gray-200 bg-gray-50 p-3">
+                                    <img src="{{ asset('storage/' . $schoolSettings->principal_signature) }}" alt="Principal Signature" class="h-16 w-48 object-contain">
+                                </div>
+                            @endif
+                            <input id="principal_signature_image" name="principal_signature_image" type="file" accept="image/*"
+                                   class="w-full border border-gray-300 rounded-lg px-4 py-3">
+                            <p class="text-xs text-gray-500 mt-1">This is saved school-wide and used on report cards.</p>
+                            @error('principal_signature_image')<p class="text-red-500 text-sm mt-1">{{ $message }}</p>@enderror
+                        </div>
+                        @endif
                         <div>
                             <label for="head_teacher_signature_date" class="block text-sm font-medium text-gray-700 mb-2">Signature Date</label>
                             <input id="head_teacher_signature_date" name="head_teacher_signature_date" type="date"

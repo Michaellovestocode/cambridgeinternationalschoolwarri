@@ -617,6 +617,7 @@ class NigerianReportCardController extends Controller
             'head_teacher_name' => 'nullable|string|max:255',
             'head_teacher_signature' => 'nullable|string|max:255',
             'head_teacher_signature_date' => 'nullable|date',
+            'principal_signature_image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:1024',
             'next_term_begins' => 'nullable|date',
             'theme_color' => 'nullable|in:blue,green,brown,pink,purple',
             'affective_domain' => 'nullable|array',
@@ -659,7 +660,21 @@ class NigerianReportCardController extends Controller
         $validated['reviewed_at'] = now();
         $validated['reviewed_by'] = auth()->id();
 
+        unset($validated['principal_signature_image']);
+
         $reportCard->update($validated);
+
+        if (auth()->user()->isAdmin() && $request->hasFile('principal_signature_image')) {
+            $schoolSettings = \App\Models\SchoolSettings::getSettings();
+
+            if ($schoolSettings->principal_signature) {
+                Storage::disk('public')->delete($schoolSettings->principal_signature);
+            }
+
+            $schoolSettings->update([
+                'principal_signature' => $request->file('principal_signature_image')->store('signatures/principal', 'public'),
+            ]);
+        }
 
         return redirect()->route('admin.report-cards.preview', $reportCard->id)
             ->with('success', 'Report card details updated successfully.');

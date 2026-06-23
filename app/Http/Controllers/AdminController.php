@@ -27,6 +27,7 @@ use PhpOffice\PhpWord\PhpWord;
 use PhpOffice\PhpWord\IOFactory;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 
 class AdminController extends Controller
 {
@@ -1074,6 +1075,7 @@ public function storeTeacher(Request $request)
         'attendance_section' => 'nullable|string|max:100',
         'whatsapp_number' => 'nullable|string|max:30',
         'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:1024',
+        'signature' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:1024',
         'password' => 'required|string|min:6',
         'can_manage_attendance' => 'nullable|boolean',
         'can_review_report_cards' => 'nullable|boolean',
@@ -1096,6 +1098,10 @@ public function storeTeacher(Request $request)
 
     if ($request->hasFile('photo')) {
         $data['photo'] = $request->file('photo')->store('photos', 'public');
+    }
+
+    if ($request->hasFile('signature')) {
+        $data['signature'] = $request->file('signature')->store('signatures/teachers', 'public');
     }
 
     $teacher = User::create($data);
@@ -1178,6 +1184,7 @@ public function updateTeacher(Request $request, $teacherId)
         'attendance_section' => 'nullable|string|max:100',
         'whatsapp_number' => 'nullable|string|max:30',
         'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:1024',
+        'signature' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:1024',
         'password' => 'nullable|string|min:6',
         'can_manage_blog' => 'nullable|boolean',
         'can_manage_attendance' => 'nullable|boolean',
@@ -1200,6 +1207,14 @@ public function updateTeacher(Request $request, $teacherId)
 
     if ($request->hasFile('photo')) {
         $data['photo'] = $request->file('photo')->store('photos', 'public');
+    }
+
+    if ($request->hasFile('signature')) {
+        if ($teacher->signature) {
+            Storage::disk('public')->delete($teacher->signature);
+        }
+
+        $data['signature'] = $request->file('signature')->store('signatures/teachers', 'public');
     }
 
     $teacher->update($data);

@@ -67,6 +67,14 @@
             </div>
 
             <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Signature</label>
+                <input type="file" name="signature" accept="image/*"
+                       class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500">
+                <p class="text-xs text-gray-500 mt-1">Transparent PNG is best. This appears on report cards when the teacher is the assigned form teacher.</p>
+                @error('signature')<p class="text-red-500 text-sm mt-1">{{ $message }}</p>@enderror
+            </div>
+
+            <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Password *</label>
                 <input type="password" name="password" required
                        class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500">

@@ -72,6 +72,19 @@
             </div>
 
             <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Signature</label>
+                @if($teacher->signature)
+                    <div class="mb-2 rounded-lg border border-gray-200 bg-gray-50 p-3">
+                        <img src="{{ asset('storage/' . $teacher->signature) }}" alt="Current Signature" class="h-16 w-48 object-contain">
+                    </div>
+                @endif
+                <input type="file" name="signature" accept="image/*"
+                       class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500">
+                <p class="text-xs text-gray-500 mt-1">Upload a new image only when you want to replace the current signature.</p>
+                @error('signature')<p class="text-red-500 text-sm mt-1">{{ $message }}</p>@enderror
+            </div>
+
+            <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Password (leave blank to keep current)</label>
                 <input type="password" name="password"
                        class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500"

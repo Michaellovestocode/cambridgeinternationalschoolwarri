@@ -40,6 +40,11 @@ class SchoolClass extends Model
         return $this->hasOne(FormTeacher::class, 'class_id');
     }
 
+    public function activeFormTeacher()
+    {
+        return $this->hasOne(FormTeacher::class, 'class_id')->where('is_active', true);
+    }
+
     public function users()
     {
         return $this->hasMany(User::class, 'class_id');
