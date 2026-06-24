@@ -26,6 +26,7 @@ class Question extends Model
     {
         return [
             'options' => 'array',
+            'marks' => 'decimal:2',
         ];
     }
 

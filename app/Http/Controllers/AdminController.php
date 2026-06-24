@@ -599,7 +599,7 @@ public function storeManualExamScores(Request $request, $examId)
         'question_text' => 'required|string',
         'question_passage_id' => 'nullable|exists:question_passages,id',
         'question_type' => 'required|in:multiple_choice,theory,coding,fill_blank',
-        'marks' => 'required|integer|min:1',
+        'marks' => 'required|numeric|min:0.01',
         'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
     ]);
 
@@ -734,7 +734,7 @@ public function storeManualExamScores(Request $request, $examId)
         'question_text' => 'required|string',
         'question_passage_id' => 'nullable|exists:question_passages,id',
         'question_type' => 'required|in:multiple_choice,theory,coding,fill_blank',
-        'marks' => 'required|integer|min:1',
+        'marks' => 'required|numeric|min:0.01',
         'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
         'remove_image' => 'nullable|boolean',
     ]);

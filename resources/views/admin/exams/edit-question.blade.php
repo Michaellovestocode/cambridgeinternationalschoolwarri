@@ -62,7 +62,7 @@
 
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Marks *</label>
-                <input type="number" name="marks" value="{{ old('marks', $question->marks) }}" min="1" required
+                <input type="number" name="marks" value="{{ old('marks', $question->marks) }}" min="0.01" step="0.01" required
                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
             </div>
 

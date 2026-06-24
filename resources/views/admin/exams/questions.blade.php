@@ -158,7 +158,7 @@
 
     <div>
         <label class="block text-sm font-medium text-gray-700 mb-2">Marks *</label>
-        <input type="number" name="marks" value="{{ old('marks', 1) }}" min="1" required
+        <input type="number" name="marks" value="{{ old('marks', 1) }}" min="0.01" step="0.01" required
                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
     </div>
     <!-- Image Upload (for all question types, especially coding/theory) -->
@@ -292,7 +292,7 @@
                                 {{ ucwords(str_replace('_', ' ', $question->question_type)) }}
                             </span>
                             <span class="bg-purple-100 text-purple-800 px-2 py-1 rounded">
-                                {{ $question->marks }} {{ $question->marks == 1 ? 'mark' : 'marks' }}
+                                {{ number_format((float) $question->marks, 2) }} {{ (float) $question->marks == 1.0 ? 'mark' : 'marks' }}
                             </span>
                             @if($question->passage)
                             <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded">
