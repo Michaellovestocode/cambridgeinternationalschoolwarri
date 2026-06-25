@@ -115,25 +115,60 @@ class NigerianReportCardController extends Controller
         $selectedSessionId = $request->input('session_id', $activeSession?->id);
         $selectedTermId = $request->input('term_id', $activeTerm?->id);
         $reviewClassIds = $this->reviewerClassIdsFor(auth()->user());
+        $selectedClassId = $request->filled('class_id') ? (int) $request->input('class_id') : null;
 
-        $reportCards = ReportCard::with(['student', 'session', 'term', 'class', 'academicReviewer'])
+        if ($selectedClassId) {
+            abort_unless(in_array($selectedClassId, $reviewClassIds, true), 403, 'You are not assigned to review this class.');
+        }
+
+        $reviewStatuses = [
+            ReportCard::WORKFLOW_SUBMITTED,
+            ReportCard::WORKFLOW_REJECTED,
+            ReportCard::WORKFLOW_ACADEMIC_APPROVED,
+        ];
+
+        $reviewBaseQuery = ReportCard::query()
             ->whereIn('class_id', $reviewClassIds)
             ->when($selectedSessionId, fn ($query) => $query->where('session_id', $selectedSessionId))
             ->when($selectedTermId, fn ($query) => $query->where('term_id', $selectedTermId))
-            ->whereIn('workflow_status', [
-                ReportCard::WORKFLOW_SUBMITTED,
-                ReportCard::WORKFLOW_REJECTED,
-                ReportCard::WORKFLOW_ACADEMIC_APPROVED,
-            ])
+            ->whereIn('workflow_status', $reviewStatuses);
+
+        $reviewCounts = (clone $reviewBaseQuery)
+            ->select('class_id', 'workflow_status')
+            ->get()
+            ->groupBy('class_id');
+
+        $reviewClasses = SchoolClass::whereIn('id', $reviewClassIds)
+            ->orderBy('name')
+            ->get()
+            ->map(function (SchoolClass $class) use ($reviewCounts) {
+                $classCards = $reviewCounts->get($class->id, collect());
+                $class->review_total = $classCards->count();
+                $class->review_submitted_count = $classCards->where('workflow_status', ReportCard::WORKFLOW_SUBMITTED)->count();
+                $class->review_rejected_count = $classCards->where('workflow_status', ReportCard::WORKFLOW_REJECTED)->count();
+                $class->review_approved_count = $classCards->where('workflow_status', ReportCard::WORKFLOW_ACADEMIC_APPROVED)->count();
+
+                return $class;
+            });
+
+        $reportCards = ReportCard::with(['student', 'session', 'term', 'class', 'academicReviewer'])
+            ->whereIn('class_id', $reviewClassIds)
+            ->when($selectedClassId, fn ($query) => $query->where('class_id', $selectedClassId))
+            ->when(! $selectedClassId, fn ($query) => $query->whereRaw('1 = 0'))
+            ->when($selectedSessionId, fn ($query) => $query->where('session_id', $selectedSessionId))
+            ->when($selectedTermId, fn ($query) => $query->where('term_id', $selectedTermId))
+            ->whereIn('workflow_status', $reviewStatuses)
             ->latest()
-            ->paginate(20);
+            ->paginate(20)
+            ->appends($request->query());
 
         $sessions = Session::orderByDesc('start_date')->get();
         $terms = Term::with('session')->orderByDesc('start_date')->get();
         $selectedSession = $sessions->firstWhere('id', (int) $selectedSessionId);
         $selectedTerm = $terms->firstWhere('id', (int) $selectedTermId);
+        $selectedClass = $selectedClassId ? $reviewClasses->firstWhere('id', $selectedClassId) : null;
 
-        return view('admin.report-cards.reviews', compact('reportCards', 'sessions', 'terms', 'selectedSession', 'selectedTerm'));
+        return view('admin.report-cards.reviews', compact('reportCards', 'sessions', 'terms', 'selectedSession', 'selectedTerm', 'reviewClasses', 'selectedClass'));
     }
 
     public function earlyPrimaryLearners(Request $request)

@@ -435,7 +435,8 @@
         .comment-text {
             font-size: 10px;
             font-style: italic;
-            min-height: 18px;
+            min-height: 12px;
+            line-height: 1.05;
         }
         
         .signature-line {

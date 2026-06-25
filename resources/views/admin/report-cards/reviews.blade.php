@@ -15,7 +15,7 @@
     </div>
 
     <div class="bg-white rounded-xl shadow p-6">
-        <form method="GET" action="{{ route('admin.report-cards.reviews') }}" class="grid md:grid-cols-3 gap-4">
+        <form method="GET" action="{{ route('admin.report-cards.reviews') }}" class="grid md:grid-cols-4 gap-4">
             <div>
                 <label for="session_id" class="block text-sm font-medium text-gray-700 mb-2">Session</label>
                 <select id="session_id" name="session_id" class="w-full border border-gray-300 rounded-lg px-4 py-3">
@@ -36,6 +36,17 @@
                     @endforeach
                 </select>
             </div>
+            <div>
+                <label for="class_id" class="block text-sm font-medium text-gray-700 mb-2">Class</label>
+                <select id="class_id" name="class_id" class="w-full border border-gray-300 rounded-lg px-4 py-3">
+                    <option value="">Choose from cards</option>
+                    @foreach ($reviewClasses as $class)
+                        <option value="{{ $class->id }}" @selected((string) request('class_id') === (string) $class->id)>
+                            {{ $class->display_name }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
             <div class="flex items-end gap-3">
                 <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-3 rounded-lg font-medium">
                     Filter
@@ -46,6 +57,57 @@
             </div>
         </form>
     </div>
+
+    <div class="grid md:grid-cols-2 xl:grid-cols-3 gap-5">
+        @forelse($reviewClasses as $class)
+            @php
+                $classUrl = route('admin.report-cards.reviews', array_filter([
+                    'session_id' => request('session_id', $selectedSession?->id),
+                    'term_id' => request('term_id', $selectedTerm?->id),
+                    'class_id' => $class->id,
+                ]));
+                $isSelectedClass = $selectedClass && (int) $selectedClass->id === (int) $class->id;
+            @endphp
+            <a href="{{ $classUrl }}" class="block rounded-xl border {{ $isSelectedClass ? 'border-blue-500 ring-4 ring-blue-100' : 'border-gray-100' }} bg-white p-5 shadow hover:shadow-lg transition">
+                <div class="flex items-start justify-between gap-3">
+                    <div>
+                        <h2 class="text-lg font-bold text-gray-900">{{ $class->display_name }}</h2>
+                        <p class="text-sm text-gray-500">{{ $class->section_label }}</p>
+                    </div>
+                    <span class="rounded-full bg-gray-900 px-3 py-1 text-xs font-bold text-white">{{ $class->review_total }}</span>
+                </div>
+                <div class="mt-4 grid grid-cols-3 gap-3 text-sm">
+                    <div class="rounded-lg bg-orange-50 p-3">
+                        <p class="text-orange-700">Submitted</p>
+                        <p class="font-bold text-orange-950">{{ $class->review_submitted_count }}</p>
+                    </div>
+                    <div class="rounded-lg bg-red-50 p-3">
+                        <p class="text-red-700">Returned</p>
+                        <p class="font-bold text-red-950">{{ $class->review_rejected_count }}</p>
+                    </div>
+                    <div class="rounded-lg bg-emerald-50 p-3">
+                        <p class="text-emerald-700">Approved</p>
+                        <p class="font-bold text-emerald-950">{{ $class->review_approved_count }}</p>
+                    </div>
+                </div>
+            </a>
+        @empty
+            <div class="md:col-span-2 xl:col-span-3 bg-white rounded-xl shadow p-10 text-center text-gray-500">
+                No classes are assigned to you for academic review.
+            </div>
+        @endforelse
+    </div>
+
+    @if($selectedClass)
+        <div>
+            <h2 class="text-2xl font-bold text-gray-900">{{ $selectedClass->display_name }} Report Cards</h2>
+            <p class="text-gray-600 mt-1">Only report cards from this class are shown below.</p>
+        </div>
+    @else
+        <div class="bg-blue-50 border border-blue-100 rounded-xl p-6 text-blue-900">
+            Select a class card above to review its report cards.
+        </div>
+    @endif
 
     <div class="grid md:grid-cols-2 xl:grid-cols-3 gap-5">
         @forelse($reportCards as $reportCard)
@@ -90,13 +152,15 @@
             </div>
         @empty
             <div class="md:col-span-2 xl:col-span-3 bg-white rounded-xl shadow p-10 text-center text-gray-500">
-                No report cards are waiting in the academic review queue.
+                {{ $selectedClass ? 'No report cards are waiting in this class review queue.' : 'Choose a class above to open its review queue.' }}
             </div>
         @endforelse
     </div>
 
+    @if($selectedClass)
     <div>
         {{ $reportCards->links() }}
     </div>
+    @endif
 </div>
 @endsection
