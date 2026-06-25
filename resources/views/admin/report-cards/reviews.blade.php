@@ -58,6 +58,7 @@
         </form>
     </div>
 
+    @unless($selectedClass)
     <div class="grid md:grid-cols-2 xl:grid-cols-3 gap-5">
         @forelse($reviewClasses as $class)
             @php
@@ -97,11 +98,20 @@
             </div>
         @endforelse
     </div>
+    @endunless
 
     @if($selectedClass)
-        <div>
-            <h2 class="text-2xl font-bold text-gray-900">{{ $selectedClass->display_name }} Report Cards</h2>
-            <p class="text-gray-600 mt-1">Only report cards from this class are shown below.</p>
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div>
+                <h2 class="text-2xl font-bold text-gray-900">{{ $selectedClass->display_name }} Report Cards</h2>
+                <p class="text-gray-600 mt-1">Only report cards from this class are shown below.</p>
+            </div>
+            <a href="{{ route('admin.report-cards.reviews', array_filter([
+                'session_id' => request('session_id', $selectedSession?->id),
+                'term_id' => request('term_id', $selectedTerm?->id),
+            ])) }}" class="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-lg font-medium text-center">
+                Change Class
+            </a>
         </div>
     @else
         <div class="bg-blue-50 border border-blue-100 rounded-xl p-6 text-blue-900">
