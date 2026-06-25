@@ -112,6 +112,16 @@
             ])) }}" class="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-lg font-medium text-center">
                 Change Class
             </a>
+            <form method="POST" action="{{ route('admin.report-cards.bulk-approve-review') }}" onsubmit="return confirm('Approve all ready submitted report cards in this class?')">
+                @csrf
+                @method('PUT')
+                <input type="hidden" name="class_id" value="{{ $selectedClass->id }}">
+                <input type="hidden" name="session_id" value="{{ request('session_id', $selectedSession?->id) }}">
+                <input type="hidden" name="term_id" value="{{ request('term_id', $selectedTerm?->id) }}">
+                <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-medium">
+                    Approve All Ready
+                </button>
+            </form>
         </div>
     @else
         <div class="bg-blue-50 border border-blue-100 rounded-xl p-6 text-blue-900">

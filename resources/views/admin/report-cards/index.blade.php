@@ -211,7 +211,21 @@
     </div>
 
     <div class="bg-white rounded-xl shadow p-6">
-        <h2 class="text-xl font-semibold text-gray-900 mb-4">Generated Report Cards</h2>
+        <div class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <h2 class="text-xl font-semibold text-gray-900">Generated Report Cards</h2>
+            @if(auth()->user()->isAdmin() && $selectedClass && $selectedSession && $selectedTerm)
+                <form method="POST" action="{{ route('admin.report-cards.bulk-publish') }}" onsubmit="return confirm('Publish all ready report cards for {{ $selectedClass->display_name }}?')">
+                    @csrf
+                    @method('PUT')
+                    <input type="hidden" name="class_id" value="{{ $selectedClass->id }}">
+                    <input type="hidden" name="session_id" value="{{ $selectedSession->id }}">
+                    <input type="hidden" name="term_id" value="{{ $selectedTerm->id }}">
+                    <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium">
+                        Publish All Ready In {{ $selectedClass->display_name }}
+                    </button>
+                </form>
+            @endif
+        </div>
         <div class="overflow-x-auto">
             <table class="min-w-full text-sm">
                 <thead>

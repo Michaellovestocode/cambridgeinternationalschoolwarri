@@ -92,6 +92,7 @@ class NigerianReportCardController extends Controller
         $terms = Term::with('session')->orderByDesc('start_date')->get();
         $selectedSession = $sessions->firstWhere('id', (int) $selectedSessionId);
         $selectedTerm = $terms->firstWhere('id', (int) $selectedTermId);
+        $selectedClass = $request->filled('class_id') ? $classes->firstWhere('id', (int) $request->class_id) : null;
 
         return view('admin.report-cards.index', compact(
             'reportCards',
@@ -102,7 +103,8 @@ class NigerianReportCardController extends Controller
             'sessions',
             'terms',
             'selectedSession',
-            'selectedTerm'
+            'selectedTerm',
+            'selectedClass'
         ));
     }
 
@@ -848,6 +850,82 @@ class NigerianReportCardController extends Controller
         $this->notifyFormTeacher($reportCard, 'Report card rejected', "{$reportCard->student->name}'s report card was rejected. Reason: {$validated['academic_rejection_reason']}");
 
         return redirect()->back()->with('success', 'Report card rejected. The form teacher has been notified.');
+    }
+
+    public function bulkApproveAcademicReview(Request $request)
+    {
+        $this->authorizeAcademicReview();
+
+        $validated = $request->validate([
+            'class_id' => 'required|exists:school_classes,id',
+            'session_id' => 'required|exists:academic_sessions,id',
+            'term_id' => 'required|exists:terms,id',
+        ]);
+
+        abort_unless(in_array((int) $validated['class_id'], $this->reviewerClassIdsFor(auth()->user()), true), 403);
+
+        $approved = 0;
+        $skipped = 0;
+
+        ReportCard::with(['student', 'session', 'term', 'class'])
+            ->where('class_id', $validated['class_id'])
+            ->where('session_id', $validated['session_id'])
+            ->where('term_id', $validated['term_id'])
+            ->where('workflow_status', ReportCard::WORKFLOW_SUBMITTED)
+            ->get()
+            ->each(function (ReportCard $reportCard) use (&$approved, &$skipped) {
+                if ($this->publicationReadinessErrors($reportCard, false)->isNotEmpty()) {
+                    $skipped++;
+                    return;
+                }
+
+                $reportCard->update([
+                    'workflow_status' => ReportCard::WORKFLOW_ACADEMIC_APPROVED,
+                    'review_required' => false,
+                    'reviewed_at' => now(),
+                    'reviewed_by' => auth()->id(),
+                    'academic_reviewed_by' => auth()->id(),
+                    'academic_reviewed_at' => now(),
+                    'academic_rejection_reason' => null,
+                ]);
+                $approved++;
+            });
+
+        return back()->with('success', "{$approved} report cards approved. {$skipped} skipped.");
+    }
+
+    public function bulkPublish(Request $request)
+    {
+        $this->authorizeReportCardManagement();
+        abort_unless(auth()->user()->isAdmin(), 403, 'Only admin can publish final report cards.');
+
+        $validated = $request->validate([
+            'class_id' => 'required|exists:school_classes,id',
+            'session_id' => 'required|exists:academic_sessions,id',
+            'term_id' => 'required|exists:terms,id',
+        ]);
+
+        $published = 0;
+        $skipped = 0;
+
+        ReportCard::with(['student', 'session', 'term', 'class'])
+            ->where('class_id', $validated['class_id'])
+            ->where('session_id', $validated['session_id'])
+            ->where('term_id', $validated['term_id'])
+            ->where('workflow_status', ReportCard::WORKFLOW_ACADEMIC_APPROVED)
+            ->where('status', '!=', 'published')
+            ->get()
+            ->each(function (ReportCard $reportCard) use (&$published, &$skipped) {
+                if ($this->publicationReadinessErrors($reportCard)->isNotEmpty()) {
+                    $skipped++;
+                    return;
+                }
+
+                $reportCard->publish();
+                $published++;
+            });
+
+        return back()->with('success', "{$published} report cards published. {$skipped} skipped.");
     }
 
     public function updatePublication(Request $request, $reportCardId)
