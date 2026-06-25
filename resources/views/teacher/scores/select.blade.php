@@ -52,13 +52,16 @@
                 <select name="subject_id" id="subject_id" class="w-full border-2 border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:border-blue-500 @error('subject_id') border-red-500 @enderror" required>
                     <option value="">-- Choose a subject --</option>
                     @forelse($subjects as $subject)
-                        <option value="{{ $subject->id }}" {{ old('subject_id') == $subject->id ? 'selected' : '' }}>
+                        <option value="{{ $subject->id }}" data-subject-option {{ old('subject_id') == $subject->id ? 'selected' : '' }}>
                             {{ $subject->name }} ({{ $subject->code ?? 'N/A' }})
                         </option>
                     @empty
                         <option value="" disabled>No subjects available</option>
                     @endforelse
                 </select>
+                <p id="subject_empty_message" class="hidden text-sm text-amber-700 mt-2">
+                    No subject is assigned to you for this class.
+                </p>
                 @error('subject_id')
                     <span class="text-red-500 text-sm mt-2 block">{{ $message }}</span>
                 @enderror
@@ -119,5 +122,44 @@
         </ul>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const subjectsByClass = @json($subjectsByClass ?? []);
+    const classSelect = document.getElementById('class_id');
+    const subjectSelect = document.getElementById('subject_id');
+    const subjectOptions = Array.from(subjectSelect.querySelectorAll('[data-subject-option]'));
+    const emptyMessage = document.getElementById('subject_empty_message');
+
+    function syncSubjectOptions() {
+        const classId = classSelect.value;
+        const allowedSubjectIds = new Set((subjectsByClass[classId] || []).map(function (id) {
+            return String(id);
+        }));
+        let visibleCount = 0;
+
+        subjectOptions.forEach(function (option) {
+            const isVisible = classId !== '' && allowedSubjectIds.has(String(option.value));
+
+            option.hidden = !isVisible;
+            option.disabled = !isVisible;
+
+            if (isVisible) {
+                visibleCount++;
+            }
+        });
+
+        if (subjectSelect.value && !allowedSubjectIds.has(String(subjectSelect.value))) {
+            subjectSelect.value = '';
+        }
+
+        subjectSelect.disabled = classId === '' || visibleCount === 0;
+        emptyMessage.classList.toggle('hidden', classId === '' || visibleCount > 0);
+    }
+
+    classSelect.addEventListener('change', syncSubjectOptions);
+    syncSubjectOptions();
+});
+</script>
 
 @endsection

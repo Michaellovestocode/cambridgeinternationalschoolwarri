@@ -84,8 +84,15 @@ class TeacherScoreController extends Controller
         $teacher = Auth::user();
         $classes = $this->availableClassesFor($teacher);
         $subjects = $this->availableSubjectsFor($teacher);
+        $subjectsByClass = $classes
+            ->mapWithKeys(fn (SchoolClass $class) => [
+                $class->id => $this->availableSubjectsForClass($teacher, $class, $subjects)
+                    ->pluck('id')
+                    ->map(fn ($id) => (int) $id)
+                    ->values(),
+            ]);
         
-        return view('teacher.scores.select', compact('classes', 'subjects', 'activeSession', 'activeTerm'));
+        return view('teacher.scores.select', compact('classes', 'subjects', 'subjectsByClass', 'activeSession', 'activeTerm'));
     }
     
     // ========== ENTER SCORES ==========
@@ -419,6 +426,39 @@ class TeacherScoreController extends Controller
             ->merge($this->earlyPrimaryFormTeacherClassesFor($teacher))
             ->unique('id')
             ->sortBy('name')
+            ->values();
+    }
+
+    private function availableSubjectsForClass(User $teacher, SchoolClass $class, $availableSubjects = null)
+    {
+        $availableSubjects = $availableSubjects ?: $this->availableSubjectsFor($teacher);
+
+        if ($teacher->isAdmin()) {
+            return $availableSubjects
+                ->filter(fn (Subject $subject) => $this->subjectFitsClass($subject, $class))
+                ->values();
+        }
+
+        $isOwnedEarlyPrimaryClass = $this->teacherOwnsEarlyPrimaryClass($teacher, (int) $class->id);
+
+        return $availableSubjects
+            ->filter(function (Subject $subject) use ($teacher, $class, $isOwnedEarlyPrimaryClass) {
+                if (! $this->subjectFitsClass($subject, $class)) {
+                    return false;
+                }
+
+                if ($this->exactTeachingLoadIsAvailable()
+                    && $this->teacherTeachesExactSubjectClass($teacher, (int) $subject->id, (int) $class->id)) {
+                    return true;
+                }
+
+                if (! $this->exactTeachingLoadIsAvailable()
+                    && $teacher->subjects->contains('id', (int) $subject->id)) {
+                    return true;
+                }
+
+                return $isOwnedEarlyPrimaryClass;
+            })
             ->values();
     }
 
