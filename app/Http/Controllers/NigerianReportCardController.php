@@ -178,8 +178,8 @@ class NigerianReportCardController extends Controller
         $user = auth()->user();
         abort_unless($user->isTeacher(), 403);
 
-        $formClasses = $this->formTeacherClassesFor($user);
-        abort_unless($formClasses->isNotEmpty(), 403, 'You are not assigned as a form teacher for any class yet.');
+        $formClasses = $this->classScoreEntryFormTeacherClassesFor($user);
+        abort_unless($formClasses->isNotEmpty(), 403, 'This score-entry page is for Early Years, Primary, and Other Classes form teachers.');
 
         $activeSession = Session::getActive();
         $activeTerm = Term::getActive();
@@ -1114,14 +1114,14 @@ class NigerianReportCardController extends Controller
             return;
         }
 
-        $earlyPrimaryClassIds = $this->earlyPrimaryFormTeacherClassesFor($user)
+        $classScoreEntryClassIds = $this->classScoreEntryFormTeacherClassesFor($user)
             ->pluck('id')
             ->map(fn ($id) => (int) $id)
             ->all();
 
         if ($classId) {
             abort_unless(
-                in_array($classId, $earlyPrimaryClassIds, true),
+                in_array($classId, $classScoreEntryClassIds, true),
                 403,
                 'Secondary teachers should enter paper scores from Teacher Scores > Paper / Manual Scores.'
             );
@@ -1130,7 +1130,7 @@ class NigerianReportCardController extends Controller
         }
 
         abort_unless(
-            ! empty($earlyPrimaryClassIds),
+            ! empty($classScoreEntryClassIds),
             403,
             'Secondary teachers should enter paper scores from Teacher Scores > Paper / Manual Scores.'
         );
@@ -1242,6 +1242,13 @@ class NigerianReportCardController extends Controller
     {
         return $this->formTeacherClassesFor($user)
             ->filter(fn ($class) => $class && $this->isEarlyYearsOrPrimaryClass($class))
+            ->values();
+    }
+
+    private function classScoreEntryFormTeacherClassesFor(User $user)
+    {
+        return $this->formTeacherClassesFor($user)
+            ->filter(fn ($class) => $class && in_array($class->section_key, ['creche', 'primary', 'other'], true))
             ->values();
     }
 
