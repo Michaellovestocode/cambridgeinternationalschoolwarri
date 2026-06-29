@@ -178,8 +178,8 @@ class NigerianReportCardController extends Controller
         $user = auth()->user();
         abort_unless($user->isTeacher(), 403);
 
-        $formClasses = $this->earlyPrimaryFormTeacherClassesFor($user);
-        abort_unless($formClasses->isNotEmpty(), 403, 'This score-entry page is for Early Years and Primary form teachers.');
+        $formClasses = $this->formTeacherClassesFor($user);
+        abort_unless($formClasses->isNotEmpty(), 403, 'You are not assigned as a form teacher for any class yet.');
 
         $activeSession = Session::getActive();
         $activeTerm = Term::getActive();
@@ -1223,7 +1223,7 @@ class NigerianReportCardController extends Controller
             ->all();
     }
 
-    private function earlyPrimaryFormTeacherClassesFor(User $user)
+    private function formTeacherClassesFor(User $user)
     {
         if (! $user->isTeacher()) {
             return collect();
@@ -1234,6 +1234,13 @@ class NigerianReportCardController extends Controller
             ->where('is_active', true)
             ->get()
             ->pluck('schoolClass')
+            ->filter()
+            ->values();
+    }
+
+    private function earlyPrimaryFormTeacherClassesFor(User $user)
+    {
+        return $this->formTeacherClassesFor($user)
             ->filter(fn ($class) => $class && $this->isEarlyYearsOrPrimaryClass($class))
             ->values();
     }

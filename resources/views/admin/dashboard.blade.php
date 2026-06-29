@@ -403,7 +403,6 @@
                 @endif
 
                 @if($isFormTeacher)
-                @if(in_array($formTeacherAssignment?->schoolClass?->section_key, ['creche', 'primary'], true))
                 <a href="{{ route('admin.report-cards.class-score-entry') }}"
                    class="flex items-center justify-between bg-gradient-to-r from-pink-500 to-indigo-600 hover:from-pink-600 hover:to-indigo-700 text-white px-6 py-4 rounded-xl font-bold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all group">
                     <span class="flex items-center">
@@ -416,7 +415,6 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
                     </svg>
                 </a>
-                @endif
 
                 <a href="{{ route('admin.form-teacher.learners') }}"
                    class="flex items-center justify-between bg-gradient-to-r from-lime-500 to-emerald-600 hover:from-lime-600 hover:to-emerald-700 text-white px-6 py-4 rounded-xl font-bold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all group">
