@@ -45,6 +45,11 @@ class SchoolClass extends Model
         return $this->hasOne(FormTeacher::class, 'class_id')->where('is_active', true);
     }
 
+    public function developmentalReports()
+    {
+        return $this->hasMany(DevelopmentalReport::class, 'class_id');
+    }
+
     public function users()
     {
         return $this->hasMany(User::class, 'class_id');
@@ -146,6 +151,18 @@ class SchoolClass extends Model
     public function getSectionLabelAttribute(): string
     {
         return self::sectionDefinitions()[$this->section_key]['label'] ?? 'Other Classes';
+    }
+
+    public function reportAuthorityRole(): string
+    {
+        return in_array($this->section_key, ['junior_secondary', 'senior_secondary'], true)
+            ? 'principal'
+            : 'head_teacher';
+    }
+
+    public function reportAuthorityTitle(): string
+    {
+        return $this->reportAuthorityRole() === 'principal' ? 'Principal' : 'Head Teacher';
     }
 
     public function classSortKey(): array

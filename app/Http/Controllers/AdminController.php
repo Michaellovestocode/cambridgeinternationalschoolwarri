@@ -1079,6 +1079,7 @@ public function storeTeacher(Request $request)
         'password' => 'required|string|min:6',
         'can_manage_attendance' => 'nullable|boolean',
         'can_review_report_cards' => 'nullable|boolean',
+        'report_authority_role' => 'nullable|in:head_teacher,principal',
         'review_class_ids' => 'nullable|array',
         'review_class_ids.*' => 'exists:school_classes,id',
     ]);
@@ -1094,6 +1095,7 @@ public function storeTeacher(Request $request)
         'role' => 'teacher',
         'can_manage_attendance' => $request->boolean('can_manage_attendance'),
         'can_review_report_cards' => $request->boolean('can_review_report_cards'),
+        'report_authority_role' => $validated['report_authority_role'] ?? null,
     ];
 
     if ($request->hasFile('photo')) {
@@ -1189,6 +1191,7 @@ public function updateTeacher(Request $request, $teacherId)
         'can_manage_blog' => 'nullable|boolean',
         'can_manage_attendance' => 'nullable|boolean',
         'can_review_report_cards' => 'nullable|boolean',
+        'report_authority_role' => 'nullable|in:head_teacher,principal',
         'review_class_ids' => 'nullable|array',
         'review_class_ids.*' => 'exists:school_classes,id',
     ]);
@@ -1203,6 +1206,7 @@ public function updateTeacher(Request $request, $teacherId)
         'can_manage_blog' => $request->boolean('can_manage_blog'),
         'can_manage_attendance' => $request->boolean('can_manage_attendance'),
         'can_review_report_cards' => $request->boolean('can_review_report_cards'),
+        'report_authority_role' => $validated['report_authority_role'] ?? null,
     ];
 
     if ($request->hasFile('photo')) {

@@ -27,6 +27,7 @@ use App\Http\Controllers\GalleryController;
 use App\Http\Controllers\GalleryAccessController;
 use App\Http\Controllers\HomepageNoticeController;
 use App\Http\Controllers\TeacherLearnerController;
+use App\Http\Controllers\DevelopmentalReportController;
 use App\Models\Announcement;
 use App\Models\GalleryAlbum;
 use App\Models\SchoolSettings;
@@ -175,6 +176,13 @@ Route::get('/teacher/scores/my-scores', [TeacherScoreController::class, 'myScore
         Route::put('/admin/report-cards/{id}/approve-review', [NigerianReportCardController::class, 'approveAcademicReview'])->name('admin.report-cards.approve-review');
         Route::put('/admin/report-cards/{id}/reject-review', [NigerianReportCardController::class, 'rejectAcademicReview'])->name('admin.report-cards.reject-review');
         Route::put('/admin/report-cards/{id}/publication', [NigerianReportCardController::class, 'updatePublication'])->name('admin.report-cards.publication');
+
+        Route::get('/admin/developmental-reports', [DevelopmentalReportController::class, 'index'])->name('admin.developmental-reports.index');
+        Route::get('/admin/developmental-reports/student/{student}/edit', [DevelopmentalReportController::class, 'edit'])->name('admin.developmental-reports.edit');
+        Route::put('/admin/developmental-reports/{developmentalReport}', [DevelopmentalReportController::class, 'update'])->name('admin.developmental-reports.update');
+        Route::get('/admin/developmental-reports/{developmentalReport}', [DevelopmentalReportController::class, 'show'])->name('admin.developmental-reports.show');
+        Route::get('/admin/developmental-reports/{developmentalReport}/download', [DevelopmentalReportController::class, 'download'])->name('admin.developmental-reports.download');
+        Route::put('/admin/developmental-reports/{developmentalReport}/publish', [DevelopmentalReportController::class, 'publish'])->name('admin.developmental-reports.publish');
     });
 
 

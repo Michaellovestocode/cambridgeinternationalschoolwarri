@@ -85,6 +85,17 @@
             </div>
 
             <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Report Authority Role</label>
+                <select name="report_authority_role" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500">
+                    <option value="">No senior authority role</option>
+                    <option value="head_teacher" @selected(old('report_authority_role', $teacher->report_authority_role) === 'head_teacher')>Head Teacher</option>
+                    <option value="principal" @selected(old('report_authority_role', $teacher->report_authority_role) === 'principal')>Principal</option>
+                </select>
+                <p class="text-xs text-gray-500 mt-1">Used automatically on report cards. Secondary uses Principal; all other sections use Head Teacher.</p>
+                @error('report_authority_role')<p class="text-red-500 text-sm mt-1">{{ $message }}</p>@enderror
+            </div>
+
+            <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Password (leave blank to keep current)</label>
                 <input type="password" name="password"
                        class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500"

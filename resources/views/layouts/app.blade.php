@@ -300,6 +300,9 @@
                     <a href="{{ route('admin.report-cards') }}" class="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-lg font-semibold transition">
                         Report Cards
                     </a>
+                    <a href="{{ route('admin.developmental-reports.index') }}" class="bg-teal-500 hover:bg-teal-600 text-white px-4 py-2 rounded-lg font-semibold transition">
+                        Development
+                    </a>
                     @endif
                     @if(auth()->user()->canReviewReportCards())
                     <a href="{{ route('admin.report-cards.reviews') }}" class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg font-semibold transition">
@@ -395,6 +398,9 @@
                     @if($canManageReportCards)
                     <a href="{{ route('admin.report-cards') }}" class="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-lg font-semibold transition text-sm">
                         Report Cards
+                    </a>
+                    <a href="{{ route('admin.developmental-reports.index') }}" class="bg-teal-500 hover:bg-teal-600 text-white px-4 py-2 rounded-lg font-semibold transition text-sm">
+                        Development
                     </a>
                     @endif
                     @if(auth()->user()->canReviewReportCards())

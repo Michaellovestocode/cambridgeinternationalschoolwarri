@@ -47,6 +47,7 @@
                             <th class="px-6 py-3 text-left text-xs font-black uppercase tracking-wider text-gray-500">Learner</th>
                             <th class="px-6 py-3 text-left text-xs font-black uppercase tracking-wider text-gray-500">Registration</th>
                             <th class="px-6 py-3 text-left text-xs font-black uppercase tracking-wider text-gray-500">Correct Name</th>
+                            <th class="px-6 py-3 text-right text-xs font-black uppercase tracking-wider text-gray-500">Reports</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-100 bg-white">
@@ -76,6 +77,13 @@
                                         <button class="rounded-xl bg-emerald-600 px-4 py-2 text-sm font-black text-white hover:bg-emerald-700">Save</button>
                                     </form>
                                     @error('name')<p class="mt-1 text-sm text-rose-600">{{ $message }}</p>@enderror
+                                </td>
+                                <td class="px-6 py-4 text-right">
+                                    @if($formTeacher->schoolClass?->section_key === 'creche')
+                                        <a href="{{ route('admin.developmental-reports.edit', ['student' => $student]) }}" class="rounded-xl bg-teal-600 px-4 py-2 text-sm font-black text-white hover:bg-teal-700">Development</a>
+                                    @else
+                                        <span class="text-xs font-semibold text-gray-400">N/A</span>
+                                    @endif
                                 </td>
                             </tr>
                         @endforeach

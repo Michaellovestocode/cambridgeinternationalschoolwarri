@@ -4,8 +4,11 @@
 
 @section('content')
 @php
-    $isLowerSchool = in_array($reportCard->class?->section_key, ['creche', 'primary'], true);
-    $seniorStaffTitle = $isLowerSchool ? 'Head Teacher' : 'Principal';
+    $seniorStaffTitle = $reportCard->class?->reportAuthorityTitle() ?? 'Head Teacher';
+    $seniorAuthority = \App\Models\User::where('report_authority_role', $reportCard->class?->reportAuthorityRole() ?? 'head_teacher')
+        ->whereIn('role', ['admin', 'teacher'])
+        ->orderBy('name')
+        ->first();
 @endphp
 <div class="max-w-7xl mx-auto space-y-8">
     <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
@@ -334,7 +337,7 @@
                         <div>
                             <label for="head_teacher_name" class="block text-sm font-medium text-gray-700 mb-2">{{ $seniorStaffTitle }}'s Name</label>
                             <input id="head_teacher_name" name="head_teacher_name" type="text"
-                                   value="{{ old('head_teacher_name', $reportCard->head_teacher_name) }}"
+                                   value="{{ old('head_teacher_name', $reportCard->head_teacher_name ?: $seniorAuthority?->name) }}"
                                    class="w-full border border-gray-300 rounded-lg px-4 py-3">
                         </div>
                         <div>
@@ -342,6 +345,9 @@
                             <input id="head_teacher_signature" name="head_teacher_signature" type="text"
                                    value="{{ old('head_teacher_signature', $reportCard->head_teacher_signature) }}"
                                    class="w-full border border-gray-300 rounded-lg px-4 py-3">
+                            @if($seniorAuthority?->signature)
+                                <p class="text-xs text-gray-500 mt-1">{{ $seniorStaffTitle }} signature image will be used automatically from {{ $seniorAuthority->name }}'s staff profile.</p>
+                            @endif
                         </div>
                         @if(auth()->user()->isAdmin())
                         <div>

@@ -408,7 +408,7 @@ class NigerianReportCardController extends Controller
                     'days_absent' => 0,
                     'attendance_percentage' => 0,
                     'class_teacher_name' => $this->defaultClassTeacherName($validated['class_id']),
-                    'head_teacher_name' => '',
+                    'head_teacher_name' => $this->defaultReportAuthorityName($validated['class_id']),
                     'next_term_begins' => $term->next_term_begins,
                 ])
             );
@@ -479,7 +479,7 @@ class NigerianReportCardController extends Controller
                 'days_absent' => 0,
                 'attendance_percentage' => 0,
                 'class_teacher_name' => $this->defaultClassTeacherName($student->class_id),
-                'head_teacher_name' => '',
+                'head_teacher_name' => $this->defaultReportAuthorityName($student->class_id),
                 'next_term_begins' => $term->next_term_begins,
             ])
         );
@@ -1059,7 +1059,7 @@ class NigerianReportCardController extends Controller
                         'days_absent' => 0,
                         'attendance_percentage' => 0,
                         'class_teacher_name' => $this->defaultClassTeacherName($request->class_id),
-                        'head_teacher_name' => '',
+                        'head_teacher_name' => $this->defaultReportAuthorityName($request->class_id),
                         'next_term_begins' => $term->next_term_begins,
                     ])
                 );
@@ -1356,5 +1356,26 @@ class NigerianReportCardController extends Controller
             ->first()
             ?->teacher
             ?->name ?? '';
+    }
+
+    private function defaultReportAuthorityName(?int $classId): string
+    {
+        if (!$classId) {
+            return '';
+        }
+
+        $authority = $this->reportAuthorityForClass(SchoolClass::find($classId));
+
+        return $authority?->name ?? '';
+    }
+
+    private function reportAuthorityForClass(?SchoolClass $class): ?User
+    {
+        $role = $class?->reportAuthorityRole() ?? 'head_teacher';
+
+        return User::where('report_authority_role', $role)
+            ->whereIn('role', ['admin', 'teacher'])
+            ->orderBy('name')
+            ->first();
     }
 }

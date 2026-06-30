@@ -31,6 +31,7 @@ class User extends Authenticatable
         'can_manage_blog',
         'can_manage_attendance',
         'can_review_report_cards',
+        'report_authority_role',
     ];
 
     protected $hidden = [
@@ -140,6 +141,16 @@ class User extends Authenticatable
     public function formTeacherAssignments()
     {
         return $this->hasMany(FormTeacher::class, 'teacher_id');
+    }
+
+    public function developmentalReports()
+    {
+        return $this->hasMany(DevelopmentalReport::class, 'student_id');
+    }
+
+    public function isReportAuthority(string $role): bool
+    {
+        return $this->report_authority_role === $role;
     }
 
     public function getAgeAttribute(): ?int

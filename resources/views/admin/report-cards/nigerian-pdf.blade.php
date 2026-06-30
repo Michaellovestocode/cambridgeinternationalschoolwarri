@@ -540,7 +540,13 @@
         $studentPhotoPath = $reportCard->student->photo ? public_path('storage/' . $reportCard->student->photo) : null;
         $formTeacher = $reportCard->class?->activeFormTeacher?->teacher ?: $reportCard->class?->formTeacher?->teacher;
         $formTeacherSignaturePath = $formTeacher?->signature ? public_path('storage/' . $formTeacher->signature) : null;
-        $principalSignaturePath = $schoolSettings->principal_signature ? public_path('storage/' . $schoolSettings->principal_signature) : null;
+        $authorityRole = $reportCard->class?->reportAuthorityRole() ?? 'head_teacher';
+        $authorityTitle = $reportCard->class?->reportAuthorityTitle() ?? 'Head Teacher';
+        $seniorAuthority = \App\Models\User::where('report_authority_role', $authorityRole)
+            ->whereIn('role', ['admin', 'teacher'])
+            ->orderBy('name')
+            ->first();
+        $seniorSignaturePath = $seniorAuthority?->signature ? public_path('storage/' . $seniorAuthority->signature) : null;
         $clubSociety = $reportCard->student->club_society ?: 'N/A';
         $favouriteColour = $reportCard->student->favourite_colour ?: 'N/A';
         $schoolAddress = 'Delta, Nigeria';
@@ -579,8 +585,8 @@
             $formTeacherSignatureSrc = $formTeacher?->signature
                 ? asset('storage/' . $formTeacher->signature)
                 : null;
-            $principalSignatureSrc = $schoolSettings->principal_signature
-                ? asset('storage/' . $schoolSettings->principal_signature)
+            $principalSignatureSrc = $seniorAuthority?->signature
+                ? asset('storage/' . $seniorAuthority->signature)
                 : null;
         } else {
             $schoolLogoSrc = ($logoPath && file_exists($logoPath))
@@ -592,13 +598,13 @@
             $formTeacherSignatureSrc = ($formTeacherSignaturePath && file_exists($formTeacherSignaturePath))
                 ? $formTeacherSignaturePath
                 : null;
-            $principalSignatureSrc = ($principalSignaturePath && file_exists($principalSignaturePath))
-                ? $principalSignaturePath
+            $principalSignatureSrc = ($seniorSignaturePath && file_exists($seniorSignaturePath))
+                ? $seniorSignaturePath
                 : null;
         }
 
-        $isLowerSchool = in_array($reportCard->class?->section_key, ['creche', 'primary'], true);
-        $seniorRemarkLabel = $isLowerSchool ? "Head Teacher's Remark:" : "Principal's Remark:";
+        $isLowerSchool = $authorityRole !== 'principal';
+        $seniorRemarkLabel = $authorityTitle . "'s Remark:";
     @endphp
     <div class="page {{ $isLowerSchool ? 'lower-school' : '' }}">
         <div class="inner-frame"></div>
@@ -886,9 +892,9 @@
                 </div>
                 <div class="signature-line {{ $principalSignatureSrc ? 'has-image' : 'no-image' }}">
                     @if($principalSignatureSrc)
-                        <img src="{{ $principalSignatureSrc }}" class="signature-image" alt="Principal Signature">
+                        <img src="{{ $principalSignatureSrc }}" class="signature-image" alt="{{ $authorityTitle }} Signature">
                     @endif
-                    <strong>{{ $reportCard->head_teacher_name ?: $schoolSettings->principal_name ?: '................................' }}</strong><br>
+                    <strong>{{ $reportCard->head_teacher_name ?: $seniorAuthority?->name ?: '................................' }}</strong><br>
                     @if(! $principalSignatureSrc)
                         Signature: {{ $reportCard->head_teacher_signature ?: '___________________' }}
                     @endif
