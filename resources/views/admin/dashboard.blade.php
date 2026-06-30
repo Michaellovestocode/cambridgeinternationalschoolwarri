@@ -292,7 +292,7 @@
                     <div class="admin-stat-number text-4xl font-bold">{{ $newEnquiriesCount }}</div>
                 </div>
             </div>
-            <div class="admin-stat-title text-white/90 font-semibold text-lg">New Applications</div>
+            <div class="admin-stat-title text-white/90 font-semibold text-lg">New Admissions</div>
             <p class="text-white/70 text-sm mt-1">Awaiting admissions review</p>
             <a href="{{ route('admin.enquiries.index', ['status' => \App\Models\AdmissionEnquiry::STATUS_NEW]) }}" class="mt-4 inline-flex items-center text-white text-sm font-semibold hover:underline">
                 View inbox

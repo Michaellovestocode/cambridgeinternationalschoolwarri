@@ -310,6 +310,9 @@
                     </a>
                     @endif
                     @if(auth()->user()->isAdmin())
+                    <a href="{{ route('admin.enquiries.index') }}" class="bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded-lg font-semibold transition">
+                        Admissions
+                    </a>
                     <a href="{{ route('attendance.my') }}" class="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg font-semibold transition">
                         My Attendance
                     </a>
@@ -409,6 +412,9 @@
                     </a>
                     @endif
                     @if(auth()->user()->isAdmin())
+                    <a href="{{ route('admin.enquiries.index') }}" class="bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded-lg font-semibold transition text-sm">
+                        Admissions
+                    </a>
                     <a href="{{ route('attendance.my') }}" class="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg font-semibold transition text-sm">
                         My Attendance
                     </a>
