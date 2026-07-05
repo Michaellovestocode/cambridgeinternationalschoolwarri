@@ -6,7 +6,7 @@
     <title>Developmental Report - {{ $developmentalReport->student->name }}</title>
     <style>
         * { box-sizing: border-box; }
-        body { margin: 0; background: #e5e7eb; color: #0f172a; font-family: Arial, Helvetica, sans-serif; }
+        body { margin: 0; background: #e5e7eb; color: #0f172a; font-family: Arial, Helvetica, sans-serif; overflow-x: hidden; }
         .toolbar { max-width: 940px; margin: 18px auto; display: flex; gap: 10px; justify-content: flex-end; }
         .toolbar a, .toolbar button { border: 0; border-radius: 8px; padding: 10px 14px; font-weight: 700; text-decoration: none; cursor: pointer; font-size: 13px; }
         .toolbar a { background: #0f172a; color: #fff; }
@@ -42,6 +42,32 @@
         .signature { width: 150px; min-height: 42px; text-align: center; }
         .signature img { max-width: 135px; max-height: 42px; object-fit: contain; }
         .muted { color: #64748b; }
+        @media screen and (max-width: 760px) {
+            body { background: #fff; }
+            .toolbar { max-width: none; margin: 0; padding: 10px; flex-wrap: wrap; justify-content: flex-start; background: #f8fafc; border-bottom: 1px solid #cbd5e1; }
+            .toolbar a, .toolbar button { padding: 9px 11px; font-size: 12px; }
+            .page { width: calc(100vw - 16px); min-height: auto; margin: 8px auto 16px; padding: 10px; border-width: 2px; }
+            .logo-cell, .photo-cell { width: 54px; }
+            .logo, .photo { width: 48px; height: 48px; }
+            .school h1 { font-size: 15px; line-height: 1.12; }
+            .school h2 { font-size: 9px; margin-top: 3px; }
+            .school p { font-size: 8px; margin-top: 3px; }
+            .title { margin-top: 5px; font-size: 10px; }
+            .meta { margin-top: 8px; font-size: 9px; table-layout: fixed; }
+            .meta td { padding: 5px 4px; overflow-wrap: anywhere; }
+            .band { width: 100%; font-size: 9px; padding: 6px; }
+            .scale { width: 100%; font-size: 9px; }
+            .section-grid { grid-template-columns: 1fr; gap: 6px; }
+            .skill-table { font-size: 9px; }
+            .skill-table th, .skill-table td { padding: 4px 3px; }
+            .skill-table .skill { width: 52%; }
+            .rating-cell { font-size: 12px; }
+            .remarks { font-size: 9px; table-layout: fixed; }
+            .remarks td { padding: 5px; overflow-wrap: anywhere; }
+            .remarks .label { width: 31%; }
+            .signature { width: 64px; min-height: 32px; }
+            .signature img { max-width: 58px; max-height: 30px; }
+        }
         @media print {
             body { background: #fff; }
             .toolbar { display: none; }
@@ -70,17 +96,31 @@
 
     @php
         $student = $developmentalReport->student;
-        $logo = $schoolSettings->school_logo ? public_path('storage/' . $schoolSettings->school_logo) : public_path('images/schoollogo.jpg');
-        $photo = $student->photo ? public_path('storage/' . $student->photo) : null;
-        $formSignature = $developmentalReport->form_teacher_signature ? public_path('storage/' . $developmentalReport->form_teacher_signature) : null;
-        $authoritySignature = $developmentalReport->authority_signature ? public_path('storage/' . $developmentalReport->authority_signature) : null;
+        $isBrowser = ($renderMode ?? 'browser') === 'browser';
+
+        if ($isBrowser) {
+            $logo = $schoolSettings->school_logo ? asset('storage/' . $schoolSettings->school_logo) : asset('images/schoollogo.jpg');
+            $photo = $student->photo ? asset('storage/' . $student->photo) : null;
+            $formSignature = $developmentalReport->form_teacher_signature ? asset('storage/' . $developmentalReport->form_teacher_signature) : null;
+            $authoritySignature = $developmentalReport->authority_signature ? asset('storage/' . $developmentalReport->authority_signature) : null;
+        } else {
+            $logoPath = $schoolSettings->school_logo ? public_path('storage/' . $schoolSettings->school_logo) : null;
+            $photoPath = $student->photo ? public_path('storage/' . $student->photo) : null;
+            $formSignaturePath = $developmentalReport->form_teacher_signature ? public_path('storage/' . $developmentalReport->form_teacher_signature) : null;
+            $authoritySignaturePath = $developmentalReport->authority_signature ? public_path('storage/' . $developmentalReport->authority_signature) : null;
+
+            $logo = ($logoPath && file_exists($logoPath)) ? $logoPath : public_path('images/schoollogo.jpg');
+            $photo = ($photoPath && file_exists($photoPath)) ? $photoPath : null;
+            $formSignature = ($formSignaturePath && file_exists($formSignaturePath)) ? $formSignaturePath : null;
+            $authoritySignature = ($authoritySignaturePath && file_exists($authoritySignaturePath)) ? $authoritySignaturePath : null;
+        }
     @endphp
 
     <main class="page">
         <table class="header-table">
             <tr>
                 <td class="logo-cell">
-                    @if($logo && file_exists($logo))
+                    @if($logo)
                         <img src="{{ $logo }}" class="logo" alt="School Logo">
                     @endif
                 </td>
@@ -91,7 +131,7 @@
                     <div class="title">Pupil's Developmental Progress Report</div>
                 </td>
                 <td class="photo-cell">
-                    @if($photo && file_exists($photo))
+                    @if($photo)
                         <img src="{{ $photo }}" class="photo" alt="{{ $student->name }}">
                     @endif
                 </td>
@@ -116,7 +156,6 @@
             </tr>
         </table>
 
-        <div class="note">NOTE: All fees must be paid on or before resumption date.</div>
         <div class="band">Reception and Pre-Kindergarten's Developmental Progress Report</div>
 
         <table class="scale">
@@ -158,7 +197,7 @@
                 <td class="label">Class Teacher's Remark</td>
                 <td>{{ $developmentalReport->class_teacher_remark ?: '............................................................' }}</td>
                 <td class="signature" rowspan="2">
-                    @if($formSignature && file_exists($formSignature))
+                    @if($formSignature)
                         <img src="{{ $formSignature }}" alt="Form Teacher Signature">
                     @else
                         <span class="muted">Signature</span>
@@ -173,7 +212,7 @@
                 <td class="label">{{ $developmentalReport->authorityTitle() }}'s Remark</td>
                 <td>{{ $developmentalReport->authority_remark ?: '............................................................' }}</td>
                 <td class="signature" rowspan="2">
-                    @if($authoritySignature && file_exists($authoritySignature))
+                    @if($authoritySignature)
                         <img src="{{ $authoritySignature }}" alt="{{ $developmentalReport->authorityTitle() }} Signature">
                     @else
                         <span class="muted">Signature</span>

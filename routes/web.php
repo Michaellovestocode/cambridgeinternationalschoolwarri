@@ -118,6 +118,7 @@ Route::middleware('auth')->group(function () {
     Route::prefix('parent')->name('parent.')->middleware('role:parent')->group(function () {
         Route::get('/dashboard', [ParentPortalController::class, 'dashboard'])->name('dashboard');
         Route::get('/report-cards/{reportCard}', [ParentPortalController::class, 'previewReportCard'])->name('report-cards.preview');
+        Route::get('/report-cards/{reportCard}/download', [ParentPortalController::class, 'downloadReportCard'])->name('report-cards.download');
         Route::get('/messages', [MessageController::class, 'parentIndex'])->name('messages.index');
         Route::post('/messages', [MessageController::class, 'parentStore'])->name('messages.store');
     });
@@ -130,6 +131,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/learning-sessions/{learningSession}/submit', [StudentLearningSessionController::class, 'submit'])->name('learning.submit');
         Route::get('/learning-attempts/{attempt}/result', [StudentLearningSessionController::class, 'result'])->name('learning.result');
         Route::get('/report-cards/{reportCard}', [StudentController::class, 'viewReportCard'])->name('report-cards.preview');
+        Route::get('/report-cards/{reportCard}/download', [StudentController::class, 'downloadReportCard'])->name('report-cards.download');
         Route::get('/exam/{exam}/start', [StudentController::class, 'startExam'])->name('start-exam');
         Route::get('/attempt/{attempt}', [StudentController::class, 'takeExam'])->name('take-exam');
         Route::post('/attempt/{attempt}/save', [StudentController::class, 'saveAnswer'])->name('save-answer');

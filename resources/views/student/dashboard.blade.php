@@ -298,10 +298,16 @@
                         </span>
                     </div>
                 </div>
-                <a href="{{ route('student.report-cards.preview', $reportCard) }}"
-                   class="bg-amber-600 hover:bg-amber-700 text-white px-6 py-3 rounded-xl font-bold shadow transition-all whitespace-nowrap">
-                    View Report Card
-                </a>
+                <div class="flex flex-wrap gap-2">
+                    <a href="{{ route('student.report-cards.preview', $reportCard) }}"
+                       class="bg-amber-600 hover:bg-amber-700 text-white px-6 py-3 rounded-xl font-bold shadow transition-all whitespace-nowrap">
+                        View Report Card
+                    </a>
+                    <a href="{{ route('student.report-cards.download', $reportCard) }}"
+                       class="bg-gray-900 hover:bg-black text-white px-6 py-3 rounded-xl font-bold shadow transition-all whitespace-nowrap">
+                        Download PDF
+                    </a>
+                </div>
             </div>
             @empty
             <div class="text-center py-12">

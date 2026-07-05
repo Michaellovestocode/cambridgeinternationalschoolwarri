@@ -259,13 +259,13 @@
                     <input type="number"
                            id="final_score"
                            name="final_score"
-                           value="{{ old('final_score', $attempt->total_score) }}"
+                           value="{{ old('final_score') }}"
                            min="0"
                            max="{{ max((float) $attempt->exam->total_marks, 1) }}"
                            step="0.5"
                            class="w-full sm:w-48 px-4 py-2 border border-amber-300 rounded-lg focus:ring-2 focus:ring-amber-500">
                     <span class="text-sm text-amber-800">
-                        Use this only when a computer-graded score needs correction. Maximum: {{ number_format($attempt->exam->total_marks, 1) }}.
+                        Leave blank to use the recalculated objective score plus the theory score. Maximum: {{ number_format($attempt->exam->total_marks, 1) }}.
                     </span>
                 </div>
             </div>

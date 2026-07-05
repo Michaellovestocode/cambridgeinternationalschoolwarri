@@ -191,7 +191,10 @@
                             <p class="text-sm text-gray-500">{{ $reportCard->session?->name ?? 'Session' }} - {{ $reportCard->term?->name ?? 'Term' }}</p>
                             <p class="font-semibold text-gray-900">{{ $reportCard->student->name ?? 'Student' }}</p>
                         </div>
-                        <a href="{{ route('parent.report-cards.preview', $reportCard) }}" class="text-blue-600 font-semibold text-xs hover:underline">View</a>
+                        <div class="flex gap-3 text-xs font-semibold">
+                            <a href="{{ route('parent.report-cards.preview', $reportCard) }}" class="text-blue-600 hover:underline">View</a>
+                            <a href="{{ route('parent.report-cards.download', $reportCard) }}" class="text-gray-700 hover:underline">Download</a>
+                        </div>
                     </div>
                 @empty
                     <p class="text-sm text-gray-500">No report cards are available yet. Published report cards appear here after fee clearance is approved for each child.</p>
