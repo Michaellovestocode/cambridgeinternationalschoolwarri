@@ -725,6 +725,10 @@ public function storeManualExamScores(Request $request, $examId)
 {
     $question = Question::with('exam')->findOrFail($questionId);
     $exam = $question->exam;
+    $wasObjective = $question->isObjective();
+    $oldQuestionType = $question->question_type;
+    $oldCorrectAnswer = $question->correct_answer;
+    $oldMarks = (float) $question->marks;
 
     if (!Auth::user()->isAdmin() && $exam->created_by != Auth::id()) {
         abort(403);
@@ -788,8 +792,27 @@ public function storeManualExamScores(Request $request, $examId)
 
     $question->update($questionData);
 
+    $question->refresh();
+    $shouldRegradeAttempts = $this->questionUpdateRequiresAttemptRegrade(
+        $wasObjective,
+        $oldQuestionType,
+        $oldCorrectAnswer,
+        $oldMarks,
+        $question
+    );
+
+    $regradedAttempts = $shouldRegradeAttempts
+        ? $this->regradeAttemptsForUpdatedQuestion($question)
+        : 0;
+
+    $message = 'Question updated successfully!';
+
+    if ($regradedAttempts > 0) {
+        $message .= " {$regradedAttempts} submitted/graded attempt(s) were recalculated with the corrected answer key.";
+    }
+
     return redirect()->route('admin.exam.questions', $exam->id)
-        ->with('success', 'Question updated successfully!');
+        ->with('success', $message);
 }
 
    public function deleteQuestion($questionId)
@@ -917,7 +940,7 @@ public function storeManualExamScores(Request $request, $examId)
 
     public function updateGrading(Request $request, $attemptId)
     {
-        $attempt = ExamAttempt::with(['answers', 'exam', 'user'])->findOrFail($attemptId);
+        $attempt = ExamAttempt::with(['answers.question', 'exam', 'user'])->findOrFail($attemptId);
         
         abort_unless($this->canManageAttempt($attempt), 403);
         abort_if($attempt->isRejected(), 403, 'Rejected attempts cannot be graded. The student should retake the exam.');
@@ -931,6 +954,7 @@ public function storeManualExamScores(Request $request, $examId)
         ]);
 
         DB::transaction(function () use ($validated, $attempt, $request) {
+            $objectiveScore = $this->regradeObjectiveAnswers($attempt);
             $subjectiveScore = (float) ($attempt->subjective_score ?? 0);
 
             if (! empty($validated['grades'])) {
@@ -949,20 +973,122 @@ public function storeManualExamScores(Request $request, $examId)
                 $subjectiveScore += $gradeData['marks_obtained'];
             }
 
-            $calculatedScore = ($attempt->objective_score ?? 0) + $subjectiveScore;
+            $calculatedScore = $objectiveScore + $subjectiveScore;
             $totalScore = $request->filled('final_score') ? (float) $request->final_score : $calculatedScore;
 
             $attempt->update([
+                'objective_score' => $objectiveScore,
                 'subjective_score' => $subjectiveScore,
                 'total_score' => $totalScore,
-                'status' => 'graded',
+                'status' => ExamAttempt::STATUS_GRADED,
             ]);
         });
 
         app(CbtReportCardSyncService::class)->syncAttempt($attempt->fresh(['exam.subjectModel', 'user']));
 
         return redirect()->route('admin.attempt.grade', $attempt->id)
-            ->with('success', 'Grading completed successfully!');
+            ->with('success', 'Grading completed successfully! Objective questions were recalculated using the current answer key.');
+    }
+
+    private function regradeObjectiveAnswers(ExamAttempt $attempt): float
+    {
+        $objectiveScore = 0.0;
+
+        $attempt->loadMissing('answers.question');
+
+        foreach ($attempt->answers as $answer) {
+            $question = $answer->question;
+
+            if (! $question || ! $question->isObjective()) {
+                continue;
+            }
+
+            $isCorrect = $this->isObjectiveAnswerCorrect($answer, $question);
+            $marksObtained = $isCorrect ? (float) $question->marks : 0.0;
+
+            $answer->update([
+                'is_correct' => $isCorrect,
+                'marks_obtained' => $marksObtained,
+            ]);
+
+            $objectiveScore += $marksObtained;
+        }
+
+        return $objectiveScore;
+    }
+
+    private function questionUpdateRequiresAttemptRegrade(
+        bool $wasObjective,
+        string $oldQuestionType,
+        ?string $oldCorrectAnswer,
+        float $oldMarks,
+        Question $question
+    ): bool {
+        return $wasObjective
+            || $question->isObjective()
+            || $oldQuestionType !== $question->question_type
+            || trim((string) $oldCorrectAnswer) !== trim((string) $question->correct_answer)
+            || round($oldMarks, 2) !== round((float) $question->marks, 2);
+    }
+
+    private function regradeAttemptsForUpdatedQuestion(Question $question): int
+    {
+        $attemptIds = Answer::where('question_id', $question->id)
+            ->whereHas('attempt', function ($query) {
+                $query->whereIn('status', [
+                    ExamAttempt::STATUS_SUBMITTED,
+                    ExamAttempt::STATUS_GRADED,
+                ]);
+            })
+            ->pluck('attempt_id')
+            ->unique()
+            ->values();
+
+        $regraded = 0;
+
+        foreach ($attemptIds as $attemptId) {
+            $attempt = ExamAttempt::with(['answers.question', 'exam.subjectModel', 'user'])
+                ->find($attemptId);
+
+            if (! $attempt || $attempt->isRejected()) {
+                continue;
+            }
+
+            $objectiveScore = $this->regradeObjectiveAnswers($attempt);
+            $subjectiveScore = $attempt->answers
+                ->filter(fn (Answer $answer) => $answer->question && ! $answer->question->isObjective())
+                ->sum(fn (Answer $answer) => (float) ($answer->marks_obtained ?? 0));
+
+            $attempt->update([
+                'objective_score' => $objectiveScore,
+                'subjective_score' => $subjectiveScore,
+                'total_score' => $objectiveScore + $subjectiveScore,
+            ]);
+
+            if ($attempt->isGraded()) {
+                app(CbtReportCardSyncService::class)->syncAttempt($attempt->fresh(['exam.subjectModel', 'user']));
+            }
+
+            $regraded++;
+        }
+
+        return $regraded;
+    }
+
+    private function isObjectiveAnswerCorrect(Answer $answer, Question $question): bool
+    {
+        $studentAnswer = trim((string) $answer->answer_text);
+        $correctAnswer = trim((string) $question->correct_answer);
+
+        if ($question->question_type === 'multiple_choice') {
+            return strtoupper($studentAnswer) === strtoupper($correctAnswer);
+        }
+
+        if ($question->question_type === 'fill_blank') {
+            return strtolower($studentAnswer) === strtolower($correctAnswer);
+        }
+
+        return false;
     }
 
     public function exportResultsPDF($examId)

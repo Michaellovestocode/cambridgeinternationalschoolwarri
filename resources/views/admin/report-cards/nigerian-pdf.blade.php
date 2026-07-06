@@ -41,6 +41,64 @@
                 margin: 18px auto;
                 box-shadow: 0 18px 45px rgba(15, 23, 42, .18);
             }
+
+            .portal-report-toolbar + .page {
+                margin-top: 86px;
+            }
+        }
+
+        .portal-report-toolbar {
+            position: fixed;
+            top: 0;
+            right: 0;
+            left: 0;
+            z-index: 20;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 14px 22px;
+            background: #fff;
+            border-bottom: 1px solid #d1d5db;
+            box-shadow: 0 10px 30px rgba(15, 23, 42, .12);
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        .portal-report-toolbar-title {
+            font-size: 15px;
+            font-weight: bold;
+            color: #111827;
+        }
+
+        .portal-report-toolbar-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .portal-report-toolbar a {
+            display: inline-block;
+            padding: 9px 14px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: bold;
+        }
+
+        .portal-report-back {
+            background: #f3f4f6;
+            color: #374151;
+        }
+
+        .portal-report-download {
+            background: {{ $selectedColor['primary'] }};
+            color: #fff;
+        }
+
+        @media print {
+            .portal-report-toolbar {
+                display: none;
+            }
         }
 
         .inner-frame {
@@ -536,6 +594,7 @@
 <body>
     @php
         $renderMode = $renderMode ?? 'pdf';
+        $portal = $portal ?? [];
         $logoPath = $schoolSettings->school_logo ? public_path('storage/' . $schoolSettings->school_logo) : null;
         $studentPhotoPath = $reportCard->student->photo ? public_path('storage/' . $reportCard->student->photo) : null;
         $formTeacher = $reportCard->class?->activeFormTeacher?->teacher ?: $reportCard->class?->formTeacher?->teacher;
@@ -606,6 +665,19 @@
         $isLowerSchool = $authorityRole !== 'principal';
         $seniorRemarkLabel = $authorityTitle . "'s Remark:";
     @endphp
+    @if($renderMode === 'browser' && (!empty($portal['back_url']) || !empty($portal['download_url'])))
+        <div class="portal-report-toolbar">
+            <div class="portal-report-toolbar-title">{{ $portal['title'] ?? 'Report Card' }}</div>
+            <div class="portal-report-toolbar-actions">
+                @if(!empty($portal['back_url']))
+                    <a href="{{ $portal['back_url'] }}" class="portal-report-back">Back</a>
+                @endif
+                @if(!empty($portal['download_url']))
+                    <a href="{{ $portal['download_url'] }}" class="portal-report-download">Download PDF</a>
+                @endif
+            </div>
+        </div>
+    @endif
     <div class="page {{ $isLowerSchool ? 'lower-school' : '' }}">
         <div class="inner-frame"></div>
         <div class="watermark">

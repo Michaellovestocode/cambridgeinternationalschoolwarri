@@ -7,6 +7,7 @@ use App\Models\Exam;
 use App\Models\ExamAttempt;
 use App\Models\Message;
 use App\Models\ReportCard;
+use App\Services\ReportCardRenderService;
 use Illuminate\Support\Facades\Auth;
 
 class ParentPortalController extends Controller
@@ -136,11 +137,26 @@ class ParentPortalController extends Controller
         abort_unless($reportCard->isPublished(), 404);
         abort_unless($reportCard->hasFeeClearance(), 403, 'This report card is locked until school fee clearance is approved.');
 
-        $reportCard->loadMissing(['student', 'class', 'session', 'term']);
+        $reportCard->loadMissing('student');
 
-        $scores = $reportCard->scores();
+        return app(ReportCardRenderService::class)->view($reportCard, [
+            'title' => $reportCard->student->name . "'s Report Card",
+            'back_url' => route('parent.dashboard'),
+            'download_url' => route('parent.report-cards.download', $reportCard),
+        ]);
+    }
 
-        return view('parent.report-card', compact('reportCard', 'scores'));
+    public function downloadReportCard(ReportCard $reportCard)
+    {
+        $parent = Auth::user();
+        if (!$parent->children->contains('id', $reportCard->student_id)) {
+            abort(403);
+        }
+
+        abort_unless($reportCard->isPublished(), 404);
+        abort_unless($reportCard->hasFeeClearance(), 403, 'This report card is locked until school fee clearance is approved.');
+
+        return app(ReportCardRenderService::class)->download($reportCard);
     }
 
     private function resolveExamStatus(Exam $exam, ?ExamAttempt $attempt): string

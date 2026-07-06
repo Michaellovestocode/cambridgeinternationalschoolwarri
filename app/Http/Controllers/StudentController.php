@@ -9,6 +9,7 @@ use App\Models\LearningAttempt;
 use App\Models\LearningSession;
 use App\Models\ReportCard;
 use App\Services\CbtReportCardSyncService;
+use App\Services\ReportCardRenderService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -95,10 +96,23 @@ class StudentController extends Controller
         abort_unless($reportCard->isPublished(), 404);
         abort_unless($reportCard->hasFeeClearance(), 403, 'This report card is locked until school fee clearance is approved.');
 
-        $reportCard->loadMissing(['student', 'class', 'session', 'term']);
-        $scores = $reportCard->scores();
+        return app(ReportCardRenderService::class)->view($reportCard, [
+            'title' => 'My Report Card',
+            'back_url' => route('student.dashboard'),
+            'download_url' => route('student.report-cards.download', $reportCard),
+        ]);
+    }
 
-        return view('student.report-card', compact('reportCard', 'scores'));
+    public function downloadReportCard(ReportCard $reportCard)
+    {
+        if ($reportCard->student_id !== Auth::id()) {
+            abort(403);
+        }
+
+        abort_unless($reportCard->isPublished(), 404);
+        abort_unless($reportCard->hasFeeClearance(), 403, 'This report card is locked until school fee clearance is approved.');
+
+        return app(ReportCardRenderService::class)->download($reportCard);
     }
 
     public function startExam($examId)
