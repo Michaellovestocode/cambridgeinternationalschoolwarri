@@ -15,7 +15,7 @@ return new class extends Migration
             $table->timestamp('started_at');
             $table->timestamp('submitted_at')->nullable();
             $table->integer('time_remaining')->nullable();
-            $table->enum('status', ['in_progress', 'submitted', 'graded'])->default('in_progress');
+            $table->enum('status', ['in_progress', 'submitted', 'graded', 'rejected'])->default('in_progress');
             $table->decimal('total_score', 5, 2)->nullable();
             $table->decimal('objective_score', 5, 2)->nullable();
             $table->decimal('subjective_score', 5, 2)->nullable();

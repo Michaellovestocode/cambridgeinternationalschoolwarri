@@ -104,12 +104,7 @@ class TeacherScoreController extends Controller
             'subject_id' => 'required|exists:subjects,id',
             'score_mode' => 'nullable|in:all,first_test,notes,exam',
             'score_source' => 'nullable|in:paper,manual',
-            'scores' => 'sometimes|array',
-            'scores.*.student_id' => 'required_with:scores|exists:users,id',
-            'scores.*.ca1' => 'nullable|numeric|min:0|max:30',
-            'scores.*.ca2' => 'nullable|numeric|min:0|max:10',
-            'scores.*.exam' => 'nullable|numeric|min:0|max:60',
-        ], $this->scoreValidationMessages());
+        ]);
         
         $teacher = Auth::user();
         $activeSession = Session::getActive();

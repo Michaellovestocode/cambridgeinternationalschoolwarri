@@ -77,9 +77,9 @@
         @endforeach
     </div>
 
-    <!-- Score Entry Form -->
+<!-- Score Entry Form -->
     <div class="bg-white rounded-lg shadow-lg p-4 sm:p-8">
-        <form id="scoresForm" method="POST" class="space-y-6">
+        <form id="scoresForm" method="POST" action="{{ route('teacher.scores.save') }}" class="space-y-6">
             @csrf
 
             <input type="hidden" name="class_id" value="{{ $class->id }}">

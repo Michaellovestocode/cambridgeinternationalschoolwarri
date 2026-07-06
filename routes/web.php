@@ -141,12 +141,14 @@ Route::middleware('auth')->group(function () {
 
 
     // Teacher Score Entry
-Route::get('/teacher/scores', [TeacherScoreController::class, 'dashboard'])->name('teacher.scores.dashboard');
-Route::get('/teacher/scores/select', [TeacherScoreController::class, 'selectClassSubject'])->name('teacher.scores.select');
-Route::match(['get', 'post'], '/teacher/scores/enter', [TeacherScoreController::class, 'enterScores'])->name('teacher.scores.enter');
-Route::post('/teacher/scores/save', [TeacherScoreController::class, 'saveScores'])->name('teacher.scores.save');
-Route::post('/teacher/scores/submit', [TeacherScoreController::class, 'submitScores'])->name('teacher.scores.submit');
-Route::get('/teacher/scores/my-scores', [TeacherScoreController::class, 'myScores'])->name('teacher.scores.my-scores');
+    Route::prefix('teacher')->name('teacher.')->middleware('role:teacher')->group(function () {
+        Route::get('/scores', [TeacherScoreController::class, 'dashboard'])->name('scores.dashboard');
+        Route::get('/scores/select', [TeacherScoreController::class, 'selectClassSubject'])->name('scores.select');
+        Route::get('/scores/enter', [TeacherScoreController::class, 'enterScores'])->name('scores.enter');
+        Route::post('/scores/save', [TeacherScoreController::class, 'saveScores'])->name('scores.save');
+        Route::post('/scores/submit', [TeacherScoreController::class, 'submitScores'])->name('scores.submit');
+        Route::get('/scores/my-scores', [TeacherScoreController::class, 'myScores'])->name('scores.my-scores');
+    });
 
     Route::prefix('teacher/blog')->name('teacher.blog.')->middleware('role:teacher')->group(function () {
         Route::get('/', [BlogPostController::class, 'teacherIndex'])->name('index');
