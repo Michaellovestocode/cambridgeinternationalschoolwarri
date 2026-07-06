@@ -860,7 +860,7 @@
 â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
 <section class="py-16 sm:py-24 bg-gradient-to-br from-blue-50 to-green-50">
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        <h2 class="text-4xl sm:text-5xl font-black text-gray-900 mb-4 fade-in-up">What Parents Say</h2>
+        <h2 class=`"text-4xl sm:text-5xl font-black text-gray-900 mb-4 fade-in-up">What Parents Say</h2>
         <p class="text-lg text-gray-600 mb-12 fade-in-up">Real testimonials from families in our Cambridge community</p>
 
         <div class="relative bg-white rounded-3xl shadow-2xl p-8 sm:p-12 fade-in-up">
