@@ -606,8 +606,6 @@
             ->orderBy('name')
             ->first();
         $seniorSignaturePath = $seniorAuthority?->signature ? public_path('storage/' . $seniorAuthority->signature) : null;
-        $clubSociety = $reportCard->student->club_society ?: 'N/A';
-        $favouriteColour = $reportCard->student->favourite_colour ?: 'N/A';
         $schoolAddress = 'Delta, Nigeria';
         $schoolPhone = '+234 803 289 7744';
         $schoolEmail = 'info@cambridgeinternationalschoolwarri.com';
@@ -754,12 +752,6 @@
                     <td>{{ $reportCard->student->age ?? 'N/A' }}yrs</td>
                     <td class="info-label">ATTENDANCE:</td>
                     <td>{{ $reportCard->days_present }}/{{ $reportCard->days_school_opened }} ({{ number_format($reportCard->attendance_percentage, 1) }}%)</td>
-                </tr>
-                <tr>
-                    <td class="info-label">CLUB/SOCIETY:</td>
-                    <td colspan="3">{{ strtoupper($clubSociety) }}</td>
-                    <td class="info-label">FAV. COLOUR:</td>
-                    <td>{{ strtoupper($favouriteColour) }}</td>
                 </tr>
             </table>
         </div>
@@ -953,7 +945,6 @@
                     @if(! $formTeacherSignatureSrc)
                         Signature: {{ $reportCard->class_teacher_signature ?: '___________________' }}
                     @endif
-                    Date: {{ $reportCard->class_teacher_signature_date ? $reportCard->class_teacher_signature_date->format('d-M-Y') : '__________' }}
                 </div>
             </div>
             
@@ -970,12 +961,11 @@
                     @if(! $principalSignatureSrc)
                         Signature: {{ $reportCard->head_teacher_signature ?: '___________________' }}
                     @endif
-                    Date: {{ $reportCard->head_teacher_signature_date ? $reportCard->head_teacher_signature_date->format('d-M-Y') : '__________' }}
                 </div>
             </div>
             
-            <div class="next-term-box">
-                <strong>Next Term Begins:</strong> {{ $reportCard->next_term_begins ? $reportCard->next_term_begins->format('l, d-M-Y') : 'TBA' }}
+<div class="next-term-box">
+                <strong>Next Term Begins:</strong> {{ $reportCard->term->next_term_begins ? $reportCard->term->next_term_begins->format('l, d-M-Y') : 'TBA' }}
             </div>
         </div>
         

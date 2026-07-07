@@ -140,12 +140,25 @@ class NigerianReportCardController extends Controller
             ->get()
             ->groupBy('class_id');
 
+        $studentsByClass = User::where('role', 'student')
+            ->whereIn('class_id', $reviewClassIds)
+            ->orderBy('name')
+            ->get()
+            ->groupBy('class_id');
+
         $reviewClasses = SchoolClass::whereIn('id', $reviewClassIds)
             ->orderBy('name')
             ->get()
-            ->map(function (SchoolClass $class) use ($reviewCounts) {
+            ->map(function (SchoolClass $class) use ($reviewCounts, $studentsByClass) {
                 $classCards = $reviewCounts->get($class->id, collect());
+                $learnerCount = $studentsByClass->get($class->id, collect())->count();
                 $class->review_total = $classCards->count();
+                $class->learner_total = $learnerCount;
+                $class->not_submitted_count = max(0, $learnerCount - $classCards->whereIn('workflow_status', [
+                    ReportCard::WORKFLOW_SUBMITTED,
+                    ReportCard::WORKFLOW_REJECTED,
+                    ReportCard::WORKFLOW_ACADEMIC_APPROVED,
+                ])->count());
                 $class->review_submitted_count = $classCards->where('workflow_status', ReportCard::WORKFLOW_SUBMITTED)->count();
                 $class->review_rejected_count = $classCards->where('workflow_status', ReportCard::WORKFLOW_REJECTED)->count();
                 $class->review_approved_count = $classCards->where('workflow_status', ReportCard::WORKFLOW_ACADEMIC_APPROVED)->count();
@@ -164,13 +177,38 @@ class NigerianReportCardController extends Controller
             ->paginate(20)
             ->appends($request->query());
 
+        $selectedClassLearners = collect();
+        $reviewRows = collect();
+
+        if ($selectedClassId) {
+            $selectedClassLearners = $studentsByClass->get($selectedClassId, collect())->values();
+            $cardsByStudent = ReportCard::with(['student', 'session', 'term', 'class', 'academicReviewer'])
+                ->where('class_id', $selectedClassId)
+                ->when($selectedSessionId, fn ($query) => $query->where('session_id', $selectedSessionId))
+                ->when($selectedTermId, fn ($query) => $query->where('term_id', $selectedTermId))
+                ->whereIn('workflow_status', $reviewStatuses)
+                ->get()
+                ->keyBy('student_id');
+
+            $reviewRows = $selectedClassLearners
+                ->map(fn (User $learner) => (object) [
+                    'learner' => $learner,
+                    'reportCard' => $cardsByStudent->get($learner->id),
+                ])
+                ->sortBy([
+                    fn ($row) => $row->reportCard ? 0 : 1,
+                    fn ($row) => strtolower($row->learner->name),
+                ])
+                ->values();
+        }
+
         $sessions = Session::orderByDesc('start_date')->get();
         $terms = Term::with('session')->orderByDesc('start_date')->get();
         $selectedSession = $sessions->firstWhere('id', (int) $selectedSessionId);
         $selectedTerm = $terms->firstWhere('id', (int) $selectedTermId);
         $selectedClass = $selectedClassId ? $reviewClasses->firstWhere('id', $selectedClassId) : null;
 
-        return view('admin.report-cards.reviews', compact('reportCards', 'sessions', 'terms', 'selectedSession', 'selectedTerm', 'reviewClasses', 'selectedClass'));
+        return view('admin.report-cards.reviews', compact('reportCards', 'sessions', 'terms', 'selectedSession', 'selectedTerm', 'reviewClasses', 'selectedClass', 'reviewRows', 'selectedClassLearners'));
     }
 
     public function earlyPrimaryLearners(Request $request)
@@ -308,9 +346,9 @@ class NigerianReportCardController extends Controller
             'term_id' => 'required|exists:terms,id',
             'scores' => 'required|array',
             'scores.*.subject_id' => 'required|exists:subjects,id',
-            'scores.*.ca1' => 'required|numeric|min:0|max:30',
-            'scores.*.ca2' => 'required|numeric|min:0|max:10',
-            'scores.*.exam' => 'required|numeric|min:0|max:60',
+            'scores.*.ca1' => 'nullable|numeric|min:0|max:30',
+            'scores.*.ca2' => 'nullable|numeric|min:0|max:10',
+            'scores.*.exam' => 'nullable|numeric|min:0|max:60',
         ]);
 
         $student = User::where('role', 'student')->findOrFail($validated['student_id']);
@@ -337,23 +375,24 @@ class NigerianReportCardController extends Controller
                     continue;
                 }
 
-                Score::updateOrCreate(
+                $score = Score::firstOrNew(
                     [
                         'student_id' => $student->id,
                         'subject_id' => $scoreData['subject_id'],
                         'session_id' => $validated['session_id'],
                         'term_id' => $validated['term_id'],
-                    ],
-                    [
-                        'class_id' => $validated['class_id'],
-                        'teacher_id' => $teacherId,
-                        'ca1' => $scoreData['ca1'] ?? 0,
-                        'ca2' => $scoreData['ca2'] ?? 0,
-                        'ca3' => 0,
-                        'exam' => $scoreData['exam'] ?? 0,
-                        'status' => 'submitted',
                     ]
                 );
+
+                $score->fill([
+                    'class_id' => $validated['class_id'],
+                    'teacher_id' => $teacherId,
+                    'ca1' => $scoreData['ca1'] ?? ($score->exists ? $score->ca1 : 0),
+                    'ca2' => $scoreData['ca2'] ?? ($score->exists ? $score->ca2 : 0),
+                    'ca3' => $score->exists ? $score->ca3 : 0,
+                    'exam' => $scoreData['exam'] ?? ($score->exists ? $score->exam : 0),
+                    'status' => 'submitted',
+                ])->save();
 
                 Score::calculatePositions(
                     $scoreData['subject_id'],
@@ -451,7 +490,9 @@ class NigerianReportCardController extends Controller
             ->where('session_id', $session->id)
             ->where('term_id', $term->id)
             ->with('subject')
-            ->orderBy('subject_id')
+            ->join('subjects', 'scores.subject_id', '=', 'subjects.id')
+            ->select('scores.*')
+            ->orderBy('subjects.name')
             ->get();
         
         if ($scores->isEmpty()) {
@@ -503,7 +544,9 @@ class NigerianReportCardController extends Controller
             ->where('session_id', $reportCard->session_id)
             ->where('term_id', $reportCard->term_id)
             ->with('subject')
-            ->orderBy('subject_id')
+            ->join('subjects', 'scores.subject_id', '=', 'subjects.id')
+            ->select('scores.*')
+            ->orderBy('subjects.name')
             ->get();
         
         // Get school settings (use helper to ensure defaults are available)
@@ -539,7 +582,9 @@ class NigerianReportCardController extends Controller
             ->where('session_id', $reportCard->session_id)
             ->where('term_id', $reportCard->term_id)
             ->with('subject')
-            ->orderBy('subject_id')
+            ->join('subjects', 'scores.subject_id', '=', 'subjects.id')
+            ->select('scores.*')
+            ->orderBy('subjects.name')
             ->get();
 
         $schoolSettings = \App\Models\SchoolSettings::getSettings();
@@ -587,7 +632,9 @@ class NigerianReportCardController extends Controller
             ->where('session_id', $reportCard->session_id)
             ->where('term_id', $reportCard->term_id)
             ->with('subject')
-            ->orderBy('subject_id')
+            ->join('subjects', 'scores.subject_id', '=', 'subjects.id')
+            ->select('scores.*')
+            ->orderBy('subjects.name')
             ->get();
         
         // Get school settings (use helper to ensure defaults are available)
@@ -649,13 +696,10 @@ class NigerianReportCardController extends Controller
             'class_teacher_comment' => 'nullable|string|max:1000',
             'class_teacher_name' => 'nullable|string|max:255',
             'class_teacher_signature' => 'nullable|string|max:255',
-            'class_teacher_signature_date' => 'nullable|date',
             'head_teacher_comment' => 'nullable|string|max:1000',
             'head_teacher_name' => 'nullable|string|max:255',
             'head_teacher_signature' => 'nullable|string|max:255',
-            'head_teacher_signature_date' => 'nullable|date',
             'principal_signature_image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:1024',
-            'next_term_begins' => 'nullable|date',
             'theme_color' => 'nullable|in:blue,green,brown,pink,purple',
             'affective_domain' => 'nullable|array',
             'affective_domain.*' => 'nullable|integer|min:1|max:5',

@@ -47,7 +47,9 @@ class ReportCardRenderService
             ->where('session_id', $reportCard->session_id)
             ->where('term_id', $reportCard->term_id)
             ->with('subject')
-            ->orderBy('subject_id')
+            ->join('subjects', 'scores.subject_id', '=', 'subjects.id')
+            ->select('scores.*')
+            ->orderBy('subjects.name')
             ->get();
 
         $schoolSettings = SchoolSettings::getSettings();

@@ -15,7 +15,7 @@
         <div>
             <h1 class="text-3xl font-bold text-gray-900">Edit Report Card Details</h1>
             <p class="text-gray-600 mt-1">
-                Fill attendance, remarks, signatures, and next term date manually. Attendance percentage is calculated automatically.
+                Fill attendance, remarks, and signatures. Next term date is set by admin in the Term settings. Attendance percentage is calculated automatically.
             </p>
             <p class="mt-2">
                 <span class="px-3 py-1 rounded-full text-xs font-semibold {{ $reportCard->isPublished() ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800' }}">
@@ -319,12 +319,6 @@
                                    value="{{ old('class_teacher_signature', $reportCard->class_teacher_signature) }}"
                                    class="w-full border border-gray-300 rounded-lg px-4 py-3">
                         </div>
-                        <div>
-                            <label for="class_teacher_signature_date" class="block text-sm font-medium text-gray-700 mb-2">Signature Date</label>
-                            <input id="class_teacher_signature_date" name="class_teacher_signature_date" type="date"
-                                   value="{{ old('class_teacher_signature_date', optional($reportCard->class_teacher_signature_date)->format('Y-m-d')) }}"
-                                   class="w-full border border-gray-300 rounded-lg px-4 py-3">
-                        </div>
                     </div>
 
                     <div class="space-y-4">
@@ -363,33 +357,17 @@
                             @error('principal_signature_image')<p class="text-red-500 text-sm mt-1">{{ $message }}</p>@enderror
                         </div>
                         @endif
-                        <div>
-                            <label for="head_teacher_signature_date" class="block text-sm font-medium text-gray-700 mb-2">Signature Date</label>
-                            <input id="head_teacher_signature_date" name="head_teacher_signature_date" type="date"
-                                   value="{{ old('head_teacher_signature_date', optional($reportCard->head_teacher_signature_date)->format('Y-m-d')) }}"
-                                   class="w-full border border-gray-300 rounded-lg px-4 py-3">
-                        </div>
                     </div>
                 </div>
 
-                <div>
-                    <h2 class="text-xl font-semibold text-gray-900 mb-4">Academic Calendar</h2>
-                    <div>
-                        <label for="next_term_begins" class="block text-sm font-medium text-gray-700 mb-2">Next Term Begins</label>
-                        <input id="next_term_begins" name="next_term_begins" type="date"
-                               value="{{ old('next_term_begins', optional($reportCard->next_term_begins)->format('Y-m-d')) }}"
-                               class="w-full border border-gray-300 rounded-lg px-4 py-3">
-                    </div>
-                </div>
-
-                <div class="flex justify-end">
-                    <button type="submit"
-                            class="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-medium">
-                        Save Report Card Details
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
+                 <div class="flex justify-end">
+                     <button type="submit"
+                             class="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-medium">
+                         Save Report Card Details
+                     </button>
+                 </div>
+             </form>
+         </div>
+     </div>
+ </div>
 @endsection

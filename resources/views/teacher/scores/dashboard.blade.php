@@ -132,6 +132,16 @@
                 </a>
             </div>
 
+            <!-- Class Rankings -->
+            <div class="border-2 border-amber-300 rounded-lg p-6 hover:shadow-lg transition">
+                <div class="text-5xl mb-4">#</div>
+                <h3 class="text-xl font-bold text-gray-800 mb-2">Class Rankings</h3>
+                <p class="text-gray-600 mb-4">See your form-class learners by position with their totals and averages.</p>
+                <a href="{{ route('teacher.scores.class-rankings') }}" class="inline-block w-full text-center bg-amber-600 hover:bg-amber-700 text-white px-6 py-3 rounded-lg font-semibold transition">
+                    View Class Rankings
+                </a>
+            </div>
+
             <!-- Instructions -->
             <div class="border-2 border-purple-300 rounded-lg p-6 hover:shadow-lg transition">
                 <div class="text-5xl mb-4">ℹ️</div>

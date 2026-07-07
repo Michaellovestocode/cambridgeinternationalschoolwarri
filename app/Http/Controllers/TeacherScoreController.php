@@ -372,6 +372,74 @@ class TeacherScoreController extends Controller
         ));
     }
 
+    public function classRankings(Request $request)
+    {
+        $teacher = Auth::user();
+        $activeSession = Session::getActive();
+        $activeTerm = Term::getActive();
+        $selectedSessionId = $request->input('session_id', $activeSession?->id);
+        $selectedTermId = $request->input('term_id', $activeTerm?->id);
+
+        $formClasses = FormTeacher::with('schoolClass')
+            ->where('teacher_id', $teacher->id)
+            ->where('is_active', true)
+            ->get()
+            ->pluck('schoolClass')
+            ->filter()
+            ->sortBy('name')
+            ->values();
+
+        abort_unless($formClasses->isNotEmpty(), 403, 'Only active form teachers can view class rankings.');
+
+        $selectedClassId = (int) $request->input('class_id', $formClasses->first()?->id);
+        $selectedClass = $formClasses->firstWhere('id', $selectedClassId) ?: $formClasses->first();
+
+        $learners = User::where('role', 'student')
+            ->where('class_id', $selectedClass?->id)
+            ->orderBy('name')
+            ->get();
+
+        $reportCards = ReportCard::where('class_id', $selectedClass?->id)
+            ->when($selectedSessionId, fn ($query) => $query->where('session_id', $selectedSessionId))
+            ->when($selectedTermId, fn ($query) => $query->where('term_id', $selectedTermId))
+            ->get()
+            ->keyBy('student_id');
+
+        $rankings = $learners
+            ->map(function (User $learner) use ($reportCards) {
+                $reportCard = $reportCards->get($learner->id);
+
+                return (object) [
+                    'learner' => $learner,
+                    'total_score' => $reportCard?->total_score,
+                    'average_score' => $reportCard?->average_score,
+                    'position' => $reportCard?->position,
+                    'total_students' => $reportCard?->total_students,
+                    'workflow_status' => $reportCard?->workflowLabel(),
+                ];
+            })
+            ->sortBy([
+                fn ($row) => $row->position ?? PHP_INT_MAX,
+                fn ($row) => strtolower($row->learner->name),
+            ])
+            ->values();
+
+        $sessions = Session::orderByDesc('start_date')->get();
+        $terms = Term::with('session')->orderByDesc('start_date')->get();
+        $selectedSession = $sessions->firstWhere('id', (int) $selectedSessionId);
+        $selectedTerm = $terms->firstWhere('id', (int) $selectedTermId);
+
+        return view('teacher.scores.class-rankings', compact(
+            'formClasses',
+            'selectedClass',
+            'rankings',
+            'sessions',
+            'terms',
+            'selectedSession',
+            'selectedTerm'
+        ));
+    }
+
     private function availableSubjectsFor(User $teacher)
     {
         if ($teacher->isAdmin()) {
@@ -521,7 +589,7 @@ class TeacherScoreController extends Controller
             ->where('is_active', true)
             ->get()
             ->pluck('schoolClass')
-            ->filter(fn ($class) => $class && in_array($class->section_key, ['creche', 'primary'], true))
+            ->filter(fn ($class) => $class && in_array($class->section_key, ['creche', 'primary', 'other'], true))
             ->values();
     }
 

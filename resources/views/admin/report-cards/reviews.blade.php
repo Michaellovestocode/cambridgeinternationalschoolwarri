@@ -75,9 +75,13 @@
                         <h2 class="text-lg font-bold text-gray-900">{{ $class->display_name }}</h2>
                         <p class="text-sm text-gray-500">{{ $class->section_label }}</p>
                     </div>
-                    <span class="rounded-full bg-gray-900 px-3 py-1 text-xs font-bold text-white">{{ $class->review_total }}</span>
+                    <span class="rounded-full bg-gray-900 px-3 py-1 text-xs font-bold text-white">{{ $class->learner_total }} learners</span>
                 </div>
-                <div class="mt-4 grid grid-cols-3 gap-3 text-sm">
+                <div class="mt-4 grid grid-cols-2 gap-3 text-sm sm:grid-cols-4">
+                    <div class="rounded-lg bg-gray-50 p-3">
+                        <p class="text-gray-700">Not Submitted</p>
+                        <p class="font-bold text-gray-950">{{ $class->not_submitted_count }}</p>
+                    </div>
                     <div class="rounded-lg bg-orange-50 p-3">
                         <p class="text-orange-700">Submitted</p>
                         <p class="font-bold text-orange-950">{{ $class->review_submitted_count }}</p>
@@ -104,7 +108,7 @@
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div>
                 <h2 class="text-2xl font-bold text-gray-900">{{ $selectedClass->display_name }} Report Cards</h2>
-                <p class="text-gray-600 mt-1">Only report cards from this class are shown below.</p>
+                <p class="text-gray-600 mt-1">{{ $selectedClassLearners->count() }} learners are shown, including learners not submitted yet.</p>
             </div>
             <a href="{{ route('admin.report-cards.reviews', array_filter([
                 'session_id' => request('session_id', $selectedSession?->id),
@@ -129,58 +133,63 @@
         </div>
     @endif
 
-    <div class="grid md:grid-cols-2 xl:grid-cols-3 gap-5">
-        @forelse($reportCards as $reportCard)
-            <div class="bg-white rounded-xl shadow p-5 space-y-4">
-                <div class="flex items-start justify-between gap-3">
-                    <div>
-                        <h2 class="text-lg font-bold text-gray-900">{{ $reportCard->student->name }}</h2>
-                        <p class="text-sm text-gray-600">{{ $reportCard->class->display_name }} - {{ $reportCard->session->name }} - {{ $reportCard->term->name }}</p>
+    <div class="space-y-3">
+        @forelse($reviewRows as $row)
+            @php($reportCard = $row->reportCard)
+            <div class="rounded-xl bg-white p-4 shadow">
+                <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div class="min-w-0">
+                        <h2 class="break-words text-base font-bold text-gray-900">{{ $row->learner->name }}</h2>
+                        <p class="text-sm text-gray-600">{{ $row->learner->registration_number ?: 'No registration number' }}</p>
                     </div>
-                    <span class="px-3 py-1 rounded-full text-xs font-semibold {{ $reportCard->isSubmittedForReview() ? 'bg-orange-100 text-orange-800' : ($reportCard->isRejectedByReviewer() ? 'bg-red-100 text-red-800' : 'bg-emerald-100 text-emerald-800') }}">
-                        {{ $reportCard->workflowLabel() }}
-                    </span>
+                    @if($reportCard)
+                        <span class="w-fit px-3 py-1 rounded-full text-xs font-semibold {{ $reportCard->isSubmittedForReview() ? 'bg-orange-100 text-orange-800' : ($reportCard->isRejectedByReviewer() ? 'bg-red-100 text-red-800' : 'bg-emerald-100 text-emerald-800') }}">
+                            {{ $reportCard->workflowLabel() }}
+                        </span>
+                    @else
+                        <span class="w-fit rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-700">Not Submitted</span>
+                    @endif
                 </div>
 
-                <div class="grid grid-cols-3 gap-3 text-sm">
-                    <div class="rounded-lg bg-blue-50 p-3">
-                        <p class="text-blue-700">Average</p>
-                        <p class="font-bold text-blue-950">{{ number_format($reportCard->average_score, 1) }}%</p>
+                @if($reportCard)
+                    <div class="mt-4 grid grid-cols-3 gap-2 text-sm">
+                        <div class="rounded-lg bg-blue-50 p-3">
+                            <p class="text-blue-700">Average</p>
+                            <p class="font-bold text-blue-950">{{ number_format($reportCard->average_score, 1) }}%</p>
+                        </div>
+                        <div class="rounded-lg bg-purple-50 p-3">
+                            <p class="text-purple-700">Grade</p>
+                            <p class="font-bold text-purple-950">{{ $reportCard->overall_grade }}</p>
+                        </div>
+                        <div class="rounded-lg bg-amber-50 p-3">
+                            <p class="text-amber-700">Position</p>
+                            <p class="font-bold text-amber-950">{{ $reportCard->position }}/{{ $reportCard->total_students }}</p>
+                        </div>
                     </div>
-                    <div class="rounded-lg bg-purple-50 p-3">
-                        <p class="text-purple-700">Grade</p>
-                        <p class="font-bold text-purple-950">{{ $reportCard->overall_grade }}</p>
-                    </div>
-                    <div class="rounded-lg bg-amber-50 p-3">
-                        <p class="text-amber-700">Position</p>
-                        <p class="font-bold text-amber-950">{{ $reportCard->position }}/{{ $reportCard->total_students }}</p>
-                    </div>
-                </div>
 
-                @if($reportCard->academic_rejection_reason)
-                    <p class="rounded-lg bg-red-50 p-3 text-sm text-red-800">{{ $reportCard->academic_rejection_reason }}</p>
+                    @if($reportCard->academic_rejection_reason)
+                        <p class="mt-3 rounded-lg bg-red-50 p-3 text-sm text-red-800">{{ $reportCard->academic_rejection_reason }}</p>
+                    @endif
+
+                    <div class="mt-4 grid gap-2 sm:flex sm:flex-wrap">
+                        <a href="{{ route('admin.report-cards.preview', $reportCard->id) }}" class="bg-gray-900 hover:bg-black text-white px-4 py-3 rounded-lg text-center text-sm font-medium">
+                            Open Review
+                        </a>
+                        <a href="{{ route('admin.report-cards.visual-preview', $reportCard->id) }}" target="_blank" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded-lg text-center text-sm font-medium">
+                            Visual Preview
+                        </a>
+                    </div>
+                @else
+                    <p class="mt-3 rounded-lg bg-gray-50 p-3 text-sm font-semibold text-gray-600">
+                        This learner does not have a report card submitted for this session and term.
+                    </p>
                 @endif
-
-                <div class="flex flex-wrap gap-2">
-                    <a href="{{ route('admin.report-cards.preview', $reportCard->id) }}" class="bg-gray-900 hover:bg-black text-white px-4 py-2 rounded-lg text-sm font-medium">
-                        Open Review
-                    </a>
-                    <a href="{{ route('admin.report-cards.visual-preview', $reportCard->id) }}" target="_blank" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium">
-                        Visual Preview
-                    </a>
-                </div>
             </div>
         @empty
-            <div class="md:col-span-2 xl:col-span-3 bg-white rounded-xl shadow p-10 text-center text-gray-500">
+            <div class="bg-white rounded-xl shadow p-10 text-center text-gray-500">
                 {{ $selectedClass ? 'No report cards are waiting in this class review queue.' : 'Choose a class above to open its review queue.' }}
             </div>
         @endforelse
     </div>
-
-    @if($selectedClass)
-    <div>
-        {{ $reportCards->links() }}
-    </div>
-    @endif
 </div>
 @endsection

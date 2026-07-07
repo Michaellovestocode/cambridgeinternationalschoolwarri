@@ -8,7 +8,7 @@
         <div>
             <h1 class="text-3xl font-bold text-gray-900">Manual Report Card Builder</h1>
             <p class="text-gray-600 mt-1">
-                Enter paper-exam scores directly. The normal report card PDF layout remains unchanged.
+                Enter CA1, CA2, or exam scores as they become available. The normal report card PDF layout remains unchanged.
             </p>
         </div>
         <a href="{{ route('admin.report-cards') }}"
@@ -220,9 +220,7 @@ function validateScoreField(input) {
     const error = input.parentElement.querySelector('.score-error');
     let message = '';
 
-    if (value === null || Number.isNaN(value)) {
-        message = `${label} is required.`;
-    } else {
+    if (value !== null && !Number.isNaN(value)) {
         if (value < min) {
             message = `${label} cannot be below ${min}.`;
         } else if (value > max) {

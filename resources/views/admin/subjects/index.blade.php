@@ -17,6 +17,35 @@
         </div>
     </div>
 
+    @if(($pendingRejectionRequests ?? collect())->isNotEmpty())
+    <div class="rounded-lg bg-white shadow">
+        <div class="border-b p-6">
+            <h2 class="text-xl font-bold text-gray-800">Pending Subject Removal Requests</h2>
+        </div>
+        <div class="divide-y">
+            @foreach($pendingRejectionRequests as $requestRow)
+                @php($className = trim(($requestRow->class_name ?? '') . ' ' . ($requestRow->class_description ?? '')))
+                <div class="flex flex-col gap-3 p-5 md:flex-row md:items-center md:justify-between">
+                    <div>
+                        <p class="font-bold text-gray-900">{{ $requestRow->teacher_name }} wants to remove {{ $requestRow->subject_name }}</p>
+                        <p class="text-sm text-gray-600">Class: {{ $className !== '' ? $className : 'All assigned classes' }}</p>
+                        @if($requestRow->reason)
+                            <p class="mt-1 text-sm text-gray-500">{{ $requestRow->reason }}</p>
+                        @endif
+                    </div>
+                    <form method="POST" action="{{ route('admin.subjects.rejection-requests.approve', $requestRow->id) }}">
+                        @csrf
+                        @method('PUT')
+                        <button type="submit" onclick="return confirm('Approve this removal request?')" class="rounded-lg bg-red-600 px-4 py-2 text-sm font-bold text-white hover:bg-red-700">
+                            Approve Removal
+                        </button>
+                    </form>
+                </div>
+            @endforeach
+        </div>
+    </div>
+    @endif
+
     <!-- Subjects Table -->
     <div class="bg-white rounded-lg shadow overflow-hidden">
         <div class="p-6 border-b">

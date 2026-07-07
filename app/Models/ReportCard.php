@@ -118,7 +118,9 @@ class ReportCard extends Model
             ->where('session_id', $this->session_id)
             ->where('term_id', $this->term_id)
             ->with('subject')
-            ->orderBy('subject_id')
+            ->join('subjects', 'scores.subject_id', '=', 'subjects.id')
+            ->select('scores.*')
+            ->orderBy('subjects.name')
             ->get();
     }
 
@@ -221,6 +223,9 @@ class ReportCard extends Model
             ->where('session_id', $sessionId)
             ->where('term_id', $termId)
             ->where('status', '!=', 'draft')
+            ->join('subjects', 'scores.subject_id', '=', 'subjects.id')
+            ->select('scores.*')
+            ->orderBy('subjects.name')
             ->get();
 
         if ($scores->isEmpty()) {

@@ -68,10 +68,25 @@
 
                     <div class="mt-4 flex flex-wrap gap-2">
                         @forelse($subject->assignedClasses as $class)
-                            <span class="rounded-xl border border-emerald-100 bg-emerald-50 px-3 py-2 text-sm font-bold text-emerald-800">
-                                {{ $class->display_name }}
-                                <span class="ml-1 text-xs font-semibold text-emerald-600">({{ $class->students_count ?? 0 }} learners)</span>
-                            </span>
+                            @php($pendingKey = $subject->id . ':' . $class->id)
+                            <div class="rounded-xl border border-emerald-100 bg-emerald-50 px-3 py-2 text-sm font-bold text-emerald-800">
+                                <div>
+                                    {{ $class->display_name }}
+                                    <span class="ml-1 text-xs font-semibold text-emerald-600">({{ $class->students_count ?? 0 }} learners)</span>
+                                </div>
+                                @if(($pendingRejections ?? collect())->has($pendingKey))
+                                    <p class="mt-2 text-xs font-black text-amber-700">Removal request pending admin approval</p>
+                                @else
+                                    <form method="POST" action="{{ route('admin.subjects.reject-request') }}" class="mt-2">
+                                        @csrf
+                                        <input type="hidden" name="subject_id" value="{{ $subject->id }}">
+                                        <input type="hidden" name="school_class_id" value="{{ $class->id }}">
+                                        <button type="submit" onclick="return confirm('Send this subject/class assignment to admin for removal approval?')" class="rounded-lg bg-white px-3 py-1 text-xs font-black text-red-700 shadow-sm hover:bg-red-50">
+                                            Request Removal
+                                        </button>
+                                    </form>
+                                @endif
+                            </div>
                         @empty
                             <span class="rounded-xl border border-rose-100 bg-rose-50 px-3 py-2 text-sm font-bold text-rose-700">
                                 No class assigned for this subject yet

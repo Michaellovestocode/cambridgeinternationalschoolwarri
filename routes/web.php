@@ -150,6 +150,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/scores/save', [TeacherScoreController::class, 'saveScores'])->name('scores.save');
         Route::post('/scores/submit', [TeacherScoreController::class, 'submitScores'])->name('scores.submit');
         Route::get('/scores/my-scores', [TeacherScoreController::class, 'myScores'])->name('scores.my-scores');
+        Route::get('/scores/class-rankings', [TeacherScoreController::class, 'classRankings'])->name('scores.class-rankings');
     });
 
     Route::prefix('teacher/blog')->name('teacher.blog.')->middleware('role:teacher')->group(function () {
@@ -231,6 +232,7 @@ Route::middleware('auth')->group(function () {
         Route::patch('/my-learners/{student}/name', [FormTeacherController::class, 'updateLearnerName'])->name('form-teacher.learners.update-name');
         Route::get('/teaching-learners', [TeacherLearnerController::class, 'index'])->name('teaching-learners.index');
         Route::get('/my-subjects', [SubjectController::class, 'mySubjects'])->name('subjects.my');
+        Route::post('/my-subjects/reject', [SubjectController::class, 'requestRejection'])->name('subjects.reject-request');
         Route::get('/messages', [MessageController::class, 'adminIndex'])->name('messages.index');
         Route::post('/messages', [MessageController::class, 'adminStore'])->name('messages.store');
         
@@ -272,6 +274,7 @@ Route::middleware('auth')->group(function () {
             Route::put('/subjects/{subject}/teachers', [SubjectController::class, 'updateTeachers'])->name('subjects.update-teachers');
             Route::get('/teachers/{teacher}/subjects', [SubjectController::class, 'assignSubjects'])->name('subjects.assign-subjects');
             Route::put('/teachers/{teacher}/subjects', [SubjectController::class, 'updateSubjects'])->name('subjects.update-subjects');
+            Route::put('/subjects/rejection-requests/{requestId}/approve', [SubjectController::class, 'approveRejectionRequest'])->name('subjects.rejection-requests.approve');
 
             // Form Teacher Management
             Route::get('/form-teachers', [FormTeacherController::class, 'index'])->name('form-teachers.index');

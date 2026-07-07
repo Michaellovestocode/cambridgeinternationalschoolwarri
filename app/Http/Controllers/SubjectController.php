@@ -21,7 +21,24 @@ class SubjectController extends Controller
         $subjects = Subject::withCount(['teachers', 'exams'])
                            ->latest()
                            ->paginate(20);
-        return view('admin.subjects.index', compact('subjects'));
+        $pendingRejectionRequests = Schema::hasTable('teacher_subject_rejection_requests')
+            ? DB::table('teacher_subject_rejection_requests')
+                ->join('users', 'teacher_subject_rejection_requests.teacher_id', '=', 'users.id')
+                ->join('subjects', 'teacher_subject_rejection_requests.subject_id', '=', 'subjects.id')
+                ->leftJoin('school_classes', 'teacher_subject_rejection_requests.school_class_id', '=', 'school_classes.id')
+                ->where('teacher_subject_rejection_requests.status', 'pending')
+                ->select(
+                    'teacher_subject_rejection_requests.*',
+                    'users.name as teacher_name',
+                    'subjects.name as subject_name',
+                    'school_classes.name as class_name',
+                    'school_classes.description as class_description'
+                )
+                ->orderBy('teacher_subject_rejection_requests.created_at')
+                ->get()
+            : collect();
+
+        return view('admin.subjects.index', compact('subjects', 'pendingRejectionRequests'));
     }
 
     /**
@@ -109,11 +126,112 @@ class SubjectController extends Controller
             })
             ->values();
 
+        $pendingRejections = Schema::hasTable('teacher_subject_rejection_requests')
+            ? DB::table('teacher_subject_rejection_requests')
+                ->where('teacher_id', $user->id)
+                ->where('status', 'pending')
+                ->get()
+                ->mapWithKeys(fn ($request) => [
+                    ((int) $request->subject_id) . ':' . ((int) ($request->school_class_id ?? 0)) => true,
+                ])
+            : collect();
+
         return view('admin.subjects.my-subjects', [
             'subjects' => $subjects,
             'teachingClasses' => $allTeachingClasses,
             'ownedEarlyPrimaryClasses' => $ownedEarlyPrimaryClasses,
+            'pendingRejections' => $pendingRejections,
         ]);
+    }
+
+    public function requestRejection(Request $request)
+    {
+        $teacher = Auth::user();
+        abort_unless($teacher->isTeacher(), 403);
+        abort_unless(Schema::hasTable('teacher_subject_rejection_requests'), 500, 'Run migrations before using subject rejection requests.');
+
+        $validated = $request->validate([
+            'subject_id' => 'required|exists:subjects,id',
+            'school_class_id' => 'nullable|exists:school_classes,id',
+            'reason' => 'nullable|string|max:1000',
+        ]);
+
+        $subjectId = (int) $validated['subject_id'];
+        $classId = isset($validated['school_class_id']) ? (int) $validated['school_class_id'] : null;
+
+        abort_unless($this->teacherHasSubjectAssignment($teacher, $subjectId, $classId), 403, 'You can only reject a subject assigned to you.');
+
+        DB::table('teacher_subject_rejection_requests')->updateOrInsert(
+            [
+                'teacher_id' => $teacher->id,
+                'subject_id' => $subjectId,
+                'school_class_id' => $classId,
+                'status' => 'pending',
+            ],
+            [
+                'reason' => $validated['reason'] ?? null,
+                'updated_at' => now(),
+                'created_at' => now(),
+            ]
+        );
+
+        return back()->with('success', 'Subject rejection request sent to admin for approval.');
+    }
+
+    public function approveRejectionRequest($requestId)
+    {
+        abort_unless(Auth::user()->isAdmin(), 403);
+        abort_unless(Schema::hasTable('teacher_subject_rejection_requests'), 500, 'Run migrations before using subject rejection requests.');
+
+        $requestRow = DB::table('teacher_subject_rejection_requests')
+            ->where('id', $requestId)
+            ->where('status', 'pending')
+            ->first();
+
+        abort_unless($requestRow, 404);
+
+        if (Schema::hasTable('teacher_class_subject') && $requestRow->school_class_id) {
+            DB::table('teacher_class_subject')
+                ->where('teacher_id', $requestRow->teacher_id)
+                ->where('subject_id', $requestRow->subject_id)
+                ->where('school_class_id', $requestRow->school_class_id)
+                ->delete();
+
+            $stillAssigned = DB::table('teacher_class_subject')
+                ->where('teacher_id', $requestRow->teacher_id)
+                ->where('subject_id', $requestRow->subject_id)
+                ->exists();
+
+            if (! $stillAssigned) {
+                DB::table('teacher_subject')
+                    ->where('teacher_id', $requestRow->teacher_id)
+                    ->where('subject_id', $requestRow->subject_id)
+                    ->delete();
+            }
+        } else {
+            DB::table('teacher_subject')
+                ->where('teacher_id', $requestRow->teacher_id)
+                ->where('subject_id', $requestRow->subject_id)
+                ->delete();
+
+            if (Schema::hasTable('teacher_class_subject')) {
+                DB::table('teacher_class_subject')
+                    ->where('teacher_id', $requestRow->teacher_id)
+                    ->where('subject_id', $requestRow->subject_id)
+                    ->delete();
+            }
+        }
+
+        DB::table('teacher_subject_rejection_requests')
+            ->where('id', $requestRow->id)
+            ->update([
+                'status' => 'approved',
+                'reviewed_by' => Auth::id(),
+                'reviewed_at' => now(),
+                'updated_at' => now(),
+            ]);
+
+        return back()->with('success', 'Subject rejection approved and assignment removed.');
     }
 
     private function formTeacherClassesFor(User $user)
@@ -213,6 +331,19 @@ class SubjectController extends Controller
             ->all();
 
         return in_array($classLevel, $candidates, true);
+    }
+
+    private function teacherHasSubjectAssignment(User $teacher, int $subjectId, ?int $classId): bool
+    {
+        if (Schema::hasTable('teacher_class_subject') && $classId) {
+            return DB::table('teacher_class_subject')
+                ->where('teacher_id', $teacher->id)
+                ->where('subject_id', $subjectId)
+                ->where('school_class_id', $classId)
+                ->exists();
+        }
+
+        return $teacher->subjects()->whereKey($subjectId)->exists();
     }
 
     /**

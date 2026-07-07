@@ -448,6 +448,19 @@
                         </svg>
                     </span>
                 </a>
+
+                <a href="{{ route('teacher.scores.class-rankings') }}"
+                   class="flex items-center justify-between bg-gradient-to-r from-amber-500 to-yellow-600 hover:from-amber-600 hover:to-yellow-700 text-white px-6 py-4 rounded-xl font-bold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all group">
+                    <span class="flex items-center">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 17l4 4 4-4m-4 4V3M4 7h4m8 0h4M4 12h3m10 0h3"></path>
+                        </svg>
+                        Class Rankings
+                    </span>
+                    <svg class="w-5 h-5 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                    </svg>
+                </a>
                 @endif
 
                 @if(auth()->user()->isAdmin() || $isFormTeacher)
