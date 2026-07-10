@@ -121,6 +121,10 @@
                 <p><span class="font-semibold text-gray-700">Class:</span> {{ $reportCard->class->display_name }}</p>
                 <p><span class="font-semibold text-gray-700">Session:</span> {{ $reportCard->session->name }}</p>
                 <p><span class="font-semibold text-gray-700">Term:</span> {{ $reportCard->term->name }}</p>
+                <p><span class="font-semibold text-gray-700">Next Term Begins:</span> 
+                    <span class="text-blue-700 font-medium">{{ $reportCard->term->next_term_begins ? $reportCard->term->next_term_begins->format('l, d M Y') : 'Not set' }}</span>
+                    <span class="text-xs text-gray-500 block">Set by admin in Term settings</span>
+                </p>
                 <p><span class="font-semibold text-gray-700">Overall Grade:</span> {{ $reportCard->overall_grade }}</p>
                 <p><span class="font-semibold text-gray-700">Average Score:</span> {{ number_format($reportCard->average_score, 1) }}%</p>
                 <p><span class="font-semibold text-gray-700">Position:</span> {{ $reportCard->position }}/{{ $reportCard->total_students }}</p>

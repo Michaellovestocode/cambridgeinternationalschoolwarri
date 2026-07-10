@@ -225,65 +225,75 @@ Route::middleware('auth')->group(function () {
         Route::delete('/gallery/{album}', [GalleryController::class, 'destroy'])->name('gallery.destroy');
     });
 
-    // Admin/Teacher routes
-    Route::prefix('admin')->name('admin.')->middleware('role:admin,teacher')->group(function () {
-        Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
-        Route::get('/my-learners', [FormTeacherController::class, 'myLearners'])->name('form-teacher.learners');
-        Route::patch('/my-learners/{student}/name', [FormTeacherController::class, 'updateLearnerName'])->name('form-teacher.learners.update-name');
-        Route::get('/teaching-learners', [TeacherLearnerController::class, 'index'])->name('teaching-learners.index');
-        Route::get('/my-subjects', [SubjectController::class, 'mySubjects'])->name('subjects.my');
-        Route::post('/my-subjects/reject', [SubjectController::class, 'requestRejection'])->name('subjects.reject-request');
-        Route::get('/messages', [MessageController::class, 'adminIndex'])->name('messages.index');
-        Route::post('/messages', [MessageController::class, 'adminStore'])->name('messages.store');
-        
-        // Admin-only routes
-        Route::middleware('role:admin')->group(function () {
-            // Teacher Management
-            Route::get('/teachers', [AdminController::class, 'teachers'])->name('teachers');
-            Route::get('/teachers/create', [AdminController::class, 'createTeacher'])->name('teacher.create');
-            Route::post('/teachers', [AdminController::class, 'storeTeacher'])->name('teacher.store');
-            Route::get('/teachers/{teacher}/edit', [AdminController::class, 'editTeacher'])->name('teacher.edit');
-            Route::put('/teachers/{teacher}', [AdminController::class, 'updateTeacher'])->name('teacher.update');
-            Route::delete('/teachers/{teacher}', [AdminController::class, 'deleteTeacher'])->name('teacher.delete');
-            Route::get('/teachers/{teacher}/classes', [AdminController::class, 'assignTeacherClasses'])->name('teacher.assign-classes');
-            Route::put('/teachers/{teacher}/classes', [AdminController::class, 'updateTeacherClasses'])->name('teacher.update-classes');
+        // Admin/Teacher routes
+        Route::prefix('admin')->name('admin.')->middleware('role:admin,teacher')->group(function () {
+            Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
+            Route::get('/my-learners', [FormTeacherController::class, 'myLearners'])->name('form-teacher.learners');
+            Route::patch('/my-learners/{student}/name', [FormTeacherController::class, 'updateLearnerName'])->name('form-teacher.learners.update-name');
+            Route::get('/teaching-learners', [TeacherLearnerController::class, 'index'])->name('teaching-learners.index');
+            Route::get('/my-subjects', [SubjectController::class, 'mySubjects'])->name('subjects.my');
+            Route::post('/my-subjects/reject', [SubjectController::class, 'requestRejection'])->name('subjects.reject-request');
+            Route::get('/messages', [MessageController::class, 'adminIndex'])->name('messages.index');
+            Route::post('/messages', [MessageController::class, 'adminStore'])->name('messages.store');
             
-            // Student Management
-            Route::get('/students', [AdminController::class, 'students'])->name('students');
-            Route::get('/students/create', [AdminController::class, 'createStudent'])->name('student.create');
-            Route::post('/students', [AdminController::class, 'storeStudent'])->name('student.store');
-            Route::get('/students/{student}/edit', [AdminController::class, 'editStudent'])->name('student.edit');
-            Route::put('/students/{student}', [AdminController::class, 'updateStudent'])->name('student.update');
-            Route::delete('/students/{student}', [AdminController::class, 'deleteStudent'])->name('student.delete');
-            
-            // Class Management
-            Route::get('/classes', [AdminController::class, 'classes'])->name('classes');
-            Route::post('/classes', [AdminController::class, 'storeClass'])->name('class.store');
-            Route::get('/classes/{class}/edit', [AdminController::class, 'editClass'])->name('class.edit');
-            Route::put('/classes/{class}', [AdminController::class, 'updateClass'])->name('class.update');
-            Route::delete('/classes/{class}', [AdminController::class, 'deleteClass'])->name('class.delete');
-
-            // Subjects Management
-            Route::get('/subjects', [SubjectController::class, 'index'])->name('subjects.index');
-            Route::get('/subjects/create', [SubjectController::class, 'create'])->name('subjects.create');
-            Route::post('/subjects', [SubjectController::class, 'store'])->name('subjects.store');
-            Route::get('/subjects/{subject}/edit', [SubjectController::class, 'edit'])->name('subjects.edit');
-            Route::put('/subjects/{subject}', [SubjectController::class, 'update'])->name('subjects.update');
-            Route::delete('/subjects/{subject}', [SubjectController::class, 'destroy'])->name('subjects.destroy');
-            Route::get('/subjects/{subject}/teachers', [SubjectController::class, 'assignTeachers'])->name('subjects.assign-teachers');
-            Route::put('/subjects/{subject}/teachers', [SubjectController::class, 'updateTeachers'])->name('subjects.update-teachers');
-            Route::get('/teachers/{teacher}/subjects', [SubjectController::class, 'assignSubjects'])->name('subjects.assign-subjects');
-            Route::put('/teachers/{teacher}/subjects', [SubjectController::class, 'updateSubjects'])->name('subjects.update-subjects');
-            Route::put('/subjects/rejection-requests/{requestId}/approve', [SubjectController::class, 'approveRejectionRequest'])->name('subjects.rejection-requests.approve');
-
-            // Form Teacher Management
-            Route::get('/form-teachers', [FormTeacherController::class, 'index'])->name('form-teachers.index');
-            Route::get('/form-teachers/create', [FormTeacherController::class, 'create'])->name('form-teachers.create');
-            Route::post('/form-teachers', [FormTeacherController::class, 'store'])->name('form-teachers.store');
-            Route::get('/form-teachers/{formTeacher}', [FormTeacherController::class, 'show'])->name('form-teachers.show');
-            Route::get('/form-teachers/{formTeacher}/edit', [FormTeacherController::class, 'edit'])->name('form-teachers.edit');
-            Route::put('/form-teachers/{formTeacher}', [FormTeacherController::class, 'update'])->name('form-teachers.update');
-            Route::delete('/form-teachers/{formTeacher}', [FormTeacherController::class, 'destroy'])->name('form-teachers.destroy');
+            // Admin-only routes
+            Route::middleware('role:admin')->group(function () {
+                // Academic Sessions & Terms Management
+                Route::get('/academic-sessions', [AdminController::class, 'academicSessions'])->name('academic-sessions.index');
+                Route::post('/academic-sessions', [AdminController::class, 'storeAcademicSession'])->name('academic-sessions.store');
+                Route::put('/academic-sessions/{session}/activate', [AdminController::class, 'activateAcademicSession'])->name('academic-sessions.activate');
+                Route::delete('/academic-sessions/{session}', [AdminController::class, 'deleteAcademicSession'])->name('academic-sessions.delete');
+                
+                Route::post('/terms', [AdminController::class, 'storeTerm'])->name('terms.store');
+                Route::put('/terms/{term}/activate', [AdminController::class, 'activateTerm'])->name('terms.activate');
+                Route::delete('/terms/{term}', [AdminController::class, 'deleteTerm'])->name('terms.delete');
+                
+                // Teacher Management
+                Route::get('/teachers', [AdminController::class, 'teachers'])->name('teachers');
+                Route::get('/teachers/create', [AdminController::class, 'createTeacher'])->name('teacher.create');
+                Route::post('/teachers', [AdminController::class, 'storeTeacher'])->name('teacher.store');
+                Route::get('/teachers/{teacher}/edit', [AdminController::class, 'editTeacher'])->name('teacher.edit');
+                Route::put('/teachers/{teacher}', [AdminController::class, 'updateTeacher'])->name('teacher.update');
+                Route::delete('/teachers/{teacher}', [AdminController::class, 'deleteTeacher'])->name('teacher.delete');
+                Route::get('/teachers/{teacher}/classes', [AdminController::class, 'assignTeacherClasses'])->name('teacher.assign-classes');
+                Route::put('/teachers/{teacher}/classes', [AdminController::class, 'updateTeacherClasses'])->name('teacher.update-classes');
+                
+                // Student Management
+                Route::get('/students', [AdminController::class, 'students'])->name('students');
+                Route::get('/students/create', [AdminController::class, 'createStudent'])->name('student.create');
+                Route::post('/students', [AdminController::class, 'storeStudent'])->name('student.store');
+                Route::get('/students/{student}/edit', [AdminController::class, 'editStudent'])->name('student.edit');
+                Route::put('/students/{student}', [AdminController::class, 'updateStudent'])->name('student.update');
+                Route::delete('/students/{student}', [AdminController::class, 'deleteStudent'])->name('student.delete');
+                
+                // Class Management
+                Route::get('/classes', [AdminController::class, 'classes'])->name('classes');
+                Route::post('/classes', [AdminController::class, 'storeClass'])->name('class.store');
+                Route::get('/classes/{class}/edit', [AdminController::class, 'editClass'])->name('class.edit');
+                Route::put('/classes/{class}', [AdminController::class, 'updateClass'])->name('class.update');
+                Route::delete('/classes/{class}', [AdminController::class, 'deleteClass'])->name('class.delete');
+                
+                // Subjects Management
+                Route::get('/subjects', [SubjectController::class, 'index'])->name('subjects.index');
+                Route::get('/subjects/create', [SubjectController::class, 'create'])->name('subjects.create');
+                Route::post('/subjects', [SubjectController::class, 'store'])->name('subjects.store');
+                Route::get('/subjects/{subject}/edit', [SubjectController::class, 'edit'])->name('subjects.edit');
+                Route::put('/subjects/{subject}', [SubjectController::class, 'update'])->name('subjects.update');
+                Route::delete('/subjects/{subject}', [SubjectController::class, 'destroy'])->name('subjects.destroy');
+                Route::get('/subjects/{subject}/teachers', [SubjectController::class, 'assignTeachers'])->name('subjects.assign-teachers');
+                Route::put('/subjects/{subject}/teachers', [SubjectController::class, 'updateTeachers'])->name('subjects.update-teachers');
+                Route::get('/teachers/{teacher}/subjects', [SubjectController::class, 'assignSubjects'])->name('subjects.assign-subjects');
+                Route::put('/teachers/{teacher}/subjects', [SubjectController::class, 'updateSubjects'])->name('subjects.update-subjects');
+                Route::put('/subjects/rejection-requests/{requestId}/approve', [SubjectController::class, 'approveRejectionRequest'])->name('subjects.rejection-requests.approve');
+                
+                // Form Teacher Management
+                Route::get('/form-teachers', [FormTeacherController::class, 'index'])->name('form-teachers.index');
+                Route::get('/form-teachers/create', [FormTeacherController::class, 'create'])->name('form-teachers.create');
+                Route::post('/form-teachers', [FormTeacherController::class, 'store'])->name('form-teachers.store');
+                Route::get('/form-teachers/{formTeacher}', [FormTeacherController::class, 'show'])->name('form-teachers.show');
+                Route::get('/form-teachers/{formTeacher}/edit', [FormTeacherController::class, 'edit'])->name('form-teachers.edit');
+                Route::put('/form-teachers/{formTeacher}', [FormTeacherController::class, 'update'])->name('form-teachers.update');
+                Route::delete('/form-teachers/{formTeacher}', [FormTeacherController::class, 'destroy'])->name('form-teachers.destroy');
 
             Route::get('/enquiries', [AdminAdmissionEnquiryController::class, 'index'])->name('enquiries.index');
             Route::get('/enquiries/{enquiry}', [AdminAdmissionEnquiryController::class, 'show'])->name('enquiries.show');
