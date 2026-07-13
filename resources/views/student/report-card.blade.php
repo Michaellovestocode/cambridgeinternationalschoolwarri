@@ -22,10 +22,12 @@
             <p class="text-xs text-green-700 font-semibold uppercase">Grade</p>
             <p class="text-3xl font-black text-green-900 mt-1">{{ $reportCard->overall_grade ?? '-' }}</p>
         </div>
-        <div class="bg-purple-50 rounded-2xl p-4">
-            <p class="text-xs text-purple-700 font-semibold uppercase">Position</p>
-            <p class="text-3xl font-black text-purple-900 mt-1">@if($reportCard->position && $reportCard->total_students){{ $reportCard->position }}/{{ $reportCard->total_students }}@else Pending @endif</p>
-        </div>
+        @if($reportCard->position && $reportCard->total_students)
+            <div class="bg-purple-50 rounded-2xl p-4">
+                <p class="text-xs text-purple-700 font-semibold uppercase">Position</p>
+                <p class="text-3xl font-black text-purple-900 mt-1">{{ $reportCard->position }}/{{ $reportCard->total_students }}</p>
+            </div>
+        @endif
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">

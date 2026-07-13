@@ -161,10 +161,12 @@
                             <p class="text-purple-700">Grade</p>
                             <p class="font-bold text-purple-950">{{ $reportCard->overall_grade }}</p>
                         </div>
-                        <div class="rounded-lg bg-amber-50 p-3">
-                            <p class="text-amber-700">Position</p>
-                            <p class="font-bold text-amber-950">@if($reportCard->position && $reportCard->total_students){{ $reportCard->position }}/{{ $reportCard->total_students }}@else Pending @endif</p>
-                        </div>
+                        @if($reportCard->position && $reportCard->total_students)
+                            <div class="rounded-lg bg-amber-50 p-3">
+                                <p class="text-amber-700">Position</p>
+                                <p class="font-bold text-amber-950">{{ $reportCard->position }}/{{ $reportCard->total_students }}</p>
+                            </div>
+                        @endif
                     </div>
 
                     @if($reportCard->academic_rejection_reason)
