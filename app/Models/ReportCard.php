@@ -246,11 +246,15 @@ class ReportCard extends Model
 
         // For report cards we do not include class position in the generated summary
         // to avoid publishing positional data in the performance summary.
+        // Position values are required by the report_cards schema, so default to 0
+        // when the overall rank is not being calculated here.
         return [
             'total_score' => $totalScore,
             'average_score' => round($averageScore, 2),
             'overall_grade' => $overallGrade,
             'grade_summary' => $gradeSummary,
+            'position' => 0,
+            'total_students' => 0,
         ];
     }
 }
