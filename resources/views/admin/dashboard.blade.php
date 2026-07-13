@@ -416,7 +416,7 @@
                     </svg>
                 </a>
 
-                @if(in_array($formTeacherAssignment?->schoolClass?->section_key, ['creche', 'primary', 'other'], true))
+                @if($hasFormTeacherClassScoreEntry)
                 <a href="{{ route('admin.report-cards.class-score-entry') }}"
                    class="flex items-center justify-between bg-gradient-to-r from-pink-500 to-indigo-600 hover:from-pink-600 hover:to-indigo-700 text-white px-6 py-4 rounded-xl font-bold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all group">
                     <span class="flex items-center">

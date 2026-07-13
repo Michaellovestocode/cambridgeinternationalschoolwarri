@@ -35,16 +35,23 @@ class AdminController extends Controller
     {
         $user = Auth::user();
         $formTeacherAssignment = null;
+        $formTeacherAssignments = collect();
+        $hasFormTeacherClassScoreEntry = false;
         
         $examsCount = Exam::when(!$user->isAdmin(), function($query) use ($user) {
             return $query->where('created_by', $user->id);
         })->count();
 
         if ($user->isTeacher()) {
-            $formTeacherAssignment = FormTeacher::with(['schoolClass', 'schoolClass.students'])
+            $formTeacherAssignments = FormTeacher::with(['schoolClass', 'schoolClass.students'])
                 ->where('teacher_id', $user->id)
                 ->where('is_active', true)
-                ->first();
+                ->get();
+
+            $formTeacherAssignment = $formTeacherAssignments->first();
+            $hasFormTeacherClassScoreEntry = $formTeacherAssignments->pluck('schoolClass')
+                ->filter()
+                ->contains(fn ($class) => in_array($class->section_key, ['creche', 'primary', 'other'], true));
         }
 
         $teachingClasses = $user->isTeacher()
@@ -138,6 +145,8 @@ class AdminController extends Controller
             'newEnquiriesCount',
             'unreadMessagesCount',
             'formTeacherAssignment',
+            'formTeacherAssignments',
+            'hasFormTeacherClassScoreEntry',
             'classStudents',
             'teachingClasses',
             'assignedSubjectCount',
