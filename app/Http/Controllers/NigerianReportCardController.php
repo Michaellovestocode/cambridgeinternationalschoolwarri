@@ -30,13 +30,10 @@ class NigerianReportCardController extends Controller
         $selectedTermId = $request->input('term_id', $activeTerm?->id);
 
         $user = auth()->user();
-        $reviewClassIds = $this->reviewerClassIdsFor($user);
+        $formTeacherClassIds = $this->formTeacherClassIdsFor($user->id);
         $reportCards = ReportCard::with(['student', 'session', 'term', 'class'])
-            ->when($user->isTeacher() && ! $user->canReviewReportCards(), function ($query) use ($user) {
-                $query->whereIn('class_id', $this->formTeacherClassIdsFor($user->id));
-            })
-            ->when($user->isTeacher() && $user->canReviewReportCards(), function ($query) use ($reviewClassIds) {
-                $query->whereIn('class_id', $reviewClassIds);
+            ->when($user->isTeacher(), function ($query) use ($formTeacherClassIds) {
+                $query->whereIn('class_id', $formTeacherClassIds);
             })
             ->when($selectedSessionId, fn ($query) => $query->where('session_id', $selectedSessionId))
             ->when($selectedTermId, fn ($query) => $query->where('term_id', $selectedTermId))
@@ -65,11 +62,8 @@ class NigerianReportCardController extends Controller
         $reportCards->appends($request->query());
 
         $students = User::where('role', 'student')
-            ->when($user->isTeacher() && ! $user->canReviewReportCards(), function ($query) use ($user) {
-                $query->whereIn('class_id', $this->formTeacherClassIdsFor($user->id));
-            })
-            ->when($user->isTeacher() && $user->canReviewReportCards(), function ($query) use ($reviewClassIds) {
-                $query->whereIn('class_id', $reviewClassIds);
+            ->when($user->isTeacher(), function ($query) use ($formTeacherClassIds) {
+                $query->whereIn('class_id', $formTeacherClassIds);
             })
             ->when($request->filled('search'), function ($query) use ($request) {
                 $search = trim($request->search);
@@ -82,10 +76,8 @@ class NigerianReportCardController extends Controller
             ->orderBy('name')
             ->get();
 
-        $classes = SchoolClass::when($user->isTeacher() && ! $user->canReviewReportCards(), function ($query) use ($user) {
-            $query->whereIn('id', $this->formTeacherClassIdsFor($user->id));
-        })->when($user->isTeacher() && $user->canReviewReportCards(), function ($query) use ($reviewClassIds) {
-            $query->whereIn('id', $reviewClassIds);
+        $classes = SchoolClass::when($user->isTeacher(), function ($query) use ($formTeacherClassIds) {
+            $query->whereIn('id', $formTeacherClassIds);
         })->orderBy('name')->get();
 
         $sessions = Session::orderByDesc('start_date')->get();
