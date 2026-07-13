@@ -100,6 +100,28 @@ class User extends Authenticatable
         return $this->isAdmin() || ($this->isTeacher() && (bool) $this->can_review_report_cards);
     }
 
+    public function canFillDevelopmentalReports(): bool
+    {
+        if ($this->isAdmin()) {
+            return true;
+        }
+
+        if (! $this->isTeacher()) {
+            return false;
+        }
+
+        $assignment = $this->formTeacherAssignments()
+            ->where('is_active', true)
+            ->with('schoolClass')
+            ->first();
+
+        return $assignment && $assignment->schoolClass && in_array(
+            $assignment->schoolClass->section_key,
+            ['creche', 'other'],
+            true
+        );
+    }
+
     public function participatesInAttendance(): bool
     {
         return in_array($this->role, ['admin', 'teacher', 'student', 'non_teaching_staff'], true);

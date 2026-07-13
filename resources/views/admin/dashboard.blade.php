@@ -402,7 +402,7 @@
                 </a>
                 @endif
 
-                @if($isFormTeacher)
+                @if($isFormTeacher && in_array($formTeacherAssignment?->schoolClass?->section_key, ['creche', 'other'], true))
                 <a href="{{ route('admin.developmental-reports.index') }}"
                    class="flex items-center justify-between bg-gradient-to-r from-teal-500 to-cyan-600 hover:from-teal-600 hover:to-cyan-700 text-white px-6 py-4 rounded-xl font-bold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all group">
                     <span class="flex items-center">

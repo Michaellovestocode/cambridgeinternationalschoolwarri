@@ -98,25 +98,17 @@ class CbtReportCardSyncService
                 'term_id' => $term->id,
             ]);
 
-            $reportCard->fill(array_merge($summary, [
+            $attributes = [
                 'class_id' => $student->class_id,
                 'status' => 'generated',
                 'workflow_status' => ReportCard::WORKFLOW_DRAFT,
                 'review_required' => true,
                 'published_at' => null,
                 'scores_updated_at' => now(),
-            ]));
+                'next_term_begins' => $term->next_term_begins,
+            ];
 
-            if (!$reportCard->exists) {
-                $reportCard->fill([
-                    'days_school_opened' => 0,
-                    'days_present' => 0,
-                    'days_absent' => 0,
-                    'attendance_percentage' => 0,
-                    'next_term_begins' => $term->next_term_begins,
-                ]);
-            }
-
+            $reportCard->applyGeneratedSummary($summary, $attributes);
             $reportCard->save();
 
             return $reportCard;

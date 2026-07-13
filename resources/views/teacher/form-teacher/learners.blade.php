@@ -79,7 +79,9 @@
                                     @error('name')<p class="mt-1 text-sm text-rose-600">{{ $message }}</p>@enderror
                                 </td>
                                 <td class="px-6 py-4 text-right">
-                                    <a href="{{ route('admin.developmental-reports.edit', ['student' => $student]) }}" class="rounded-xl bg-teal-600 px-4 py-2 text-sm font-black text-white hover:bg-teal-700">Development</a>
+                                    @if(in_array($formTeacher->schoolClass?->section_key, ['creche', 'other'], true))
+                                        <a href="{{ route('admin.developmental-reports.edit', ['student' => $student]) }}" class="rounded-xl bg-teal-600 px-4 py-2 text-sm font-black text-white hover:bg-teal-700">Development</a>
+                                    @endif
                                 </td>
                             </tr>
                         @endforeach

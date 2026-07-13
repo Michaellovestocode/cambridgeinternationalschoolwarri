@@ -2207,24 +2207,22 @@ private function refreshReportCardsForClass(int $classId, Session $session, Term
             'term_id' => $term->id,
         ]);
 
-        $reportCard->fill(array_merge($summary, [
+        $attributes = [
             'class_id' => $classId,
             'status' => 'generated',
             'workflow_status' => ReportCard::WORKFLOW_DRAFT,
             'review_required' => true,
             'published_at' => null,
             'scores_updated_at' => now(),
-        ]));
+            'next_term_begins' => $term->next_term_begins,
+        ];
 
-        if (!$reportCard->exists) {
-            $reportCard->fill([
-                'days_school_opened' => 0,
-                'days_present' => 0,
-                'days_absent' => 0,
-                'attendance_percentage' => 0,
-                'next_term_begins' => $term->next_term_begins,
-            ]);
+        if (! $reportCard->exists) {
+            $attributes['class_teacher_name'] = $this->defaultClassTeacherName($classId);
+            $attributes['head_teacher_name'] = $this->defaultReportAuthorityName($classId);
         }
+
+        $reportCard->applyGeneratedSummary($summary, $attributes);
 
         $reportCard->save();
         $generated++;
@@ -2274,32 +2272,27 @@ private function removeRejectedAttemptFromReportCard(ExamAttempt $attempt): void
     ]);
 
     if ($summary) {
-        $reportCard->fill(array_merge($summary, [
+        $attributes = [
             'class_id' => $attempt->user->class_id,
-        ]));
-    }
+            'status' => 'generated',
+            'workflow_status' => ReportCard::WORKFLOW_DRAFT,
+            'review_required' => true,
+            'published_at' => null,
+            'scores_updated_at' => now(),
+            'next_term_begins' => $term->next_term_begins,
+        ];
 
-    if ($reportCard->exists || $summary) {
+        $reportCard->applyGeneratedSummary($summary, $attributes);
+        $reportCard->save();
+    } elseif ($reportCard->exists) {
         $reportCard->fill([
             'status' => 'generated',
             'workflow_status' => ReportCard::WORKFLOW_DRAFT,
             'review_required' => true,
             'published_at' => null,
             'scores_updated_at' => now(),
-        ]);
-
-        if (!$reportCard->exists) {
-            $reportCard->fill([
-                'days_school_opened' => 0,
-                'days_present' => 0,
-                'days_absent' => 0,
-                'attendance_percentage' => 0,
-                'next_term_begins' => $term->next_term_begins,
-            ]);
-        }
-
-     $reportCard->save();
-     }
+        ])->save();
+    }
  }
 
     // ========== ACADEMIC SESSIONS & TERMS MANAGEMENT ==========

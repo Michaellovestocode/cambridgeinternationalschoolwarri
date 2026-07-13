@@ -429,28 +429,29 @@ class NigerianReportCardController extends Controller
                 ])->withInput();
             }
 
-            $reportCard = ReportCard::updateOrCreate(
-                [
-                    'student_id' => $student->id,
-                    'session_id' => $validated['session_id'],
-                    'term_id' => $validated['term_id'],
-                ],
-                array_merge($summary, [
-                    'class_id' => $validated['class_id'],
-                    'status' => 'generated',
-                    'workflow_status' => ReportCard::WORKFLOW_DRAFT,
-                    'review_required' => true,
-                    'published_at' => null,
-                    'scores_updated_at' => now(),
-                    'days_school_opened' => 0,
-                    'days_present' => 0,
-                    'days_absent' => 0,
-                    'attendance_percentage' => 0,
-                    'class_teacher_name' => $this->defaultClassTeacherName($validated['class_id']),
-                    'head_teacher_name' => $this->defaultReportAuthorityName($validated['class_id']),
-                    'next_term_begins' => $term->next_term_begins,
-                ])
-            );
+            $reportCard = ReportCard::firstOrNew([
+                'student_id' => $student->id,
+                'session_id' => $validated['session_id'],
+                'term_id' => $validated['term_id'],
+            ]);
+
+            $attributes = [
+                'class_id' => $validated['class_id'],
+                'status' => 'generated',
+                'workflow_status' => ReportCard::WORKFLOW_DRAFT,
+                'review_required' => true,
+                'published_at' => null,
+                'scores_updated_at' => now(),
+                'next_term_begins' => $term->next_term_begins,
+            ];
+
+            if (! $reportCard->exists) {
+                $attributes['class_teacher_name'] = $this->defaultClassTeacherName($validated['class_id']);
+                $attributes['head_teacher_name'] = $this->defaultReportAuthorityName($validated['class_id']);
+            }
+
+            $reportCard->applyGeneratedSummary($summary, $attributes);
+            $reportCard->save();
 
             DB::commit();
 
@@ -502,29 +503,30 @@ class NigerianReportCardController extends Controller
         // Generate or update report card
         $summary = ReportCard::generateForStudent($studentId, $session->id, $term->id);
         
-        $reportCard = ReportCard::updateOrCreate(
-            [
-                'student_id' => $studentId,
-                'session_id' => $session->id,
-                'term_id' => $term->id,
-            ],
-            array_merge($summary, [
-                'class_id' => $student->class_id,
-                'status' => 'generated',
-                'workflow_status' => ReportCard::WORKFLOW_DRAFT,
-                'review_required' => true,
-                'published_at' => null,
-                'scores_updated_at' => now(),
-                'days_school_opened' => 0,
-                'days_present' => 0,
-                'days_absent' => 0,
-                'attendance_percentage' => 0,
-                'class_teacher_name' => $this->defaultClassTeacherName($student->class_id),
-                'head_teacher_name' => $this->defaultReportAuthorityName($student->class_id),
-                'next_term_begins' => $term->next_term_begins,
-            ])
-        );
-        
+        $reportCard = ReportCard::firstOrNew([
+            'student_id' => $studentId,
+            'session_id' => $session->id,
+            'term_id' => $term->id,
+        ]);
+
+        $attributes = [
+            'class_id' => $student->class_id,
+            'status' => 'generated',
+            'workflow_status' => ReportCard::WORKFLOW_DRAFT,
+            'review_required' => true,
+            'published_at' => null,
+            'scores_updated_at' => now(),
+            'next_term_begins' => $term->next_term_begins,
+        ];
+
+        if (! $reportCard->exists) {
+            $attributes['class_teacher_name'] = $this->defaultClassTeacherName($student->class_id);
+            $attributes['head_teacher_name'] = $this->defaultReportAuthorityName($student->class_id);
+        }
+
+        $reportCard->applyGeneratedSummary($summary, $attributes);
+        $reportCard->save();
+
         return redirect()->route('admin.report-cards.preview', $reportCard->id)
             ->with('success', 'Report card generated successfully!');
     }
@@ -798,7 +800,7 @@ class NigerianReportCardController extends Controller
 
             $summary = ReportCard::generateForStudent($reportCard->student_id, $reportCard->session_id, $reportCard->term_id);
             if ($summary) {
-                $reportCard->fill(array_merge($summary, [
+                $reportCard->applyGeneratedSummary($summary, [
                     'review_required' => true,
                     'scores_updated_at' => now(),
                     'academic_reviewed_by' => null,
@@ -806,7 +808,8 @@ class NigerianReportCardController extends Controller
                     'academic_rejection_reason' => null,
                     'published_at' => null,
                     'status' => 'generated',
-                ]))->save();
+                ]);
+                $reportCard->save();
             }
         });
 
@@ -1081,28 +1084,29 @@ class NigerianReportCardController extends Controller
             $summary = ReportCard::generateForStudent($student->id, $session->id, $term->id);
             
             if ($summary) {
-                ReportCard::updateOrCreate(
-                    [
-                        'student_id' => $student->id,
-                        'session_id' => $session->id,
-                        'term_id' => $term->id,
-                    ],
-                    array_merge($summary, [
-                        'class_id' => $request->class_id,
-                        'status' => 'generated',
-                        'workflow_status' => ReportCard::WORKFLOW_DRAFT,
-                        'review_required' => true,
-                        'published_at' => null,
-                        'scores_updated_at' => now(),
-                        'days_school_opened' => 0,
-                        'days_present' => 0,
-                        'days_absent' => 0,
-                        'attendance_percentage' => 0,
-                        'class_teacher_name' => $this->defaultClassTeacherName($request->class_id),
-                        'head_teacher_name' => $this->defaultReportAuthorityName($request->class_id),
-                        'next_term_begins' => $term->next_term_begins,
-                    ])
-                );
+                $reportCard = ReportCard::firstOrNew([
+                    'student_id' => $student->id,
+                    'session_id' => $session->id,
+                    'term_id' => $term->id,
+                ]);
+
+                $attributes = [
+                    'class_id' => $request->class_id,
+                    'status' => 'generated',
+                    'workflow_status' => ReportCard::WORKFLOW_DRAFT,
+                    'review_required' => true,
+                    'published_at' => null,
+                    'scores_updated_at' => now(),
+                    'next_term_begins' => $term->next_term_begins,
+                ];
+
+                if (! $reportCard->exists) {
+                    $attributes['class_teacher_name'] = $this->defaultClassTeacherName($request->class_id);
+                    $attributes['head_teacher_name'] = $this->defaultReportAuthorityName($request->class_id);
+                }
+
+                $reportCard->applyGeneratedSummary($summary, $attributes);
+                $reportCard->save();
                 
                 $generated++;
             }

@@ -229,6 +229,18 @@
             || auth()->user()->canReviewReportCards()
             || (auth()->user()->isTeacher()
                 && \App\Models\FormTeacher::where('teacher_id', auth()->id())->where('is_active', true)->exists());
+
+        $canUseDevelopmentReports = auth()->user()->isAdmin()
+            || (auth()->user()->isTeacher()
+                && \App\Models\FormTeacher::where('teacher_id', auth()->id())
+                    ->where('is_active', true)
+                    ->with('schoolClass')
+                    ->get()
+                    ->contains(fn ($assignment) => in_array(
+                        $assignment->schoolClass?->section_key,
+                        ['creche', 'other'],
+                        true
+                    )));
     @endphp
 
     <nav class="nav-gradient text-white shadow-2xl sticky top-0 z-50">
@@ -300,6 +312,8 @@
                     <a href="{{ route('admin.report-cards') }}" class="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-lg font-semibold transition">
                         Report Cards
                     </a>
+                    @endif
+                    @if($canUseDevelopmentReports)
                     <a href="{{ route('admin.developmental-reports.index') }}" class="bg-teal-500 hover:bg-teal-600 text-white px-4 py-2 rounded-lg font-semibold transition">
                         Development
                     </a>
@@ -402,6 +416,8 @@
                     <a href="{{ route('admin.report-cards') }}" class="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-lg font-semibold transition text-sm">
                         Report Cards
                     </a>
+                    @endif
+                    @if($canUseDevelopmentReports)
                     <a href="{{ route('admin.developmental-reports.index') }}" class="bg-teal-500 hover:bg-teal-600 text-white px-4 py-2 rounded-lg font-semibold transition text-sm">
                         Development
                     </a>

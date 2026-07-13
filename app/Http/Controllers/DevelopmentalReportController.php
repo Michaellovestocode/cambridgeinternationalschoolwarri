@@ -19,6 +19,8 @@ class DevelopmentalReportController extends Controller
 {
     public function index(Request $request)
     {
+        $this->authorizeDevelopmentalReportAccess($request->user());
+
         $activeSession = Session::getActive();
         $activeTerm = Term::getActive();
         $selectedSessionId = $request->input('session_id', $activeSession?->id);
@@ -72,6 +74,7 @@ class DevelopmentalReportController extends Controller
 
     public function edit(Request $request, User $student)
     {
+        $this->authorizeDevelopmentalReportAccess($request->user());
         abort_unless($student->role === 'student' && $student->class, 404);
         $this->authorizeStudent($request->user(), $student);
 
@@ -91,7 +94,7 @@ class DevelopmentalReportController extends Controller
     }
 
     public function update(Request $request, DevelopmentalReport $developmentalReport)
-    {
+    {        $this->authorizeDevelopmentalReportAccess($request->user());        $this->authorizeDevelopmentalReportAccess($request->user());
         $developmentalReport->load(['student.class']);
         $this->authorizeReport($request->user(), $developmentalReport);
 
@@ -159,6 +162,7 @@ class DevelopmentalReportController extends Controller
 
     public function show(Request $request, DevelopmentalReport $developmentalReport)
     {
+        $this->authorizeDevelopmentalReportAccess($request->user());
         $developmentalReport->load(['student.class', 'class.activeFormTeacher.teacher', 'session', 'term', 'ratings.skill']);
         $this->authorizeReport($request->user(), $developmentalReport);
 
@@ -192,6 +196,7 @@ class DevelopmentalReportController extends Controller
 
     public function download(Request $request, DevelopmentalReport $developmentalReport)
     {
+        $this->authorizeDevelopmentalReportAccess($request->user());
         $developmentalReport->load(['student.class', 'session', 'term', 'ratings.skill']);
         $this->authorizeReport($request->user(), $developmentalReport);
 
@@ -265,6 +270,11 @@ class DevelopmentalReportController extends Controller
         if ($user->isTeacher() && ! $user->isAdmin()) {
             $assigned = FormTeacher::where('teacher_id', $user->id)
                 ->where('is_active', true)
+                ->with('schoolClass')
+                ->get()
+                ->filter(fn ($assignment) => $assignment->schoolClass
+                    && in_array($assignment->schoolClass->section_key, ['creche', 'other'], true)
+                )
                 ->pluck('class_id')
                 ->all();
 
@@ -285,5 +295,14 @@ class DevelopmentalReportController extends Controller
     private function authorizeReport(User $user, DevelopmentalReport $report): void
     {
         abort_unless(in_array((int) $report->class_id, $this->manageableClassIds($user), true), 403);
+    }
+
+    private function authorizeDevelopmentalReportAccess(User $user): void
+    {
+        if ($user->isAdmin()) {
+            return;
+        }
+
+        abort_unless($user->canFillDevelopmentalReports(), 403, 'You do not have permission to access developmental reports.');
     }
 }

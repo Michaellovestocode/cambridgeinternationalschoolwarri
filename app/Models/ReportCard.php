@@ -124,6 +124,21 @@ class ReportCard extends Model
             ->get();
     }
 
+    public function applyGeneratedSummary(array $summary, array $attributes = []): void
+    {
+        $this->fill(array_merge($summary, $attributes));
+
+        if (! $this->exists) {
+            $this->fill([
+                'days_school_opened' => 0,
+                'days_present' => 0,
+                'days_absent' => 0,
+                'attendance_percentage' => 0,
+                'next_term_begins' => $attributes['next_term_begins'] ?? null,
+            ]);
+        }
+    }
+
     // Methods
     public function publish()
     {
