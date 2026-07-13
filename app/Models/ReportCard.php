@@ -244,33 +244,11 @@ class ReportCard extends Model
             $gradeSummary[$grade] = ($gradeSummary[$grade] ?? 0) + 1;
         }
 
-        // Calculate position
-        $classId = $student->class_id;
-        $allStudents = User::where('class_id', $classId)
-            ->where('role', 'student')
-            ->get();
-
-        $studentAverages = [];
-        foreach ($allStudents as $s) {
-            $avg = Score::where('student_id', $s->id)
-                ->where('session_id', $sessionId)
-                ->where('term_id', $termId)
-                ->avg('total');
-            
-            if ($avg) {
-                $studentAverages[$s->id] = $avg;
-            }
-        }
-
-        arsort($studentAverages);
-        $position = array_search($studentId, array_keys($studentAverages)) + 1;
-        $totalStudents = count($studentAverages);
-
+        // For report cards we do not include class position in the generated summary
+        // to avoid publishing positional data in the performance summary.
         return [
             'total_score' => $totalScore,
             'average_score' => round($averageScore, 2),
-            'position' => $position,
-            'total_students' => $totalStudents,
             'overall_grade' => $overallGrade,
             'grade_summary' => $gradeSummary,
         ];

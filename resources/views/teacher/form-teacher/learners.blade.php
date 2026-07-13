@@ -79,11 +79,7 @@
                                     @error('name')<p class="mt-1 text-sm text-rose-600">{{ $message }}</p>@enderror
                                 </td>
                                 <td class="px-6 py-4 text-right">
-                                    @if($formTeacher->schoolClass?->section_key === 'creche')
-                                        <a href="{{ route('admin.developmental-reports.edit', ['student' => $student]) }}" class="rounded-xl bg-teal-600 px-4 py-2 text-sm font-black text-white hover:bg-teal-700">Development</a>
-                                    @else
-                                        <span class="text-xs font-semibold text-gray-400">N/A</span>
-                                    @endif
+                                    <a href="{{ route('admin.developmental-reports.edit', ['student' => $student]) }}" class="rounded-xl bg-teal-600 px-4 py-2 text-sm font-black text-white hover:bg-teal-700">Development</a>
                                 </td>
                             </tr>
                         @endforeach

@@ -692,7 +692,6 @@ class NigerianReportCardController extends Controller
         $validated = $request->validate([
             'days_school_opened' => 'required|integer|min:0',
             'days_present' => 'required|integer|min:0',
-            'days_absent' => 'required|integer|min:0',
             'class_teacher_comment' => 'nullable|string|max:1000',
             'class_teacher_name' => 'nullable|string|max:255',
             'class_teacher_signature' => 'nullable|string|max:255',
@@ -713,11 +712,8 @@ class NigerianReportCardController extends Controller
             ])->withInput();
         }
 
-        if (($validated['days_present'] + $validated['days_absent']) > $validated['days_school_opened']) {
-            return back()->withErrors([
-                'days_absent' => 'Present plus absent days cannot be greater than days school opened.',
-            ])->withInput();
-        }
+        // Auto-calculate days_absent from days_school_opened and days_present
+        $validated['days_absent'] = max(0, $validated['days_school_opened'] - $validated['days_present']);
 
         $validated['attendance_percentage'] = $validated['days_school_opened'] > 0
             ? round(($validated['days_present'] / $validated['days_school_opened']) * 100, 2)

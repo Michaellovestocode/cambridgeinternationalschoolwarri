@@ -272,7 +272,6 @@ class DevelopmentalReportController extends Controller
         }
 
         return $query->get()
-            ->filter(fn (SchoolClass $class) => $class->section_key === 'creche')
             ->pluck('id')
             ->map(fn ($id) => (int) $id)
             ->all();

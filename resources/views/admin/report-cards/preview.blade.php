@@ -127,7 +127,7 @@
                 </p>
                 <p><span class="font-semibold text-gray-700">Overall Grade:</span> {{ $reportCard->overall_grade }}</p>
                 <p><span class="font-semibold text-gray-700">Average Score:</span> {{ number_format($reportCard->average_score, 1) }}%</p>
-                <p><span class="font-semibold text-gray-700">Position:</span> {{ $reportCard->position }}/{{ $reportCard->total_students }}</p>
+                {{-- Position is intentionally omitted from the report card performance summary --}}
                 <p><span class="font-semibold text-gray-700">Last Score Update:</span> {{ $reportCard->scores_updated_at?->format('d M Y, H:i') ?? 'Not recorded' }}</p>
                 <p><span class="font-semibold text-gray-700">Workflow:</span> {{ $reportCard->workflowLabel() }}</p>
                 <p><span class="font-semibold text-gray-700">Submitted:</span> {{ $reportCard->submitted_for_review_at?->format('d M Y, H:i') ?? '-' }}</p>
@@ -221,9 +221,10 @@
                         </div>
                         <div>
                             <label for="days_absent" class="block text-sm font-medium text-gray-700 mb-2">Days Absent</label>
-                            <input id="days_absent" name="days_absent" type="number" min="0"
+                            <input id="days_absent" name="days_absent" type="number" min="0" readonly
                                    value="{{ old('days_absent', $reportCard->days_absent) }}"
-                                   class="w-full border border-gray-300 rounded-lg px-4 py-3">
+                                   class="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-3">
+                            <p class="text-xs text-gray-500 mt-1">Automatically calculated as Days School Opened minus Days Present.</p>
                         </div>
                     </div>
                     <p class="text-sm text-gray-500 mt-2">
