@@ -29,6 +29,7 @@ class TeacherScoreController extends Controller
         $teacherSubjects = $this->availableSubjectsFor($teacher);
         $classes = $this->availableClassesFor($teacher);
         $canUsePaperScores = $this->canUsePaperScoresForClasses($teacher, $classes);
+        $earlyPrimaryFormTeacherClasses = $this->earlyPrimaryFormTeacherClassesFor($teacher);
         $sessions = Session::orderByDesc('start_date')->get();
         $terms = Term::with('session')->orderByDesc('start_date')->get();
         
@@ -61,6 +62,7 @@ class TeacherScoreController extends Controller
             'teacherSubjects', 
             'classes',
             'canUsePaperScores',
+            'earlyPrimaryFormTeacherClasses',
             'sessions',
             'terms',
             'totalScoresEntered',

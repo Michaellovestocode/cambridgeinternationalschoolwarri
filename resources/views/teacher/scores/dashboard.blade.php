@@ -132,6 +132,17 @@
                 </a>
             </div>
 
+            @if(! empty($earlyPrimaryFormTeacherClasses) && $earlyPrimaryFormTeacherClasses->isNotEmpty())
+            <div class="border-2 border-pink-300 rounded-lg p-6 hover:shadow-lg transition">
+                <div class="text-5xl mb-4">🏫</div>
+                <h3 class="text-xl font-bold text-gray-800 mb-2">Fill Class Scores</h3>
+                <p class="text-gray-600 mb-4">Enter scores for your form-teacher class in creche, primary, or other sections.</p>
+                <a href="{{ route('admin.report-cards.class-score-entry') }}" class="inline-block w-full text-center bg-pink-600 hover:bg-pink-700 text-white px-6 py-3 rounded-lg font-semibold transition">
+                    Fill Class Scores
+                </a>
+            </div>
+            @endif
+
             <!-- Class Rankings -->
             <div class="border-2 border-amber-300 rounded-lg p-6 hover:shadow-lg transition">
                 <div class="text-5xl mb-4">#</div>
