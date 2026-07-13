@@ -141,7 +141,11 @@
                     <option value="First Term" {{ old('name') == 'First Term' ? 'selected' : '' }}>First Term</option>
                     <option value="Second Term" {{ old('name') == 'Second Term' ? 'selected' : '' }}>Second Term</option>
                     <option value="Third Term" {{ old('name') == 'Third Term' ? 'selected' : '' }}>Third Term</option>
+                    <option value="Autumn" {{ old('name') == 'Autumn' ? 'selected' : '' }}>Autumn</option>
+                    <option value="Spring" {{ old('name') == 'Spring' ? 'selected' : '' }}>Spring</option>
+                    <option value="Summer" {{ old('name') == 'Summer' ? 'selected' : '' }}>Summer</option>
                 </select>
+                <p class="text-xs text-gray-500 mt-2">You can use either First/Second/Third Term or Autumn/Spring/Summer naming based on your school calendar.</p>
             </div>
             <div>
                 <label for="term_start_date" class="block text-sm font-medium text-gray-700 mb-2">Start Date *</label>

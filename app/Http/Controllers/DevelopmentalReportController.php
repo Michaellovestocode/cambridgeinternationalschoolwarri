@@ -110,15 +110,21 @@ class DevelopmentalReportController extends Controller
         $daysSchoolOpened = $validated['days_school_opened'] ?? null;
         $daysPresent = $validated['days_present'] ?? null;
         $daysAbsent = null;
+        $attendancePercentage = null;
+
         if ($daysSchoolOpened !== null && $daysPresent !== null) {
             $daysAbsent = max(0, (int) $daysSchoolOpened - (int) $daysPresent);
+            $attendancePercentage = $daysSchoolOpened > 0
+                ? round(($daysPresent / $daysSchoolOpened) * 100, 2)
+                : 0;
         }
 
-        DB::transaction(function () use ($developmentalReport, $validated, $daysAbsent, $request) {
+        DB::transaction(function () use ($developmentalReport, $validated, $daysAbsent, $attendancePercentage, $request) {
             $developmentalReport->fill([
                 'days_school_opened' => $validated['days_school_opened'] ?? null,
                 'days_present' => $validated['days_present'] ?? null,
                 'days_absent' => $daysAbsent,
+                'attendance_percentage' => $attendancePercentage,
                 'class_teacher_remark' => $validated['class_teacher_remark'] ?? null,
                 'authority_remark' => $validated['authority_remark'] ?? $developmentalReport->authority_remark,
             ]);

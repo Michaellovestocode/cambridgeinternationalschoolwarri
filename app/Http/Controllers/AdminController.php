@@ -929,7 +929,7 @@ public function storeManualExamScores(Request $request, $examId)
 
     public function gradeAttempt($attemptId)
     {
-        $attempt = ExamAttempt::with(['exam', 'user', 'answers.question'])
+        $attempt = ExamAttempt::with(['exam.questions', 'user', 'answers.question'])
             ->findOrFail($attemptId);
         
         abort_unless($this->canManageAttempt($attempt), 403);
@@ -947,6 +947,7 @@ public function storeManualExamScores(Request $request, $examId)
 
         $validated = $request->validate([
             'final_score' => ['nullable', 'numeric', 'min:0', 'max:' . max((float) $attempt->exam->total_marks, 1)],
+            'manual_subjective_score' => ['nullable', 'numeric', 'min:0', 'max:' . max((float) $attempt->exam->total_marks, 1)],
             'grades' => ['sometimes', 'array'],
             'grades.*.answer_id' => 'required|exists:answers,id',
             'grades.*.marks_obtained' => 'required|numeric|min:0',
@@ -955,11 +956,7 @@ public function storeManualExamScores(Request $request, $examId)
 
         DB::transaction(function () use ($validated, $attempt, $request) {
             $objectiveScore = $this->regradeObjectiveAnswers($attempt);
-            $subjectiveScore = (float) ($attempt->subjective_score ?? 0);
-
-            if (! empty($validated['grades'])) {
-                $subjectiveScore = 0;
-            }
+            $subjectiveScore = 0.0;
 
             foreach ($validated['grades'] ?? [] as $gradeData) {
                 $answer = Answer::findOrFail($gradeData['answer_id']);
@@ -971,6 +968,10 @@ public function storeManualExamScores(Request $request, $examId)
                 ]);
 
                 $subjectiveScore += $gradeData['marks_obtained'];
+            }
+
+            if (isset($validated['manual_subjective_score'])) {
+                $subjectiveScore = (float) $validated['manual_subjective_score'];
             }
 
             $calculatedScore = $objectiveScore + $subjectiveScore;
@@ -2355,9 +2356,9 @@ private function removeRejectedAttemptFromReportCard(ExamAttempt $attempt): void
 
         // Determine term number based on name
         $termNumber = match($validated['name']) {
-            'First Term' => 1,
-            'Second Term' => 2,
-            'Third Term' => 3,
+            'First Term', 'Autumn', 'Autumn Term' => 1,
+            'Second Term', 'Spring', 'Spring Term' => 2,
+            'Third Term', 'Summer', 'Summer Term' => 3,
             default => 1,
         };
 

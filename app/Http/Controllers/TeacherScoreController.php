@@ -22,8 +22,7 @@ class TeacherScoreController extends Controller
     public function dashboard()
     {
         $teacher = Auth::user();
-        $activeSession = Session::getActive();
-        $activeTerm = Term::getActive();
+        [$activeSession, $activeTerm, $usedFallback] = $this->resolveActiveSessionAndTerm();
         $selectedSessionId = request('session_id', $activeSession?->id);
         $selectedTermId = request('term_id', $activeTerm?->id);
         
@@ -74,9 +73,8 @@ class TeacherScoreController extends Controller
     
     public function selectClassSubject()
     {
-        $activeSession = Session::getActive();
-        $activeTerm = Term::getActive();
-        
+        [$activeSession, $activeTerm, $usedFallback] = $this->resolveActiveSessionAndTerm();
+
         if (!$activeSession || !$activeTerm) {
             return redirect()->back()->with('error', 'No active session or term found. Please contact admin.');
         }
@@ -107,12 +105,15 @@ class TeacherScoreController extends Controller
         ]);
         
         $teacher = Auth::user();
-        $activeSession = Session::getActive();
-        $activeTerm = Term::getActive();
+        [$activeSession, $activeTerm, $usedFallback] = $this->resolveActiveSessionAndTerm();
 
         if (!$activeSession || !$activeTerm) {
             return redirect()->route('teacher.scores.select')
                 ->with('error', 'No active session or term found. Please contact admin.');
+        }
+
+        if (!empty($usedFallback)) {
+            session()->flash('warning', 'No active session/term configured — using latest available. Please set an active session/term in Admin → Sessions & Terms.');
         }
 
         $scoreMode = $request->input('score_mode', 'all');
@@ -166,12 +167,15 @@ class TeacherScoreController extends Controller
         ], $this->scoreValidationMessages());
         
         $teacher = Auth::user();
-        $activeSession = Session::getActive();
-        $activeTerm = Term::getActive();
+        [$activeSession, $activeTerm, $usedFallback] = $this->resolveActiveSessionAndTerm();
 
         if (!$activeSession || !$activeTerm) {
             return redirect()->route('teacher.scores.select')
                 ->with('error', 'No active session or term found. Please contact admin.');
+        }
+
+        if (!empty($usedFallback)) {
+            session()->flash('warning', 'No active session/term configured — using latest available. Please set an active session/term in Admin → Sessions & Terms.');
         }
 
         $scoreMode = $request->input('score_mode', 'all');
@@ -241,12 +245,16 @@ class TeacherScoreController extends Controller
         ], $this->scoreValidationMessages());
         
         $teacher = Auth::user();
-        $activeSession = Session::getActive();
-        $activeTerm = Term::getActive();
+        $teacher = Auth::user();
+        [$activeSession, $activeTerm, $usedFallback] = $this->resolveActiveSessionAndTerm();
 
         if (!$activeSession || !$activeTerm) {
             return redirect()->route('teacher.scores.select')
                 ->with('error', 'No active session or term found. Please contact admin.');
+        }
+
+        if (!empty($usedFallback)) {
+            session()->flash('warning', 'No active session/term configured — using latest available. Please set an active session/term in Admin → Sessions & Terms.');
         }
 
         $this->authorizeScoreEntry($teacher, (int) $request->class_id, (int) $request->subject_id);
@@ -329,8 +337,7 @@ class TeacherScoreController extends Controller
     public function myScores(Request $request)
     {
         $teacher = Auth::user();
-        $activeSession = Session::getActive();
-        $activeTerm = Term::getActive();
+        [$activeSession, $activeTerm, $usedFallback] = $this->resolveActiveSessionAndTerm();
         $selectedSessionId = $request->input('session_id', $activeSession?->id);
         $selectedTermId = $request->input('term_id', $activeTerm?->id);
         
@@ -375,8 +382,7 @@ class TeacherScoreController extends Controller
     public function classRankings(Request $request)
     {
         $teacher = Auth::user();
-        $activeSession = Session::getActive();
-        $activeTerm = Term::getActive();
+        [$activeSession, $activeTerm, $usedFallback] = $this->resolveActiveSessionAndTerm();
         $selectedSessionId = $request->input('session_id', $activeSession?->id);
         $selectedTermId = $request->input('term_id', $activeTerm?->id);
 
@@ -438,6 +444,28 @@ class TeacherScoreController extends Controller
             'selectedSession',
             'selectedTerm'
         ));
+    }
+
+    /**
+     * Resolve active session and term. Falls back to latest available when none marked active.
+     * Returns an array: [Session|null, Term|null, bool usedFallback]
+     */
+    private function resolveActiveSessionAndTerm(): array
+    {
+        $initialSession = Session::getActive();
+        $initialTerm = Term::getActive();
+
+        $activeSession = $initialSession ?? Session::orderByDesc('start_date')->first();
+
+        $activeTerm = $initialTerm;
+        if (! $activeTerm && $activeSession) {
+            $activeTerm = Term::where('session_id', $activeSession->id)->orderByDesc('start_date')->first();
+        }
+        $activeTerm = $activeTerm ?? Term::orderByDesc('start_date')->first();
+
+        $usedFallback = ! $initialSession || ! $initialTerm;
+
+        return [$activeSession, $activeTerm, $usedFallback];
     }
 
     private function availableSubjectsFor(User $teacher)

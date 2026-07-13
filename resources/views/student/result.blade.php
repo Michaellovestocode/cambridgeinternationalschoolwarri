@@ -145,9 +145,12 @@
     <div class="bg-white rounded-lg shadow p-6">
         <h3 class="text-xl font-bold text-gray-800 mb-4">Answer Review</h3>
         
-        @foreach($attempt->answers as $index => $answer)
+        @foreach($attempt->exam->questions as $index => $question)
         @php
-            $question = $answer->question;
+            $answer = $attempt->answers->firstWhere('question_id', $question->id);
+        @endphp
+        @php
+            $question = $question;
         @endphp
         <div class="border-b pb-6 mb-6 last:border-b-0 last:pb-0 last:mb-0">
             <div class="flex items-start mb-3">
@@ -175,8 +178,8 @@
                         <span class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
                             {{ $question->marks }} {{ $question->marks == 1 ? 'mark' : 'marks' }}
                         </span>
-                        @if($answer->marks_obtained !== null)
-                            <span class="text-xs {{ $answer->is_correct || $answer->marks_obtained > 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }} px-2 py-1 rounded font-semibold">
+                        @if($answer && $answer->marks_obtained !== null)
+                            <span class="text-xs {{ ($answer->is_correct ?? false) || $answer->marks_obtained > 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }} px-2 py-1 rounded font-semibold">
                                 Scored: {{ $answer->marks_obtained }}/{{ $question->marks }}
                             </span>
                         @endif
@@ -203,7 +206,7 @@
                 @endif
 
                 <!-- Student's Answer -->
-                @if($answer->answer_text)
+                @if($answer && $answer->answer_text)
                     <div class="bg-gray-50 p-4 rounded-lg mb-3">
                         <p class="text-sm font-semibold text-gray-700 mb-1">Your Answer:</p>
                         @if($question->question_type === 'multiple_choice')
@@ -223,8 +226,7 @@
                     </div>
                 @endif
 
-                <!-- Correct Answer (for objective questions) -->
-                @if($question->question_type === 'fill_blank' && $question->correct_answer)
+                @if($question->question_type === 'multiple_choice' || ($question->question_type === 'fill_blank' && $question->correct_answer))
                     <div class="bg-green-50 p-4 rounded-lg mb-3">
                         <p class="text-sm font-semibold text-green-700 mb-1">Correct Answer:</p>
                         <p class="text-green-800">{{ $question->correct_answer }}</p>
@@ -232,7 +234,7 @@
                 @endif
 
                 <!-- Teacher's Feedback -->
-                @if($answer->feedback)
+                @if($answer && $answer->feedback)
                     <div class="bg-blue-50 p-4 rounded-lg border-l-4 border-blue-500">
                         <p class="text-sm font-semibold text-blue-700 mb-1">Teacher's Feedback:</p>
                         <p class="text-blue-800">{{ $answer->feedback }}</p>

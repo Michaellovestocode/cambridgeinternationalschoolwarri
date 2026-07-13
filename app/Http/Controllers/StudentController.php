@@ -411,7 +411,7 @@ class StudentController extends Controller
 
     private function persistSubmittedAnswers(Request $request, ExamAttempt $attempt): void
     {
-        $attempt->loadMissing('exam.questions');
+        $attempt->loadMissing(['exam.questions', 'answers.question']);
         $questionIds = $attempt->exam->questions->pluck('id')->map(fn ($id) => (string) $id);
 
         foreach ($request->all() as $key => $value) {
@@ -439,6 +439,24 @@ class StudentController extends Controller
                 $this->autoGradeAnswer($answer);
             }
         }
+
+        // Create placeholder answers for any unanswered questions so all questions are visible in reports.
+        $existingQuestionIds = $attempt->answers->pluck('question_id')->all();
+
+        foreach ($attempt->exam->questions as $question) {
+            if (in_array($question->id, $existingQuestionIds, true)) {
+                continue;
+            }
+
+            $answer = $attempt->answers()->create([
+                'question_id' => $question->id,
+                'answer_text' => null,
+            ]);
+
+            if ($question->isObjective()) {
+                $this->autoGradeAnswer($answer);
+            }
+        }
     }
 
     private function finalizeAttempt(ExamAttempt $attempt): void
@@ -454,6 +472,23 @@ class StudentController extends Controller
 
             if (!$attempt->isInProgress()) {
                 return;
+            }
+
+            // Ensure every exam question has an answer record before grading.
+            $existingQuestionIds = $attempt->answers->pluck('question_id')->all();
+            foreach ($attempt->exam->questions as $question) {
+                if (in_array($question->id, $existingQuestionIds, true)) {
+                    continue;
+                }
+
+                $answer = $attempt->answers()->create([
+                    'question_id' => $question->id,
+                    'answer_text' => null,
+                ]);
+
+                if ($question->isObjective()) {
+                    $this->autoGradeAnswer($answer);
+                }
             }
 
             $objectiveScore = 0;

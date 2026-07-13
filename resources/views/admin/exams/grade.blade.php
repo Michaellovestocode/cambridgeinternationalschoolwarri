@@ -92,6 +92,12 @@
     <form action="{{ route('admin.attempt.update-grade', $attempt->id) }}" method="POST">
         @csrf
 
+        @php
+            $answersByQuestion = $attempt->answers->keyBy('question_id');
+            $subjectiveTotal = $attempt->exam->questions->filter(fn($q) => !$q->isObjective())->sum('marks');
+            $objectiveTotal = $attempt->exam->questions->filter(fn($q) => $q->isObjective())->sum('marks');
+        @endphp
+
         @if($errors->any())
         <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
             <ul class="list-disc list-inside">
@@ -103,9 +109,9 @@
         @endif
 
         <!-- Questions and Answers -->
-        @foreach($attempt->answers as $index => $answer)
+        @foreach($attempt->exam->questions as $index => $question)
         @php
-            $question = $answer->question;
+            $answer = $answersByQuestion->get($question->id);
             $isObjective = $question->isObjective();
         @endphp
 
@@ -191,7 +197,7 @@
                 @endif
 
                 <!-- Correct Answer (for objective questions) -->
-                @if($question->question_type === 'fill_blank' && $question->correct_answer)
+                @if(in_array($question->question_type, ['fill_blank', 'multiple_choice']) && $question->correct_answer)
                     <div class="mb-3 bg-green-50 p-4 rounded">
                         <p class="text-sm font-semibold text-green-700 mb-2">Correct Answer:</p>
                         <p class="text-green-800">{{ $question->correct_answer }}</p>
@@ -203,9 +209,9 @@
                     <!-- Auto-graded - Show result only -->
                     <div class="bg-gray-100 p-4 rounded">
                         <p class="text-sm font-semibold text-gray-700">Auto-graded Result:</p>
-                        <p class="text-lg font-bold {{ $answer->is_correct ? 'text-green-600' : 'text-red-600' }}">
-                            {{ $answer->marks_obtained }}/{{ $question->marks }} marks
-                            @if($answer->is_correct)
+                        <p class="text-lg font-bold {{ optional($answer)->is_correct ? 'text-green-600' : 'text-red-600' }}">
+                            {{ optional($answer)->marks_obtained ?? 0 }}/{{ $question->marks }} marks
+                            @if(optional($answer)->is_correct)
                                 ✓ Correct
                             @else
                                 ✗ Incorrect
@@ -215,7 +221,7 @@
                 @else
                     <!-- Manual grading inputs -->
                     <div class="border-t pt-4 mt-4">
-                        <input type="hidden" name="grades[{{ $loop->index }}][answer_id]" value="{{ $answer->id }}">
+                        <input type="hidden" name="grades[{{ $loop->index }}][answer_id]" value="{{ $answer->id ?? '' }}">
                         
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
@@ -251,6 +257,32 @@
 
         <!-- Submit Button -->
         <div class="bg-white rounded-lg shadow p-6">
+            <div class="mb-6 rounded-lg border border-amber-200 bg-amber-50 p-4">
+                <label for="manual_subjective_score" class="block text-sm font-bold text-amber-900 mb-2">
+                    Theory / Subjective Score
+                </label>
+                <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <div>
+                        <input type="number"
+                               id="manual_subjective_score"
+                               name="manual_subjective_score"
+                               value="{{ old('manual_subjective_score') }}"
+                               min="0"
+                               max="{{ max((float) $subjectiveTotal, 1) }}"
+                               step="0.5"
+                               class="w-full px-4 py-2 border border-amber-300 rounded-lg focus:ring-2 focus:ring-amber-500">
+                    </div>
+                    <div class="space-y-2">
+                        <p class="text-sm text-amber-800">Enter the manually graded theory score here. If left blank, the system will use the sum of manual grading entries.</p>
+                        <p class="text-sm text-amber-900 font-semibold">Subjective total available: {{ $subjectiveTotal }}</p>
+                    </div>
+                </div>
+                <div class="mt-4 text-sm text-amber-800">
+                    <span class="font-semibold">Auto preview total score:</span>
+                    <span id="grading-preview-total">{{ optional($attempt)->objective_score ?? 0 }} + {{ optional($attempt)->subjective_score ?? 0 }} = {{ (optional($attempt)->objective_score ?? 0) + (optional($attempt)->subjective_score ?? 0) }}</span>
+                </div>
+            </div>
+
             <div class="mb-6 rounded-lg border border-amber-200 bg-amber-50 p-4">
                 <label for="final_score" class="block text-sm font-bold text-amber-900 mb-2">
                     Final Score Override
@@ -296,4 +328,28 @@
         </div>
     </form>
 </div>
+
+@push('scripts')
+<script>
+    function updateGradingPreview() {
+        const objectiveScore = Number({{ $attempt->objective_score ?? 0 }});
+        const manualSubjective = Number(document.getElementById('manual_subjective_score')?.value || 0);
+        const subjectTotal = Number(document.getElementById('manual_subjective_score')?.max || 0);
+        const total = objectiveScore + manualSubjective;
+        const preview = document.getElementById('grading-preview-total');
+
+        if (preview) {
+            preview.textContent = objectiveScore + ' + ' + manualSubjective + ' = ' + total;
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const manualScoreInput = document.getElementById('manual_subjective_score');
+        if (!manualScoreInput) return;
+        manualScoreInput.addEventListener('input', updateGradingPreview);
+        updateGradingPreview();
+    });
+</script>
+@endpush
+</body>
 @endsection

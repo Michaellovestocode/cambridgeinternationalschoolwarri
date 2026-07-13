@@ -28,6 +28,7 @@
                 <div>
                     <label class="mb-1 block text-xs font-black uppercase text-gray-500">Times Present</label>
                     <input type="number" min="0" max="250" name="days_present" value="{{ old('days_present', $report->days_present) }}" class="w-full rounded-2xl border border-gray-200 px-4 py-3">
+                    <p class="text-xs text-gray-500 mt-2">Days absent and attendance percentage are calculated automatically.</p>
                 </div>
                 <div class="rounded-2xl bg-slate-50 p-4">
                     <p class="text-xs font-black uppercase text-gray-500">Authority</p>

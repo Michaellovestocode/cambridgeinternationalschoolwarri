@@ -154,6 +154,10 @@
                 <td><strong>No. of Times School Opened:</strong> {{ $developmentalReport->days_school_opened ?? 'N/A' }}</td>
                 <td><strong>No. of Times Absent:</strong> {{ $developmentalReport->days_absent ?? 'N/A' }}</td>
             </tr>
+            <tr>
+                <td><strong>Attendance %:</strong> {{ $developmentalReport->attendance_percentage !== null ? number_format($developmentalReport->attendance_percentage, 2) . '%' : 'N/A' }}</td>
+                <td colspan="2"></td>
+            </tr>
         </table>
 
         <div class="band">Reception and Pre-Kindergarten's Developmental Progress Report</div>

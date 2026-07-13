@@ -24,6 +24,7 @@ class DevelopmentalReport extends Model
         'days_school_opened',
         'days_present',
         'days_absent',
+        'attendance_percentage',
         'class_teacher_remark',
         'authority_remark',
         'form_teacher_name',
