@@ -245,6 +245,8 @@ Route::middleware('auth')->group(function () {
                 Route::delete('/academic-sessions/{session}', [AdminController::class, 'deleteAcademicSession'])->name('academic-sessions.delete');
                 
                 Route::post('/terms', [AdminController::class, 'storeTerm'])->name('terms.store');
+                Route::get('/terms/{term}/edit', [AdminController::class, 'editTerm'])->name('terms.edit');
+                Route::put('/terms/{term}', [AdminController::class, 'updateTerm'])->name('terms.update');
                 Route::put('/terms/{term}/activate', [AdminController::class, 'activateTerm'])->name('terms.activate');
                 Route::delete('/terms/{term}', [AdminController::class, 'deleteTerm'])->name('terms.delete');
                 

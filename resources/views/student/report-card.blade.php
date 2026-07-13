@@ -24,7 +24,7 @@
         </div>
         <div class="bg-purple-50 rounded-2xl p-4">
             <p class="text-xs text-purple-700 font-semibold uppercase">Position</p>
-            <p class="text-3xl font-black text-purple-900 mt-1">{{ $reportCard->position ?? '-' }}/{{ $reportCard->total_students ?? '-' }}</p>
+            <p class="text-3xl font-black text-purple-900 mt-1">@if($reportCard->position && $reportCard->total_students){{ $reportCard->position }}/{{ $reportCard->total_students }}@else Pending @endif</p>
         </div>
     </div>
 

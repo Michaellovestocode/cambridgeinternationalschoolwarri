@@ -163,7 +163,7 @@
                         </div>
                         <div class="rounded-lg bg-amber-50 p-3">
                             <p class="text-amber-700">Position</p>
-                            <p class="font-bold text-amber-950">{{ $reportCard->position }}/{{ $reportCard->total_students }}</p>
+                            <p class="font-bold text-amber-950">@if($reportCard->position && $reportCard->total_students){{ $reportCard->position }}/{{ $reportCard->total_students }}@else Pending @endif</p>
                         </div>
                     </div>
 

@@ -2384,6 +2384,46 @@ private function removeRejectedAttemptFromReportCard(ExamAttempt $attempt): void
             ->with('success', 'Term activated successfully!');
     }
 
+    public function editTerm($termId)
+    {
+        $term = Term::findOrFail($termId);
+        $sessions = Session::orderByDesc('start_date')->get();
+
+        return view('admin.academic-sessions.edit-term', compact('term', 'sessions'));
+    }
+
+    public function updateTerm(Request $request, $termId)
+    {
+        $term = Term::findOrFail($termId);
+
+        $validated = $request->validate([
+            'session_id' => 'required|exists:academic_sessions,id',
+            'name' => 'required|string|max:255',
+            'start_date' => 'required|date',
+            'end_date' => 'required|date|after:start_date',
+            'next_term_begins' => 'required|date',
+        ]);
+
+        $termNumber = match($validated['name']) {
+            'First Term', 'Autumn', 'Autumn Term' => 1,
+            'Second Term', 'Spring', 'Spring Term' => 2,
+            'Third Term', 'Summer', 'Summer Term' => 3,
+            default => 1,
+        };
+
+        $term->update([
+            'session_id' => $validated['session_id'],
+            'name' => $validated['name'],
+            'term_number' => $termNumber,
+            'start_date' => $validated['start_date'],
+            'end_date' => $validated['end_date'],
+            'next_term_begins' => $validated['next_term_begins'],
+        ]);
+
+        return redirect()->route('admin.academic-sessions.index')
+            ->with('success', 'Term updated successfully!');
+    }
+
     public function deleteTerm($termId)
     {
         $term = Term::findOrFail($termId);

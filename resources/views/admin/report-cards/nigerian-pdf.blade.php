@@ -832,7 +832,7 @@
                             <div class="summary-title">PERFORMANCE SUMMARY</div>
                             <div class="summary-item">Total Score: <strong>{{ number_format($reportCard->total_score, 1) }}</strong></div>
                             <div class="summary-item">Average: <strong>{{ number_format($reportCard->average_score, 1) }}%</strong></div>
-                            <div class="summary-item">Position: <strong>{{ $reportCard->position }}/{{ $reportCard->total_students }}</strong></div>
+                            <div class="summary-item">Position: <strong>@if($reportCard->position && $reportCard->total_students){{ $reportCard->position }}/{{ $reportCard->total_students }}@else Pending @endif</strong></div>
                             <div class="summary-item">Grade: <strong>{{ $reportCard->overall_grade }}</strong></div>
                         </div>
                     </div>

@@ -213,6 +213,9 @@
                                         </button>
                                     </form>
                                 @endif
+                                <a href="{{ route('admin.terms.edit', $term->id) }}" class="inline bg-indigo-100 text-indigo-700 hover:bg-indigo-200 px-3 py-1 rounded-lg text-xs font-medium">
+                                    Edit
+                                </a>
                                 <form method="POST" action="{{ route('admin.terms.delete', $term->id) }}" class="inline" onsubmit="return confirm('Delete this term? All associated report cards will be deleted.')">
                                     @csrf
                                     @method('DELETE')
