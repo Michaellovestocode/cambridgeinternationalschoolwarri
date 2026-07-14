@@ -304,7 +304,9 @@ class NigerianReportCardController extends Controller
         $scores = collect();
 
         if ($selectedClass && $selectedStudent && $selectedSession && $selectedTerm) {
-            $subjects = $this->subjectsForManualReportClass($selectedClass);
+            $subjects = $this->subjectsForManualReportClass($selectedClass)
+                ->sortBy('name')
+                ->values();
 
             $scores = Score::where('student_id', $selectedStudent->id)
                 ->where('session_id', $selectedSession->id)

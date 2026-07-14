@@ -413,23 +413,60 @@ class TeacherScoreController extends Controller
             ->get()
             ->keyBy('student_id');
 
+        $subjectScores = Score::where('class_id', $selectedClass?->id)
+            ->when($selectedSessionId, fn ($query) => $query->where('session_id', $selectedSessionId))
+            ->when($selectedTermId, fn ($query) => $query->where('term_id', $selectedTermId))
+            ->with('subject')
+            ->join('subjects', 'scores.subject_id', '=', 'subjects.id')
+            ->select('scores.*')
+            ->orderBy('subjects.name')
+            ->get();
+
+        $subjects = $subjectScores->pluck('subject')->unique('id')->sortBy('name')->values();
+        $scoresByStudent = $subjectScores->groupBy('student_id');
+
         $rankings = $learners
-            ->map(function (User $learner) use ($reportCards) {
+            ->map(function (User $learner) use ($reportCards, $subjects, $scoresByStudent) {
                 $reportCard = $reportCards->get($learner->id);
+                $studentScores = $scoresByStudent->get($learner->id) ?? collect();
+                $scoresBySubject = $studentScores->keyBy('subject_id');
+                $totalScore = $reportCard?->total_score ?? $studentScores->sum('total');
+                $averageScore = $reportCard?->average_score ?? ($studentScores->isNotEmpty() ? $studentScores->avg('total') : null);
 
                 return (object) [
                     'learner' => $learner,
-                    'total_score' => $reportCard?->total_score,
-                    'average_score' => $reportCard?->average_score,
+                    'scoresBySubject' => $subjects->mapWithKeys(function ($subject) use ($scoresBySubject) {
+                        return [$subject->id => optional($scoresBySubject->get($subject->id))->total];
+                    }),
+                    'total_score' => $totalScore,
+                    'average_score' => $averageScore,
                     'position' => $reportCard?->position,
                     'total_students' => $reportCard?->total_students,
                     'workflow_status' => $reportCard?->workflowLabel(),
                 ];
             })
-            ->sortBy([
-                fn ($row) => $row->position ?? PHP_INT_MAX,
-                fn ($row) => strtolower($row->learner->name),
-            ])
+            ->sort(function ($a, $b) {
+                if ($a->position !== null && $b->position !== null) {
+                    return $a->position <=> $b->position;
+                }
+
+                if ($a->position !== null) {
+                    return -1;
+                }
+
+                if ($b->position !== null) {
+                    return 1;
+                }
+
+                $totalA = $a->total_score ?? 0;
+                $totalB = $b->total_score ?? 0;
+
+                if ($totalA !== $totalB) {
+                    return $totalB <=> $totalA;
+                }
+
+                return strcasecmp($a->learner->name, $b->learner->name);
+            })
             ->values();
 
         $sessions = Session::orderByDesc('start_date')->get();
@@ -440,12 +477,139 @@ class TeacherScoreController extends Controller
         return view('teacher.scores.class-rankings', compact(
             'formClasses',
             'selectedClass',
+            'subjects',
             'rankings',
             'sessions',
             'terms',
             'selectedSession',
             'selectedTerm'
         ));
+    }
+
+    public function classRankingsExport(Request $request)
+    {
+        $teacher = Auth::user();
+        [$activeSession, $activeTerm] = $this->resolveActiveSessionAndTerm();
+        $selectedSessionId = $request->input('session_id', $activeSession?->id);
+        $selectedTermId = $request->input('term_id', $activeTerm?->id);
+
+        $formClasses = FormTeacher::with('schoolClass')
+            ->where('teacher_id', $teacher->id)
+            ->where('is_active', true)
+            ->get()
+            ->pluck('schoolClass')
+            ->filter()
+            ->sortBy('name')
+            ->values();
+
+        abort_unless($formClasses->isNotEmpty(), 403, 'Only active form teachers can view class rankings.');
+
+        $selectedClassId = (int) $request->input('class_id', $formClasses->first()?->id);
+        $selectedClass = $formClasses->firstWhere('id', $selectedClassId) ?: $formClasses->first();
+
+        $learners = User::where('role', 'student')
+            ->where('class_id', $selectedClass?->id)
+            ->orderBy('name')
+            ->get();
+
+        $reportCards = ReportCard::where('class_id', $selectedClass?->id)
+            ->when($selectedSessionId, fn ($query) => $query->where('session_id', $selectedSessionId))
+            ->when($selectedTermId, fn ($query) => $query->where('term_id', $selectedTermId))
+            ->get()
+            ->keyBy('student_id');
+
+        $subjectScores = Score::where('class_id', $selectedClass?->id)
+            ->when($selectedSessionId, fn ($query) => $query->where('session_id', $selectedSessionId))
+            ->when($selectedTermId, fn ($query) => $query->where('term_id', $selectedTermId))
+            ->with('subject')
+            ->join('subjects', 'scores.subject_id', '=', 'subjects.id')
+            ->select('scores.*')
+            ->orderBy('subjects.name')
+            ->get();
+
+        $subjects = $subjectScores->pluck('subject')->unique('id')->sortBy('name')->values();
+        $scoresByStudent = $subjectScores->groupBy('student_id');
+
+        $rankings = $learners
+            ->map(function (User $learner) use ($reportCards, $subjects, $scoresByStudent) {
+                $reportCard = $reportCards->get($learner->id);
+                $studentScores = $scoresByStudent->get($learner->id) ?? collect();
+                $scoresBySubject = $studentScores->keyBy('subject_id');
+                $totalScore = $reportCard?->total_score ?? $studentScores->sum('total');
+                $averageScore = $reportCard?->average_score ?? ($studentScores->isNotEmpty() ? $studentScores->avg('total') : null);
+
+                return (object) [
+                    'learner' => $learner,
+                    'scoresBySubject' => $subjects->mapWithKeys(function ($subject) use ($scoresBySubject) {
+                        return [$subject->id => optional($scoresBySubject->get($subject->id))->total];
+                    }),
+                    'total_score' => $totalScore,
+                    'average_score' => $averageScore,
+                    'position' => $reportCard?->position,
+                    'total_students' => $reportCard?->total_students,
+                ];
+            })
+            ->sort(function ($a, $b) {
+                if ($a->position !== null && $b->position !== null) {
+                    return $a->position <=> $b->position;
+                }
+
+                if ($a->position !== null) {
+                    return -1;
+                }
+
+                if ($b->position !== null) {
+                    return 1;
+                }
+
+                $totalA = $a->total_score ?? 0;
+                $totalB = $b->total_score ?? 0;
+
+                if ($totalA !== $totalB) {
+                    return $totalB <=> $totalA;
+                }
+
+                return strcasecmp($a->learner->name, $b->learner->name);
+            })
+            ->values();
+
+        $columns = array_merge(
+            ['Position', 'Learner'],
+            $subjects->pluck('name')->all(),
+            ['Total', 'Average']
+        );
+
+        $headers = [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => 'attachment; filename="class_rankings_' . now()->format('Y-m-d_H-i-s') . '.csv"',
+        ];
+
+        $callback = function () use ($rankings, $subjects, $columns) {
+            $file = fopen('php://output', 'w');
+            fputcsv($file, $columns);
+
+            foreach ($rankings as $row) {
+                $record = [
+                    $row->position ? $row->position . '/' . $row->total_students : 'Pending',
+                    $row->learner->name,
+                ];
+
+                foreach ($subjects as $subject) {
+                    $record[] = $row->scoresBySubject[$subject->id] !== null
+                        ? number_format($row->scoresBySubject[$subject->id], 1)
+                        : '';
+                }
+
+                $record[] = $row->total_score !== null ? number_format($row->total_score, 1) : '';
+                $record[] = $row->average_score !== null ? number_format($row->average_score, 1) : '';
+
+                fputcsv($file, $record);
+            }
+
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
     }
 
     /**

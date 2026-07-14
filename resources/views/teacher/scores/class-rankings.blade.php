@@ -56,37 +56,61 @@
         </form>
     </div>
 
-    <div class="overflow-hidden rounded-2xl bg-white shadow">
-        <div class="border-b border-gray-100 px-5 py-4">
-            <h2 class="text-lg font-black text-gray-900">{{ $selectedClass?->display_name }} Learners</h2>
-            <p class="mt-1 text-sm font-semibold text-gray-500">{{ $rankings->count() }} learners</p>
+    <div class="overflow-x-auto rounded-2xl bg-white shadow">
+        <div class="border-b border-gray-100 px-5 py-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+                <h2 class="text-lg font-black text-gray-900">{{ $selectedClass?->display_name }} Learners</h2>
+                <p class="mt-1 text-sm font-semibold text-gray-500">{{ $rankings->count() }} learners</p>
+            </div>
+            <a href="{{ route('teacher.scores.class-rankings.export', ['class_id' => $selectedClass?->id, 'session_id' => $selectedSession?->id, 'term_id' => $selectedTerm?->id]) }}"
+               class="inline-flex items-center justify-center rounded-xl bg-emerald-600 px-5 py-3 text-sm font-black text-white hover:bg-emerald-700">
+                Export CSV
+            </a>
         </div>
 
-        <div class="divide-y divide-gray-100">
-            @forelse($rankings as $row)
-                <div class="grid gap-3 p-4 sm:grid-cols-[90px_1fr_120px_120px] sm:items-center">
-                    <div>
-                        <span class="inline-flex rounded-full bg-blue-50 px-3 py-1 text-sm font-black text-blue-700">
+        <table class="min-w-full divide-y divide-gray-200 text-left text-sm">
+            <thead class="bg-gray-50 text-gray-700">
+                <tr>
+                    <th class="px-4 py-3">Position</th>
+                    <th class="px-4 py-3">Learner</th>
+                    @foreach($subjects as $subject)
+                        <th class="px-4 py-3">{{ $subject->name }}</th>
+                    @endforeach
+                    <th class="px-4 py-3">Total</th>
+                    <th class="px-4 py-3">Average</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200 bg-white">
+                @forelse($rankings as $row)
+                    <tr>
+                        <td class="whitespace-nowrap px-4 py-3 align-top font-semibold text-gray-900">
                             {{ $row->position ? $row->position . '/' . $row->total_students : 'Pending' }}
-                        </span>
-                    </div>
-                    <div>
-                        <p class="font-black text-gray-900">{{ $row->learner->name }}</p>
-                        <p class="text-xs font-semibold text-gray-500">{{ $row->learner->registration_number ?: 'No registration number' }}</p>
-                    </div>
-                    <div>
-                        <p class="text-xs font-bold uppercase text-gray-500">Total</p>
-                        <p class="font-black text-gray-900">{{ $row->total_score !== null ? number_format($row->total_score, 1) : '-' }}</p>
-                    </div>
-                    <div>
-                        <p class="text-xs font-bold uppercase text-gray-500">Average</p>
-                        <p class="font-black text-gray-900">{{ $row->average_score !== null ? number_format($row->average_score, 1) . '%' : '-' }}</p>
-                    </div>
-                </div>
-            @empty
-                <div class="p-8 text-center text-gray-500">No learners found for this class.</div>
-            @endforelse
-        </div>
+                        </td>
+                        <td class="px-4 py-3 align-top">
+                            <p class="font-semibold text-gray-900">{{ $row->learner->name }}</p>
+                            <p class="text-xs text-gray-500">{{ $row->learner->registration_number ?: 'No registration number' }}</p>
+                        </td>
+                        @foreach($subjects as $subject)
+                            <td class="whitespace-nowrap px-4 py-3 text-right text-gray-700">
+                                {{ $row->scoresBySubject[$subject->id] !== null ? number_format($row->scoresBySubject[$subject->id], 1) : '-' }}
+                            </td>
+                        @endforeach
+                        <td class="whitespace-nowrap px-4 py-3 text-right font-black text-gray-900">
+                            {{ $row->total_score !== null ? number_format($row->total_score, 1) : '-' }}
+                        </td>
+                        <td class="whitespace-nowrap px-4 py-3 text-right font-black text-gray-900">
+                            {{ $row->average_score !== null ? number_format($row->average_score, 1) . '%' : '-' }}
+                        </td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="{{ 4 + $subjects->count() }}" class="px-4 py-8 text-center text-gray-500">
+                            No learners found for this class.
+                        </td>
+                    </tr>
+                @endforelse
+            </tbody>
+        </table>
     </div>
 </div>
 @endsection

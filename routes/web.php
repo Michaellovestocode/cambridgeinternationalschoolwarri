@@ -151,6 +151,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/scores/submit', [TeacherScoreController::class, 'submitScores'])->name('scores.submit');
         Route::get('/scores/my-scores', [TeacherScoreController::class, 'myScores'])->name('scores.my-scores');
         Route::get('/scores/class-rankings', [TeacherScoreController::class, 'classRankings'])->name('scores.class-rankings');
+        Route::get('/scores/class-rankings/export', [TeacherScoreController::class, 'classRankingsExport'])->name('scores.class-rankings.export');
     });
 
     Route::prefix('teacher/blog')->name('teacher.blog.')->middleware('role:teacher')->group(function () {
