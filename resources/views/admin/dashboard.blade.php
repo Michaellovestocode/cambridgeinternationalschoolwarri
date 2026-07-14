@@ -415,7 +415,6 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
                     </svg>
                 </a>
-                @endif
 
                 @if($hasFormTeacherClassScoreEntry)
                 <a href="{{ route('admin.report-cards.class-score-entry') }}"
