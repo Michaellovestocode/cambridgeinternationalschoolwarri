@@ -133,7 +133,7 @@
         /* Header */
         .header {
             border: 2px solid {{ $selectedColor['primary'] }};
-            padding: 6px 7px;
+            padding: 7px 8px;
             margin-bottom: 7px;
             background: #fff;
         }
@@ -162,7 +162,8 @@
 
         .header-content-cell {
             text-align: center;
-            padding: 0 10px;
+            padding: 0 12px;
+            vertical-align: middle;
         }
         
         .school-logo {
@@ -191,44 +192,52 @@
         }
         
         .school-name {
-            font-size: 19px;
-            font-weight: bold;
+            font-size: 17px;
+            font-weight: 900;
             color: #0B2A4A;
-            margin-bottom: 3px;
-            letter-spacing: .25px;
+            margin-bottom: 4px;
+            letter-spacing: .6px;
+            text-transform: uppercase;
+            line-height: 1.2;
         }
         
         .school-address {
-            font-size: 9.5px;
+            font-size: 8.8px;
             margin-bottom: 2px;
+            color: #374151;
+            font-weight: 600;
         }
 
         .school-contact {
-            font-size: 9px;
+            font-size: 8.4px;
             margin-bottom: 2px;
+            color: #4B5563;
+            font-weight: 500;
         }
 
         .contact-label,
         .contact-value {
-            color: #B91C1C;
-            font-weight: bold;
+            color: {{ $selectedColor['primary'] }};
+            font-weight: 700;
         }
         
         .report-title {
-            font-size: 13px;
-            font-weight: bold;
+            font-size: 12px;
+            font-weight: 800;
             margin-top: 6px;
-            padding: 5px 4px;
+            padding: 5px 8px;
             background: {{ $selectedColor['light'] }};
             border: 1px solid {{ $selectedColor['secondary'] }};
-            letter-spacing: .4px;
+            letter-spacing: .45px;
+            color: #111827;
         }
 
         .report-meta {
             margin-top: 4px;
-            font-size: 8.5px;
-            font-weight: bold;
+            font-size: 8.7px;
+            font-weight: 800;
             color: {{ $selectedColor['primary'] }};
+            letter-spacing: .4px;
         }
         
         /* Student Info */
