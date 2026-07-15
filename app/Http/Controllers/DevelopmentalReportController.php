@@ -293,6 +293,8 @@ class DevelopmentalReportController extends Controller
         $query = SchoolClass::query();
 
         if ($user->isTeacher() && ! $user->isAdmin()) {
+            $classIds = [];
+
             $assigned = FormTeacher::where('teacher_id', $user->id)
                 ->where('is_active', true)
                 ->with('schoolClass')
@@ -303,7 +305,13 @@ class DevelopmentalReportController extends Controller
                 ->pluck('class_id')
                 ->all();
 
-            $query->whereIn('id', $assigned);
+            $classIds = array_merge($classIds, $assigned);
+
+            if ($user->canReviewReportCards()) {
+                $classIds = array_merge($classIds, $user->reportReviewClasses()->pluck('school_classes.id')->toArray());
+            }
+
+            $query->whereIn('id', array_unique($classIds));
         }
 
         return $query->get()
@@ -324,10 +332,10 @@ class DevelopmentalReportController extends Controller
 
     private function authorizeDevelopmentalReportAccess(User $user): void
     {
-        if ($user->isAdmin()) {
+        if ($user->isAdmin() || $user->canReviewReportCards() || $user->canFillDevelopmentalReports()) {
             return;
         }
 
-        abort_unless($user->canFillDevelopmentalReports(), 403, 'You do not have permission to access developmental reports.');
+        abort_unless(false, 403, 'You do not have permission to access developmental reports.');
     }
 }
