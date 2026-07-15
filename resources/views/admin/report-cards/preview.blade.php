@@ -50,11 +50,14 @@
             </form>
             @endif
             @if(auth()->user()->canReviewReportCards() && $reportCard->isSubmittedForReview())
-            <form method="POST" action="{{ route('admin.report-cards.approve-review', $reportCard->id) }}">
+            <form method="POST" action="{{ route('admin.report-cards.approve-review', $reportCard->id) }}" class="flex gap-2">
                 @csrf
                 @method('PUT')
                 <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-medium">
                     Approve Academic Review
+                </button>
+                <button type="submit" name="bypass_missing_scores" value="true" class="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg font-medium">
+                    Approve Anyway (Bypass Missing Scores)
                 </button>
             </form>
             @endif

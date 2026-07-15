@@ -577,6 +577,7 @@ class NigerianReportCardController extends Controller
         $scores = Score::where('student_id', $reportCard->student_id)
             ->where('session_id', $reportCard->session_id)
             ->where('term_id', $reportCard->term_id)
+            ->where('total', '>', 0)  // Exclude zero scores (learner not taking subject)
             ->with('subject')
             ->join('subjects', 'scores.subject_id', '=', 'subjects.id')
             ->select('scores.*')
@@ -623,10 +624,11 @@ class NigerianReportCardController extends Controller
             $reportCard->update(['theme_color' => $color]);
         }
         
-        // Get scores
+        // Get scores (excluding zero scores - learners not taking those subjects)
         $scores = Score::where('student_id', $reportCard->student_id)
             ->where('session_id', $reportCard->session_id)
             ->where('term_id', $reportCard->term_id)
+            ->where('total', '>', 0)  // Exclude zero scores
             ->with('subject')
             ->join('subjects', 'scores.subject_id', '=', 'subjects.id')
             ->select('scores.*')
@@ -832,7 +834,7 @@ class NigerianReportCardController extends Controller
         return redirect()->back()->with('success', 'Report card submitted for academic review. Reviewers have been notified.');
     }
 
-    public function approveAcademicReview($reportCardId)
+    public function approveAcademicReview(Request $request, $reportCardId)
     {
         $this->authorizeAcademicReview();
 
@@ -840,7 +842,10 @@ class NigerianReportCardController extends Controller
         $this->authorizeReviewerClassAccess($reportCard);
         abort_unless($reportCard->isSubmittedForReview(), 403);
 
-        $readinessErrors = $this->publicationReadinessErrors($reportCard, false);
+        // Check if reviewer is bypassing missing scores check
+        $bypass = $request->input('bypass_missing_scores') === 'true';
+        
+        $readinessErrors = $this->publicationReadinessErrors($reportCard, false, $bypass);
         if ($readinessErrors->isNotEmpty()) {
             return back()->withErrors(['review' => $readinessErrors->implode(' ')]);
         }
@@ -991,7 +996,7 @@ class NigerianReportCardController extends Controller
         return redirect()->back()->with('success', $message);
     }
 
-    private function publicationReadinessErrors(ReportCard $reportCard, bool $requireAcademicApproval = true): \Illuminate\Support\Collection
+    private function publicationReadinessErrors(ReportCard $reportCard, bool $requireAcademicApproval = true, bool $bypassMissingScores = false): \Illuminate\Support\Collection
     {
         $reportCard->loadMissing(['class.subjects', 'student', 'session', 'term']);
 
@@ -1017,24 +1022,27 @@ class NigerianReportCardController extends Controller
             $errors->push('Form teacher and head teacher/principal remarks are required before publishing.');
         }
 
-        $expectedSubjectIds = $reportCard->class?->subjects()
-            ->active()
-            ->pluck('subjects.id')
-            ->map(fn ($id) => (int) $id)
-            ->values() ?? collect();
+        // Only check for missing scores if not bypassed
+        if (!$bypassMissingScores) {
+            $expectedSubjectIds = $reportCard->class?->subjects()
+                ->active()
+                ->pluck('subjects.id')
+                ->map(fn ($id) => (int) $id)
+                ->values() ?? collect();
 
-        if ($expectedSubjectIds->isNotEmpty()) {
-            $scoredSubjectIds = Score::where('student_id', $reportCard->student_id)
-                ->where('session_id', $reportCard->session_id)
-                ->where('term_id', $reportCard->term_id)
-                ->where('status', '!=', 'draft')
-                ->pluck('subject_id')
-                ->map(fn ($id) => (int) $id);
+            if ($expectedSubjectIds->isNotEmpty()) {
+                $scoredSubjectIds = Score::where('student_id', $reportCard->student_id)
+                    ->where('session_id', $reportCard->session_id)
+                    ->where('term_id', $reportCard->term_id)
+                    ->where('status', '!=', 'draft')
+                    ->pluck('subject_id')
+                    ->map(fn ($id) => (int) $id);
 
-            $missingCount = $expectedSubjectIds->diff($scoredSubjectIds)->count();
+                $missingCount = $expectedSubjectIds->diff($scoredSubjectIds)->count();
 
-            if ($missingCount > 0) {
-                $errors->push("{$missingCount} assigned subject score(s) are missing.");
+                if ($missingCount > 0) {
+                    $errors->push("{$missingCount} assigned subject score(s) are missing.");
+                }
             }
         }
 
