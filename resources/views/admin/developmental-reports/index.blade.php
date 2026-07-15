@@ -109,7 +109,7 @@
                                         @if($report)
                                             <a href="{{ route('admin.developmental-reports.show', $report) }}" class="rounded-xl bg-sky-100 px-4 py-2 text-sm font-black text-sky-700 hover:bg-sky-200">Preview</a>
                                         @endif
-                                        <a href="{{ route('admin.developmental-reports.edit', ['student' => $student]) }}" class="rounded-xl bg-teal-600 px-4 py-2 text-sm font-black text-white hover:bg-teal-700">Development</a>
+                                        <a href="{{ route('admin.developmental-reports.edit', ['student' => $student, 'session_id' => $selectedSessionId, 'term_id' => $selectedTermId]) }}" class="rounded-xl bg-teal-600 px-4 py-2 text-sm font-black text-white hover:bg-teal-700">Development</a>
                                     </div>
                                 </td>
                             </tr>

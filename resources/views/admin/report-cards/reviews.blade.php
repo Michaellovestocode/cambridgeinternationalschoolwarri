@@ -9,9 +9,16 @@
             <h1 class="text-3xl font-bold text-gray-900">Academic Report Reviews</h1>
             <p class="text-gray-600 mt-1">Review submitted report cards, edit scores where needed, approve, or return them to the form teacher.</p>
         </div>
-        <a href="{{ route('admin.report-cards') }}" class="bg-gray-900 hover:bg-black text-white px-5 py-3 rounded-lg font-medium text-center">
-            All Report Cards
-        </a>
+        <div class="flex flex-wrap gap-3">
+            <a href="{{ route('admin.report-cards') }}" class="bg-gray-900 hover:bg-black text-white px-5 py-3 rounded-lg font-medium text-center">
+                All Report Cards
+            </a>
+            @if(auth()->user()->canFillDevelopmentalReports())
+                <a href="{{ route('admin.developmental-reports.index', array_filter([ 'class_id' => request('class_id'), 'session_id' => request('session_id', $selectedSession?->id), 'term_id' => request('term_id', $selectedTerm?->id), ])) }}" class="bg-teal-500 hover:bg-teal-600 text-white px-5 py-3 rounded-lg font-medium text-center">
+                    Development
+                </a>
+            @endif
+        </div>
     </div>
 
     <div class="bg-white rounded-xl shadow p-6">

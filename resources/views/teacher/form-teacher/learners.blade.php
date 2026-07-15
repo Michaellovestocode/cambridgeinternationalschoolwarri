@@ -80,7 +80,7 @@
                                 </td>
                                 <td class="px-6 py-4 text-right">
                                     @if(in_array($formTeacher->schoolClass?->section_key, ['creche', 'other'], true))
-                                        <a href="{{ route('admin.developmental-reports.edit', ['student' => $student]) }}" class="rounded-xl bg-teal-600 px-4 py-2 text-sm font-black text-white hover:bg-teal-700">Development</a>
+                                        <a href="{{ route('admin.developmental-reports.edit', ['student' => $student, 'session_id' => request('session_id'), 'term_id' => request('term_id')]) }}" class="rounded-xl bg-teal-600 px-4 py-2 text-sm font-black text-white hover:bg-teal-700">Development</a>
                                     @endif
                                 </td>
                             </tr>
