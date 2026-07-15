@@ -140,10 +140,10 @@
         </div>
     </div>
 
-    @if($attempt->isGraded())
+    @if($canViewReleasedResults)
     <!-- Answer Review -->
     <div class="bg-white rounded-lg shadow p-6">
-        <h3 class="text-xl font-bold text-gray-800 mb-4">Answer Review</h3>
+        <h3 class="text-xl font-bold text-gray-800 mb-4">Answer Review / Script</h3>
         
         @foreach($attempt->exam->questions as $index => $question)
         @php

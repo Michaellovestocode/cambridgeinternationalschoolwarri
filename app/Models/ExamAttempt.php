@@ -39,6 +39,11 @@ class ExamAttempt extends Model
         return $this->belongsTo(User::class);
     }
 
+    public function student()
+    {
+        return $this->user();
+    }
+
     public function exam()
     {
         return $this->belongsTo(Exam::class);

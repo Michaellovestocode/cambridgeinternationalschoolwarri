@@ -19,7 +19,7 @@
             </div>
             <form method="POST" 
                   action="{{ route('admin.submit-for-student', $attempt->id) }}" 
-                  onsubmit="return confirm('⚠️ Submit this exam for {{ $attempt->student->name }}?\n\nThis will:\n✓ Mark exam as completed\n✓ Auto-grade MCQ/Fill-blank questions\n✓ Stop the timer\n\nThis action cannot be undone!')">
+                  onsubmit="return confirm('⚠️ Submit this exam for {{ $attempt->user?->name ?? 'the student' }}?\n\nThis will:\n✓ Mark exam as completed\n✓ Auto-grade MCQ/Fill-blank questions\n✓ Stop the timer\n\nThis action cannot be undone!')">
                 @csrf
                 <button type="submit" 
                         class="bg-yellow-600 hover:bg-yellow-700 text-white px-6 py-3 rounded-lg font-bold shadow-lg transition">
@@ -159,9 +159,10 @@
                 @if($question->question_type === 'multiple_choice' && $question->options)
                     <div class="mb-3 bg-gray-50 p-3 rounded">
                         <p class="text-sm font-semibold text-gray-700 mb-2">Options:</p>
+                        @php($studentAnswer = optional($answer)->answer_text)
                         <div class="space-y-1">
                             @foreach($question->options as $key => $option)
-                            <p class="text-sm p-2 rounded {{ $key === $question->correct_answer ? 'bg-green-100 text-green-800 font-semibold' : ($key === $answer->answer_text ? 'bg-red-100 text-red-800' : 'text-gray-600') }}">
+                            <p class="text-sm p-2 rounded {{ $key === $question->correct_answer ? 'bg-green-100 text-green-800 font-semibold' : ($key === $studentAnswer ? 'bg-red-100 text-red-800' : 'text-gray-600') }}">
                                 {{ $key }}. {{ $option }}
                                 @if($key === $question->correct_answer)
                                     <span class="text-xs ml-2">✓ Correct</span>
@@ -176,7 +177,7 @@
                 @endif
 
                 <!-- Student's Answer -->
-                @if($answer->answer_text)
+                @if($answer && $answer->answer_text)
                     <div class="mb-3 {{ $isObjective ? 'bg-gray-50' : 'bg-blue-50' }} p-4 rounded">
                         <p class="text-sm font-semibold text-gray-700 mb-2">Student's Answer:</p>
                         @if($question->question_type === 'multiple_choice')
@@ -221,7 +222,7 @@
                 @else
                     <!-- Manual grading inputs -->
                     <div class="border-t pt-4 mt-4">
-                        <input type="hidden" name="grades[{{ $loop->index }}][answer_id]" value="{{ $answer->id ?? '' }}">
+                        <input type="hidden" name="grades[{{ $loop->index }}][answer_id]" value="{{ optional($answer)->id }}">
                         
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
@@ -230,7 +231,7 @@
                                 </label>
                                 <input type="number" 
                                        name="grades[{{ $loop->index }}][marks_obtained]" 
-                                       value="{{ old('grades.'.$loop->index.'.marks_obtained', $answer->marks_obtained ?? 0) }}"
+                                       value="{{ old('grades.'.$loop->index.'.marks_obtained', optional($answer)->marks_obtained ?? 0) }}"
                                        min="0" 
                                        max="{{ $question->marks }}" 
                                        step="0.5"
@@ -244,7 +245,7 @@
                                 </label>
                                 <input type="text" 
                                        name="grades[{{ $loop->index }}][feedback]" 
-                                       value="{{ old('grades.'.$loop->index.'.feedback', $answer->feedback) }}"
+                                       value="{{ old('grades.'.$loop->index.'.feedback', optional($answer)->feedback) }}"
                                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
                                        placeholder="Good attempt, Well done, etc.">
                             </div>
