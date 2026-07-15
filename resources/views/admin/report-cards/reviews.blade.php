@@ -13,7 +13,7 @@
             <a href="{{ route('admin.report-cards') }}" class="bg-gray-900 hover:bg-black text-white px-5 py-3 rounded-lg font-medium text-center">
                 All Report Cards
             </a>
-            @if(auth()->user()->canFillDevelopmentalReports())
+            @if(auth()->user()->isAdmin() || auth()->user()->canReviewReportCards())
                 <a href="{{ route('admin.developmental-reports.index', array_filter([ 'class_id' => request('class_id'), 'session_id' => request('session_id', $selectedSession?->id), 'term_id' => request('term_id', $selectedTerm?->id), ])) }}" class="bg-teal-500 hover:bg-teal-600 text-white px-5 py-3 rounded-lg font-medium text-center">
                     Development
                 </a>
