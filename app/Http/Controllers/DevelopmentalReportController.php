@@ -28,10 +28,12 @@ class DevelopmentalReportController extends Controller
         $classIds = $this->manageableClassIds($request->user());
 
         $classes = SchoolClass::whereIn('id', $classIds)->orderBy('name')->get();
-        $selectedClassId = $request->input('class_id', $classes->first()?->id);
+        $selectedClassId = $request->input('class_id');
 
         if ($selectedClassId) {
             abort_unless(in_array((int) $selectedClassId, $classIds, true), 403);
+        } else {
+            $selectedClassId = $classes->first()?->id;
         }
 
         $students = collect();
@@ -76,13 +78,15 @@ class DevelopmentalReportController extends Controller
 
     public function bulkPublish(Request $request)
     {
-        abort_unless($request->user()->isAdmin(), 403);
+        abort_unless($request->user()->isAdmin() || $request->user()->canReviewReportCards(), 403);
 
         $validated = $request->validate([
             'class_id' => ['required', 'exists:school_classes,id'],
             'session_id' => ['required', 'exists:academic_sessions,id'],
             'term_id' => ['required', 'exists:terms,id'],
         ]);
+
+        abort_unless(in_array((int) $validated['class_id'], $this->manageableClassIds($request->user()), true), 403);
 
         $publishedCount = DevelopmentalReport::where('class_id', $validated['class_id'])
             ->where('session_id', $validated['session_id'])

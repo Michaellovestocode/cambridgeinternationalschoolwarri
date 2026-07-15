@@ -57,17 +57,23 @@
                 <h2 class="text-xl font-black text-gray-900">Learners</h2>
                 <p class="mt-1 text-sm text-gray-500">{{ $students->count() }} learner{{ $students->count() === 1 ? '' : 's' }} found</p>
             </div>
-            @if(auth()->user()->isAdmin() && $selectedClassId && $selectedSessionId && $selectedTermId && $publishableCount > 0)
-                <form method="POST" action="{{ route('admin.developmental-reports.bulk-publish') }}" onsubmit="return confirm('Publish all submitted developmental reports for this class?')" class="flex items-center gap-2">
-                    @csrf
-                    @method('PUT')
-                    <input type="hidden" name="class_id" value="{{ $selectedClassId }}">
-                    <input type="hidden" name="session_id" value="{{ $selectedSessionId }}">
-                    <input type="hidden" name="term_id" value="{{ $selectedTermId }}">
-                    <button type="submit" class="rounded-2xl bg-emerald-600 px-5 py-3 text-sm font-black text-white hover:bg-emerald-700">
-                        Publish {{ $publishableCount }} Submitted
-                    </button>
-                </form>
+            @if((auth()->user()->isAdmin() || auth()->user()->canReviewReportCards()) && $selectedClassId && $selectedSessionId && $selectedTermId)
+                @if($publishableCount > 0)
+                    <form method="POST" action="{{ route('admin.developmental-reports.bulk-publish') }}" onsubmit="return confirm('Publish all submitted developmental reports for this class?')" class="flex items-center gap-2">
+                        @csrf
+                        @method('PUT')
+                        <input type="hidden" name="class_id" value="{{ $selectedClassId }}">
+                        <input type="hidden" name="session_id" value="{{ $selectedSessionId }}">
+                        <input type="hidden" name="term_id" value="{{ $selectedTermId }}">
+                        <button type="submit" class="rounded-2xl bg-emerald-600 px-5 py-3 text-sm font-black text-white hover:bg-emerald-700">
+                            Publish {{ $publishableCount }} Submitted
+                        </button>
+                    </form>
+                @else
+                    <div class="rounded-2xl bg-slate-100 px-5 py-3 text-sm font-semibold text-slate-700">
+                        No submitted developmental reports are ready to publish for this class, session, and term.
+                    </div>
+                @endif
             @endif
         </div>
         <div class="overflow-x-auto">
