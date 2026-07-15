@@ -71,7 +71,7 @@
         <table class="min-w-full divide-y divide-gray-200 text-left text-sm">
             <thead class="bg-gray-50 text-gray-700">
                 <tr>
-                    <th class="px-4 py-3">Position</th>
+                    <th class="px-4 py-3">Photo</th>
                     <th class="px-4 py-3">Learner</th>
                     @foreach($subjects as $subject)
                         <th class="px-4 py-3">{{ $subject->name }}</th>
@@ -83,8 +83,14 @@
             <tbody class="divide-y divide-gray-200 bg-white">
                 @forelse($rankings as $row)
                     <tr>
-                        <td class="whitespace-nowrap px-4 py-3 align-top font-semibold text-gray-900">
-                            {{ $row->position ? $row->position . '/' . $row->total_students : 'Pending' }}
+                        <td class="px-4 py-3 align-top">
+                            @if($row->learner->photo)
+                                <img src="{{ asset('storage/' . $row->learner->photo) }}" alt="{{ $row->learner->name }}" class="h-12 w-12 rounded-lg object-cover">
+                            @else
+                                <div class="h-12 w-12 rounded-lg bg-gray-300 flex items-center justify-center text-xs font-bold text-gray-600">
+                                    {{ substr($row->learner->name, 0, 2) }}
+                                </div>
+                            @endif
                         </td>
                         <td class="px-4 py-3 align-top">
                             <p class="font-semibold text-gray-900">{{ $row->learner->name }}</p>

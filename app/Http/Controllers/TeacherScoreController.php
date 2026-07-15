@@ -446,25 +446,15 @@ class TeacherScoreController extends Controller
                 ];
             })
             ->sort(function ($a, $b) {
-                if ($a->position !== null && $b->position !== null) {
-                    return $a->position <=> $b->position;
+                // Sort by average score descending (highest first)
+                $avgA = $a->average_score ?? 0;
+                $avgB = $b->average_score ?? 0;
+
+                if ($avgA !== $avgB) {
+                    return $avgB <=> $avgA; // Descending order
                 }
 
-                if ($a->position !== null) {
-                    return -1;
-                }
-
-                if ($b->position !== null) {
-                    return 1;
-                }
-
-                $totalA = $a->total_score ?? 0;
-                $totalB = $b->total_score ?? 0;
-
-                if ($totalA !== $totalB) {
-                    return $totalB <=> $totalA;
-                }
-
+                // If average scores are equal, sort by name
                 return strcasecmp($a->learner->name, $b->learner->name);
             })
             ->values();
