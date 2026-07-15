@@ -187,6 +187,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/admin/developmental-reports/student/{student}/edit', [DevelopmentalReportController::class, 'edit'])->name('admin.developmental-reports.edit');
         Route::put('/admin/developmental-reports/{developmentalReport}', [DevelopmentalReportController::class, 'update'])->name('admin.developmental-reports.update');
         Route::get('/admin/developmental-reports/{developmentalReport}', [DevelopmentalReportController::class, 'show'])->name('admin.developmental-reports.show');
+        Route::put('/admin/developmental-reports/bulk/publish', [DevelopmentalReportController::class, 'bulkPublish'])->name('admin.developmental-reports.bulk-publish');
         Route::get('/admin/developmental-reports/{developmentalReport}/download', [DevelopmentalReportController::class, 'download'])->name('admin.developmental-reports.download');
         Route::put('/admin/developmental-reports/{developmentalReport}/publish', [DevelopmentalReportController::class, 'publish'])->name('admin.developmental-reports.publish');
     });

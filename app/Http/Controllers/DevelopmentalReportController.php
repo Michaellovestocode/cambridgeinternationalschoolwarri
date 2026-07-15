@@ -57,6 +57,7 @@ class DevelopmentalReportController extends Controller
                 ->keyBy('student_id');
         }
 
+        $publishableCount = $reports->where('status', DevelopmentalReport::STATUS_SUBMITTED)->count();
         $sessions = Session::orderByDesc('start_date')->get();
         $terms = Term::with('session')->orderByDesc('start_date')->get();
 
@@ -68,8 +69,32 @@ class DevelopmentalReportController extends Controller
             'terms',
             'selectedClassId',
             'selectedSessionId',
-            'selectedTermId'
+            'selectedTermId',
+            'publishableCount'
         ));
+    }
+
+    public function bulkPublish(Request $request)
+    {
+        abort_unless($request->user()->isAdmin(), 403);
+
+        $validated = $request->validate([
+            'class_id' => ['required', 'exists:school_classes,id'],
+            'session_id' => ['required', 'exists:academic_sessions,id'],
+            'term_id' => ['required', 'exists:terms,id'],
+        ]);
+
+        $publishedCount = DevelopmentalReport::where('class_id', $validated['class_id'])
+            ->where('session_id', $validated['session_id'])
+            ->where('term_id', $validated['term_id'])
+            ->where('status', DevelopmentalReport::STATUS_SUBMITTED)
+            ->update([
+                'status' => DevelopmentalReport::STATUS_PUBLISHED,
+                'published_at' => now(),
+                'published_by' => $request->user()->id,
+            ]);
+
+        return back()->with('success', "{$publishedCount} developmental report(s) published.");
     }
 
     public function edit(Request $request, User $student)

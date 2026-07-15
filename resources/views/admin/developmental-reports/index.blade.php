@@ -52,9 +52,23 @@
     </div>
 
     <div class="rounded-3xl bg-white shadow-lg">
-        <div class="border-b border-gray-100 px-6 py-4">
-            <h2 class="text-xl font-black text-gray-900">Learners</h2>
-            <p class="mt-1 text-sm text-gray-500">{{ $students->count() }} learner{{ $students->count() === 1 ? '' : 's' }} found</p>
+        <div class="border-b border-gray-100 px-6 py-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+                <h2 class="text-xl font-black text-gray-900">Learners</h2>
+                <p class="mt-1 text-sm text-gray-500">{{ $students->count() }} learner{{ $students->count() === 1 ? '' : 's' }} found</p>
+            </div>
+            @if(auth()->user()->isAdmin() && $selectedClassId && $selectedSessionId && $selectedTermId && $publishableCount > 0)
+                <form method="POST" action="{{ route('admin.developmental-reports.bulk-publish') }}" onsubmit="return confirm('Publish all submitted developmental reports for this class?')" class="flex items-center gap-2">
+                    @csrf
+                    @method('PUT')
+                    <input type="hidden" name="class_id" value="{{ $selectedClassId }}">
+                    <input type="hidden" name="session_id" value="{{ $selectedSessionId }}">
+                    <input type="hidden" name="term_id" value="{{ $selectedTermId }}">
+                    <button type="submit" class="rounded-2xl bg-emerald-600 px-5 py-3 text-sm font-black text-white hover:bg-emerald-700">
+                        Publish {{ $publishableCount }} Submitted
+                    </button>
+                </form>
+            @endif
         </div>
         <div class="overflow-x-auto">
             @if($students->isNotEmpty())

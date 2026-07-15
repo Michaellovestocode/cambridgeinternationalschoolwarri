@@ -978,7 +978,8 @@ class NigerianReportCardController extends Controller
         abort_unless(auth()->user()->isAdmin(), 403, 'Only admin can publish final report cards.');
 
         if ($request->boolean('published')) {
-            $publishErrors = $this->publicationReadinessErrors($reportCard);
+            $bypassMissingScores = $request->boolean('bypass_missing_scores');
+            $publishErrors = $this->publicationReadinessErrors($reportCard, true, $bypassMissingScores);
 
             if ($publishErrors->isNotEmpty()) {
                 return redirect()->back()

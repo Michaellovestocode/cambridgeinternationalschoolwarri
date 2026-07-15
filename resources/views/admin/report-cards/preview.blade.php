@@ -62,7 +62,7 @@
             </form>
             @endif
             @if(auth()->user()->isAdmin())
-            <form method="POST" action="{{ route('admin.report-cards.publication', $reportCard->id) }}">
+            <form method="POST" action="{{ route('admin.report-cards.publication', $reportCard->id) }}" class="flex flex-wrap gap-2">
                 @csrf
                 @method('PUT')
                 <input type="hidden" name="published" value="{{ $reportCard->isPublished() ? 0 : 1 }}">
@@ -70,6 +70,13 @@
                         class="{{ $reportCard->isPublished() ? 'bg-red-600 hover:bg-red-700' : 'bg-green-600 hover:bg-green-700' }} text-white px-4 py-2 rounded-lg font-medium">
                     {{ $reportCard->isPublished() ? 'Hide From Parents & Students' : 'Publish Report Card' }}
                 </button>
+                @if(! $reportCard->isPublished())
+                <button type="submit" name="bypass_missing_scores" value="true"
+                        class="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg font-medium"
+                        onclick="return confirm('Publish this report card anyway despite missing assigned scores?')">
+                    Publish Anyway
+                </button>
+                @endif
             </form>
             @endif
             <a href="{{ route('admin.report-cards.download', $reportCard->id) }}"
