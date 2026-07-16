@@ -144,7 +144,14 @@ class StudentController extends Controller
 
             return $pdf->download('Developmental_Report_' . str_replace(' ', '_', $developmentalReport->student->name) . '.pdf');
         } catch (\Exception $e) {
-            Log::error('Developmental PDF generation failed for student ' . $student->id . ': ' . $e->getMessage());
+            $msg = '[' . now() . '] Developmental PDF generation failed for student ' . $student->id . ': ' . $e->getMessage() . "\n" . $e->getTraceAsString() . "\n\n";
+            Log::error($msg);
+            try {
+                file_put_contents(storage_path('app/developmental_pdf_error.txt'), $msg, FILE_APPEND | LOCK_EX);
+            } catch (\Exception $_) {
+                // ignore file write errors
+            }
+
             return back()->with('error', 'Unable to generate developmental report PDF. Please contact the administrator.');
         }
     }
