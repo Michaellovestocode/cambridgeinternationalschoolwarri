@@ -14,6 +14,7 @@ use App\Models\User;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class DevelopmentalReportController extends Controller
 {
@@ -248,10 +249,27 @@ class DevelopmentalReportController extends Controller
         $schoolSettings = SchoolSettings::getSettings();
         $renderMode = 'pdf';
 
-        $pdf = Pdf::loadView('admin.developmental-reports.show', compact('developmentalReport', 'skillsBySection', 'ratings', 'ratingLabels', 'schoolSettings', 'renderMode'))
-            ->setPaper('a4', 'portrait');
+        try {
+            Pdf::setOptions([
+                'isRemoteEnabled' => true,
+                'isHtml5ParserEnabled' => true,
+            ]);
 
-        return $pdf->download('Developmental_Report_' . str_replace(' ', '_', $developmentalReport->student->name) . '.pdf');
+            $pdf = Pdf::loadView('admin.developmental-reports.show', compact('developmentalReport', 'skillsBySection', 'ratings', 'ratingLabels', 'schoolSettings', 'renderMode'))
+                ->setPaper('a4', 'portrait');
+
+            return $pdf->download('Developmental_Report_' . str_replace(' ', '_', $developmentalReport->student->name) . '.pdf');
+        } catch (\Exception $e) {
+            $msg = '[' . now() . '] Admin developmental PDF generation failed for user ' . $request->user()->id . ': ' . $e->getMessage() . "\n" . $e->getTraceAsString() . "\n\n";
+            Log::error($msg);
+            try {
+                file_put_contents(storage_path('app/developmental_pdf_error.txt'), $msg, FILE_APPEND | LOCK_EX);
+            } catch (\Exception $_) {
+                // ignore write failures
+            }
+
+            abort(500, 'Unable to generate developmental report PDF. Please contact the administrator.');
+        }
     }
 
     private function firstOrCreateReport(User $student, Session $session, Term $term): DevelopmentalReport

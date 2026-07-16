@@ -113,15 +113,26 @@
             $formSignature = $developmentalReport->form_teacher_signature ? asset('storage/' . $developmentalReport->form_teacher_signature) : null;
             $authoritySignature = $developmentalReport->authority_signature ? asset('storage/' . $developmentalReport->authority_signature) : null;
         } else {
+            $toFileUrl = function ($path) {
+                if (! $path) {
+                    return null;
+                }
+                $normalized = str_replace('\\', '/', $path);
+                if (stripos($normalized, 'file:') !== false) {
+                    return $normalized;
+                }
+                return 'file://' . $normalized;
+            };
+
             $logoPath = $schoolSettings->school_logo ? public_path('storage/' . $schoolSettings->school_logo) : null;
             $photoPath = $student->photo ? public_path('storage/' . $student->photo) : null;
             $formSignaturePath = $developmentalReport->form_teacher_signature ? public_path('storage/' . $developmentalReport->form_teacher_signature) : null;
             $authoritySignaturePath = $developmentalReport->authority_signature ? public_path('storage/' . $developmentalReport->authority_signature) : null;
 
-            $logo = ($logoPath && file_exists($logoPath)) ? $logoPath : public_path('images/schoollogo.jpg');
-            $photo = ($photoPath && file_exists($photoPath)) ? $photoPath : null;
-            $formSignature = ($formSignaturePath && file_exists($formSignaturePath)) ? $formSignaturePath : null;
-            $authoritySignature = ($authoritySignaturePath && file_exists($authoritySignaturePath)) ? $authoritySignaturePath : null;
+            $logo = ($logoPath && file_exists($logoPath)) ? $toFileUrl($logoPath) : $toFileUrl(public_path('images/schoollogo.jpg'));
+            $photo = ($photoPath && file_exists($photoPath)) ? $toFileUrl($photoPath) : null;
+            $formSignature = ($formSignaturePath && file_exists($formSignaturePath)) ? $toFileUrl($formSignaturePath) : null;
+            $authoritySignature = ($authoritySignaturePath && file_exists($authoritySignaturePath)) ? $toFileUrl($authoritySignaturePath) : null;
         }
     @endphp
 
