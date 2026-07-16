@@ -11,6 +11,7 @@ use App\Services\ReportCardRenderService;
 use Illuminate\Support\Facades\Auth;
 use App\Models\DevelopmentalReport;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\Log;
 
 class ParentPortalController extends Controller
 {
@@ -182,10 +183,20 @@ class ParentPortalController extends Controller
         $ratingLabels = DevelopmentalReport::ratingLabels();
         $schoolSettings = \App\Models\SchoolSettings::getSettings();
 
-        $pdf = Pdf::loadView('admin.developmental-reports.show', compact('developmentalReport', 'skillsBySection', 'ratings', 'ratingLabels', 'schoolSettings'))
-            ->setPaper('a4', 'portrait');
+        try {
+            Pdf::setOptions([
+                'isRemoteEnabled' => true,
+                'isHtml5ParserEnabled' => true,
+            ]);
 
-        return $pdf->download('Developmental_Report_' . str_replace(' ', '_', $developmentalReport->student->name) . '.pdf');
+            $pdf = Pdf::loadView('admin.developmental-reports.show', compact('developmentalReport', 'skillsBySection', 'ratings', 'ratingLabels', 'schoolSettings'))
+                ->setPaper('a4', 'portrait');
+
+            return $pdf->download('Developmental_Report_' . str_replace(' ', '_', $developmentalReport->student->name) . '.pdf');
+        } catch (\Exception $e) {
+            Log::error('Parent developmental PDF generation failed for parent ' . $parent->id . ': ' . $e->getMessage());
+            return back()->with('error', 'Unable to generate developmental report PDF. Please contact the administrator.');
+        }
     }
 
     public function downloadReportCard(ReportCard $reportCard)

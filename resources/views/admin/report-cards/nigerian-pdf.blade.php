@@ -190,6 +190,21 @@
             color: #666;
             display: inline-block;
         }
+
+        @if(($renderMode ?? 'pdf') === 'pdf')
+        /* Use millimeter units for PDF rendering to improve scaling on mobile viewers */
+        .school-logo, .student-photo {
+            width: 21mm;
+            height: 24mm;
+        }
+
+        .student-photo-placeholder {
+            width: 21mm;
+            height: 24mm;
+            line-height: 24mm;
+            font-size: 9px;
+        }
+        @endif
         
         .school-name {
             font-size: 17px;
@@ -655,17 +670,28 @@
                 ? asset('storage/' . $seniorAuthority->signature)
                 : null;
         } else {
+            // For PDF rendering, Dompdf prefers file:// URLs and forward slashes
+            $toFileUrl = function ($path) {
+                if (! $path) return null;
+                $p = str_replace('\\', '/', $path);
+                if (stripos($p, 'file:') === 0) return $p;
+                return 'file://' . $p;
+            };
+
             $schoolLogoSrc = ($logoPath && file_exists($logoPath))
-                ? $logoPath
-                : public_path('images/schoollogo.jpg');
+                ? $toFileUrl($logoPath)
+                : $toFileUrl(public_path('images/schoollogo.jpg'));
+
             $studentPhotoSrc = ($studentPhotoPath && file_exists($studentPhotoPath))
-                ? $studentPhotoPath
+                ? $toFileUrl($studentPhotoPath)
                 : null;
+
             $formTeacherSignatureSrc = ($formTeacherSignaturePath && file_exists($formTeacherSignaturePath))
-                ? $formTeacherSignaturePath
+                ? $toFileUrl($formTeacherSignaturePath)
                 : null;
+
             $principalSignatureSrc = ($seniorSignaturePath && file_exists($seniorSignaturePath))
-                ? $seniorSignaturePath
+                ? $toFileUrl($seniorSignaturePath)
                 : null;
         }
 

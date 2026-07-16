@@ -10,6 +10,7 @@ use App\Models\LearningSession;
 use App\Models\ReportCard;
 use App\Models\DevelopmentalReport;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\Log;
 use App\Services\CbtReportCardSyncService;
 use App\Services\ReportCardRenderService;
 use Illuminate\Http\Request;
@@ -132,10 +133,20 @@ class StudentController extends Controller
         $schoolSettings = \App\Models\SchoolSettings::getSettings();
         $renderMode = 'pdf';
 
-        $pdf = Pdf::loadView('admin.developmental-reports.show', compact('developmentalReport', 'skillsBySection', 'ratings', 'ratingLabels', 'schoolSettings', 'renderMode'))
-            ->setPaper('a4', 'portrait');
+        try {
+            Pdf::setOptions([
+                'isRemoteEnabled' => true,
+                'isHtml5ParserEnabled' => true,
+            ]);
 
-        return $pdf->download('Developmental_Report_' . str_replace(' ', '_', $developmentalReport->student->name) . '.pdf');
+            $pdf = Pdf::loadView('admin.developmental-reports.show', compact('developmentalReport', 'skillsBySection', 'ratings', 'ratingLabels', 'schoolSettings', 'renderMode'))
+                ->setPaper('a4', 'portrait');
+
+            return $pdf->download('Developmental_Report_' . str_replace(' ', '_', $developmentalReport->student->name) . '.pdf');
+        } catch (\Exception $e) {
+            Log::error('Developmental PDF generation failed for student ' . $student->id . ': ' . $e->getMessage());
+            return back()->with('error', 'Unable to generate developmental report PDF. Please contact the administrator.');
+        }
     }
 
     public function viewReportCard(ReportCard $reportCard)
