@@ -670,12 +670,22 @@
                 ? asset('storage/' . $seniorAuthority->signature)
                 : null;
         } else {
-            // For PDF rendering, Dompdf prefers file:// URLs and forward slashes
+            // For PDF rendering, Dompdf prefers file:/// URLs and forward slashes on Windows
             $toFileUrl = function ($path) {
                 if (! $path) return null;
                 $p = str_replace('\\', '/', $path);
-                if (stripos($p, 'file:') === 0) return $p;
-                return 'file://' . $p;
+                // already a file URL with triple slash
+                if (stripos($p, 'file:///') === 0) return $p;
+                // convert file:// to file:/// if present
+                if (stripos($p, 'file://') === 0) {
+                    return preg_replace('#^file:/+#', 'file:///', $p);
+                }
+                // Windows absolute path like C:/path -> file:///C:/path
+                if (preg_match('#^[A-Za-z]:/#', $p)) {
+                    return 'file:///' . ltrim($p, '/');
+                }
+                // fallback
+                return 'file:///' . ltrim($p, '/');
             };
 
             $schoolLogoSrc = ($logoPath && file_exists($logoPath))
