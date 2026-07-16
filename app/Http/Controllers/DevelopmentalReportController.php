@@ -223,6 +223,19 @@ class DevelopmentalReportController extends Controller
         return back()->with('success', 'Developmental report published.');
     }
 
+    public function unpublish(Request $request, DevelopmentalReport $developmentalReport)
+    {
+        abort_unless($request->user()->isAdmin(), 403);
+
+        $developmentalReport->update([
+            'status' => DevelopmentalReport::STATUS_SUBMITTED,
+            'published_at' => null,
+            'published_by' => null,
+        ]);
+
+        return back()->with('success', 'Developmental report un-published.');
+    }
+
     public function download(Request $request, DevelopmentalReport $developmentalReport)
     {
         $this->authorizeDevelopmentalReportAccess($request->user());

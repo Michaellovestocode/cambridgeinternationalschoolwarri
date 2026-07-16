@@ -84,13 +84,22 @@
             <button type="button" onclick="window.print()">Print</button>
         </div>
 
-        @if(auth()->check() && auth()->user()->isAdmin() && ! $developmentalReport->isPublished())
-            <form method="POST" action="{{ route('admin.developmental-reports.publish', $developmentalReport) }}" class="toolbar" style="margin-top:-8px;">
-                @csrf
-                @method('PUT')
-                <input name="authority_remark" value="{{ $developmentalReport->authority_remark }}" placeholder="{{ $developmentalReport->authorityTitle() }} remark" style="flex:1; border:1px solid #cbd5e1; border-radius:8px; padding:10px 12px;">
-                <button type="submit">Publish</button>
-            </form>
+        @if(auth()->check() && auth()->user()->isAdmin())
+            @if(! $developmentalReport->isPublished())
+                <form method="POST" action="{{ route('admin.developmental-reports.publish', $developmentalReport) }}" class="toolbar" style="margin-top:-8px;">
+                    @csrf
+                    @method('PUT')
+                    <input name="authority_remark" value="{{ $developmentalReport->authority_remark }}" placeholder="{{ $developmentalReport->authorityTitle() }} remark" style="flex:1; border:1px solid #cbd5e1; border-radius:8px; padding:10px 12px;">
+                    <button type="submit">Publish</button>
+                </form>
+            @else
+                <form method="POST" action="{{ route('admin.developmental-reports.unpublish', $developmentalReport) }}" class="toolbar" style="margin-top:-8px;">
+                    @csrf
+                    @method('PUT')
+                    <input type="hidden" name="reason" value="reverted by admin">
+                    <button type="submit" class="bg-yellow-500 text-white px-4 py-2 rounded">Unpublish</button>
+                </form>
+            @endif
         @endif
     @endif
 

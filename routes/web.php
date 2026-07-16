@@ -119,6 +119,8 @@ Route::middleware('auth')->group(function () {
         Route::get('/dashboard', [ParentPortalController::class, 'dashboard'])->name('dashboard');
         Route::get('/report-cards/{reportCard}', [ParentPortalController::class, 'previewReportCard'])->name('report-cards.preview');
         Route::get('/report-cards/{reportCard}/download', [ParentPortalController::class, 'downloadReportCard'])->name('report-cards.download');
+        Route::get('/developmental-reports/{developmentalReport}', [ParentPortalController::class, 'previewDevelopmentalReport'])->name('developmental-reports.preview');
+        Route::get('/developmental-reports/{developmentalReport}/download', [ParentPortalController::class, 'downloadDevelopmentalReport'])->name('developmental-reports.download');
         Route::get('/messages', [MessageController::class, 'parentIndex'])->name('messages.index');
         Route::post('/messages', [MessageController::class, 'parentStore'])->name('messages.store');
     });
@@ -126,6 +128,8 @@ Route::middleware('auth')->group(function () {
     // Student routes
     Route::prefix('student')->name('student.')->middleware('role:student')->group(function () {
         Route::get('/dashboard', [StudentController::class, 'dashboard'])->name('dashboard');
+        Route::get('/developmental-reports/{developmentalReport}', [StudentController::class, 'previewDevelopmentalReport'])->name('developmental-reports.preview');
+        Route::get('/developmental-reports/{developmentalReport}/download', [StudentController::class, 'downloadDevelopmentalReport'])->name('developmental-reports.download');
         Route::get('/learning-sessions', [StudentLearningSessionController::class, 'index'])->name('learning.index');
         Route::get('/learning-sessions/{learningSession}', [StudentLearningSessionController::class, 'show'])->name('learning.show');
         Route::post('/learning-sessions/{learningSession}/submit', [StudentLearningSessionController::class, 'submit'])->name('learning.submit');
@@ -190,6 +194,7 @@ Route::middleware('auth')->group(function () {
         Route::put('/admin/developmental-reports/bulk/publish', [DevelopmentalReportController::class, 'bulkPublish'])->name('admin.developmental-reports.bulk-publish');
         Route::get('/admin/developmental-reports/{developmentalReport}/download', [DevelopmentalReportController::class, 'download'])->name('admin.developmental-reports.download');
         Route::put('/admin/developmental-reports/{developmentalReport}/publish', [DevelopmentalReportController::class, 'publish'])->name('admin.developmental-reports.publish');
+        Route::put('/admin/developmental-reports/{developmentalReport}/unpublish', [DevelopmentalReportController::class, 'unpublish'])->name('admin.developmental-reports.unpublish');
     });
 
 

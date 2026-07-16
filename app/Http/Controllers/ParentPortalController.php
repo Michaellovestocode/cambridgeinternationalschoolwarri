@@ -9,6 +9,8 @@ use App\Models\Message;
 use App\Models\ReportCard;
 use App\Services\ReportCardRenderService;
 use Illuminate\Support\Facades\Auth;
+use App\Models\DevelopmentalReport;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class ParentPortalController extends Controller
 {
@@ -144,6 +146,46 @@ class ParentPortalController extends Controller
             'back_url' => route('parent.dashboard'),
             'download_url' => route('parent.report-cards.download', $reportCard),
         ]);
+    }
+
+    public function previewDevelopmentalReport(DevelopmentalReport $developmentalReport)
+    {
+        $parent = Auth::user();
+        if (! $parent->children->contains('id', $developmentalReport->student_id)) {
+            abort(403);
+        }
+
+        abort_unless($developmentalReport->isPublished(), 404);
+
+        $developmentalReport->loadMissing(['student', 'session', 'term', 'ratings.skill', 'class']);
+
+        $skillsBySection = \App\Models\DevelopmentalSkill::active()->orderBy('sort_order')->get()->groupBy('section');
+        $ratings = $developmentalReport->ratings->pluck('rating', 'developmental_skill_id');
+        $ratingLabels = DevelopmentalReport::ratingLabels();
+        $schoolSettings = \App\Models\SchoolSettings::getSettings();
+
+        return view('admin.developmental-reports.show', compact('developmentalReport', 'skillsBySection', 'ratings', 'ratingLabels', 'schoolSettings'));
+    }
+
+    public function downloadDevelopmentalReport(DevelopmentalReport $developmentalReport)
+    {
+        $parent = Auth::user();
+        if (! $parent->children->contains('id', $developmentalReport->student_id)) {
+            abort(403);
+        }
+
+        abort_unless($developmentalReport->isPublished(), 404);
+
+        $developmentalReport->load(['student.class', 'session', 'term', 'ratings.skill']);
+        $skillsBySection = \App\Models\DevelopmentalSkill::active()->orderBy('sort_order')->get()->groupBy('section');
+        $ratings = $developmentalReport->ratings->pluck('rating', 'developmental_skill_id');
+        $ratingLabels = DevelopmentalReport::ratingLabels();
+        $schoolSettings = \App\Models\SchoolSettings::getSettings();
+
+        $pdf = Pdf::loadView('admin.developmental-reports.show', compact('developmentalReport', 'skillsBySection', 'ratings', 'ratingLabels', 'schoolSettings'))
+            ->setPaper('a4', 'portrait');
+
+        return $pdf->download('Developmental_Report_' . str_replace(' ', '_', $developmentalReport->student->name) . '.pdf');
     }
 
     public function downloadReportCard(ReportCard $reportCard)

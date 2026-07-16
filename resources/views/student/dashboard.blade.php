@@ -10,35 +10,35 @@
         <div class="absolute -right-10 -top-10 w-40 h-40 bg-white opacity-10 rounded-full blur-3xl"></div>
         <div class="absolute -left-10 -bottom-10 w-40 h-40 bg-white opacity-10 rounded-full blur-3xl"></div>
         
-        <div class="relative p-8 text-white">
+        <div class="relative p-4 md:p-8 text-white">
             <div class="flex items-center justify-between flex-wrap gap-4">
-                <div class="flex items-center gap-6">
+                <div class="flex items-center gap-4">
                     @if(auth()->user()->photo)
-                        <img src="{{ asset('storage/' . auth()->user()->photo) }}" alt="Profile Picture" class="w-20 h-20 rounded-full object-cover border-4 border-white shadow-lg">
+                        <img src="{{ asset('storage/' . auth()->user()->photo) }}" alt="Profile Picture" class="w-12 h-12 md:w-20 md:h-20 rounded-full object-cover border-3 md:border-4 border-white shadow-lg">
                     @else
-                        <div class="w-20 h-20 rounded-full bg-white/20 border-4 border-white flex items-center justify-center">
-                            <svg class="w-10 h-10 text-white" fill="currentColor" viewBox="0 0 24 24">
+                        <div class="w-12 h-12 md:w-20 md:h-20 rounded-full bg-white/20 border-3 md:border-4 border-white flex items-center justify-center">
+                            <svg class="w-6 h-6 md:w-10 md:h-10 text-white" fill="currentColor" viewBox="0 0 24 24">
                                 <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
                             </svg>
                         </div>
                     @endif
                     <div>
-                        <h1 class="text-4xl font-bold mb-2">Welcome back, {{ auth()->user()->name }}! 👋</h1>
-                        <div class="flex items-center gap-4 flex-wrap mt-3">
-                            <p class="text-white/90 text-lg flex items-center">
+                        <h1 class="text-2xl md:text-4xl font-bold mb-2">Welcome back, {{ auth()->user()->name }}! 👋</h1>
+                        <div class="flex items-center gap-3 flex-wrap mt-3">
+                            <p class="text-white/90 text-sm md:text-lg flex items-center">
                                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2"></path>
                                 </svg>
                                 {{ auth()->user()->registration_number }}
                             </p>
-                            <p class="text-white/90 text-lg flex items-center">
+                            <p class="text-white/90 text-sm md:text-lg flex items-center">
                                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
                                 </svg>
                                 {{ auth()->user()->class->name ?? 'N/A' }}
                             </p>
                             @if(auth()->user()->date_of_birth)
-                                <p class="text-white/90 text-lg flex items-center">
+                                <p class="text-white/90 text-sm md:text-lg flex items-center">
                                     <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
                                     </svg>
@@ -46,7 +46,7 @@
                                 </p>
                             @endif
                             @if(auth()->user()->parent_phone_number)
-                                <p class="text-white/90 text-lg flex items-center">
+                                <p class="text-white/90 text-sm md:text-lg flex items-center">
                                     <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path>
                                     </svg>
@@ -54,10 +54,10 @@
                                 </p>
                             @endif
                         </div>
-                        <p class="text-white/70 text-sm mt-3 italic">"My school is a place of light, where dreams are shaped both day and night"</p>
+                        <p class="text-white/70 text-xs md:text-sm mt-3 italic">"My school is a place of light, where dreams are shaped both day and night"</p>
                     </div>
                 </div>
-                <div class="bg-white/20 backdrop-blur-md rounded-2xl p-6 border border-white/30">
+                <div class="hidden sm:block bg-white/20 backdrop-blur-md rounded-2xl p-6 border border-white/30">
                     <div class="text-center">
                         <div class="text-5xl font-bold">{{ \Carbon\Carbon::now()->format('d') }}</div>
                         <div class="text-sm mt-1">{{ \Carbon\Carbon::now()->format('F Y') }}</div>
@@ -279,6 +279,37 @@
     </div>
 
     <!-- Report Cards -->
+    <!-- Developmental Reports -->
+    <div id="developmental-reports" class="bg-white rounded-2xl shadow-lg overflow-hidden mb-6">
+        <div class="bg-gradient-to-r from-emerald-50 to-teal-50 px-6 py-4 border-b border-gray-100">
+            <h3 class="text-xl font-bold text-gray-800">Developmental Reports</h3>
+        </div>
+        <div class="p-6">
+            @forelse($developmentalReports as $devReport)
+            <div class="border-2 border-gray-100 hover:border-emerald-300 rounded-2xl p-5 mb-4 flex flex-wrap justify-between items-center gap-4 hover:shadow-md transition-all">
+                <div>
+                    <p class="font-bold text-gray-800 text-lg">{{ $devReport->session?->name ?? 'Session' }} - {{ $devReport->term?->name ?? 'Term' }}</p>
+                    <p class="text-sm text-gray-600 mt-1">{{ $devReport->class->display_name ?? 'Class not assigned' }}</p>
+                </div>
+                <div class="flex flex-wrap gap-2">
+                    <a href="{{ route('student.developmental-reports.preview', $devReport) }}"
+                       class="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-xl font-bold shadow transition-all whitespace-nowrap">
+                        View
+                    </a>
+                    <a href="{{ route('student.developmental-reports.download', $devReport) }}"
+                       class="bg-gray-900 hover:bg-black text-white px-6 py-3 rounded-xl font-bold shadow transition-all whitespace-nowrap">
+                        Download PDF
+                    </a>
+                </div>
+            </div>
+            @empty
+            <div class="text-center py-6">
+                <p class="text-gray-500 text-lg font-semibold">No published developmental reports yet</p>
+                <p class="text-gray-400 text-sm mt-2">Your developmental reports will appear here after the school publishes them.</p>
+            </div>
+            @endforelse
+        </div>
+    </div>
     <div id="report-cards" class="bg-white rounded-2xl shadow-lg overflow-hidden">
         <div class="bg-gradient-to-r from-amber-50 to-green-50 px-6 py-4 border-b border-gray-100">
             <h3 class="text-xl font-bold text-gray-800">Report Cards</h3>
