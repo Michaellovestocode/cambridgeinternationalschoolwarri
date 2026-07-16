@@ -118,10 +118,16 @@
                     return null;
                 }
                 $normalized = str_replace('\\', '/', $path);
-                if (stripos($normalized, 'file:') !== false) {
+                if (stripos($normalized, 'file:///') === 0) {
                     return $normalized;
                 }
-                return 'file://' . $normalized;
+                if (stripos($normalized, 'file://') === 0) {
+                    return preg_replace('#^file:/+#', 'file:///', $normalized);
+                }
+                if (preg_match('#^[A-Za-z]:/#', $normalized)) {
+                    return 'file:///' . ltrim($normalized, '/');
+                }
+                return 'file:///' . ltrim($normalized, '/');
             };
 
             $logoPath = $schoolSettings->school_logo ? public_path('storage/' . $schoolSettings->school_logo) : null;
