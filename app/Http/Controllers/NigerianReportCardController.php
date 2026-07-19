@@ -948,7 +948,6 @@ class NigerianReportCardController extends Controller
         ]);
 
         $published = 0;
-        $skipped = 0;
 
         ReportCard::with(['student', 'session', 'term', 'class'])
             ->where('class_id', $validated['class_id'])
@@ -957,17 +956,12 @@ class NigerianReportCardController extends Controller
             ->where('workflow_status', ReportCard::WORKFLOW_ACADEMIC_APPROVED)
             ->where('status', '!=', 'published')
             ->get()
-            ->each(function (ReportCard $reportCard) use (&$published, &$skipped) {
-                if ($this->publicationReadinessErrors($reportCard)->isNotEmpty()) {
-                    $skipped++;
-                    return;
-                }
-
+            ->each(function (ReportCard $reportCard) use (&$published) {
                 $reportCard->publish();
                 $published++;
             });
 
-        return back()->with('success', "{$published} report cards published. {$skipped} skipped.");
+        return back()->with('success', "{$published} report cards published.");
     }
 
     public function updatePublication(Request $request, $reportCardId)
@@ -978,15 +972,6 @@ class NigerianReportCardController extends Controller
         abort_unless(auth()->user()->isAdmin(), 403, 'Only admin can publish final report cards.');
 
         if ($request->boolean('published')) {
-            $bypassMissingScores = $request->boolean('bypass_missing_scores');
-            $publishErrors = $this->publicationReadinessErrors($reportCard, true, $bypassMissingScores);
-
-            if ($publishErrors->isNotEmpty()) {
-                return redirect()->back()
-                    ->withErrors(['published' => $publishErrors->implode(' ')])
-                    ->withInput();
-            }
-
             $reportCard->publish();
             $message = 'Report card published. Parents and students can view it only after fee clearance is approved.';
         } else {
