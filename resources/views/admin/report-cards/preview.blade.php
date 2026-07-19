@@ -40,6 +40,10 @@
                class="bg-gray-900 hover:bg-black text-white px-4 py-2 rounded-lg font-medium">
                 Visual Preview
             </a>
+            <a href="{{ route('admin.report-cards.visual-preview', $reportCard->id) }}" target="_blank"
+               class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-medium">
+                Print
+            </a>
             @if($canSubmitForReview)
             <form method="POST" action="{{ route('admin.report-cards.submit-review', $reportCard->id) }}">
                 @csrf

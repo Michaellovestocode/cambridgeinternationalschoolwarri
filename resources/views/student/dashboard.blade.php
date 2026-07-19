@@ -304,9 +304,9 @@
                        class="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-xl font-bold shadow transition-all whitespace-nowrap">
                         View
                     </a>
-                    <a href="{{ route('student.developmental-reports.download', $devReport) }}"
+                    <a href="{{ route('student.developmental-reports.preview', $devReport) }}"
                        class="bg-gray-900 hover:bg-black text-white px-6 py-3 rounded-xl font-bold shadow transition-all whitespace-nowrap">
-                        Download PDF
+                        Print
                     </a>
                 </div>
             </div>
@@ -342,9 +342,9 @@
                        class="bg-amber-600 hover:bg-amber-700 text-white px-6 py-3 rounded-xl font-bold shadow transition-all whitespace-nowrap">
                         View Report Card
                     </a>
-                    <a href="{{ route('student.report-cards.download', $reportCard) }}"
+                    <a href="{{ route('student.report-cards.preview', $reportCard) }}"
                        class="bg-gray-900 hover:bg-black text-white px-6 py-3 rounded-xl font-bold shadow transition-all whitespace-nowrap">
-                        Download PDF
+                        Print
                     </a>
                 </div>
             </div>

@@ -708,16 +708,14 @@
         $isLowerSchool = $authorityRole !== 'principal';
         $seniorRemarkLabel = $authorityTitle . "'s Remark:";
     @endphp
-    @if($renderMode === 'browser' && (!empty($portal['back_url']) || !empty($portal['download_url'])))
+    @if($renderMode === 'browser' && (!empty($portal['back_url']) || !empty($portal['print_url']) || !empty($portal['download_url'])))
         <div class="portal-report-toolbar">
             <div class="portal-report-toolbar-title">{{ $portal['title'] ?? 'Report Card' }}</div>
             <div class="portal-report-toolbar-actions">
                 @if(!empty($portal['back_url']))
                     <a href="{{ $portal['back_url'] }}" class="portal-report-back">Back</a>
                 @endif
-                @if(!empty($portal['download_url']))
-                    <a href="{{ $portal['download_url'] }}" class="portal-report-download">Download PDF</a>
-                @endif
+                <button type="button" onclick="window.print()" class="portal-report-download">Print</button>
             </div>
         </div>
     @endif
