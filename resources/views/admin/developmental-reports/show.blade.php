@@ -106,9 +106,6 @@
                 @method('PUT')
                 <input name="authority_remark" value="{{ $developmentalReport->authority_remark }}" placeholder="{{ $developmentalReport->authorityTitle() }} remark" style="flex:1; border:1px solid #cbd5e1; border-radius:8px; padding:10px 12px;">
                 <button type="submit">Publish</button>
-                <button type="submit" name="bypass_validation" value="1" class="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg font-medium" onclick="return confirm('Publish this developmental report anyway despite missing details?')">
-                    Publish Anyway
-                </button>
             </form>
         @else
             <form method="POST" action="{{ route('admin.developmental-reports.unpublish', $developmentalReport) }}" class="toolbar" style="margin-top:-8px;">
