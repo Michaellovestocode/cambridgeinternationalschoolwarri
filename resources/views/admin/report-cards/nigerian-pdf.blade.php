@@ -15,6 +15,10 @@
             size: A4 portrait;
         }
         
+        html {
+            scroll-behavior: smooth;
+        }
+
         body {
             font-family: Arial, Helvetica, sans-serif;
             font-size: 11px;
@@ -30,6 +34,7 @@
             border: 2px solid {{ $selectedColor['primary'] }};
             background: #fff;
             overflow: hidden;
+            transform: translateY(0);
         }
 
         @media screen {
@@ -43,7 +48,7 @@
             }
 
             .portal-report-toolbar + .page {
-                margin-top: 86px;
+                margin-top: 96px;
             }
         }
 
@@ -728,6 +733,7 @@
         <script>
             window.addEventListener('load', function () {
                 setTimeout(function () {
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
                     window.print();
                 }, 300);
             });

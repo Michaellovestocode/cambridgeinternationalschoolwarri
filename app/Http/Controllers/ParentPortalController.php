@@ -40,6 +40,13 @@ class ParentPortalController extends Controller
             ->take(6)
             ->get();
 
+        $developmentalReports = DevelopmentalReport::with(['class', 'student', 'session', 'term'])
+            ->whereIn('student_id', $childIds)
+            ->where('status', DevelopmentalReport::STATUS_PUBLISHED)
+            ->latest()
+            ->take(6)
+            ->get();
+
         $classExams = Exam::query()
             ->with([
                 'classes:id,name',
@@ -123,6 +130,7 @@ class ParentPortalController extends Controller
             'children',
             'attempts',
             'reportCards',
+            'developmentalReports',
             'enquiries',
             'recentMessages',
             'notifications',

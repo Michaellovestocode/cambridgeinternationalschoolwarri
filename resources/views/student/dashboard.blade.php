@@ -60,7 +60,7 @@
                                 View Report Cards
                             </a>
                             <a href="#developmental-reports" class="bg-white/20 hover:bg-white/40 text-white px-5 py-3 rounded-2xl border border-white/30 font-semibold shadow-sm transition">
-                                View Developmental Reports
+                                View Developmental Report Cards
                             </a>
                         </div>
                     </div>
@@ -288,7 +288,7 @@
 
     <!-- Report Cards -->
     <!-- Developmental Reports -->
-    <div id="developmental-reports" class="bg-white rounded-2xl shadow-lg overflow-hidden mb-6">
+    <div id="developmental-reports" class="bg-white rounded-2xl shadow-lg overflow-hidden mb-6 scroll-mt-24">
         <div class="bg-gradient-to-r from-emerald-50 to-teal-50 px-6 py-4 border-b border-gray-100">
             <h3 class="text-xl font-bold text-gray-800">Developmental Reports</h3>
         </div>
@@ -318,7 +318,7 @@
             @endforelse
         </div>
     </div>
-    <div id="report-cards" class="bg-white rounded-2xl shadow-lg overflow-hidden">
+    <div id="report-cards" class="bg-white rounded-2xl shadow-lg overflow-hidden scroll-mt-24">
         <div class="bg-gradient-to-r from-amber-50 to-green-50 px-6 py-4 border-b border-gray-100">
             <h3 class="text-xl font-bold text-gray-800">Report Cards</h3>
         </div>

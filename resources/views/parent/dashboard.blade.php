@@ -17,7 +17,8 @@
                 <a href="{{ route('parent.messages.index') }}" class="px-4 py-2 rounded-full text-sm font-semibold bg-rose-50 text-rose-700">
                     Messages {{ $unreadMessagesCount > 0 ? '(' . $unreadMessagesCount . ' new)' : '' }}
                 </a>
-                <span class="px-4 py-2 rounded-full text-sm font-semibold bg-blue-50 text-blue-600">Children {{ $notifications['children'] }}</span>
+                <a href="#report-cards" class="px-4 py-2 rounded-full text-sm font-semibold bg-blue-50 text-blue-700">View Report Cards</a>
+                <a href="#developmental-reports" class="px-4 py-2 rounded-full text-sm font-semibold bg-emerald-50 text-emerald-700">View Developmental Report Cards</a>
                 <span class="px-4 py-2 rounded-full text-sm font-semibold bg-amber-50 text-amber-700">Upcoming Exams {{ $notifications['upcomingExams'] }}</span>
                 <span class="px-4 py-2 rounded-full text-sm font-semibold bg-green-50 text-green-600">New Results {{ $notifications['gradedAttempts'] }}</span>
                 <span class="px-4 py-2 rounded-full text-sm font-semibold bg-indigo-50 text-indigo-600">Report Cards {{ $notifications['reportCards'] }}</span>
@@ -181,8 +182,8 @@
         </div>
     </div>
 
-    <div class="grid gap-6 lg:grid-cols-2">
-        <div class="bg-white rounded-3xl shadow-lg p-6 space-y-4">
+    <div class="grid gap-6 lg:grid-cols-3">
+        <div id="report-cards" class="bg-white rounded-3xl shadow-lg p-6 space-y-4 scroll-mt-24">
             <h3 class="text-xl font-bold text-gray-900">Report Cards</h3>
             <div class="space-y-3">
                 @forelse($reportCards as $reportCard)
@@ -198,6 +199,26 @@
                     </div>
                 @empty
                     <p class="text-sm text-gray-500">No report cards are available yet. Published report cards appear here after fee clearance is approved for each child.</p>
+                @endforelse
+            </div>
+        </div>
+
+        <div id="developmental-reports" class="bg-white rounded-3xl shadow-lg p-6 space-y-4 scroll-mt-24">
+            <h3 class="text-xl font-bold text-gray-900">Developmental Report Cards</h3>
+            <div class="space-y-3">
+                @forelse($developmentalReports as $developmentalReport)
+                    <div class="border border-gray-100 rounded-2xl p-4 flex justify-between items-center gap-3">
+                        <div>
+                            <p class="text-sm text-gray-500">{{ $developmentalReport->session?->name ?? 'Session' }} - {{ $developmentalReport->term?->name ?? 'Term' }}</p>
+                            <p class="font-semibold text-gray-900">{{ $developmentalReport->student->name ?? 'Student' }}</p>
+                        </div>
+                        <div class="flex gap-3 text-xs font-semibold">
+                            <a href="{{ route('parent.developmental-reports.preview', $developmentalReport) }}" class="text-emerald-600 hover:underline">View</a>
+                            <a href="{{ route('parent.developmental-reports.preview', ['developmentalReport' => $developmentalReport, 'print' => 1]) }}" class="text-gray-700 hover:underline">Print</a>
+                        </div>
+                    </div>
+                @empty
+                    <p class="text-sm text-gray-500">No developmental report cards are available yet. Published developmental reports appear here once the school publishes them.</p>
                 @endforelse
             </div>
         </div>
