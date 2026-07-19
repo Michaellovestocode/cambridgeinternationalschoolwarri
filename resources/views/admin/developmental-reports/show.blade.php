@@ -76,7 +76,23 @@
     </style>
 </head>
 <body>
-    @if(($renderMode ?? 'browser') === 'browser')
+    @php
+        $isAdminView = auth()->check() && auth()->user()->isAdmin();
+        $showToolbar = ($renderMode ?? 'browser') === 'browser' && $isAdminView;
+        $autoPrint = request('print') && ($renderMode ?? 'browser') === 'browser';
+    @endphp
+
+    @if($autoPrint)
+        <script>
+            window.addEventListener('load', function () {
+                setTimeout(function () {
+                    window.print();
+                }, 300);
+            });
+        </script>
+    @endif
+
+    @if($showToolbar)
         <div class="toolbar">
             <a href="{{ route('admin.developmental-reports.index', ['class_id' => $developmentalReport->class_id, 'session_id' => $developmentalReport->session_id, 'term_id' => $developmentalReport->term_id]) }}">Back</a>
             <a href="{{ route('admin.developmental-reports.edit', ['student' => $developmentalReport->student_id, 'session_id' => $developmentalReport->session_id, 'term_id' => $developmentalReport->term_id]) }}">Edit</a>
@@ -84,22 +100,23 @@
             <button type="button" onclick="window.print()">Print</button>
         </div>
 
-        @if(auth()->check() && auth()->user()->isAdmin())
-            @if(! $developmentalReport->isPublished())
-                <form method="POST" action="{{ route('admin.developmental-reports.publish', $developmentalReport) }}" class="toolbar" style="margin-top:-8px;">
-                    @csrf
-                    @method('PUT')
-                    <input name="authority_remark" value="{{ $developmentalReport->authority_remark }}" placeholder="{{ $developmentalReport->authorityTitle() }} remark" style="flex:1; border:1px solid #cbd5e1; border-radius:8px; padding:10px 12px;">
-                    <button type="submit">Publish</button>
-                </form>
-            @else
-                <form method="POST" action="{{ route('admin.developmental-reports.unpublish', $developmentalReport) }}" class="toolbar" style="margin-top:-8px;">
-                    @csrf
-                    @method('PUT')
-                    <input type="hidden" name="reason" value="reverted by admin">
-                    <button type="submit" class="bg-yellow-500 text-white px-4 py-2 rounded">Unpublish</button>
-                </form>
-            @endif
+        @if(! $developmentalReport->isPublished())
+            <form method="POST" action="{{ route('admin.developmental-reports.publish', $developmentalReport) }}" class="toolbar" style="margin-top:-8px;">
+                @csrf
+                @method('PUT')
+                <input name="authority_remark" value="{{ $developmentalReport->authority_remark }}" placeholder="{{ $developmentalReport->authorityTitle() }} remark" style="flex:1; border:1px solid #cbd5e1; border-radius:8px; padding:10px 12px;">
+                <button type="submit">Publish</button>
+                <button type="submit" name="bypass_validation" value="1" class="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg font-medium" onclick="return confirm('Publish this developmental report anyway despite missing details?')">
+                    Publish Anyway
+                </button>
+            </form>
+        @else
+            <form method="POST" action="{{ route('admin.developmental-reports.unpublish', $developmentalReport) }}" class="toolbar" style="margin-top:-8px;">
+                @csrf
+                @method('PUT')
+                <input type="hidden" name="reason" value="reverted by admin">
+                <button type="submit" class="bg-yellow-500 text-white px-4 py-2 rounded">Unpublish</button>
+            </form>
         @endif
     @endif
 

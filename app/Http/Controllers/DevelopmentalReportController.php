@@ -213,6 +213,8 @@ class DevelopmentalReportController extends Controller
             'authority_remark' => ['nullable', 'string', 'max:1200'],
         ]);
 
+        $bypassValidation = $request->boolean('bypass_validation');
+
         $this->snapshotSigners($developmentalReport);
         $developmentalReport->update([
             'authority_remark' => $validated['authority_remark'] ?? $developmentalReport->authority_remark,
@@ -221,7 +223,11 @@ class DevelopmentalReportController extends Controller
             'published_by' => $request->user()->id,
         ]);
 
-        return back()->with('success', 'Developmental report published.');
+        $message = $bypassValidation
+            ? 'Developmental report published anyway.'
+            : 'Developmental report published.';
+
+        return back()->with('success', $message);
     }
 
     public function unpublish(Request $request, DevelopmentalReport $developmentalReport)

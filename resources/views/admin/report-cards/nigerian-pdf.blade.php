@@ -708,6 +708,10 @@
         $isLowerSchool = $authorityRole !== 'principal';
         $seniorRemarkLabel = $authorityTitle . "'s Remark:";
     @endphp
+    @php
+        $autoPrint = request('print') && $renderMode === 'browser';
+    @endphp
+
     @if($renderMode === 'browser' && (!empty($portal['back_url']) || !empty($portal['print_url']) || !empty($portal['download_url'])))
         <div class="portal-report-toolbar">
             <div class="portal-report-toolbar-title">{{ $portal['title'] ?? 'Report Card' }}</div>
@@ -718,6 +722,16 @@
                 <button type="button" onclick="window.print()" class="portal-report-download">Print</button>
             </div>
         </div>
+    @endif
+
+    @if($autoPrint)
+        <script>
+            window.addEventListener('load', function () {
+                setTimeout(function () {
+                    window.print();
+                }, 300);
+            });
+        </script>
     @endif
     <div class="page {{ $isLowerSchool ? 'lower-school' : '' }}">
         <div class="inner-frame"></div>
