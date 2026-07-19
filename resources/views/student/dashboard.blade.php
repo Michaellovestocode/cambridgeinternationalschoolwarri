@@ -56,11 +56,17 @@
                         </div>
                         <p class="text-white/70 text-xs md:text-sm mt-3 italic">"My school is a place of light, where dreams are shaped both day and night"</p>
                         <div class="mt-6 flex flex-wrap gap-3">
+                            <a href="{{ route('attendance.my') }}" class="bg-white/20 hover:bg-white/40 text-white px-5 py-3 rounded-2xl border border-white/30 font-semibold shadow-sm transition">
+                                Attendance
+                            </a>
+                            <a href="{{ route('student.learning.index') }}" class="bg-white/20 hover:bg-white/40 text-white px-5 py-3 rounded-2xl border border-white/30 font-semibold shadow-sm transition">
+                                Learning
+                            </a>
                             <a href="#report-cards" class="bg-white/20 hover:bg-white/40 text-white px-5 py-3 rounded-2xl border border-white/30 font-semibold shadow-sm transition">
-                                View Report Cards
+                                Report Cards
                             </a>
                             <a href="#developmental-reports" class="bg-white/20 hover:bg-white/40 text-white px-5 py-3 rounded-2xl border border-white/30 font-semibold shadow-sm transition">
-                                View Developmental Report Cards
+                                Developmental Report Cards
                             </a>
                         </div>
                     </div>
