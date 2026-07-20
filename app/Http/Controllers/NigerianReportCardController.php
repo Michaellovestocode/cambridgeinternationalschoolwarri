@@ -119,6 +119,7 @@ class NigerianReportCardController extends Controller
             ReportCard::WORKFLOW_SUBMITTED,
             ReportCard::WORKFLOW_REJECTED,
             ReportCard::WORKFLOW_ACADEMIC_APPROVED,
+            ReportCard::WORKFLOW_PUBLISHED,
         ];
 
         $reviewBaseQuery = ReportCard::query()
@@ -150,6 +151,7 @@ class NigerianReportCardController extends Controller
                     ReportCard::WORKFLOW_SUBMITTED,
                     ReportCard::WORKFLOW_REJECTED,
                     ReportCard::WORKFLOW_ACADEMIC_APPROVED,
+                    ReportCard::WORKFLOW_PUBLISHED,
                 ])->count());
                 $class->review_submitted_count = $classCards->where('workflow_status', ReportCard::WORKFLOW_SUBMITTED)->count();
                 $class->review_rejected_count = $classCards->where('workflow_status', ReportCard::WORKFLOW_REJECTED)->count();
