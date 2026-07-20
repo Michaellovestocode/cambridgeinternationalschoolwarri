@@ -639,11 +639,19 @@
         $schoolPhone = '+234 803 289 7744';
         $schoolEmail = 'info@cambridgeinternationalschoolwarri.com';
         $schoolWebsite = 'cambridgeinternationalschoolwarri.com';
-        $termReportName = str($reportCard->term->name)
+        $termName = trim((string) ($reportCard->term->name ?? ''));
+        $termName = str($termName)
             ->replaceMatches('/\b1st\b/i', 'First')
             ->replaceMatches('/\b2nd\b/i', 'Second')
             ->replaceMatches('/\b3rd\b/i', 'Third')
-            ->upper();
+            ->toString();
+        $termReportName = $termName;
+
+        if (! preg_match('/\bterm\b/i', $termReportName)) {
+            $termReportName .= ' Term';
+        }
+
+        $termReportName = strtoupper($termReportName);
         $affectiveTraits = [
             'punctuality' => 'Punctuality',
             'neatness' => 'Neatness',
