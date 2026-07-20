@@ -84,7 +84,7 @@
                     </div>
                     <span class="rounded-full bg-gray-900 px-3 py-1 text-xs font-bold text-white">{{ $class->learner_total }} learners</span>
                 </div>
-                <div class="mt-4 grid grid-cols-2 gap-3 text-sm sm:grid-cols-4">
+                <div class="mt-4 grid grid-cols-2 gap-3 text-sm sm:grid-cols-5">
                     <div class="rounded-lg bg-gray-50 p-3">
                         <p class="text-gray-700">Not Submitted</p>
                         <p class="font-bold text-gray-950">{{ $class->not_submitted_count }}</p>
@@ -100,6 +100,10 @@
                     <div class="rounded-lg bg-emerald-50 p-3">
                         <p class="text-emerald-700">Approved</p>
                         <p class="font-bold text-emerald-950">{{ $class->review_approved_count }}</p>
+                    </div>
+                    <div class="rounded-lg bg-indigo-50 p-3">
+                        <p class="text-indigo-700">Published</p>
+                        <p class="font-bold text-indigo-950">{{ $class->review_published_count }}</p>
                     </div>
                 </div>
             </a>

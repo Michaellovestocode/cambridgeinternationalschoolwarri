@@ -156,6 +156,7 @@ class NigerianReportCardController extends Controller
                 $class->review_submitted_count = $classCards->where('workflow_status', ReportCard::WORKFLOW_SUBMITTED)->count();
                 $class->review_rejected_count = $classCards->where('workflow_status', ReportCard::WORKFLOW_REJECTED)->count();
                 $class->review_approved_count = $classCards->where('workflow_status', ReportCard::WORKFLOW_ACADEMIC_APPROVED)->count();
+                $class->review_published_count = $classCards->where('workflow_status', ReportCard::WORKFLOW_PUBLISHED)->count();
 
                 return $class;
             });
