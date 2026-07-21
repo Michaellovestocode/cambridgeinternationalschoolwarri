@@ -1004,7 +1004,10 @@
                         <div class="overall-grade-box">
                             <div class="summary-title">OVERALL GRADE</div>
                             <div class="overall-grade-value">
-                                {{ \App\Models\Subject::getRemark($reportCard->overall_grade) }}, {{ $reportCard->overall_grade }}
+                                @php
+                                    $displayOverallGrade = $summarySubjectCount > 0 ? $summaryGrade : ($reportCard->overall_grade ?? 'F9');
+                                @endphp
+                                {{ \App\Models\Subject::getRemark($displayOverallGrade) }}, {{ $displayOverallGrade }}
                             </div>
                         </div>
                     </div>
