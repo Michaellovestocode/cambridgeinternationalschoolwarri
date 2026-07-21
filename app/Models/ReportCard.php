@@ -146,6 +146,7 @@ class ReportCard extends Model
             ->where('term_id', $termId)
             ->where('status', '!=', 'draft')
             ->whereNotNull('total')
+            ->where('total', '>', 0)
             ->with('subject')
             ->join('subjects', 'scores.subject_id', '=', 'subjects.id')
             ->select('scores.*')

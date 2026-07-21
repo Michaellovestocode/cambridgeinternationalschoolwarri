@@ -43,14 +43,7 @@ class ReportCardRenderService
     {
         $reportCard->loadMissing(['student.class', 'session', 'term']);
 
-        $scores = Score::where('student_id', $reportCard->student_id)
-            ->where('session_id', $reportCard->session_id)
-            ->where('term_id', $reportCard->term_id)
-            ->with('subject')
-            ->join('subjects', 'scores.subject_id', '=', 'subjects.id')
-            ->select('scores.*')
-            ->orderBy('subjects.name')
-            ->get();
+        $scores = $reportCard->scores();
 
         $schoolSettings = SchoolSettings::getSettings();
         $colorSchemes = $this->colorSchemes();
