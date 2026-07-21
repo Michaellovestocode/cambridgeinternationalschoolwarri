@@ -111,12 +111,19 @@ class ReportCard extends Model
         return $this->belongsTo(User::class, 'academic_reviewed_by');
     }
 
-    // Get all scores for this report
+    // Get all valid scores for this report
     public function scores()
     {
-        return Score::where('student_id', $this->student_id)
-            ->where('session_id', $this->session_id)
-            ->where('term_id', $this->term_id)
+        return self::studentSubjectScores($this->student_id, $this->session_id, $this->term_id);
+    }
+
+    public static function studentSubjectScores($studentId, $sessionId, $termId)
+    {
+        return Score::where('student_id', $studentId)
+            ->where('session_id', $sessionId)
+            ->where('term_id', $termId)
+            ->where('status', '!=', 'draft')
+            ->whereNotNull('total')
             ->with('subject')
             ->join('subjects', 'scores.subject_id', '=', 'subjects.id')
             ->select('scores.*')
@@ -234,22 +241,34 @@ class ReportCard extends Model
     // Generate report summary data
     public static function generateForStudent($studentId, $sessionId, $termId)
     {
-        $scores = Score::where('student_id', $studentId)
-            ->where('session_id', $sessionId)
-            ->where('term_id', $termId)
-            ->where('status', '!=', 'draft')
-            ->join('subjects', 'scores.subject_id', '=', 'subjects.id')
-            ->select('scores.*')
-            ->orderBy('subjects.name')
-            ->get();
+        $scores = self::studentSubjectScores($studentId, $sessionId, $termId);
 
         if ($scores->isEmpty()) {
             return null;
         }
 
         $student = User::find($studentId);
-        $totalScore = $scores->sum('total');
-        $averageScore = $scores->avg('total');
+        $classSubjectIds = [];
+
+        if ($student?->class_id) {
+            $classSubjectIds = SchoolClass::find($student->class_id)?->subjects()
+                ->active()
+                ->pluck('subjects.id')
+                ->map(fn ($id) => (int) $id)
+                ->all() ?? [];
+        }
+
+        $scoreMap = $scores->keyBy('subject_id');
+        $eligibleSubjectIds = $classSubjectIds !== [] ? $classSubjectIds : $scores->pluck('subject_id')->map(fn ($id) => (int) $id)->all();
+
+        $totalScore = 0.0;
+        foreach ($eligibleSubjectIds as $subjectId) {
+            $score = $scoreMap->get($subjectId);
+            $totalScore += (float) ($score?->total ?? 0);
+        }
+
+        $subjectCount = count($eligibleSubjectIds);
+        $averageScore = $subjectCount > 0 ? round($totalScore / $subjectCount, 2) : 0;
         $overallGrade = Subject::getGrade($averageScore);
 
         // Calculate grade distribution
@@ -264,8 +283,8 @@ class ReportCard extends Model
         // Position values are required by the report_cards schema, so default to 0
         // when the overall rank is not being calculated here.
         return [
-            'total_score' => $totalScore,
-            'average_score' => round($averageScore, 2),
+            'total_score' => round($totalScore, 2),
+            'average_score' => $averageScore,
             'overall_grade' => $overallGrade,
             'grade_summary' => $gradeSummary,
             'position' => 0,
