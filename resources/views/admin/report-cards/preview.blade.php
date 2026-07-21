@@ -136,8 +136,9 @@
                     $summarySubjectCount = isset($scores) ? $scores->count() : 0;
                     $summaryTotalScore = isset($scores) ? (float) $scores->sum('total') : (float) ($reportCard->total_score ?? 0);
                     $summaryAverage = $summarySubjectCount > 0 ? round($summaryTotalScore / $summarySubjectCount, 2) : 0;
+                    $summaryGrade = $summarySubjectCount > 0 ? \App\Models\Subject::getGrade($summaryAverage) : ($reportCard->overall_grade ?? 'F9');
                 @endphp
-                <p><span class="font-semibold text-gray-700">Overall Grade:</span> {{ $reportCard->overall_grade }}</p>
+                <p><span class="font-semibold text-gray-700">Overall Grade:</span> {{ $summaryGrade }}</p>
                 <p><span class="font-semibold text-gray-700">Average Score:</span> {{ number_format($summaryAverage, 1) }}%</p>
                 {{-- Position is intentionally omitted from the report card performance summary --}}
                 <p><span class="font-semibold text-gray-700">Last Score Update:</span> {{ $reportCard->scores_updated_at?->format('d M Y, H:i') ?? 'Not recorded' }}</p>

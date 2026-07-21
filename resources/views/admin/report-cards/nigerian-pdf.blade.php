@@ -906,12 +906,18 @@
                                 $summaryTotalScore = isset($scores) ? (float) $scores->sum('total') : (float) ($reportCard->total_score ?? 0);
                                 $summaryAverage = $summarySubjectCount > 0 ? round($summaryTotalScore / $summarySubjectCount, 2) : 0;
                             @endphp
+                            @php
+                                $summaryGrade = 
+                                    $summarySubjectCount > 0
+                                        ? \App\Models\Subject::getGrade($summaryAverage)
+                                        : ($reportCard->overall_grade ?? 'F9');
+                            @endphp
                             <div class="summary-item">Total Score: <strong>{{ number_format($reportCard->total_score, 1) }}</strong></div>
                             <div class="summary-item">Average: <strong>{{ number_format($summaryAverage, 1) }}%</strong></div>
                             @if($reportCard->position && $reportCard->total_students)
                                 <div class="summary-item">Position: <strong>{{ $reportCard->position }}/{{ $reportCard->total_students }}</strong></div>
                             @endif
-                            <div class="summary-item">Grade: <strong>{{ $reportCard->overall_grade }}</strong></div>
+                            <div class="summary-item">Grade: <strong>{{ $summaryGrade }}</strong></div>
                         </div>
                     </div>
                     <div class="summary-col">
@@ -983,15 +989,13 @@
                             <div class="summary-title">GRADE SCALE</div>
                             <table>
                                 <tr><th>Score</th><th>Grade</th><th>Remark</th></tr>
-                                <tr><td>75-100</td><td>A1</td><td>EXCELLENT</td></tr>
-                                <tr><td>70-74</td><td>B2</td><td>VERY GOOD</td></tr>
-                                <tr><td>65-69</td><td>B3</td><td>GOOD</td></tr>
-                                <tr><td>60-64</td><td>C4</td><td>CREDIT</td></tr>
-                                <tr><td>55-59</td><td>C5</td><td>CREDIT</td></tr>
-                                <tr><td>50-54</td><td>C6</td><td>CREDIT</td></tr>
-                                <tr><td>45-49</td><td>D7</td><td>PASS</td></tr>
-                                <tr><td>40-44</td><td>E8</td><td>PASS</td></tr>
-                                <tr><td>0-39</td><td>F9</td><td>FAIL</td></tr>
+                                @foreach(\App\Models\Subject::gradeScale() as $scaleRow)
+                                    <tr>
+                                        <td>{{ $scaleRow['min'] }}-{{ $scaleRow['max'] }}</td>
+                                        <td>{{ $scaleRow['grade'] }}</td>
+                                        <td>{{ $scaleRow['remark'] }}</td>
+                                    </tr>
+                                @endforeach
                             </table>
                         </div>
                     </div>

@@ -64,17 +64,30 @@ class Subject extends Model
         return $query->orderBy('order')->orderBy('name');
     }
 
+    public static function gradeScale(): array
+    {
+        return [
+            ['min' => 75, 'max' => 100, 'grade' => 'A1', 'remark' => 'EXCELLENT'],
+            ['min' => 70, 'max' => 74, 'grade' => 'B2', 'remark' => 'VERY GOOD'],
+            ['min' => 65, 'max' => 69, 'grade' => 'B3', 'remark' => 'GOOD'],
+            ['min' => 60, 'max' => 64, 'grade' => 'C4', 'remark' => 'CREDIT'],
+            ['min' => 55, 'max' => 59, 'grade' => 'C5', 'remark' => 'CREDIT'],
+            ['min' => 50, 'max' => 54, 'grade' => 'C6', 'remark' => 'CREDIT'],
+            ['min' => 45, 'max' => 49, 'grade' => 'D7', 'remark' => 'PASS'],
+            ['min' => 40, 'max' => 44, 'grade' => 'E8', 'remark' => 'PASS'],
+            ['min' => 0, 'max' => 39, 'grade' => 'F9', 'remark' => 'FAIL'],
+        ];
+    }
+
     // Helper: Get Nigerian grade from score
     public static function getGrade($score)
     {
-        if ($score >= 75) return 'A1';
-        if ($score >= 70) return 'B2';
-        if ($score >= 65) return 'B3';
-        if ($score >= 60) return 'C4';
-        if ($score >= 55) return 'C5';
-        if ($score >= 50) return 'C6';
-        if ($score >= 45) return 'D7';
-        if ($score >= 40) return 'E8';
+        foreach (self::gradeScale() as $range) {
+            if ($score >= $range['min'] && $score <= $range['max']) {
+                return $range['grade'];
+            }
+        }
+
         return 'F9';
     }
 
