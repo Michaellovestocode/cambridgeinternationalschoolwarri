@@ -3,6 +3,13 @@
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
     <title>Report Card - {{ $reportCard->student->name }}</title>
+    @php
+        $summarySubjectCount = isset($scores) ? $scores->count() : 0;
+        $summaryTotalScore = isset($scores) ? (float) $scores->sum('total') : (float) ($reportCard->total_score ?? 0);
+        $summaryAverage = $summarySubjectCount > 0 ? round($summaryTotalScore / $summarySubjectCount, 2) : 0;
+        $displayOverallGrade = $summarySubjectCount > 0 ? \App\Models\Subject::getGrade($summaryAverage) : ($reportCard->overall_grade ?? 'F9');
+    @endphp
+
     <style>
         * {
             margin: 0;
@@ -495,7 +502,7 @@
             font-size: 14px;
             font-weight: bold;
             padding: 12px 4px;
-            color: {{ $reportCard->overall_grade === 'F9' ? '#B91C1C' : $selectedColor['primary'] }};
+            color: {{ $displayOverallGrade === 'F9' ? '#B91C1C' : $selectedColor['primary'] }};
         }
         
         /* Comments */
