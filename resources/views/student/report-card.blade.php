@@ -16,11 +16,11 @@
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div class="bg-blue-50 rounded-2xl p-4">
             <p class="text-xs text-blue-700 font-semibold uppercase">Average</p>
-            <p class="text-3xl font-black text-blue-900 mt-1">{{ $reportCard->average_score !== null ? number_format($reportCard->average_score, 1) . '%' : 'N/A' }}</p>
+            <p class="text-3xl font-black text-blue-900 mt-1">{{ $reportCard->computed_average_score !== null ? number_format($reportCard->computed_average_score, 1) . '%' : ($reportCard->average_score !== null ? number_format($reportCard->average_score, 1) . '%' : 'N/A') }}</p>
         </div>
         <div class="bg-green-50 rounded-2xl p-4">
             <p class="text-xs text-green-700 font-semibold uppercase">Grade</p>
-            <p class="text-3xl font-black text-green-900 mt-1">{{ $reportCard->overall_grade ?? '-' }}</p>
+            <p class="text-3xl font-black text-green-900 mt-1">{{ $reportCard->computed_overall_grade ?? ($reportCard->overall_grade ?? '-') }}</p>
         </div>
         @if($reportCard->position && $reportCard->total_students)
             <div class="bg-purple-50 rounded-2xl p-4">

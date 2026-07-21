@@ -23,9 +23,9 @@
         <div class="bg-gray-50 p-4 rounded-2xl">
             <p class="text-xs text-gray-500">Total Average</p>
             <p class="text-3xl font-bold text-gray-900">
-                {{ $reportCard->average_score !== null ? number_format($reportCard->average_score, 1) . '%' : 'N/A' }}
+                {{ $reportCard->computed_average_score !== null ? number_format($reportCard->computed_average_score, 1) . '%' : ($reportCard->average_score !== null ? number_format($reportCard->average_score, 1) . '%' : 'N/A') }}
             </p>
-            <p class="text-sm text-gray-600 mt-1">Grade: {{ $reportCard->overall_grade ?? '-' }}</p>
+            <p class="text-sm text-gray-600 mt-1">Grade: {{ $reportCard->computed_overall_grade ?? ($reportCard->overall_grade ?? '-') }}</p>
         </div>
     </div>
 

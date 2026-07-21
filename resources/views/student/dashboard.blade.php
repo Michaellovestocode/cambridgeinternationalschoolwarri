@@ -322,10 +322,10 @@
                     <p class="text-sm text-gray-600 mt-1">{{ $reportCard->class->display_name ?? 'Class not assigned' }}</p>
                     <div class="flex flex-wrap gap-2 mt-3">
                         <span class="bg-blue-50 text-blue-700 text-xs font-bold px-3 py-1 rounded-full">
-                            Average: {{ $reportCard->average_score !== null ? number_format($reportCard->average_score, 1) . '%' : 'N/A' }}
+                            Average: {{ $reportCard->computed_average_score !== null ? number_format($reportCard->computed_average_score, 1) . '%' : ($reportCard->average_score !== null ? number_format($reportCard->average_score, 1) . '%' : 'N/A') }}
                         </span>
                         <span class="bg-green-50 text-green-700 text-xs font-bold px-3 py-1 rounded-full">
-                            Grade: {{ $reportCard->overall_grade ?? '-' }}
+                            Grade: {{ $reportCard->computed_overall_grade ?? ($reportCard->overall_grade ?? '-') }}
                         </span>
                     </div>
                 </div>

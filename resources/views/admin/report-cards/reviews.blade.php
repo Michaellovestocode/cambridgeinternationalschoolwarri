@@ -166,11 +166,11 @@
                     <div class="mt-4 grid grid-cols-3 gap-2 text-sm">
                         <div class="rounded-lg bg-blue-50 p-3">
                             <p class="text-blue-700">Average</p>
-                            <p class="font-bold text-blue-950">{{ number_format($reportCard->average_score, 1) }}%</p>
+                            <p class="font-bold text-blue-950">{{ number_format($reportCard->computed_average_score ?? $reportCard->average_score ?? 0, 1) }}%</p>
                         </div>
                         <div class="rounded-lg bg-purple-50 p-3">
                             <p class="text-purple-700">Grade</p>
-                            <p class="font-bold text-purple-950">{{ $reportCard->overall_grade }}</p>
+                            <p class="font-bold text-purple-950">{{ $reportCard->computed_overall_grade ?? ($reportCard->overall_grade ?? '-') }}</p>
                         </div>
                         @if($reportCard->position && $reportCard->total_students)
                             <div class="rounded-lg bg-amber-50 p-3">

@@ -117,6 +117,28 @@ class ReportCard extends Model
         return self::studentSubjectScores($this->student_id, $this->session_id, $this->term_id);
     }
 
+    public function getComputedTotalScoreAttribute()
+    {
+        return (float) $this->scores()->sum('total');
+    }
+
+    public function getComputedAverageScoreAttribute()
+    {
+        $scores = $this->scores();
+        $count = $scores->count();
+
+        return $count > 0 ? round($scores->sum('total') / $count, 2) : null;
+    }
+
+    public function getComputedOverallGradeAttribute()
+    {
+        if ($this->computed_average_score === null) {
+            return null;
+        }
+
+        return \App\Models\Subject::getGrade($this->computed_average_score);
+    }
+
     public static function studentSubjectScores($studentId, $sessionId, $termId)
     {
         return Score::where('student_id', $studentId)
