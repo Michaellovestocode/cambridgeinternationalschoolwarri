@@ -248,26 +248,8 @@ class ReportCard extends Model
         }
 
         $student = User::find($studentId);
-        $classSubjectIds = [];
-
-        if ($student?->class_id) {
-            $classSubjectIds = SchoolClass::find($student->class_id)?->subjects()
-                ->active()
-                ->pluck('subjects.id')
-                ->map(fn ($id) => (int) $id)
-                ->all() ?? [];
-        }
-
-        $scoreMap = $scores->keyBy('subject_id');
-        $eligibleSubjectIds = $classSubjectIds !== [] ? $classSubjectIds : $scores->pluck('subject_id')->map(fn ($id) => (int) $id)->all();
-
-        $totalScore = 0.0;
-        foreach ($eligibleSubjectIds as $subjectId) {
-            $score = $scoreMap->get($subjectId);
-            $totalScore += (float) ($score?->total ?? 0);
-        }
-
-        $subjectCount = count($eligibleSubjectIds);
+        $totalScore = (float) $scores->sum('total');
+        $subjectCount = $scores->count();
         $averageScore = $subjectCount > 0 ? round($totalScore / $subjectCount, 2) : 0;
         $overallGrade = Subject::getGrade($averageScore);
 
