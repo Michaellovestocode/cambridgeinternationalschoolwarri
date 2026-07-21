@@ -901,8 +901,13 @@
                     <div class="summary-col">
                         <div class="summary-box">
                             <div class="summary-title">PERFORMANCE SUMMARY</div>
+                            @php
+                                $summarySubjectCount = isset($scores) ? $scores->count() : 0;
+                                $summaryTotalScore = isset($scores) ? (float) $scores->sum('total') : (float) ($reportCard->total_score ?? 0);
+                                $summaryAverage = $summarySubjectCount > 0 ? round($summaryTotalScore / $summarySubjectCount, 2) : 0;
+                            @endphp
                             <div class="summary-item">Total Score: <strong>{{ number_format($reportCard->total_score, 1) }}</strong></div>
-                            <div class="summary-item">Average: <strong>{{ number_format($reportCard->average_score, 1) }}%</strong></div>
+                            <div class="summary-item">Average: <strong>{{ number_format($summaryAverage, 1) }}%</strong></div>
                             @if($reportCard->position && $reportCard->total_students)
                                 <div class="summary-item">Position: <strong>{{ $reportCard->position }}/{{ $reportCard->total_students }}</strong></div>
                             @endif

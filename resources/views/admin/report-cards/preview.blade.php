@@ -132,8 +132,13 @@
                     <span class="text-blue-700 font-medium">{{ $reportCard->term->next_term_begins ? $reportCard->term->next_term_begins->format('l, d M Y') : 'Not set' }}</span>
                     <span class="text-xs text-gray-500 block">Set by admin in Term settings</span>
                 </p>
+                @php
+                    $summarySubjectCount = isset($scores) ? $scores->count() : 0;
+                    $summaryTotalScore = isset($scores) ? (float) $scores->sum('total') : (float) ($reportCard->total_score ?? 0);
+                    $summaryAverage = $summarySubjectCount > 0 ? round($summaryTotalScore / $summarySubjectCount, 2) : 0;
+                @endphp
                 <p><span class="font-semibold text-gray-700">Overall Grade:</span> {{ $reportCard->overall_grade }}</p>
-                <p><span class="font-semibold text-gray-700">Average Score:</span> {{ number_format($reportCard->average_score, 1) }}%</p>
+                <p><span class="font-semibold text-gray-700">Average Score:</span> {{ number_format($summaryAverage, 1) }}%</p>
                 {{-- Position is intentionally omitted from the report card performance summary --}}
                 <p><span class="font-semibold text-gray-700">Last Score Update:</span> {{ $reportCard->scores_updated_at?->format('d M Y, H:i') ?? 'Not recorded' }}</p>
                 <p><span class="font-semibold text-gray-700">Workflow:</span> {{ $reportCard->workflowLabel() }}</p>
