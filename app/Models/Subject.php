@@ -82,8 +82,16 @@ class Subject extends Model
     // Helper: Get Nigerian grade from score
     public static function getGrade($score)
     {
-        foreach (self::gradeScale() as $range) {
-            if ($score >= $range['min'] && $score <= $range['max']) {
+        if (! is_numeric($score)) {
+            return 'F9';
+        }
+
+        $score = (float) $score;
+        $scale = collect(self::gradeScale())
+            ->sortByDesc('min');
+
+        foreach ($scale as $range) {
+            if ($score >= $range['min']) {
                 return $range['grade'];
             }
         }
