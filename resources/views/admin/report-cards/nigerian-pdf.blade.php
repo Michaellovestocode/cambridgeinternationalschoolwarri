@@ -921,8 +921,8 @@
                             @endphp
                             <div class="summary-item">Total Score: <strong>{{ number_format($reportCard->total_score, 1) }}</strong></div>
                             <div class="summary-item">Average: <strong>{{ number_format($summaryAverage, 1) }}%</strong></div>
-                            @if($reportCard->position && $reportCard->total_students)
-                                <div class="summary-item">Position: <strong>{{ $reportCard->position }}/{{ $reportCard->total_students }}</strong></div>
+                            @if($reportCard->position)
+                                <div class="summary-item">Position: <strong>{{ $reportCard->position }}</strong></div>
                             @endif
                             <div class="summary-item">Grade: <strong>{{ $summaryGrade }}</strong></div>
                         </div>

@@ -22,10 +22,10 @@
             <p class="text-xs text-green-700 font-semibold uppercase">Grade</p>
             <p class="text-3xl font-black text-green-900 mt-1">{{ $reportCard->computed_overall_grade ?? ($reportCard->overall_grade ?? '-') }}</p>
         </div>
-        @if($reportCard->position && $reportCard->total_students)
+        @if($reportCard->position)
             <div class="bg-purple-50 rounded-2xl p-4">
                 <p class="text-xs text-purple-700 font-semibold uppercase">Position</p>
-                <p class="text-3xl font-black text-purple-900 mt-1">{{ $reportCard->position }}/{{ $reportCard->total_students }}</p>
+                <p class="text-3xl font-black text-purple-900 mt-1">{{ $reportCard->position }}</p>
             </div>
         @endif
     </div>
