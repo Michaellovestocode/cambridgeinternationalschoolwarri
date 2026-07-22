@@ -84,7 +84,7 @@
         <div class="login-card bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl p-8 border border-white/30">
             <div class="text-center mb-8">
                 <h2 class="text-3xl font-bold text-gray-800 mb-2">Welcome Back</h2>
-                <p class="text-gray-600">Cambridge International Staffs/Learners Portal</p>
+                <p class="text-gray-600">Cambridge International Staff/Learners Portal</p>
             </div>
 
             @if($errors->any())
