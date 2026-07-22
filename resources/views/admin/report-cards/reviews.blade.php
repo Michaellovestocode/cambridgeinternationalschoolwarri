@@ -3,6 +3,27 @@
 @section('title', 'Academic Report Reviews')
 
 @section('content')
+@php
+    $formatOrdinal = function ($value) {
+        if ($value === null || $value === '') {
+            return new \Illuminate\Support\HtmlString('');
+        }
+
+        $position = (int) $value;
+        $suffix = 'th';
+
+        if ($position % 100 < 11 || $position % 100 > 13) {
+            $suffix = match ($position % 10) {
+                1 => 'st',
+                2 => 'nd',
+                3 => 'rd',
+                default => 'th',
+            };
+        }
+
+        return new \Illuminate\Support\HtmlString($position . '<sup class="text-[65%] leading-none align-super">' . $suffix . '</sup>');
+    };
+@endphp
 <div class="max-w-7xl mx-auto space-y-8">
     <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
         <div>
@@ -175,7 +196,7 @@
                         @if($reportCard->position)
                             <div class="rounded-lg bg-amber-50 p-3">
                                 <p class="text-amber-700">Position</p>
-                                <p class="font-bold text-amber-950">{{ $reportCard->position }}</p>
+                                <p class="font-bold text-amber-950">{!! $formatOrdinal($reportCard->position) !!}</p>
                             </div>
                         @endif
                     </div>

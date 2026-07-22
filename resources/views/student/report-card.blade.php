@@ -3,6 +3,27 @@
 @section('title', 'Report Card')
 
 @section('content')
+@php
+    $formatOrdinal = function ($value) {
+        if ($value === null || $value === '') {
+            return new \Illuminate\Support\HtmlString('');
+        }
+
+        $position = (int) $value;
+        $suffix = 'th';
+
+        if ($position % 100 < 11 || $position % 100 > 13) {
+            $suffix = match ($position % 10) {
+                1 => 'st',
+                2 => 'nd',
+                3 => 'rd',
+                default => 'th',
+            };
+        }
+
+        return new \Illuminate\Support\HtmlString($position . '<sup class="text-[65%] leading-none align-super">' . $suffix . '</sup>');
+    };
+@endphp
 <div class="bg-white rounded-3xl shadow-lg p-6 space-y-6">
     <div class="flex flex-wrap items-center justify-between gap-4">
         <div>
@@ -25,7 +46,7 @@
         @if($reportCard->position)
             <div class="bg-purple-50 rounded-2xl p-4">
                 <p class="text-xs text-purple-700 font-semibold uppercase">Position</p>
-                <p class="text-3xl font-black text-purple-900 mt-1">{{ $reportCard->position }}</p>
+                <p class="text-3xl font-black text-purple-900 mt-1">{!! $formatOrdinal($reportCard->position) !!}</p>
             </div>
         @endif
     </div>

@@ -8,6 +8,25 @@
         $summaryTotalScore = isset($scores) ? (float) $scores->sum('total') : (float) ($reportCard->total_score ?? 0);
         $summaryAverage = $summarySubjectCount > 0 ? round($summaryTotalScore / $summarySubjectCount, 2) : 0;
         $displayOverallGrade = $summarySubjectCount > 0 ? \App\Models\Subject::getGrade($summaryAverage) : ($reportCard->overall_grade ?? 'F9');
+        $formatOrdinal = function ($value) {
+            if ($value === null || $value === '') {
+                return new \Illuminate\Support\HtmlString('');
+            }
+
+            $position = (int) $value;
+            $suffix = 'th';
+
+            if ($position % 100 < 11 || $position % 100 > 13) {
+                $suffix = match ($position % 10) {
+                    1 => 'st',
+                    2 => 'nd',
+                    3 => 'rd',
+                    default => 'th',
+                };
+            }
+
+            return new \Illuminate\Support\HtmlString($position . '<sup class="ordinal-suffix">' . $suffix . '</sup>');
+        };
     @endphp
 
     <style>
@@ -368,6 +387,12 @@
 
         .position-cell {
             font-weight: bold;
+        }
+
+        .ordinal-suffix {
+            font-size: 65%;
+            line-height: 0;
+            vertical-align: super;
         }
         
         .grade-a {
@@ -880,7 +905,7 @@
                                 @endif
                             "><strong>{{ $score->grade }}</strong></td>
                             <td>{{ number_format($score->class_average, 1) }}</td>
-                            <td class="position-cell">{{ $score->position }}</td>
+                            <td class="position-cell">{!! $formatOrdinal($score->position) !!}</td>
                             <td>{{ strtoupper($score->remark) }}</td>
                         </tr>
                         @endforeach
@@ -922,7 +947,7 @@
                             <div class="summary-item">Total Score: <strong>{{ number_format($reportCard->total_score, 1) }}</strong></div>
                             <div class="summary-item">Average: <strong>{{ number_format($summaryAverage, 1) }}%</strong></div>
                             @if($reportCard->position)
-                                <div class="summary-item">Position: <strong>{{ $reportCard->position }}</strong></div>
+                                <div class="summary-item">Position: <strong>{!! $formatOrdinal($reportCard->position) !!}</strong></div>
                             @endif
                             <div class="summary-item">Grade: <strong>{{ $summaryGrade }}</strong></div>
                         </div>
