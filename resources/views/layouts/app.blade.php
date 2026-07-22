@@ -472,6 +472,43 @@
         </div>
     </main>
 
+    <script>
+        (function(){
+            // Redirect to login on session expiry for AJAX/fetch/XHR requests
+            var loginUrl = '{{ route('login') }}';
+
+            // Wrap fetch
+            if (window.fetch) {
+                var _fetch = window.fetch.bind(window);
+                window.fetch = function() {
+                    return _fetch.apply(null, arguments).then(function(response) {
+                        if (response && (response.status === 419 || response.status === 401)) {
+                            window.location.href = loginUrl;
+                            return Promise.reject(response);
+                        }
+                        return response;
+                    });
+                };
+            }
+
+            // Wrap XMLHttpRequest
+            (function(){
+                var OldXHR = window.XMLHttpRequest;
+                function NewXHR() {
+                    var real = new OldXHR();
+                    real.addEventListener('load', function(){
+                        try {
+                            if (this.status === 419 || this.status === 401) {
+                                window.location.href = loginUrl;
+                            }
+                        } catch (e) {}
+                    });
+                    return real;
+                }
+                window.XMLHttpRequest = NewXHR;
+            })();
+        })();
+    </script>
     @stack('scripts')
 </body>
 </html>
