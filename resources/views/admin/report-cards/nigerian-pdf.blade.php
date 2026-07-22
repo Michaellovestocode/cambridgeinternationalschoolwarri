@@ -880,7 +880,7 @@
                                 @endif
                             "><strong>{{ $score->grade }}</strong></td>
                             <td>{{ number_format($score->class_average, 1) }}</td>
-                            <td class="position-cell">{{ $score->position }}/{{ $score->total_students }}</td>
+                            <td class="position-cell">{{ $score->position }}</td>
                             <td>{{ strtoupper($score->remark) }}</td>
                         </tr>
                         @endforeach
