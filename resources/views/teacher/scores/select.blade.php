@@ -66,6 +66,19 @@
                 @enderror
             </div>
 
+            <!-- Optional Student Selection -->
+            <div>
+                <label for="student_id" class="block text-gray-700 font-bold mb-2">
+                    Select Student (optional)
+                </label>
+                <select name="student_id" id="student_id" class="w-full border-2 border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:border-blue-500">
+                    <option value="">-- All students in class (default) --</option>
+                </select>
+                <p id="student_empty_message" class="hidden text-sm text-amber-700 mt-2">
+                    No students found for this class.
+                </p>
+            </div>
+
             <!-- Score Mode -->
             <div>
                 <label class="block text-gray-700 font-bold mb-3">
@@ -125,10 +138,13 @@
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     const subjectsByClass = @json($subjectsByClass ?? []);
+    const studentsByClass = @json($studentsByClass ?? []);
     const classSelect = document.getElementById('class_id');
     const subjectSelect = document.getElementById('subject_id');
+    const studentSelect = document.getElementById('student_id');
     const subjectOptions = Array.from(subjectSelect.querySelectorAll('[data-subject-option]'));
     const emptyMessage = document.getElementById('subject_empty_message');
+    const studentEmptyMessage = document.getElementById('student_empty_message');
 
     function syncSubjectOptions() {
         const classId = classSelect.value;
@@ -156,8 +172,34 @@ document.addEventListener('DOMContentLoaded', function () {
         emptyMessage.classList.toggle('hidden', classId === '' || visibleCount > 0);
     }
 
+    function syncStudentOptions() {
+        const classId = classSelect.value;
+        const students = (studentsByClass[classId] || []);
+
+        // Clear existing options except the default
+        studentSelect.querySelectorAll('option:not([value=""])').forEach(opt => opt.remove());
+
+        if (!classId || students.length === 0) {
+            studentSelect.disabled = true;
+            studentEmptyMessage.classList.toggle('hidden', !(classId && students.length === 0));
+            return;
+        }
+
+        students.forEach(function (s) {
+            const option = document.createElement('option');
+            option.value = s.id;
+            option.textContent = s.name + ' — ' + (s.registration_number || 'N/A');
+            studentSelect.appendChild(option);
+        });
+
+        studentSelect.disabled = false;
+        studentEmptyMessage.classList.add('hidden');
+    }
+
     classSelect.addEventListener('change', syncSubjectOptions);
+    classSelect.addEventListener('change', syncStudentOptions);
     syncSubjectOptions();
+    syncStudentOptions();
 });
 </script>
 

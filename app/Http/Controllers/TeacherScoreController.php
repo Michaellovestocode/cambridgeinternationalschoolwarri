@@ -84,6 +84,19 @@ class TeacherScoreController extends Controller
         $teacher = Auth::user();
         $classes = $this->availableClassesFor($teacher);
         $subjects = $this->availableSubjectsFor($teacher);
+        $studentsByClass = $classes
+            ->mapWithKeys(fn (SchoolClass $class) => [
+                $class->id => User::where('class_id', $class->id)
+                    ->where('role', 'student')
+                    ->orderBy('name')
+                    ->get(['id', 'name', 'registration_number'])
+                    ->map(fn ($u) => [
+                        'id' => $u->id,
+                        'name' => $u->name,
+                        'registration_number' => $u->registration_number,
+                    ])
+                    ->values(),
+            ]);
         $subjectsByClass = $classes
             ->mapWithKeys(fn (SchoolClass $class) => [
                 $class->id => $this->availableSubjectsForClass($teacher, $class, $subjects)
@@ -92,7 +105,7 @@ class TeacherScoreController extends Controller
                     ->values(),
             ]);
         
-        return view('teacher.scores.select', compact('classes', 'subjects', 'subjectsByClass', 'activeSession', 'activeTerm'));
+        return view('teacher.scores.select', compact('classes', 'subjects', 'subjectsByClass', 'studentsByClass', 'activeSession', 'activeTerm'));
     }
     
     // ========== ENTER SCORES ==========
@@ -102,6 +115,7 @@ class TeacherScoreController extends Controller
         $request->validate([
             'class_id' => 'required|exists:school_classes,id',
             'subject_id' => 'required|exists:subjects,id',
+            'student_id' => 'nullable|exists:users,id',
             'score_mode' => 'nullable|in:all,first_test,notes,exam',
             'score_source' => 'nullable|in:paper,manual',
         ]);
@@ -131,6 +145,15 @@ class TeacherScoreController extends Controller
             ->where('role', 'student')
             ->orderBy('name')
             ->get();
+
+        // If a specific student was selected, restrict to that student only
+        if ($request->filled('student_id')) {
+            $students = $students->filter(fn ($s) => (int) $s->id === (int) $request->student_id)->values();
+
+            if ($students->isEmpty()) {
+                return redirect()->back()->with('error', 'Selected student not found in the chosen class.');
+            }
+        }
         
         // Get existing scores
         $scores = Score::where('class_id', $request->class_id)
