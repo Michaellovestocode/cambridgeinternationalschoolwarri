@@ -323,6 +323,24 @@ class TeacherScoreController extends Controller
                 $savedCount++;
             }
 
+            $affectedStudentIds = collect($request->input('scores', []))
+                ->pluck('student_id')
+                ->filter()
+                ->unique()
+                ->values()
+                ->all();
+
+            $draftStudentIds = Score::where('teacher_id', $teacher->id)
+                ->where('class_id', $request->class_id)
+                ->where('subject_id', $request->subject_id)
+                ->where('session_id', $activeSession->id)
+                ->where('term_id', $activeTerm->id)
+                ->where('status', 'draft')
+                ->pluck('student_id')
+                ->unique()
+                ->values()
+                ->all();
+
             $submittedDrafts = Score::where('teacher_id', $teacher->id)
                 ->where('class_id', $request->class_id)
                 ->where('subject_id', $request->subject_id)
@@ -330,6 +348,8 @@ class TeacherScoreController extends Controller
                 ->where('term_id', $activeTerm->id)
                 ->where('status', 'draft')
                 ->update(['status' => 'submitted']);
+
+            $affectedStudentIds = array_values(array_unique(array_merge($affectedStudentIds, $draftStudentIds)));
 
             Score::calculatePositions($request->subject_id, $request->class_id, $activeSession->id, $activeTerm->id);
 
@@ -341,7 +361,7 @@ class TeacherScoreController extends Controller
                 ->where('term_id', $activeTerm->id)
                 ->update(['class_average' => $classAverage]);
 
-            $generated = $this->refreshReportCardsForClass((int) $request->class_id, $activeSession, $activeTerm);
+            $generated = $this->refreshReportCardsForStudents($affectedStudentIds, (int) $request->class_id, $activeSession, $activeTerm);
 
             DB::commit();
         } catch (\Illuminate\Validation\ValidationException $e) {
@@ -1034,6 +1054,41 @@ class TeacherScoreController extends Controller
 
             $reportCard = ReportCard::firstOrNew([
                 'student_id' => $student->id,
+                'session_id' => $session->id,
+                'term_id' => $term->id,
+            ]);
+
+            $attributes = [
+                'class_id' => $classId,
+                'status' => 'generated',
+                'workflow_status' => ReportCard::WORKFLOW_DRAFT,
+                'review_required' => true,
+                'published_at' => null,
+                'scores_updated_at' => now(),
+                'next_term_begins' => $term->next_term_begins,
+            ];
+
+            $reportCard->applyGeneratedSummary($summary, $attributes);
+            $reportCard->save();
+            $generated++;
+        }
+
+        return $generated;
+    }
+
+    private function refreshReportCardsForStudents(array $studentIds, int $classId, Session $session, Term $term): int
+    {
+        $generated = 0;
+
+        foreach ($studentIds as $studentId) {
+            $summary = ReportCard::generateForStudent($studentId, $session->id, $term->id);
+
+            if (!$summary) {
+                continue;
+            }
+
+            $reportCard = ReportCard::firstOrNew([
+                'student_id' => $studentId,
                 'session_id' => $session->id,
                 'term_id' => $term->id,
             ]);
