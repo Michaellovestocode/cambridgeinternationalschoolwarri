@@ -186,14 +186,21 @@ class Score extends Model
             ->orderBy('total', 'desc')
             ->get();
 
-        $position = 1;
         $totalStudents = $scores->count();
+        $lastTotal = null;
+        $currentPosition = 0;
 
-        foreach ($scores as $score) {
+        foreach ($scores as $index => $score) {
+            if ($lastTotal === null || $score->total < $lastTotal) {
+                $currentPosition = $index + 1;
+            }
+
             $score->update([
-                'position' => $position++,
+                'position' => $currentPosition,
                 'total_students' => $totalStudents,
             ]);
+
+            $lastTotal = $score->total;
         }
     }
 }
