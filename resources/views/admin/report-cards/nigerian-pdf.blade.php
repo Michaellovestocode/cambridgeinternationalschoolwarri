@@ -541,19 +541,18 @@
         /* Comments */
         .comments-section {
             margin-top: 4px;
-            display: table;
+            display: flex;
+            gap: 6px;
             width: 100%;
-            table-layout: fixed;
-            border-spacing: 3px;
+            align-items: stretch;
         }
         
         .comment-box {
-            display: table-cell;
-            width: 50%;
+            flex: 1 1 0;
             border: 1.5px solid {{ $selectedColor['primary'] }};
-            padding: 6px;
+            padding: 5px;
             margin-bottom: 0;
-            min-height: 46px;
+            min-height: 40px;
             background: rgba(255, 255, 255, .9);
             vertical-align: top;
         }
@@ -609,6 +608,8 @@
             border-top: 1px solid {{ $selectedColor['primary'] }};
             border-bottom: 1px solid {{ $selectedColor['primary'] }};
             background: {{ $selectedColor['light'] }};
+            width: 100%;
+            clear: both;
         }
         
         /* Footer */
