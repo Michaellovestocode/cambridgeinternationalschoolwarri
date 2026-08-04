@@ -541,20 +541,14 @@
         /* Comments */
         .comments-section {
             margin-top: 4px;
-            display: flex;
-            gap: 6px;
-            width: 100%;
-            align-items: stretch;
         }
         
         .comment-box {
-            flex: 1 1 0;
             border: 1.5px solid {{ $selectedColor['primary'] }};
             padding: 5px;
-            margin-bottom: 0;
+            margin-bottom: 5px;
             min-height: 40px;
             background: rgba(255, 255, 255, .9);
-            vertical-align: top;
         }
         
         .comment-label {
