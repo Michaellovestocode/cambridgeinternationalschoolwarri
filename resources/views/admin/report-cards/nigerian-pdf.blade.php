@@ -55,7 +55,7 @@
         
         .page {
             width: {{ ($renderMode ?? 'pdf') === 'browser' ? '210mm' : '204mm' }};
-            padding: 8mm;
+            padding: 7mm;
             position: relative;
             border: 2px solid {{ $selectedColor['primary'] }};
             background: #fff;
@@ -616,10 +616,11 @@
         /* Footer */
         .footer {
             text-align: center;
-            margin-top: 4px;
-            padding-top: 2px;
+            margin-top: 2px;
+            padding-top: 1px;
             border-top: 2px solid {{ $selectedColor['primary'] }};
-            font-size: 8px;
+            font-size: 7.6px;
+            line-height: 1.0;
         }
         
         .confidential {
