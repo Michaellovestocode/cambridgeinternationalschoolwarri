@@ -616,8 +616,8 @@
         /* Footer */
         .footer {
             text-align: center;
-            margin-top: 6px;
-            padding-top: 3px;
+            margin-top: 4px;
+            padding-top: 2px;
             border-top: 2px solid {{ $selectedColor['primary'] }};
             font-size: 8px;
         }
@@ -625,14 +625,15 @@
         .confidential {
             color: red;
             font-weight: bold;
-            margin-top: 2px;
+            margin-top: 0;
+            line-height: 1.0;
         }
 
         .official-note {
-            margin-top: 2px;
+            margin-top: 0;
             color: #374151;
-            font-size: 7.3px;
-            line-height: 1.1;
+            font-size: 7.1px;
+            line-height: 1.0;
         }
 
         .lower-school .official-main .scores-table th {
