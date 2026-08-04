@@ -547,16 +547,22 @@
             border: 1.5px solid {{ $selectedColor['primary'] }};
             padding: 4px;
             margin-bottom: 4px;
-            min-height: 36px;
+            min-height: 32px;
             background: rgba(255, 255, 255, .9);
+        }
+
+        .comment-row {
+            display: flex;
+            align-items: flex-start;
+            gap: 4px;
         }
         
         .comment-label {
             font-weight: bold;
             font-size: 9px;
-            margin-bottom: 3px;
             color: {{ $selectedColor['primary'] }};
             text-transform: uppercase;
+            white-space: nowrap;
         }
         
         .comment-text {
@@ -564,16 +570,17 @@
             font-style: italic;
             min-height: 9px;
             line-height: 1.02;
+            flex: 1;
         }
         
         .signature-line {
             border-top: 1px solid #000;
             width: 100%;
-            max-width: 180px;
-            margin-top: 8px;
+            max-width: 170px;
+            margin-top: 6px;
             padding-top: 1px;
-            font-size: 9px;
-            line-height: 1.2;
+            font-size: 8.5px;
+            line-height: 1.15;
         }
 
         .signature-line.has-image {
@@ -588,17 +595,17 @@
 
         .signature-image {
             display: block;
-            width: 120px;
-            height: 34px;
+            width: 104px;
+            height: 28px;
             object-fit: contain;
             margin-bottom: 1px;
         }
 
         .next-term-box {
             text-align: center;
-            margin-top: 6px;
-            padding: 4px;
-            font-size: 9px;
+            margin-top: 4px;
+            padding: 3px;
+            font-size: 8.6px;
             border-top: 1px solid {{ $selectedColor['primary'] }};
             border-bottom: 1px solid {{ $selectedColor['primary'] }};
             background: {{ $selectedColor['light'] }};
@@ -1062,9 +1069,11 @@
         <!-- Comments -->
         <div class="comments-section">
             <div class="comment-box">
-                <div class="comment-label">Form Teacher's Remark:</div>
-                <div class="comment-text">
-                    {{ $reportCard->class_teacher_comment ?: '............................................................' }}
+                <div class="comment-row">
+                    <div class="comment-label">Form Teacher's Remark:</div>
+                    <div class="comment-text">
+                        {{ $reportCard->class_teacher_comment ?: '............................................................' }}
+                    </div>
                 </div>
                 <div class="signature-line {{ $formTeacherSignatureSrc ? 'has-image' : 'no-image' }}">
                     @if($formTeacherSignatureSrc)
@@ -1078,9 +1087,11 @@
             </div>
             
             <div class="comment-box">
-                <div class="comment-label">{{ $seniorRemarkLabel }}</div>
-                <div class="comment-text">
-                    {{ $reportCard->head_teacher_comment ?: '............................................................' }}
+                <div class="comment-row">
+                    <div class="comment-label">{{ $seniorRemarkLabel }}</div>
+                    <div class="comment-text">
+                        {{ $reportCard->head_teacher_comment ?: '............................................................' }}
+                    </div>
                 </div>
                 <div class="signature-line {{ $principalSignatureSrc ? 'has-image' : 'no-image' }}">
                     @if($principalSignatureSrc)
@@ -1102,7 +1113,6 @@
         <div class="footer">
             <div class="confidential">[CONFIDENTIAL]</div>
             <div class="official-note">This report is issued by {{ $schoolSettings->school_name ?: 'Cambridge International School' }} and is valid with authorised school remarks.</div>
-            <div style="margin-top: 3px;">&copy; {{ date('Y') }} {{ $schoolSettings->school_name ?: 'Cambridge International School' }}</div>
         </div>
     </div>
 </body>
