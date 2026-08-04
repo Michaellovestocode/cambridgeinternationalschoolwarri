@@ -47,8 +47,8 @@
 
         body {
             font-family: Arial, Helvetica, sans-serif;
-            font-size: 11px;
-            line-height: 1.3;
+            font-size: 10.5px;
+            line-height: 1.25;
             color: #000;
             background: #fff;
         }
@@ -320,6 +320,14 @@
             border-collapse: collapse;
             margin-bottom: 8px;
             font-size: 9px;
+            page-break-inside: auto;
+        }
+
+        .scores-table tr,
+        .summary-box,
+        .comment-box,
+        .next-term-box {
+            page-break-inside: avoid;
         }
         
         th, td {
@@ -533,14 +541,21 @@
         /* Comments */
         .comments-section {
             margin-top: 4px;
+            display: table;
+            width: 100%;
+            table-layout: fixed;
+            border-spacing: 3px;
         }
         
         .comment-box {
+            display: table-cell;
+            width: 50%;
             border: 1.5px solid {{ $selectedColor['primary'] }};
             padding: 6px;
-            margin-bottom: 5px;
-            min-height: 52px;
+            margin-bottom: 0;
+            min-height: 46px;
             background: rgba(255, 255, 255, .9);
+            vertical-align: top;
         }
         
         .comment-label {
@@ -552,16 +567,17 @@
         }
         
         .comment-text {
-            font-size: 10px;
+            font-size: 9.5px;
             font-style: italic;
-            min-height: 12px;
+            min-height: 10px;
             line-height: 1.05;
         }
         
         .signature-line {
             border-top: 1px solid #000;
-            width: 180px;
-            margin-top: 10px;
+            width: 100%;
+            max-width: 180px;
+            margin-top: 8px;
             padding-top: 1px;
             font-size: 9px;
             line-height: 1.2;
