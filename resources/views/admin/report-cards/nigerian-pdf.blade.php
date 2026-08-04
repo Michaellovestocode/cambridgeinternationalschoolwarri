@@ -55,7 +55,7 @@
         
         .page {
             width: {{ ($renderMode ?? 'pdf') === 'browser' ? '210mm' : '204mm' }};
-            padding: 9mm;
+            padding: 8mm;
             position: relative;
             border: 2px solid {{ $selectedColor['primary'] }};
             background: #fff;
@@ -349,7 +349,7 @@
         }
 
         .scores-table tbody tr td {
-            height: 18px;
+            height: 16px;
         }
         
         .subject-name {
@@ -545,9 +545,9 @@
         
         .comment-box {
             border: 1.5px solid {{ $selectedColor['primary'] }};
-            padding: 5px;
-            margin-bottom: 5px;
-            min-height: 40px;
+            padding: 4px;
+            margin-bottom: 4px;
+            min-height: 36px;
             background: rgba(255, 255, 255, .9);
         }
         
@@ -560,10 +560,10 @@
         }
         
         .comment-text {
-            font-size: 9.5px;
+            font-size: 8.8px;
             font-style: italic;
-            min-height: 10px;
-            line-height: 1.05;
+            min-height: 9px;
+            line-height: 1.02;
         }
         
         .signature-line {
@@ -596,9 +596,9 @@
 
         .next-term-box {
             text-align: center;
-            margin-top: 8px;
-            padding: 5px;
-            font-size: 10px;
+            margin-top: 6px;
+            padding: 4px;
+            font-size: 9px;
             border-top: 1px solid {{ $selectedColor['primary'] }};
             border-bottom: 1px solid {{ $selectedColor['primary'] }};
             background: {{ $selectedColor['light'] }};
