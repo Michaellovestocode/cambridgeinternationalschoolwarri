@@ -609,22 +609,23 @@
         /* Footer */
         .footer {
             text-align: center;
-            margin-top: 10px;
-            padding-top: 5px;
+            margin-top: 6px;
+            padding-top: 3px;
             border-top: 2px solid {{ $selectedColor['primary'] }};
-            font-size: 9px;
+            font-size: 8px;
         }
         
         .confidential {
             color: red;
             font-weight: bold;
-            margin-top: 5px;
+            margin-top: 2px;
         }
 
         .official-note {
-            margin-top: 3px;
+            margin-top: 2px;
             color: #374151;
-            font-size: 8px;
+            font-size: 7.3px;
+            line-height: 1.1;
         }
 
         .lower-school .official-main .scores-table th {
