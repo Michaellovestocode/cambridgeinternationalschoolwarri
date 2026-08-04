@@ -638,38 +638,73 @@
         }
 
         .lower-school .official-main .scores-table th {
-            padding-top: 4px;
-            padding-bottom: 4px;
+            padding-top: 3px;
+            padding-bottom: 3px;
+            font-size: 6.8px;
         }
 
         .lower-school .official-main .scores-table tbody tr td {
-            height: 26px;
-            font-size: 8.5px;
-            padding-top: 4px;
-            padding-bottom: 4px;
+            height: 14px;
+            font-size: 7.2px;
+            padding-top: 2px;
+            padding-bottom: 2px;
         }
 
         .lower-school .summary-section {
-            margin-top: 7px;
+            margin-top: 4px;
         }
 
         .lower-school .summary-box {
-            padding: 6px;
-            margin-bottom: 7px;
+            padding: 3px;
+            margin-bottom: 3px;
         }
 
         .lower-school .summary-title {
-            padding: 4px;
+            padding: 2px;
+            font-size: 8px;
         }
 
         .lower-school .summary-item {
-            padding: 2px 0;
-            font-size: 8.5px;
+            padding: 1px 0;
+            font-size: 7.2px;
         }
 
         .lower-school .comment-box {
-            min-height: 48px;
-            margin-bottom: 5px;
+            min-height: 28px;
+            padding: 3px;
+            margin-bottom: 3px;
+        }
+
+        .lower-school .comment-label {
+            font-size: 8px;
+        }
+
+        .lower-school .comment-text {
+            font-size: 7.8px;
+            line-height: 1.0;
+        }
+
+        .lower-school .signature-line {
+            max-width: 150px;
+            margin-top: 4px;
+            font-size: 7.5px;
+        }
+
+        .lower-school .signature-image {
+            width: 88px;
+            height: 22px;
+        }
+
+        .lower-school .next-term-box {
+            margin-top: 3px;
+            padding: 2px;
+            font-size: 7.8px;
+        }
+
+        .lower-school .footer {
+            margin-top: 2px;
+            padding-top: 1px;
+            font-size: 6.8px;
         }
     </style>
 </head>
