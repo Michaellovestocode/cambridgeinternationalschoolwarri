@@ -79,10 +79,27 @@
     </div>
 </div>
 
+<style>
+    .flash-success{ box-shadow: 0 8px 24px rgba(16,185,129,0.12); transform: translateY(-2px); transition: box-shadow .2s, transform .2s; }
+    .flash-error{ box-shadow: 0 8px 24px rgba(244,63,94,0.12); transform: translateY(-2px); transition: box-shadow .2s, transform .2s; }
+</style>
+
 <script>
 const form = document.getElementById('scanner-form');
 const input = document.getElementById('card_uid');
 const result = document.getElementById('scan-result');
+// Use downloadable audio files (place in public/sounds/)
+// Example paths: /sounds/success.mp3 and /sounds/error.mp3
+const successBeep = document.createElement('audio');
+successBeep.id = 'beep-success';
+successBeep.src = '/sounds/success.mp3';
+successBeep.preload = 'auto';
+const errorBeep = document.createElement('audio');
+errorBeep.id = 'beep-error';
+errorBeep.src = '/sounds/error.mp3';
+errorBeep.preload = 'auto';
+document.body.appendChild(successBeep);
+document.body.appendChild(errorBeep);
 
 function showResult(data, ok = true) {
     result.className = `mt-5 rounded-2xl border p-5 ${ok ? 'border-emerald-200 bg-emerald-50 text-emerald-900' : 'border-rose-200 bg-rose-50 text-rose-900'}`;
@@ -90,12 +107,22 @@ function showResult(data, ok = true) {
         ? `<p class="text-sm font-bold">${data.message}</p><p class="mt-2 text-2xl font-black">${data.person.name}</p><p class="text-sm">${data.person.role}${data.person.class ? ' • ' + data.person.class : ''}</p><p class="mt-3 text-sm">In: <strong>${data.record.check_in || '-'}</strong> | Out: <strong>${data.record.check_out || '-'}</strong></p>`
         : `<p class="text-sm font-bold">${data.message || 'Scan failed.'}</p>`;
     result.classList.remove('hidden');
+    // audio feedback (play downloadable files)
+    try { if (ok) successBeep.play().catch(()=>{}); else errorBeep.play().catch(()=>{}); } catch (e) {}
+    // visual flash
+    result.classList.add(ok ? 'flash-success' : 'flash-error');
+    setTimeout(() => result.classList.remove('flash-success', 'flash-error'), 420);
 }
 
-form.addEventListener('submit', async (event) => {
-    event.preventDefault();
-    const cardUid = input.value.trim();
+// debounce duplicate quick scans per UID
+const recentBlocked = new Map(); // uid -> timeoutId
+const blockMs = 5000; // 5 seconds
+
+async function postCard(cardUid) {
     if (!cardUid) return;
+    if (recentBlocked.has(cardUid)) return; // ignore quick duplicates
+    recentBlocked.set(cardUid, true);
+    setTimeout(() => recentBlocked.delete(cardUid), blockMs);
 
     try {
         const response = await fetch('{{ route('admin.attendance.scan') }}', {
@@ -114,9 +141,37 @@ form.addEventListener('submit', async (event) => {
 
     input.value = '';
     input.focus();
+}
+
+form.addEventListener('submit', (event) => {
+    event.preventDefault();
+    postCard(input.value.trim());
 });
 
 window.addEventListener('load', () => input.focus());
 document.addEventListener('click', () => input.focus());
+
+// Auto-submit fallback: submit on Enter and after a short pause from scanner input
+(function () {
+    let submitTimer = null;
+    const minLen = 3; // don't submit for extremely short inputs
+
+    input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            // Let the existing submit handler run
+            return;
+        }
+    });
+
+    input.addEventListener('input', () => {
+        clearTimeout(submitTimer);
+        const v = input.value.trim();
+        if (!v || v.length < minLen) return;
+        // Wait briefly for the scanner to finish typing, then submit
+        submitTimer = setTimeout(() => {
+            try { form.requestSubmit(); } catch (err) { form.submit(); }
+        }, 250);
+    });
+})();
 </script>
 @endsection

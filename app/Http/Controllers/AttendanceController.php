@@ -11,6 +11,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class AttendanceController extends Controller
 {
@@ -77,6 +78,18 @@ class AttendanceController extends Controller
         }
 
         if (! $record->check_out_at) {
+            // Prevent accidental immediate check-out right after check-in
+            if ($record->check_in_at && $now->diffInSeconds($record->check_in_at) < 10) {
+                // Log ignored scan for auditing and debugging
+                Log::info('Ignored attendance scan due to recent check-in', [
+                    'user_id' => $user->id,
+                    'card_uid' => $cardUid,
+                    'seconds_since_checkin' => $now->diffInSeconds($record->check_in_at),
+                ]);
+
+                return response()->json($this->scanResponse($record->fresh('user.class'), 'Scan ignored: recent check-in.'), 200);
+            }
+
             $record->fill([
                 'check_out_at' => $now,
                 'departure_status' => $now->format('H:i:s') < self::CLOSING_TIME
