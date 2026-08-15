@@ -12,12 +12,29 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\DevelopmentalReport;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Log;
+use App\Models\AttendanceRecord;
 
 class ParentPortalController extends Controller
 {
     public function __construct()
     {
         $this->middleware('role:parent');
+    }
+
+    public function attendance()
+    {
+        $parent = Auth::user();
+        $children = $parent->children()->with('class')->get();
+        $childIds = $children->pluck('id');
+
+        $records = AttendanceRecord::with('user')
+            ->whereIn('user_id', $childIds)
+            ->latest()
+            ->take(200)
+            ->get()
+            ->groupBy('user_id');
+
+        return view('parent.attendance', compact('children', 'records'));
     }
 
     public function dashboard()

@@ -12,6 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use App\Jobs\SendParentAttendanceSms;
 
 class AttendanceController extends Controller
 {
@@ -74,6 +75,9 @@ class AttendanceController extends Controller
                 'checked_in_by' => Auth::id(),
             ])->save();
 
+            // Dispatch SMS notification to parents about check-in
+            SendParentAttendanceSms::dispatch($user->id, $record->id, 'checkin');
+
             return response()->json($this->scanResponse($record->fresh('user.class'), 'Check-in recorded.'));
         }
 
@@ -97,6 +101,9 @@ class AttendanceController extends Controller
                     : AttendanceRecord::DEPARTURE_NORMAL,
                 'checked_out_by' => Auth::id(),
             ])->save();
+
+            // Dispatch SMS notification to parents about check-out
+            SendParentAttendanceSms::dispatch($user->id, $record->id, 'checkout');
 
             return response()->json($this->scanResponse($record->fresh('user.class'), 'Check-out recorded.'));
         }

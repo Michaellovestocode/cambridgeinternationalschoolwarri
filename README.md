@@ -371,6 +371,35 @@ php artisan view:clear
 ### Docker Deployment
 See `Dockerfile` for containerized deployment instructions.
 
+## SMS Provider Setup (Robase / Twilio)
+
+This project can notify parents by SMS when their child checks in or out. Two providers are supported:
+
+- Robase (recommended for Africa) — transactional SMS and OTP API.
+- Twilio — global SMS provider.
+
+Configure credentials in your `.env`:
+
+```env
+# For Robase (preferred)
+ROBASE_API_KEY=robe_xxx
+ROBASE_BASE_URL=https://api.robase.dev
+
+# Optional: Twilio (falls back to Twilio when configured)
+TWILIO_SID=your_twilio_sid
+TWILIO_TOKEN=your_twilio_token
+TWILIO_FROM=+1234567890
+
+# Queue connection (jobs dispatch SMS sending)
+QUEUE_CONNECTION=sync
+```
+
+Notes:
+- Use `QUEUE_CONNECTION=database` and run `php artisan queue:work` in production for reliable delivery.
+- Robase offers prepaid credits starting around ₦6 per message in Nigeria; see https://robase.dev/pricing for up-to-date rates.
+- Ensure parent phone numbers are stored in E.164 format (e.g., `+2348012345678`).
+
+
 ## 🐛 Troubleshooting
 
 | Issue | Solution |

@@ -17,6 +17,7 @@
                 <a href="{{ route('parent.messages.index') }}" class="px-4 py-2 rounded-full text-sm font-semibold bg-rose-50 text-rose-700">
                     Messages {{ $unreadMessagesCount > 0 ? '(' . $unreadMessagesCount . ' new)' : '' }}
                 </a>
+                    <a href="{{ route('parent.attendance') }}" class="px-4 py-2 rounded-full text-sm font-semibold bg-yellow-50 text-yellow-800">Attendance</a>
                 <a href="#report-cards" class="px-4 py-2 rounded-full text-sm font-semibold bg-blue-50 text-blue-700">View Report Cards</a>
                 <a href="#developmental-reports" class="px-4 py-2 rounded-full text-sm font-semibold bg-emerald-50 text-emerald-700">View Developmental Report Cards</a>
                 <span class="px-4 py-2 rounded-full text-sm font-semibold bg-amber-50 text-amber-700">Upcoming Exams {{ $notifications['upcomingExams'] }}</span>

@@ -117,6 +117,9 @@ Route::middleware('auth')->group(function () {
 
     Route::prefix('parent')->name('parent.')->middleware('role:parent')->group(function () {
         Route::get('/dashboard', [ParentPortalController::class, 'dashboard'])->name('dashboard');
+        
+        // Parent attendance view
+        Route::get('/attendance', [ParentPortalController::class, 'attendance'])->name('attendance');
         Route::get('/report-cards/{reportCard}', [ParentPortalController::class, 'previewReportCard'])->name('report-cards.preview');
         Route::get('/report-cards/{reportCard}/download', [ParentPortalController::class, 'downloadReportCard'])->name('report-cards.download');
         Route::get('/developmental-reports/{developmentalReport}', [ParentPortalController::class, 'previewDevelopmentalReport'])->name('developmental-reports.preview');
