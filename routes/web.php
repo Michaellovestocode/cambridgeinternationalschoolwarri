@@ -106,6 +106,7 @@ Route::middleware('auth')->group(function () {
 
     Route::prefix('admin/attendance')->name('admin.attendance.')->group(function () {
         Route::get('/scanner', [AttendanceController::class, 'scanner'])->name('scanner');
+        Route::post('/sounds', [AttendanceController::class, 'uploadSounds'])->name('sounds.upload');
         Route::post('/scan', [AttendanceController::class, 'scan'])->name('scan');
         Route::get('/today', [AttendanceController::class, 'today'])->name('today');
         Route::get('/monthly', [AttendanceController::class, 'monthly'])->name('monthly');

@@ -37,6 +37,38 @@ class AttendanceController extends Controller
         ]);
     }
 
+    public function uploadSounds(Request $request)
+    {
+        $this->authorizeAttendanceManager();
+
+        $validated = $request->validate([
+            'success' => ['nullable', 'file', 'mimes:mp3,wav,ogg,aac', 'max:2048'],
+            'error' => ['nullable', 'file', 'mimes:mp3,wav,ogg,aac', 'max:2048'],
+        ]);
+
+        try {
+            $target = public_path('sounds');
+            if (! is_dir($target)) {
+                mkdir($target, 0755, true);
+            }
+
+            if ($request->hasFile('success')) {
+                $file = $request->file('success');
+                $file->move($target, 'success.mp3');
+            }
+
+            if ($request->hasFile('error')) {
+                $file = $request->file('error');
+                $file->move($target, 'error.mp3');
+            }
+
+            return redirect()->route('admin.attendance.scanner')->with('success', 'Sound files updated.');
+        } catch (\Exception $e) {
+            Log::error('Failed to upload attendance sounds: ' . $e->getMessage());
+            return redirect()->route('admin.attendance.scanner')->with('error', 'Upload failed.');
+        }
+    }
+
     public function scan(Request $request): JsonResponse
     {
         $this->authorizeAttendanceManager();
