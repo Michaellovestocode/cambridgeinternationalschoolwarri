@@ -54,36 +54,7 @@
                 <a href="{{ route('attendance.my') }}" class="rounded-2xl bg-slate-100 px-4 py-4 text-center text-sm font-bold text-slate-700">My Log</a>
             </div>
 
-            @if(auth()->user()->canManageAttendance())
-                <div class="mt-4">
-                    @if(session('success'))
-                        <div class="rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-4 text-sm font-semibold text-emerald-800">{{ session('success') }}</div>
-                    @endif
-                    @if(session('error'))
-                        <div class="rounded-2xl border border-rose-200 bg-rose-50 px-5 py-4 text-sm font-semibold text-rose-800">{{ session('error') }}</div>
-                    @endif
-
-                    @php($successExists = file_exists(public_path('sounds/success.mp3')))
-                    @php($errorExists = file_exists(public_path('sounds/error.mp3')))
-
-                    <form method="POST" action="{{ route('admin.attendance.sounds.upload') }}" enctype="multipart/form-data" class="mt-3 grid grid-cols-2 gap-3 items-end">
-                        @csrf
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Success sound</label>
-                            <input type="file" name="success" accept="audio/*" class="w-full" />
-                            @if($successExists)<p class="text-xs text-gray-500 mt-1">Installed</p>@endif
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Error sound</label>
-                            <input type="file" name="error" accept="audio/*" class="w-full" />
-                            @if($errorExists)<p class="text-xs text-gray-500 mt-1">Installed</p>@endif
-                        </div>
-                        <div class="col-span-2">
-                            <button type="submit" class="rounded-2xl bg-slate-900 px-4 py-3 text-sm font-bold text-white">Upload Sounds</button>
-                        </div>
-                    </form>
-                </div>
-            @endif
+            
         </section>
 
         <section class="rounded-2xl bg-white p-5 shadow-xl sm:p-6">
@@ -119,18 +90,7 @@
 const form = document.getElementById('scanner-form');
 const input = document.getElementById('card_uid');
 const result = document.getElementById('scan-result');
-// Use downloadable audio files (place in public/sounds/)
-// Example paths: /sounds/success.mp3 and /sounds/error.mp3
-const successBeep = document.createElement('audio');
-successBeep.id = 'beep-success';
-successBeep.src = '/sounds/success.mp3';
-successBeep.preload = 'auto';
-const errorBeep = document.createElement('audio');
-errorBeep.id = 'beep-error';
-errorBeep.src = '/sounds/error.mp3';
-errorBeep.preload = 'auto';
-document.body.appendChild(successBeep);
-document.body.appendChild(errorBeep);
+// No audio playback in browser — use the scanner's hardware beep (default)
 
 function showResult(data, ok = true) {
     result.className = `mt-5 rounded-2xl border p-5 ${ok ? 'border-emerald-200 bg-emerald-50 text-emerald-900' : 'border-rose-200 bg-rose-50 text-rose-900'}`;
@@ -138,8 +98,7 @@ function showResult(data, ok = true) {
         ? `<p class="text-sm font-bold">${data.message}</p><p class="mt-2 text-2xl font-black">${data.person.name}</p><p class="text-sm">${data.person.role}${data.person.class ? ' • ' + data.person.class : ''}</p><p class="mt-3 text-sm">In: <strong>${data.record.check_in || '-'}</strong> | Out: <strong>${data.record.check_out || '-'}</strong></p>`
         : `<p class="text-sm font-bold">${data.message || 'Scan failed.'}</p>`;
     result.classList.remove('hidden');
-    // audio feedback (play downloadable files)
-    try { if (ok) successBeep.play().catch(()=>{}); else errorBeep.play().catch(()=>{}); } catch (e) {}
+    // no audio playback in browser; hardware scanner provides sound
     // visual flash
     result.classList.add(ok ? 'flash-success' : 'flash-error');
     setTimeout(() => result.classList.remove('flash-success', 'flash-error'), 420);
