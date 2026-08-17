@@ -78,11 +78,16 @@ class SendParentAttendanceSms implements ShouldQueue
                 $robaseKey = env('ROBASE_API_KEY');
                 if ($robaseKey) {
                     try {
+                        $payload = [
+                            'phone_number' => $to,
+                            'message' => $body,
+                        ];
+                        if ($sender = env('ROBASE_SENDER')) {
+                            $payload['sender'] = $sender;
+                        }
+
                         $resp = Http::withToken($robaseKey)
-                            ->post('https://api.robase.dev/v1/sms/send', [
-                                'phone_number' => $to,
-                                'message' => $body,
-                            ]);
+                            ->post(rtrim(env('ROBASE_BASE_URL', 'https://api.robase.dev'), '/') . '/v1/sms/send', $payload);
                         if (! $resp->successful()) {
                             Log::error('Robase SMS send failed', ['to' => $to, 'status' => $resp->status(), 'body' => $resp->body()]);
                         }

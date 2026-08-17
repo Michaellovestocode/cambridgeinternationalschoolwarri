@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Mail\AdmissionEnquiryAcknowledgement;
+use App\Mail\AdmissionEnquirySubmitted;
 use App\Models\AdmissionEnquiry;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -70,6 +71,17 @@ class AdminAdmissionEnquiryController extends Controller
 
         $previousStatus = $enquiry->status;
         $enquiry->update($payload);
+
+        // Forward the updated record to the configured admissions/admin email(s)
+        try {
+            Mail::to(config('admissions.email_to'))->send(new AdmissionEnquirySubmitted($enquiry));
+        } catch (\Throwable $exception) {
+            Log::warning('Admission enquiry admin forward email failed.', [
+                'enquiry_id' => $enquiry->id,
+                'target_email' => config('admissions.email_to'),
+                'error' => $exception->getMessage(),
+            ]);
+        }
         if ($enquiry->status === AdmissionEnquiry::STATUS_CONTACTED && $previousStatus !== AdmissionEnquiry::STATUS_CONTACTED) {
             Log::info('Admission enquiry marked contacted', ['id' => $enquiry->id, 'parent' => $enquiry->parent_name]);
             if ($enquiry->email) {

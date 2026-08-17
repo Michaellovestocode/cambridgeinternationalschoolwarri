@@ -40,10 +40,15 @@ class SendRobaseTestSms extends Command
         $this->info("Sending test SMS to {$phone} via Robase...");
 
         try {
-            $resp = Http::withToken($apiKey)->post($url, [
+            $payload = [
                 'phone_number' => $phone,
                 'message' => $message,
-            ]);
+            ];
+            if ($sender = env('ROBASE_SENDER')) {
+                $payload['sender'] = $sender;
+            }
+
+            $resp = Http::withToken($apiKey)->post($url, $payload);
 
             if ($resp->successful()) {
                 $this->info('Robase responded: ' . $resp->body());
