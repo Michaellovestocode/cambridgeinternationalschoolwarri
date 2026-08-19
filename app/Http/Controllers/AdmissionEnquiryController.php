@@ -35,12 +35,23 @@ class AdmissionEnquiryController extends Controller
             'payment_notes' => ['nullable', 'string', 'max:2000'],
         ]);
 
-        AdmissionFormPayment::create([
+        $payment = AdmissionFormPayment::create([
             ...$validated,
             'status' => AdmissionFormPayment::STATUS_PENDING,
             'ip_address' => $request->ip(),
             'user_agent' => substr((string) $request->userAgent(), 0, 1000),
         ]);
+
+        // Send email notification to admissions team
+        try {
+            Mail::to(config('admissions.email_to'))->send(new \App\Mail\AdmissionPaymentSubmitted($payment));
+        } catch (\Throwable $exception) {
+            Log::warning('Admission payment email delivery failed.', [
+                'payment_id' => $payment->id,
+                'target_email' => config('admissions.email_to'),
+                'error' => $exception->getMessage(),
+            ]);
+        }
 
         return redirect()
             ->route('apply.create')
