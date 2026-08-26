@@ -5,6 +5,7 @@
     <title>Report Card - {{ $reportCard->student->name }}</title>
     @php
         $summarySubjectCount = isset($scores) ? $scores->count() : 0;
+        $scoreCount = $summarySubjectCount;
         $summaryTotalScore = isset($scores) ? (float) $scores->sum('total') : (float) ($reportCard->total_score ?? 0);
         $summaryAverage = $summarySubjectCount > 0 ? round($summaryTotalScore / $summarySubjectCount, 2) : 0;
         $displayOverallGrade = $summarySubjectCount > 0 ? \App\Models\Subject::getGrade($summaryAverage) : ($reportCard->overall_grade ?? 'F9');
@@ -40,6 +41,11 @@
             margin: 0;
             size: A4 portrait;
         }
+
+        /* If there are many subjects, prefer landscape to get more vertical space */
+        @if($scoreCount >= 16)
+        @page { size: A4 landscape; margin: 3mm; }
+        @endif
         
         html {
             scroll-behavior: smooth;
@@ -54,8 +60,13 @@
         }
         
         .page {
-            width: {{ ($renderMode ?? 'pdf') === 'browser' ? '210mm' : '204mm' }};
-            padding: 7mm;
+            @if($scoreCount >= 16)
+                width: {{ ($renderMode ?? 'pdf') === 'browser' ? '287mm' : '282mm' }};
+                padding: 6mm;
+            @else
+                width: {{ ($renderMode ?? 'pdf') === 'browser' ? '210mm' : '204mm' }};
+                padding: 7mm;
+            @endif
             position: relative;
             border: 2px solid {{ $selectedColor['primary'] }};
             background: #fff;
@@ -710,6 +721,32 @@
             margin-top: 2px;
             padding-top: 1px;
             font-size: 6.8px;
+        }
+        /* Print-only fallback: tighten margins, hide watermark and apply slight scaling */
+        @media print {
+            @page { size: A4 portrait; margin: 4mm; }
+            html, body { margin: 0; padding: 0; }
+            .portal-report-toolbar { display: none !important; }
+            .watermark { display: none !important; }
+            .page {
+                padding: 4mm !important;
+                /* Use transform/zoom as a fallback to force content to fit
+                   in browser print previews. Dompdf may ignore zoom but
+                   browsers will respect it. */
+                transform: none !important;
+                -webkit-transform: scale(0.96);
+                -webkit-transform-origin: top left;
+                transform-origin: top left;
+                zoom: 0.96;
+                page-break-inside: avoid !important;
+            }
+            .page.compact-md { -webkit-transform: scale(0.94); zoom: 0.94; }
+            .page.compact-lg { -webkit-transform: scale(0.92); zoom: 0.92; }
+            .page.compact-xl { -webkit-transform: scale(0.88); zoom: 0.88; }
+
+            /* Squeeze table paddings for print */
+            .scores-table th, .scores-table td { padding: 1px 3px !important; }
+            .summary-box, .comment-box { padding: 2px !important; }
         }
         /* Compact variants to reduce spacing and font-size when there are many subjects */
         .page.compact-sm {
