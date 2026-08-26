@@ -61,6 +61,9 @@
             background: #fff;
             overflow: hidden;
             transform: translateY(0);
+            page-break-inside: avoid;
+            page-break-after: avoid;
+            page-break-before: avoid;
         }
 
         @media screen {
@@ -143,16 +146,18 @@
         }
 
         .watermark {
+            /* Center the watermark to avoid pushing content vertically and
+               reduce its size so it doesn't extend past the A4 page height. */
             position: absolute;
-            top: 118mm;
+            top: 50%;
             left: 50%;
-            width: 155mm;
-            height: 155mm;
-            margin-left: -77.5mm;
-            margin-top: -77.5mm;
+            width: 110mm;
+            height: 110mm;
+            transform: translate(-50%, -50%);
             opacity: 0.045;
             z-index: -1;
             text-align: center;
+            pointer-events: none;
         }
 
         .watermark img {
