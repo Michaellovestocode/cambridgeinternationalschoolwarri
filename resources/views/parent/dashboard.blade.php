@@ -196,6 +196,7 @@
                         <div class="flex gap-3 text-xs font-semibold">
                             <a href="{{ route('parent.report-cards.preview', $reportCard) }}" class="text-blue-600 hover:underline">View</a>
                             <a href="{{ route('parent.report-cards.preview', ['reportCard' => $reportCard, 'print' => 1]) }}" class="text-gray-700 hover:underline">Print</a>
+                            <a href="{{ route('parent.report-cards.download', $reportCard) }}" class="text-indigo-600 hover:underline">Download PDF</a>
                         </div>
                     </div>
                 @empty

@@ -338,6 +338,10 @@
                        class="bg-gray-900 hover:bg-black text-white px-6 py-3 rounded-xl font-bold shadow transition-all whitespace-nowrap">
                         Print
                     </a>
+                    <a href="{{ route('student.report-cards.download', $reportCard) }}" target="_blank"
+                       class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-xl font-bold shadow transition-all whitespace-nowrap">
+                        Download PDF
+                    </a>
                 </div>
             </div>
             @empty

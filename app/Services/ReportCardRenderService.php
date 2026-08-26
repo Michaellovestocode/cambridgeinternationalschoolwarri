@@ -19,9 +19,20 @@ class ReportCardRenderService
 
     public function download(ReportCard $reportCard)
     {
-        $pdf = Pdf::loadView('admin.report-cards.nigerian-pdf', $this->viewData($reportCard, 'pdf'));
+        $data = $this->viewData($reportCard, 'pdf');
 
-        $pdf->setPaper('A4', 'portrait');
+        // Determine subject count to choose orientation and apply compacting
+        $scores = $data['scores'] ?? collect();
+        $scoreCount = is_countable($scores) ? count($scores) : ($scores->count() ?? 0);
+
+        $orientation = $scoreCount >= 16 ? 'landscape' : 'portrait';
+
+        // Pass layout hints into the view data so blade can apply compact classes
+        $data['scoreCount'] = $scoreCount;
+
+        $pdf = Pdf::loadView('admin.report-cards.nigerian-pdf', $data);
+
+        $pdf->setPaper('A4', $orientation);
         $pdf->setOptions([
             'isHtml5ParserEnabled' => true,
             'isRemoteEnabled' => true,
