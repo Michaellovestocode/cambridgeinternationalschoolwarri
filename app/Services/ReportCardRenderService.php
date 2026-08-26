@@ -6,6 +6,7 @@ use App\Models\ReportCard;
 use App\Models\SchoolSettings;
 use App\Models\Score;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\Log;
 
 class ReportCardRenderService
 {
@@ -19,35 +20,41 @@ class ReportCardRenderService
 
     public function download(ReportCard $reportCard)
     {
-        $data = $this->viewData($reportCard, 'pdf');
+        try {
+            $data = $this->viewData($reportCard, 'pdf');
 
-        // Determine subject count to choose orientation and apply compacting
-        $scores = $data['scores'] ?? collect();
-        $scoreCount = is_countable($scores) ? count($scores) : ($scores->count() ?? 0);
+            // Determine subject count to choose orientation and apply compacting
+            $scores = $data['scores'] ?? collect();
+            $scoreCount = (is_countable($scores) ? count($scores) : ($scores->count() ?? 0));
 
-        $orientation = $scoreCount >= 16 ? 'landscape' : 'portrait';
+            $orientation = $scoreCount >= 16 ? 'landscape' : 'portrait';
 
-        // Pass layout hints into the view data so blade can apply compact classes
-        $data['scoreCount'] = $scoreCount;
+            // Pass layout hints into the view data so blade can apply compact classes
+            $data['scoreCount'] = $scoreCount;
 
-        $pdf = Pdf::loadView('admin.report-cards.nigerian-pdf', $data);
+            $pdf = Pdf::loadView('admin.report-cards.nigerian-pdf', $data);
 
-        $pdf->setPaper('A4', $orientation);
-        $pdf->setOptions([
-            'isHtml5ParserEnabled' => true,
-            'isRemoteEnabled' => true,
-            'defaultPaperSize' => 'a4',
-        ]);
+            $pdf->setPaper('A4', $orientation);
+            $pdf->setOptions([
+                'isHtml5ParserEnabled' => true,
+                'isRemoteEnabled' => true,
+                'defaultPaperSize' => 'a4',
+            ]);
 
-        $filenameBase = "Report_Card_{$reportCard->student->name}_{$reportCard->session->name}_{$reportCard->term->name}";
-        $filename = preg_replace('/[^A-Za-z0-9_\-]/', '_', $filenameBase) . '.pdf';
+            $filenameBase = "Report_Card_{$reportCard->student->name}_{$reportCard->session->name}_{$reportCard->term->name}";
+            $filename = preg_replace('/[^A-Za-z0-9_\-]/', '_', $filenameBase) . '.pdf';
 
-        return response($pdf->output(), 200, [
-            'Content-Type' => 'application/pdf',
-            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
-            'Cache-Control' => 'private, max-age=0, must-revalidate',
-            'Pragma' => 'public',
-        ]);
+            return response($pdf->output(), 200, [
+                'Content-Type' => 'application/pdf',
+                'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+                'Cache-Control' => 'private, max-age=0, must-revalidate',
+                'Pragma' => 'public',
+            ]);
+        } catch (\Throwable $e) {
+            Log::error('ReportCard PDF generation failed: ' . $e->getMessage(), ['exception' => $e]);
+            // Return a simple error response for debugging; in production you may want a nicer message
+            return response("PDF generation error: " . $e->getMessage(), 500);
+        }
     }
 
     private function viewData(ReportCard $reportCard, string $renderMode): array
