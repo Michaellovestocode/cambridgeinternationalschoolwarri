@@ -711,6 +711,38 @@
             padding-top: 1px;
             font-size: 6.8px;
         }
+        /* Compact variants to reduce spacing and font-size when there are many subjects */
+        .page.compact-sm {
+            font-size: 9px;
+            padding: 6mm;
+        }
+        .page.compact-sm .scores-table td { height: 14px; padding: 2px 2px; }
+        .page.compact-sm .scores-table th { padding: 2px 2px; font-size: 7px; }
+        .page.compact-sm .summary-box, .page.compact-sm .comment-box { padding: 3px; }
+
+        .page.compact-md {
+            font-size: 8.6px;
+            padding: 5.5mm;
+        }
+        .page.compact-md .scores-table td { height: 13px; padding: 1.5px 2px; }
+        .page.compact-md .scores-table th { padding: 1.5px 2px; font-size: 6.8px; }
+        .page.compact-md .summary-box, .page.compact-md .comment-box { padding: 2.5px; }
+
+        .page.compact-lg {
+            font-size: 8.2px;
+            padding: 5mm;
+        }
+        .page.compact-lg .scores-table td { height: 12px; padding: 1px 1.5px; }
+        .page.compact-lg .scores-table th { padding: 1px 1.5px; font-size: 6.4px; }
+        .page.compact-lg .summary-box, .page.compact-lg .comment-box { padding: 2px; }
+
+        .page.compact-xl {
+            font-size: 7.8px;
+            padding: 4.5mm;
+        }
+        .page.compact-xl .scores-table td { height: 11px; padding: 0.8px 1px; }
+        .page.compact-xl .scores-table th { padding: 0.8px 1px; font-size: 6px; }
+        .page.compact-xl .summary-box, .page.compact-xl .comment-box { padding: 1.5px; }
     </style>
 </head>
 <body>
@@ -815,6 +847,20 @@
         $seniorRemarkLabel = $authorityTitle . "'s Remark:";
     @endphp
     @php
+        // Adjust layout when there are many subjects so the report fits on one A4 page.
+        $scoreCount = isset($scores) ? $scores->count() : 0;
+        $compactClass = '';
+        if ($scoreCount >= 18) {
+            $compactClass = 'compact-xl';
+        } elseif ($scoreCount >= 16) {
+            $compactClass = 'compact-lg';
+        } elseif ($scoreCount >= 14) {
+            $compactClass = 'compact-md';
+        } elseif ($scoreCount >= 12) {
+            $compactClass = 'compact-sm';
+        }
+    @endphp
+    @php
         $autoPrint = request('print') && $renderMode === 'browser';
     @endphp
 
@@ -840,7 +886,7 @@
             });
         </script>
     @endif
-    <div class="page {{ $isLowerSchool ? 'lower-school' : '' }}">
+    <div class="page {{ $isLowerSchool ? 'lower-school' : '' }} {{ $compactClass }}">
         <div class="inner-frame"></div>
         <div class="watermark">
             <img src="{{ $schoolLogoSrc }}" alt="School Watermark">
