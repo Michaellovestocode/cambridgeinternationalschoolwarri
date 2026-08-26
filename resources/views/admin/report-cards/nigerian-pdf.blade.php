@@ -780,6 +780,14 @@
         .page.compact-xl .scores-table td { height: 11px; padding: 0.8px 1px; }
         .page.compact-xl .scores-table th { padding: 0.8px 1px; font-size: 6px; }
         .page.compact-xl .summary-box, .page.compact-xl .comment-box { padding: 1.5px; }
+        @if(($renderMode ?? 'pdf') === 'pdf' && ($scoreCount ?? 0) >= 16)
+        /* PDF-only tighter rules for many subjects */
+        body { font-size: 9px; }
+        .scores-table th, .scores-table td { font-size: 7px; padding: 1px; }
+        .scores-table td { height: 11px; }
+        .school-logo, .student-photo { width: 18mm; height: 20mm; }
+        .header-photo-cell, .header-logo-cell { width: 82px; }
+        @endif
     </style>
 </head>
 <body>
@@ -845,38 +853,36 @@
                 ? asset('storage/' . $seniorAuthority->signature)
                 : null;
         } else {
-            // For PDF rendering, Dompdf prefers file:/// URLs and forward slashes on Windows
-            $toFileUrl = function ($path) {
-                if (! $path) return null;
-                $p = str_replace('\\', '/', $path);
-                // already a file URL with triple slash
-                if (stripos($p, 'file:///') === 0) return $p;
-                // convert file:// to file:/// if present
-                if (stripos($p, 'file://') === 0) {
-                    return preg_replace('#^file:/+#', 'file:///', $p);
-                }
-                // Windows absolute path like C:/path -> file:///C:/path
-                if (preg_match('#^[A-Za-z]:/#', $p)) {
-                    return 'file:///' . ltrim($p, '/');
-                }
-                // fallback
-                return 'file:///' . ltrim($p, '/');
+            // For PDF rendering embed local images as base64 data URIs so Dompdf will include them reliably
+            $fileToDataUri = function ($path) {
+                if (! $path || ! file_exists($path)) return null;
+                $ext = strtolower(pathinfo($path, PATHINFO_EXTENSION));
+                $mime = match ($ext) {
+                    'png' => 'image/png',
+                    'jpg', 'jpeg' => 'image/jpeg',
+                    'gif' => 'image/gif',
+                    'svg' => 'image/svg+xml',
+                    default => 'application/octet-stream',
+                };
+                $data = @file_get_contents($path);
+                if ($data === false) return null;
+                return 'data:' . $mime . ';base64,' . base64_encode($data);
             };
 
             $schoolLogoSrc = ($logoPath && file_exists($logoPath))
-                ? $toFileUrl($logoPath)
-                : $toFileUrl(public_path('images/schoollogo.jpg'));
+                ? $fileToDataUri($logoPath)
+                : $fileToDataUri(public_path('images/schoollogo.jpg'));
 
             $studentPhotoSrc = ($studentPhotoPath && file_exists($studentPhotoPath))
-                ? $toFileUrl($studentPhotoPath)
+                ? $fileToDataUri($studentPhotoPath)
                 : null;
 
             $formTeacherSignatureSrc = ($formTeacherSignaturePath && file_exists($formTeacherSignaturePath))
-                ? $toFileUrl($formTeacherSignaturePath)
+                ? $fileToDataUri($formTeacherSignaturePath)
                 : null;
 
             $principalSignatureSrc = ($seniorSignaturePath && file_exists($seniorSignaturePath))
-                ? $toFileUrl($seniorSignaturePath)
+                ? $fileToDataUri($seniorSignaturePath)
                 : null;
         }
 
