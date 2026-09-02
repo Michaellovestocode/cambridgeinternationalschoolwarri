@@ -14,7 +14,7 @@
         @method($method)
     @endif
 
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5">
         <div>
             <label class="block text-sm font-semibold text-gray-700 mb-1">Class</label>
             <select name="school_class_id" required class="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-cyan-500">
@@ -38,8 +38,35 @@
             </select>
         </div>
         <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-1">Assessment Type</label>
+            <select name="assessment_type" class="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-cyan-500">
+                <option value="classwork" @selected(old('assessment_type', $learningSession->assessment_type ?? request('assessment_type', 'quiz')) == 'classwork')>Classwork</option>
+                <option value="assignment" @selected(old('assessment_type', $learningSession->assessment_type ?? request('assessment_type', 'quiz')) == 'assignment')>Assignment</option>
+                <option value="quiz" @selected(old('assessment_type', $learningSession->assessment_type ?? request('assessment_type', 'quiz')) == 'quiz')>Quiz</option>
+                <option value="test" @selected(old('assessment_type', $learningSession->assessment_type ?? request('assessment_type', 'quiz')) == 'test')>Test</option>
+            </select>
+        </div>
+        <div>
             <label class="block text-sm font-semibold text-gray-700 mb-1">Estimated Minutes</label>
             <input type="number" min="1" max="300" name="estimated_minutes" value="{{ old('estimated_minutes', $learningSession->estimated_minutes ?? 20) }}" required class="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-cyan-500">
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-1">Assessment Format</label>
+            <select name="assessment_format" class="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-cyan-500">
+                <option value="objective" @selected(old('assessment_format', $learningSession->assessment_format ?? request('assessment_format', 'objective')) == 'objective')>Objective</option>
+                <option value="theory" @selected(old('assessment_format', $learningSession->assessment_format ?? request('assessment_format', 'objective')) == 'theory')>Theory</option>
+                <option value="mixed" @selected(old('assessment_format', $learningSession->assessment_format ?? request('assessment_format', 'objective')) == 'mixed')>Mixed</option>
+            </select>
+        </div>
+        <div class="flex items-end">
+            <div class="rounded-xl bg-cyan-50 border border-cyan-100 px-4 py-3 text-sm text-cyan-800 w-full">
+                <strong>Type:</strong> {{ ucfirst(old('assessment_type', $learningSession->assessment_type ?? request('assessment_type', 'quiz'))) }}
+                <span class="mx-2 text-cyan-400">•</span>
+                <strong>Format:</strong> {{ ucfirst(old('assessment_format', $learningSession->assessment_format ?? 'objective')) }}
+            </div>
         </div>
     </div>
 

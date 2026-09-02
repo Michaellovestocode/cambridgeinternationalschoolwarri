@@ -70,8 +70,17 @@ class StudentLearningSessionController extends Controller
             $score = 0;
 
             foreach ($learningSession->questions as $question) {
-                $selected = strtoupper((string) ($submittedAnswers[$question->id] ?? ''));
-                $isCorrect = $selected !== '' && $selected === strtoupper($question->correct_option);
+                $rawAnswer = $submittedAnswers[$question->id] ?? '';
+                $selected = is_string($rawAnswer) ? trim($rawAnswer) : '';
+
+                if (($question->correct_option === null || $question->correct_option === '') && $question->question_type === 'theory') {
+                    $normalizedSelected = strtolower($selected);
+                    $normAnswer = is_string($question->explanation) ? strtolower(trim($question->explanation)) : '';
+                    $isCorrect = $selected !== '' && $normalizedSelected === $normAnswer;
+                } else {
+                    $selected = strtoupper((string) $selected);
+                    $isCorrect = $selected !== '' && $selected === strtoupper((string) $question->correct_option);
+                }
 
                 if ($isCorrect) {
                     $score++;
@@ -79,7 +88,7 @@ class StudentLearningSessionController extends Controller
 
                 $attempt->answers()->create([
                     'learning_question_id' => $question->id,
-                    'selected_option' => $selected ?: null,
+                    'selected_option' => $selected !== '' ? $selected : null,
                     'is_correct' => $isCorrect,
                 ]);
             }

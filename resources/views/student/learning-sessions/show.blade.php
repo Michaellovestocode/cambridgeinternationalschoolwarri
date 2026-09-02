@@ -2,12 +2,45 @@
 
 @section('title', $learningSession->title)
 
+@push('styles')
+<style>
+    @media (max-width: 767px) {
+        .student-session-hero {
+            padding: 1.5rem;
+            border-radius: 1.25rem;
+        }
+
+        .student-session-hero h1 {
+            font-size: 2rem;
+            line-height: 2.5rem;
+        }
+
+        .student-question-card {
+            padding: 1rem;
+            border-radius: 1rem;
+        }
+
+        .student-question-options {
+            grid-template-columns: 1fr;
+        }
+
+        .student-submit-bar {
+            justify-content: stretch;
+        }
+
+        .student-submit-bar button {
+            width: 100%;
+        }
+    }
+</style>
+@endpush
+
 @section('content')
 <form action="{{ route('student.learning.submit', $learningSession) }}" method="POST" class="space-y-6">
     @csrf
 
     <div class="bg-white rounded-2xl shadow-lg overflow-hidden">
-        <div class="bg-gradient-to-r from-cyan-600 to-emerald-600 text-white p-8">
+        <div class="student-session-hero bg-gradient-to-r from-cyan-600 to-emerald-600 text-white p-8">
             <div class="flex flex-wrap justify-between items-start gap-4">
                 <div>
                     <p class="text-cyan-50 font-semibold">{{ $learningSession->subject->name ?? 'Subject' }}</p>
@@ -54,16 +87,21 @@
 
         <div class="space-y-6">
             @forelse($learningSession->questions as $question)
-            <div class="border border-gray-200 rounded-xl p-5">
+            <div class="student-question-card border border-gray-200 rounded-xl p-5">
                 <p class="font-bold text-gray-900 mb-4">{{ $loop->iteration }}. {{ $question->question_text }}</p>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    @foreach($question->options as $key => $option)
-                    <label class="flex items-start gap-3 border rounded-lg px-4 py-3 cursor-pointer hover:bg-cyan-50">
-                        <input type="radio" name="answers[{{ $question->id }}]" value="{{ $key }}" class="mt-1">
-                        <span><strong>{{ $key }}.</strong> {{ $option }}</span>
-                    </label>
-                    @endforeach
-                </div>
+
+                @if(!empty($question->options) && is_array($question->options))
+                    <div class="student-question-options grid grid-cols-1 md:grid-cols-2 gap-3">
+                        @foreach($question->options as $key => $option)
+                        <label class="flex items-start gap-3 border rounded-lg px-4 py-3 cursor-pointer hover:bg-cyan-50">
+                            <input type="radio" name="answers[{{ $question->id }}]" value="{{ $key }}" class="mt-1">
+                            <span><strong>{{ $key }}.</strong> {{ $option }}</span>
+                        </label>
+                        @endforeach
+                    </div>
+                @else
+                    <textarea name="answers[{{ $question->id }}]" rows="5" class="w-full border rounded-xl px-4 py-3 focus:ring-2 focus:ring-cyan-500" placeholder="Write your answer here..."></textarea>
+                @endif
             </div>
             @empty
             <div class="text-center py-10 text-gray-500">No questions have been added to this session yet.</div>
@@ -71,7 +109,7 @@
         </div>
 
         @if($learningSession->questions->count() > 0)
-        <div class="mt-8 flex justify-end">
+        <div class="student-submit-bar mt-8 flex justify-end">
             <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white px-8 py-3 rounded-xl font-bold shadow-lg">
                 Submit Practice
             </button>

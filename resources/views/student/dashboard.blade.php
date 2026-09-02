@@ -68,6 +68,46 @@
         </div>
     </div>
 
+    <!-- Learner Quick Access -->
+    <div class="bg-white rounded-2xl shadow-lg p-4 md:p-6">
+        <div class="flex items-center justify-between mb-4 md:mb-5">
+            <h2 class="text-lg md:text-2xl font-bold text-gray-800">Quick Access</h2>
+            <span class="text-[10px] md:text-xs font-semibold uppercase tracking-wide text-gray-500">Learn fast</span>
+        </div>
+
+        <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-3 md:gap-4">
+            <a href="{{ route('student.learning.index') }}" class="group border-2 border-cyan-200 hover:border-cyan-400 rounded-2xl p-3 md:p-4 bg-cyan-50 hover:bg-cyan-100 transition-all">
+                <div class="text-2xl md:text-3xl mb-2 md:mb-3">📚</div>
+                <div class="font-bold text-gray-800 text-xs md:text-sm lg:text-base">Classwork</div>
+                <div class="text-[10px] md:text-xs text-gray-600 mt-1">Tasks & quizzes</div>
+            </a>
+
+            <a href="{{ route('student.dashboard') }}#available-exams" class="group border-2 border-blue-200 hover:border-blue-400 rounded-2xl p-3 md:p-4 bg-blue-50 hover:bg-blue-100 transition-all">
+                <div class="text-2xl md:text-3xl mb-2 md:mb-3">📝</div>
+                <div class="font-bold text-gray-800 text-xs md:text-sm lg:text-base">Exams</div>
+                <div class="text-[10px] md:text-xs text-gray-600 mt-1">Available tests</div>
+            </a>
+
+            <a href="{{ route('student.dashboard') }}#exam-history" class="group border-2 border-emerald-200 hover:border-emerald-400 rounded-2xl p-3 md:p-4 bg-emerald-50 hover:bg-emerald-100 transition-all">
+                <div class="text-2xl md:text-3xl mb-2 md:mb-3">📊</div>
+                <div class="font-bold text-gray-800 text-xs md:text-sm lg:text-base">Results</div>
+                <div class="text-[10px] md:text-xs text-gray-600 mt-1">Score history</div>
+            </a>
+
+            <a href="{{ route('student.dashboard') }}#report-cards" class="group border-2 border-amber-200 hover:border-amber-400 rounded-2xl p-3 md:p-4 bg-amber-50 hover:bg-amber-100 transition-all">
+                <div class="text-2xl md:text-3xl mb-2 md:mb-3">📄</div>
+                <div class="font-bold text-gray-800 text-xs md:text-sm lg:text-base">Reports</div>
+                <div class="text-[10px] md:text-xs text-gray-600 mt-1">View reports</div>
+            </a>
+
+            <a href="{{ route('attendance.my') }}" class="group border-2 border-violet-200 hover:border-violet-400 rounded-2xl p-3 md:p-4 bg-violet-50 hover:bg-violet-100 transition-all">
+                <div class="text-2xl md:text-3xl mb-2 md:mb-3">✅</div>
+                <div class="font-bold text-gray-800 text-xs md:text-sm lg:text-base">Attendance</div>
+                <div class="text-[10px] md:text-xs text-gray-600 mt-1">My attendance</div>
+            </a>
+        </div>
+    </div>
+
     <!-- In Progress Exams Warning -->
     @if($inProgressAttempts->count() > 0)
     <div class="bg-gradient-to-r from-yellow-500 to-orange-500 rounded-2xl shadow-lg p-6 text-white">
@@ -100,7 +140,7 @@
     @endif
 
     <!-- Quick Stats -->
-    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+    <div class="grid grid-cols-2 md:grid-cols-2 xl:grid-cols-4 gap-3 md:gap-6">
         <!-- Available Exams -->
         <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl shadow-lg p-6 text-white transform hover:scale-105 transition-transform duration-200">
             <div class="flex items-center justify-between mb-4">
@@ -161,16 +201,16 @@
                     <div class="text-4xl font-bold">{{ $completedLearningAttempts }}</div>
                 </div>
             </div>
-            <div class="text-white/90 font-semibold text-lg">Learning</div>
-            <div class="text-white/70 text-sm mt-1">Completed sessions</div>
+            <div class="text-white/90 font-semibold text-lg">Classwork & Quiz</div>
+            <div class="text-white/70 text-sm mt-1">Completed learning tasks</div>
         </a>
     </div>
 
     <!-- Learning Sessions -->
-    <div class="bg-white rounded-2xl shadow-lg overflow-hidden">
+    <div id="learning-tasks" class="bg-white rounded-2xl shadow-lg overflow-hidden">
         <div class="bg-gradient-to-r from-cyan-50 to-emerald-50 px-6 py-4 border-b border-gray-100">
             <div class="flex justify-between items-center">
-                <h3 class="text-xl font-bold text-gray-800">Learning Sessions</h3>
+                <h3 class="text-xl font-bold text-gray-800">Classwork / Quiz Tasks</h3>
                 <a href="{{ route('student.learning.index') }}" class="text-cyan-700 hover:underline font-semibold text-sm">View all</a>
             </div>
         </div>
@@ -179,7 +219,8 @@
             <div class="border-2 border-gray-100 hover:border-cyan-300 rounded-2xl p-5 mb-4 hover:shadow-md transition-all">
                 <div class="flex flex-wrap justify-between items-start gap-4">
                     <div class="flex-1">
-                        <span class="bg-cyan-100 text-cyan-800 text-xs font-bold px-3 py-1 rounded-full">{{ $session->subject->name ?? 'Subject' }}</span>
+                        <span class="bg-cyan-100 text-cyan-800 text-xs font-bold px-3 py-1 rounded-full">{{ $session->assessment_type ?? 'Quiz' }}</span>
+                        <span class="ml-2 bg-emerald-100 text-emerald-800 text-xs font-bold px-3 py-1 rounded-full">{{ $session->assessment_format ?? 'Objective' }}</span>
                         <h4 class="font-bold text-gray-800 text-lg mt-3">{{ $session->title }}</h4>
                         <p class="text-sm text-emerald-700 font-semibold mt-1">{{ $session->schoolClass->display_name ?? 'Your class' }} • {{ $session->topic }}</p>
                         <p class="text-sm text-gray-600 mt-2">{{ Str::limit($session->description, 120) }}</p>
@@ -191,21 +232,21 @@
                 </div>
                 <div class="mt-4 pt-4 border-t border-gray-100 flex justify-end">
                     <a href="{{ route('student.learning.show', $session) }}" class="bg-cyan-600 hover:bg-cyan-700 text-white px-6 py-3 rounded-xl font-bold shadow">
-                        Start Learning
+                        Start Task
                     </a>
                 </div>
             </div>
             @empty
             <div class="text-center py-10">
-                <p class="text-gray-500 font-semibold">No learning sessions published yet</p>
-                <p class="text-gray-400 text-sm mt-1">Your teachers can add topic lessons from the admin area.</p>
+                <p class="text-gray-500 font-semibold">No classwork or quiz tasks published yet</p>
+                <p class="text-gray-400 text-sm mt-1">Your teachers can add classroom tasks from the assessment studio.</p>
             </div>
             @endforelse
         </div>
     </div>
 
     <!-- Available Exams -->
-    <div class="bg-white rounded-2xl shadow-lg overflow-hidden">
+    <div id="available-exams" class="bg-white rounded-2xl shadow-lg overflow-hidden">
         <div class="bg-gradient-to-r from-blue-50 to-purple-50 px-6 py-4 border-b border-gray-100">
             <h3 class="text-xl font-bold text-gray-800 flex items-center">
                 <span class="mr-2">📝</span> Available Exams
@@ -354,7 +395,7 @@
     </div>
 
     <!-- Exam History -->
-    <div class="bg-white rounded-2xl shadow-lg overflow-hidden">
+    <div id="exam-history" class="bg-white rounded-2xl shadow-lg overflow-hidden">
         <div class="bg-gradient-to-r from-green-50 to-blue-50 px-6 py-4 border-b border-gray-100">
             <h3 class="text-xl font-bold text-gray-800 flex items-center">
                 <span class="mr-2">📊</span> Exam History

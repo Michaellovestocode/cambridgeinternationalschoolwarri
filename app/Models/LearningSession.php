@@ -19,6 +19,8 @@ class LearningSession extends Model
         'lesson_content',
         'learning_goals',
         'estimated_minutes',
+        'assessment_type',
+        'assessment_format',
         'is_published',
     ];
 

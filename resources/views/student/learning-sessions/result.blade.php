@@ -30,18 +30,27 @@
                         {{ $answer->is_correct ? 'Correct' : 'Review' }}
                     </span>
                 </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
-                    @foreach($question->options as $key => $option)
-                    <div class="rounded-lg px-4 py-3 {{ $key === $question->correct_option ? 'bg-white border-2 border-green-500 text-green-900' : ($key === $answer->selected_option ? 'bg-white border-2 border-red-400 text-red-900' : 'bg-white border border-gray-100 text-gray-700') }}">
-                        <strong>{{ $key }}.</strong> {{ $option }}
-                        @if($key === $question->correct_option)
-                            <span class="font-bold"> - Correct answer</span>
-                        @elseif($key === $answer->selected_option)
-                            <span class="font-bold"> - Your answer</span>
-                        @endif
+
+                @if(!empty($question->options) && is_array($question->options))
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                        @foreach($question->options as $key => $option)
+                        <div class="rounded-lg px-4 py-3 {{ $key === $question->correct_option ? 'bg-white border-2 border-green-500 text-green-900' : ($key === $answer->selected_option ? 'bg-white border-2 border-red-400 text-red-900' : 'bg-white border border-gray-100 text-gray-700') }}">
+                            <strong>{{ $key }}.</strong> {{ $option }}
+                            @if($key === $question->correct_option)
+                                <span class="font-bold"> - Correct answer</span>
+                            @elseif($key === $answer->selected_option)
+                                <span class="font-bold"> - Your answer</span>
+                            @endif
+                        </div>
+                        @endforeach
                     </div>
-                    @endforeach
-                </div>
+                @else
+                    <div class="rounded-lg bg-white border border-gray-200 p-4 text-sm text-gray-700">
+                        <div class="font-semibold text-gray-800 mb-2">Your answer</div>
+                        <p class="whitespace-pre-line">{{ $answer->selected_option ?: 'No answer was submitted.' }}</p>
+                    </div>
+                @endif
+
                 @if(!$answer->selected_option)
                     <p class="mt-3 text-sm text-red-700 font-semibold">You did not answer this question.</p>
                 @endif

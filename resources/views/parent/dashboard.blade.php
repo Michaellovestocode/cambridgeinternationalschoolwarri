@@ -27,6 +27,45 @@
         </div>
     </div>
 
+    <div class="bg-white rounded-3xl shadow-lg p-5 md:p-6">
+        <div class="flex items-center justify-between mb-5">
+            <h2 class="text-xl md:text-2xl font-bold text-gray-800">Quick Access</h2>
+            <span class="text-xs font-semibold uppercase tracking-wide text-gray-500">Family overview</span>
+        </div>
+
+        <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-4">
+            <a href="{{ route('parent.messages.index') }}" class="group border-2 border-rose-200 hover:border-rose-400 rounded-2xl p-4 bg-rose-50 hover:bg-rose-100 transition-all">
+                <div class="text-3xl mb-3">💬</div>
+                <div class="font-bold text-gray-800 text-sm md:text-base">Messages</div>
+                <div class="text-xs text-gray-600 mt-1">School updates</div>
+            </a>
+
+            <a href="{{ route('parent.attendance') }}" class="group border-2 border-yellow-200 hover:border-yellow-400 rounded-2xl p-4 bg-yellow-50 hover:bg-yellow-100 transition-all">
+                <div class="text-3xl mb-3">✅</div>
+                <div class="font-bold text-gray-800 text-sm md:text-base">Attendance</div>
+                <div class="text-xs text-gray-600 mt-1">Child records</div>
+            </a>
+
+            <a href="#report-cards" class="group border-2 border-blue-200 hover:border-blue-400 rounded-2xl p-4 bg-blue-50 hover:bg-blue-100 transition-all">
+                <div class="text-3xl mb-3">📄</div>
+                <div class="font-bold text-gray-800 text-sm md:text-base">Report Cards</div>
+                <div class="text-xs text-gray-600 mt-1">Academic results</div>
+            </a>
+
+            <a href="#developmental-reports" class="group border-2 border-emerald-200 hover:border-emerald-400 rounded-2xl p-4 bg-emerald-50 hover:bg-emerald-100 transition-all">
+                <div class="text-3xl mb-3">🌱</div>
+                <div class="font-bold text-gray-800 text-sm md:text-base">Development</div>
+                <div class="text-xs text-gray-600 mt-1">Growth reports</div>
+            </a>
+
+            <a href="#exam-schedule" class="group border-2 border-violet-200 hover:border-violet-400 rounded-2xl p-4 bg-violet-50 hover:bg-violet-100 transition-all">
+                <div class="text-3xl mb-3">🗓️</div>
+                <div class="font-bold text-gray-800 text-sm md:text-base">Exam Schedule</div>
+                <div class="text-xs text-gray-600 mt-1">Upcoming dates</div>
+            </a>
+        </div>
+    </div>
+
     <div class="grid gap-6 lg:grid-cols-3">
         @forelse($children as $child)
             @php
@@ -77,7 +116,7 @@
     </div>
 
     <div class="grid gap-6 lg:grid-cols-2">
-        <div class="bg-white rounded-3xl shadow-lg p-6 space-y-4">
+        <div id="exam-schedule" class="bg-white rounded-3xl shadow-lg p-6 space-y-4 scroll-mt-24">
             <div class="flex items-center justify-between gap-3">
                 <div>
                     <h3 class="text-xl font-bold text-gray-900">Exam Schedule</h3>

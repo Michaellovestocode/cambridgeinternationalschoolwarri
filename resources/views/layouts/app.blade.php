@@ -294,6 +294,9 @@
                     </a>
                     @elseif(!auth()->user()->isStudent())
                     @if(auth()->user()->isTeacher())
+                    <a href="{{ route('teacher.assessment-studio') }}" class="bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded-lg font-semibold transition">
+                        Assessment Studio
+                    </a>
                     <a href="{{ route('teacher.blog.index') }}" class="bg-violet-500 hover:bg-violet-600 text-white px-4 py-2 rounded-lg font-semibold transition">
                         My Blog
                     </a>
@@ -401,6 +404,9 @@
                     </a>
                     @elseif(!auth()->user()->isStudent())
                     @if(auth()->user()->isTeacher())
+                    <a href="{{ route('teacher.assessment-studio') }}" class="bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded-lg font-semibold transition text-sm">
+                        Assessment Studio
+                    </a>
                     <a href="{{ route('teacher.blog.index') }}" class="bg-violet-500 hover:bg-violet-600 text-white px-4 py-2 rounded-lg font-semibold transition text-sm">
                         My Blog
                     </a>

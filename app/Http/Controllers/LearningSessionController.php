@@ -24,12 +24,20 @@ class LearningSessionController extends Controller
         return view('admin.learning-sessions.index', compact('sessions'));
     }
 
-    public function create()
+    public function create(Request $request)
     {
         $subjects = $this->availableSubjects();
         $classes = $this->availableClasses();
 
-        return view('admin.learning-sessions.create', compact('subjects', 'classes'));
+        $selectedType = in_array($request->query('assessment_type'), ['classwork', 'assignment', 'quiz', 'test'], true)
+            ? $request->query('assessment_type')
+            : 'quiz';
+
+        $selectedFormat = in_array($request->query('assessment_format'), ['objective', 'theory', 'mixed'], true)
+            ? $request->query('assessment_format')
+            : 'objective';
+
+        return view('admin.learning-sessions.create', compact('subjects', 'classes', 'selectedType', 'selectedFormat'));
     }
 
     public function store(Request $request)
@@ -86,34 +94,41 @@ class LearningSessionController extends Controller
     {
         $this->authorizeSession($learningSession);
 
+        $questionType = $request->input('question_type', $learningSession->assessment_format === 'theory' ? 'theory' : 'objective');
+
         $data = $request->validate([
             'question_text' => ['required', 'string'],
-            'option_a' => ['required', 'string', 'max:1000'],
-            'option_b' => ['required', 'string', 'max:1000'],
+            'question_type' => ['nullable', 'in:objective,theory'],
+            'option_a' => [$questionType === 'theory' ? 'nullable' : 'required', 'string', 'max:1000'],
+            'option_b' => [$questionType === 'theory' ? 'nullable' : 'required', 'string', 'max:1000'],
             'option_c' => ['nullable', 'string', 'max:1000'],
             'option_d' => ['nullable', 'string', 'max:1000'],
-            'correct_option' => ['required', 'in:A,B,C,D'],
+            'correct_option' => [$questionType === 'theory' ? 'nullable' : 'required', 'in:A,B,C,D'],
             'explanation' => ['nullable', 'string'],
             'order' => ['nullable', 'integer', 'min:0'],
         ]);
 
-        $options = array_filter([
-            'A' => $data['option_a'],
-            'B' => $data['option_b'],
-            'C' => $data['option_c'] ?? null,
-            'D' => $data['option_d'] ?? null,
-        ], fn ($option) => filled($option));
+        $options = [];
+        if ($questionType === 'objective') {
+            $options = array_filter([
+                'A' => $data['option_a'],
+                'B' => $data['option_b'],
+                'C' => $data['option_c'] ?? null,
+                'D' => $data['option_d'] ?? null,
+            ], fn ($option) => filled($option));
 
-        if (! array_key_exists($data['correct_option'], $options)) {
-            return back()
-                ->withErrors(['correct_option' => 'The correct option must have option text.'])
-                ->withInput();
+            if (empty($data['correct_option']) || ! array_key_exists($data['correct_option'], $options)) {
+                return back()
+                    ->withErrors(['correct_option' => 'The correct option must match an option with text.'])
+                    ->withInput();
+            }
         }
 
         $learningSession->questions()->create([
             'question_text' => $data['question_text'],
+            'question_type' => $questionType,
             'options' => $options,
-            'correct_option' => $data['correct_option'],
+            'correct_option' => $questionType === 'objective' ? $data['correct_option'] : null,
             'explanation' => $data['explanation'] ?? null,
             'order' => $data['order'] ?? ($learningSession->questions()->count() + 1),
         ]);
@@ -146,6 +161,8 @@ class LearningSessionController extends Controller
             'lesson_content' => ['nullable', 'string'],
             'learning_goals' => ['nullable', 'string'],
             'estimated_minutes' => ['required', 'integer', 'min:1', 'max:300'],
+            'assessment_type' => ['nullable', 'in:classwork,assignment,quiz,test'],
+            'assessment_format' => ['nullable', 'in:objective,theory,mixed'],
         ]);
     }
 

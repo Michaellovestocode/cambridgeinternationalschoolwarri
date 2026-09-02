@@ -780,6 +780,17 @@
         .page.compact-xl .scores-table td { height: 11px; padding: 0.8px 1px; }
         .page.compact-xl .scores-table th { padding: 0.8px 1px; font-size: 6px; }
         .page.compact-xl .summary-box, .page.compact-xl .comment-box { padding: 1.5px; }
+        /* Two-column scores layout for very many subjects */
+        .two-column-scores {
+            display: flex;
+            gap: 8px;
+            align-items: flex-start;
+        }
+        .two-column-scores .col {
+            width: 50%;
+        }
+        .two-column-scores table { width: 100%; border-collapse: collapse; font-size: 7.4px; }
+        .two-column-scores th, .two-column-scores td { padding: 2px 4px; border: 1px solid #1F2937; }
         @if(($renderMode ?? 'pdf') === 'pdf' && ($scoreCount ?? 0) >= 16)
         /* PDF-only tighter rules for many subjects */
         body { font-size: 9px; }
@@ -1022,45 +1033,110 @@
         <div class="official-layout">
             <div class="official-main">
                 <!-- Scores Table -->
-                <table class="scores-table">
-                    <thead>
-                        <tr>
-                            <th rowspan="2" style="width: 29%;">SUBJECTS</th>
-                            <th colspan="2">TESTS</th>
-                            <th rowspan="2">EXAM<br>(60)</th>
-                            <th rowspan="2">TOTAL<br>(100)</th>
-                            <th rowspan="2">GRADE</th>
-                            <th rowspan="2">CLASS<br>AVG</th>
-                            <th rowspan="2">POSITION</th>
-                            <th rowspan="2">REMARK</th>
-                        </tr>
-                        <tr>
-                            <th>CA1<br>(30)</th>
-                            <th>CA2<br>(10)</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach($scores as $score)
-                        <tr>
-                            <td class="subject-name">{{ strtoupper($score->subject->name) }}</td>
-                            <td>{{ number_format($score->ca1, 1) }}</td>
-                            <td>{{ number_format($score->ca2, 1) }}</td>
-                            <td>{{ number_format($score->exam, 1) }}</td>
-                            <td class="total-cell">{{ number_format($score->total, 1) }}</td>
-                            <td class="
-                                @if(substr($score->grade, 0, 1) == 'A') grade-a
-                                @elseif(substr($score->grade, 0, 1) == 'B') grade-b
-                                @elseif(substr($score->grade, 0, 1) == 'C') grade-c
-                                @elseif($score->grade == 'F9') grade-f
-                                @endif
-                            "><strong>{{ $score->grade }}</strong></td>
-                            <td>{{ number_format($score->class_average, 1) }}</td>
-                            <td class="position-cell">{!! $formatOrdinal($score->position) !!}</td>
-                            <td>{{ strtoupper($score->remark) }}</td>
-                        </tr>
-                        @endforeach
-                    </tbody>
-                </table>
+                @php
+                    $scoreCount = $scoreCount ?? (isset($scores) ? $scores->count() : 0);
+                @endphp
+
+                @if($scoreCount >= 16)
+                    @php
+                        $half = (int) ceil($scores->count() / 2);
+                        $left = $scores->slice(0, $half)->values();
+                        $right = $scores->slice($half)->values();
+                        $renderHeader = function() use ($selectedColor) {
+                            return '<thead><tr><th style="width:58%">SUBJECTS</th><th>CA1</th><th>CA2</th><th>EXAM</th><th>TOTAL</th><th>GRADE</th></tr></thead>';
+                        };
+                    @endphp
+
+                    <div class="two-column-scores">
+                        <div class="col">
+                            <table class="scores-table">
+                                {!! $renderHeader() !!}
+                                <tbody>
+                                    @foreach($left as $score)
+                                    <tr>
+                                        <td class="subject-name">{{ strtoupper($score->subject->name) }}</td>
+                                        <td>{{ number_format($score->ca1, 1) }}</td>
+                                        <td>{{ number_format($score->ca2, 1) }}</td>
+                                        <td>{{ number_format($score->exam, 1) }}</td>
+                                        <td class="total-cell">{{ number_format($score->total, 1) }}</td>
+                                        <td class="
+                                            @if(substr($score->grade, 0, 1) == 'A') grade-a
+                                            @elseif(substr($score->grade, 0, 1) == 'B') grade-b
+                                            @elseif(substr($score->grade, 0, 1) == 'C') grade-c
+                                            @elseif($score->grade == 'F9') grade-f
+                                            @endif
+                                        "><strong>{{ $score->grade }}</strong></td>
+                                    </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="col">
+                            <table class="scores-table">
+                                {!! $renderHeader() !!}
+                                <tbody>
+                                    @foreach($right as $score)
+                                    <tr>
+                                        <td class="subject-name">{{ strtoupper($score->subject->name) }}</td>
+                                        <td>{{ number_format($score->ca1, 1) }}</td>
+                                        <td>{{ number_format($score->ca2, 1) }}</td>
+                                        <td>{{ number_format($score->exam, 1) }}</td>
+                                        <td class="total-cell">{{ number_format($score->total, 1) }}</td>
+                                        <td class="
+                                            @if(substr($score->grade, 0, 1) == 'A') grade-a
+                                            @elseif(substr($score->grade, 0, 1) == 'B') grade-b
+                                            @elseif(substr($score->grade, 0, 1) == 'C') grade-c
+                                            @elseif($score->grade == 'F9') grade-f
+                                            @endif
+                                        "><strong>{{ $score->grade }}</strong></td>
+                                    </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                @else
+                    <table class="scores-table">
+                        <thead>
+                            <tr>
+                                <th rowspan="2" style="width: 29%;">SUBJECTS</th>
+                                <th colspan="2">TESTS</th>
+                                <th rowspan="2">EXAM<br>(60)</th>
+                                <th rowspan="2">TOTAL<br>(100)</th>
+                                <th rowspan="2">GRADE</th>
+                                <th rowspan="2">CLASS<br>AVG</th>
+                                <th rowspan="2">POSITION</th>
+                                <th rowspan="2">REMARK</th>
+                            </tr>
+                            <tr>
+                                <th>CA1<br>(30)</th>
+                                <th>CA2<br>(10)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($scores as $score)
+                            <tr>
+                                <td class="subject-name">{{ strtoupper($score->subject->name) }}</td>
+                                <td>{{ number_format($score->ca1, 1) }}</td>
+                                <td>{{ number_format($score->ca2, 1) }}</td>
+                                <td>{{ number_format($score->exam, 1) }}</td>
+                                <td class="total-cell">{{ number_format($score->total, 1) }}</td>
+                                <td class="
+                                    @if(substr($score->grade, 0, 1) == 'A') grade-a
+                                    @elseif(substr($score->grade, 0, 1) == 'B') grade-b
+                                    @elseif(substr($score->grade, 0, 1) == 'C') grade-c
+                                    @elseif($score->grade == 'F9') grade-f
+                                    @endif
+                                "><strong>{{ $score->grade }}</strong></td>
+                                <td>{{ number_format($score->class_average, 1) }}</td>
+                                <td class="position-cell">{!! $formatOrdinal($score->position) !!}</td>
+                                <td>{{ strtoupper($score->remark) }}</td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                @endif
 
                 <div class="summary-section">
                     <div class="summary-col">

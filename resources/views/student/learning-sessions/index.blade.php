@@ -2,17 +2,51 @@
 
 @section('title', 'Learning Sessions')
 
+@push('styles')
+<style>
+    @media (max-width: 767px) {
+        .student-learning-hero {
+            padding: 1.5rem;
+            border-radius: 1.25rem;
+        }
+
+        .student-learning-hero h1 {
+            font-size: 2rem;
+            line-height: 2.25rem;
+        }
+
+        .student-learning-grid {
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+
+        .student-learning-card {
+            border-radius: 1.25rem;
+            padding: 1.25rem;
+        }
+
+        .student-learning-card .session-card-actions {
+            flex-direction: column;
+        }
+
+        .student-learning-card .session-card-actions a {
+            width: 100%;
+        }
+    }
+</style>
+@endpush
+
 @section('content')
 <div class="space-y-6">
-    <div class="bg-gradient-to-r from-cyan-600 to-emerald-600 text-white rounded-2xl shadow-lg p-8">
+    <div class="student-learning-hero bg-gradient-to-r from-cyan-600 to-emerald-600 text-white rounded-2xl shadow-lg p-8">
         <h1 class="text-3xl font-bold">Learning Sessions</h1>
         <p class="text-cyan-50 mt-2">Study a topic, answer short practice questions, then review corrections immediately.</p>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+    <div class="student-learning-grid grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
         @forelse($sessions as $session)
         @php($attempt = $latestAttempts->get($session->id))
-        <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 flex flex-col">
+        <div class="student-learning-card bg-white rounded-2xl shadow-lg border border-gray-100 p-6 flex flex-col">
             <div class="flex-1">
                 <div class="flex justify-between items-start gap-3 mb-4">
                     <span class="bg-cyan-100 text-cyan-800 text-xs font-bold px-3 py-1 rounded-full">{{ $session->subject->name ?? 'Subject' }}</span>
@@ -34,7 +68,7 @@
                 </div>
             </div>
 
-            <div class="mt-6 flex gap-3">
+            <div class="session-card-actions mt-6 flex gap-3">
                 <a href="{{ route('student.learning.show', $session) }}" class="flex-1 text-center bg-cyan-600 hover:bg-cyan-700 text-white px-4 py-3 rounded-xl font-bold">
                     Start Session
                 </a>

@@ -98,10 +98,36 @@
     <!-- Main Actions -->
     <div class="bg-white rounded-lg shadow-lg p-8 mb-8">
         <h2 class="text-2xl font-bold text-gray-800 mb-6">Quick Actions</h2>
-        
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+
+        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+            <div class="border-2 border-indigo-300 rounded-lg p-6 hover:shadow-lg transition">
+                <div class="text-5xl mb-4">🧠</div>
+                <h3 class="text-xl font-bold text-gray-800 mb-2">Assessment Studio</h3>
+                <p class="text-gray-600 mb-4">Create classroom tasks, quizzes, assignments, and written exercises without disturbing formal school exams.</p>
+                <a href="{{ route('teacher.assessment-studio') }}" class="inline-block w-full text-center bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-lg font-semibold transition">
+                    Open Studio
+                </a>
+            </div>
+
+            <div class="border-2 border-cyan-300 rounded-lg p-6 hover:shadow-lg transition">
+                <div class="text-5xl mb-4">📚</div>
+                <h3 class="text-xl font-bold text-gray-800 mb-2">Classwork & Quiz Tasks</h3>
+                <p class="text-gray-600 mb-4">Manage the classroom learning sessions you have published for student practice and revision.</p>
+                <a href="{{ route('admin.learning-sessions.index') }}" class="inline-block w-full text-center bg-cyan-600 hover:bg-cyan-700 text-white px-6 py-3 rounded-lg font-semibold transition">
+                    View Learning Tasks
+                </a>
+            </div>
+
+            <div class="border-2 border-blue-300 rounded-lg p-6 hover:shadow-lg transition">
+                <div class="text-5xl mb-4">📝</div>
+                <h3 class="text-xl font-bold text-gray-800 mb-2">Subject Score Entry</h3>
+                <p class="text-gray-600 mb-4">Continue entering CA1, CA2, or Exam scores separately for your subjects.</p>
+                <a href="{{ route('teacher.scores.select') }}" class="inline-block w-full text-center bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold transition">
+                    Enter Scores
+                </a>
+            </div>
+
             @if($canUsePaperScores ?? false)
-                <!-- Manual Paper Scores -->
                 <div class="border-2 border-emerald-300 rounded-lg p-6 hover:shadow-lg transition">
                     <div class="text-5xl mb-4">P</div>
                     <h3 class="text-xl font-bold text-gray-800 mb-2">Paper / Manual Scores</h3>
@@ -112,23 +138,21 @@
                 </div>
             @endif
 
-            <!-- Enter Scores -->
-            <div class="border-2 border-blue-300 rounded-lg p-6 hover:shadow-lg transition">
-                <div class="text-5xl mb-4">📝</div>
-                <h3 class="text-xl font-bold text-gray-800 mb-2">Subject Score Entry</h3>
-                <p class="text-gray-600 mb-4">Continue entering CA1, CA2, or Exam scores separately for your subjects.</p>
-                <a href="{{ route('teacher.scores.select') }}" class="inline-block w-full text-center bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold transition">
-                    Enter Scores
-                </a>
-            </div>
-
-            <!-- View My Scores -->
             <div class="border-2 border-green-300 rounded-lg p-6 hover:shadow-lg transition">
                 <div class="text-5xl mb-4">👁️</div>
                 <h3 class="text-xl font-bold text-gray-800 mb-2">View My Scores</h3>
                 <p class="text-gray-600 mb-4">Check all the scores you've entered and their current status.</p>
                 <a href="{{ route('teacher.scores.my-scores') }}" class="inline-block w-full text-center bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-semibold transition">
                     View Scores
+                </a>
+            </div>
+
+            <div class="border-2 border-amber-300 rounded-lg p-6 hover:shadow-lg transition">
+                <div class="text-5xl mb-4">#</div>
+                <h3 class="text-xl font-bold text-gray-800 mb-2">Class Rankings</h3>
+                <p class="text-gray-600 mb-4">See your form-class learners by position with their totals and averages.</p>
+                <a href="{{ route('teacher.scores.class-rankings') }}" class="inline-block w-full text-center bg-amber-600 hover:bg-amber-700 text-white px-6 py-3 rounded-lg font-semibold transition">
+                    View Class Rankings
                 </a>
             </div>
 
@@ -143,17 +167,33 @@
             </div>
             @endif
 
-            <!-- Class Rankings -->
-            <div class="border-2 border-amber-300 rounded-lg p-6 hover:shadow-lg transition">
-                <div class="text-5xl mb-4">#</div>
-                <h3 class="text-xl font-bold text-gray-800 mb-2">Class Rankings</h3>
-                <p class="text-gray-600 mb-4">See your form-class learners by position with their totals and averages.</p>
-                <a href="{{ route('teacher.scores.class-rankings') }}" class="inline-block w-full text-center bg-amber-600 hover:bg-amber-700 text-white px-6 py-3 rounded-lg font-semibold transition">
-                    View Class Rankings
+            <div class="border-2 border-violet-300 rounded-lg p-6 hover:shadow-lg transition">
+                <div class="text-5xl mb-4">✍️</div>
+                <h3 class="text-xl font-bold text-gray-800 mb-2">My Blog</h3>
+                <p class="text-gray-600 mb-4">Write articles, updates, and teaching notes for your classes and school news.</p>
+                <a href="{{ route('teacher.blog.index') }}" class="inline-block w-full text-center bg-violet-600 hover:bg-violet-700 text-white px-6 py-3 rounded-lg font-semibold transition">
+                    Open Blog
                 </a>
             </div>
 
-            <!-- Instructions -->
+            <div class="border-2 border-emerald-300 rounded-lg p-6 hover:shadow-lg transition">
+                <div class="text-5xl mb-4">✅</div>
+                <h3 class="text-xl font-bold text-gray-800 mb-2">My Attendance</h3>
+                <p class="text-gray-600 mb-4">View and manage your attendance records and school timetable check-ins.</p>
+                <a href="{{ route('attendance.my') }}" class="inline-block w-full text-center bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-lg font-semibold transition">
+                    Attendance
+                </a>
+            </div>
+
+            <div class="border-2 border-orange-300 rounded-lg p-6 hover:shadow-lg transition">
+                <div class="text-5xl mb-4">📄</div>
+                <h3 class="text-xl font-bold text-gray-800 mb-2">Report Cards</h3>
+                <p class="text-gray-600 mb-4">Open the report-card area to review and finalize student academic summaries.</p>
+                <a href="{{ route('admin.report-cards') }}" class="inline-block w-full text-center bg-orange-600 hover:bg-orange-700 text-white px-6 py-3 rounded-lg font-semibold transition">
+                    Open Report Cards
+                </a>
+            </div>
+
             <div class="border-2 border-purple-300 rounded-lg p-6 hover:shadow-lg transition">
                 <div class="text-5xl mb-4">ℹ️</div>
                 <h3 class="text-xl font-bold text-gray-800 mb-2">How It Works</h3>

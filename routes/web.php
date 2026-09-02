@@ -151,6 +151,10 @@ Route::middleware('auth')->group(function () {
 
     // Teacher Score Entry
     Route::prefix('teacher')->name('teacher.')->middleware('role:teacher')->group(function () {
+        Route::get('/assessment-studio', function () {
+            return view('teacher.assessment-studio');
+        })->name('assessment-studio');
+
         Route::get('/scores', [TeacherScoreController::class, 'dashboard'])->name('scores.dashboard');
         Route::get('/scores/select', [TeacherScoreController::class, 'selectClassSubject'])->name('scores.select');
         Route::get('/scores/enter', [TeacherScoreController::class, 'enterScores'])->name('scores.enter');

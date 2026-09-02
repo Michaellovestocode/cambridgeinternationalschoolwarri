@@ -12,6 +12,7 @@ class LearningQuestion extends Model
     protected $fillable = [
         'learning_session_id',
         'question_text',
+        'question_type',
         'options',
         'correct_option',
         'explanation',

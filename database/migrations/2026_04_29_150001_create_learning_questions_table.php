@@ -12,8 +12,9 @@ return new class extends Migration
             $table->id();
             $table->foreignId('learning_session_id')->constrained()->cascadeOnDelete();
             $table->text('question_text');
-            $table->json('options');
-            $table->string('correct_option', 1);
+            $table->string('question_type', 20)->default('objective');
+            $table->json('options')->nullable();
+            $table->string('correct_option', 1)->nullable();
             $table->text('explanation')->nullable();
             $table->unsignedSmallInteger('order')->default(0);
             $table->timestamps();
