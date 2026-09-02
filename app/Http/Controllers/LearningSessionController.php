@@ -103,10 +103,13 @@ class LearningSessionController extends Controller
         $data = $request->validate([
             'question_text' => ['required', 'string'],
             'question_type' => ['nullable', 'in:objective,theory'],
+            'marks' => ['required', 'numeric', 'min:0.01'],
+            'image' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif,webp', 'max:5120'],
             'option_a' => [$questionType === 'theory' ? 'nullable' : 'required', 'string', 'max:1000'],
             'option_b' => [$questionType === 'theory' ? 'nullable' : 'required', 'string', 'max:1000'],
             'option_c' => ['nullable', 'string', 'max:1000'],
             'option_d' => ['nullable', 'string', 'max:1000'],
+            'options' => ['nullable', 'array'],
             'correct_option' => [$questionType === 'theory' ? 'nullable' : 'required', 'in:A,B,C,D'],
             'explanation' => ['nullable', 'string'],
             'order' => ['nullable', 'integer', 'min:0'],
@@ -114,11 +117,17 @@ class LearningSessionController extends Controller
 
         $options = [];
         if ($questionType === 'objective') {
+            $rawOptions = $request->input('options', []);
+            $optionA = $rawOptions['A'] ?? $data['option_a'] ?? null;
+            $optionB = $rawOptions['B'] ?? $data['option_b'] ?? null;
+            $optionC = $rawOptions['C'] ?? $data['option_c'] ?? null;
+            $optionD = $rawOptions['D'] ?? $data['option_d'] ?? null;
+
             $options = array_filter([
-                'A' => $data['option_a'],
-                'B' => $data['option_b'],
-                'C' => $data['option_c'] ?? null,
-                'D' => $data['option_d'] ?? null,
+                'A' => $optionA,
+                'B' => $optionB,
+                'C' => $optionC,
+                'D' => $optionD,
             ], fn ($option) => filled($option));
 
             if (empty($data['correct_option']) || ! array_key_exists($data['correct_option'], $options)) {
@@ -128,6 +137,11 @@ class LearningSessionController extends Controller
             }
         }
 
+        $imagePath = null;
+        if ($request->hasFile('image')) {
+            $imagePath = $request->file('image')->store('learning-question-images', 'public');
+        }
+
         $learningSession->questions()->create([
             'question_text' => $data['question_text'],
             'question_type' => $questionType,
@@ -135,6 +149,8 @@ class LearningSessionController extends Controller
             'correct_option' => $questionType === 'objective' ? $data['correct_option'] : null,
             'explanation' => $data['explanation'] ?? null,
             'order' => $data['order'] ?? ($learningSession->questions()->count() + 1),
+            'marks' => (float) $data['marks'],
+            'image_path' => $imagePath,
         ]);
 
         return redirect()

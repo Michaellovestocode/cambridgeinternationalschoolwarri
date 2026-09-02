@@ -25,7 +25,7 @@
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div class="bg-white rounded-lg shadow p-6">
             <h2 class="text-xl font-bold text-gray-900 mb-4">Add Practice Question</h2>
-            <form action="{{ route('admin.learning-sessions.questions.store', $learningSession) }}" method="POST" class="space-y-4">
+            <form action="{{ route('admin.learning-sessions.questions.store', $learningSession) }}" method="POST" enctype="multipart/form-data" class="space-y-4">
                 @csrf
 
                 <div>
@@ -36,65 +36,73 @@
                     </select>
                 </div>
 
-                <div id="question-template-preview" class="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                    <div id="preview-objective" class="space-y-2">
-                        <div class="text-[10px] font-black uppercase tracking-[0.2em] text-cyan-700">Objective template</div>
-                        <div class="rounded-xl border border-cyan-200 bg-white p-3 text-sm text-slate-700">A. First option</div>
-                        <div class="rounded-xl border border-cyan-200 bg-white p-3 text-sm text-slate-700">B. Second option</div>
-                        <div class="rounded-xl border border-cyan-200 bg-white p-3 text-sm text-slate-700">C. Third option</div>
-                        <div class="rounded-xl border border-cyan-200 bg-white p-3 text-sm text-slate-700">D. Fourth option</div>
-                    </div>
-                    <div id="preview-theory" class="hidden space-y-2">
-                        <div class="text-[10px] font-black uppercase tracking-[0.2em] text-violet-700">Theory template</div>
-                        <div class="rounded-xl border border-violet-200 bg-white p-3 text-sm text-slate-700">Explain the process...</div>
-                        <div class="h-24 rounded-xl border border-dashed border-violet-300 bg-violet-50 p-3 text-sm text-violet-700">Long-answer text area</div>
-                    </div>
-                </div>
-
                 <div>
                     <label class="block text-sm font-semibold text-gray-700 mb-1">Question</label>
                     <textarea name="question_text" rows="4" required class="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-cyan-500">{{ old('question_text') }}</textarea>
                 </div>
 
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Marks *</label>
+                    <input type="number" name="marks" value="{{ old('marks', 1) }}" min="0.01" step="0.01" required class="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-cyan-500">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Reference Image <span class="text-gray-500">(Optional)</span></label>
+                    <div x-data="{ preview: null }" class="space-y-2">
+                        <input type="file" name="image" accept="image/*" @change="
+                            const file = $event.target.files[0];
+                            if (file) {
+                                const reader = new FileReader();
+                                reader.onload = (e) => { preview = e.target.result };
+                                reader.readAsDataURL(file);
+                            }
+                        " class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-cyan-500">
+                        <p class="text-xs text-gray-500">Upload a reference image if this question depends on a diagram, chart, or picture.</p>
+                        <div x-show="preview" class="mt-3 border rounded-lg overflow-hidden">
+                            <div class="bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-600 flex justify-between items-center">
+                                <span>Preview</span>
+                                <button type="button" @click="preview = null; $event.target.closest('div').querySelector('input[type=file]').value = ''" class="text-red-500 hover:text-red-700">Remove</button>
+                            </div>
+                            <img :src="preview" alt="Preview" class="max-h-48 w-full object-contain bg-white p-2">
+                        </div>
+                    </div>
+                </div>
+
                 <div id="objective-options" class="space-y-4 @if(old('question_type', $learningSession->assessment_format === 'theory' ? 'theory' : 'objective') === 'theory') hidden @endif">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        @foreach(['a' => 'A', 'b' => 'B', 'c' => 'C', 'd' => 'D'] as $key => $label)
-                        <div>
-                            <label class="block text-sm font-semibold text-gray-700 mb-1">Option {{ $label }}{{ in_array($label, ['A', 'B']) ? '' : ' (optional)' }}</label>
-                            <input type="text" name="option_{{ $key }}" value="{{ old('option_' . $key) }}" {{ in_array($label, ['A', 'B']) ? 'required' : '' }} class="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-cyan-500">
-                        </div>
+                        @foreach(['A', 'B', 'C', 'D'] as $letter)
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-1">Option {{ $letter }}</label>
+                                <input type="text" name="options[{{ $letter }}]" value="{{ old('options.' . $letter) }}" required class="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-cyan-500" placeholder="Option {{ $letter }}">
+                            </div>
                         @endforeach
                     </div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-semibold text-gray-700 mb-1">Correct Option</label>
-                            <select name="correct_option" class="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-cyan-500">
-                                <option value="">Select correct option</option>
-                                @foreach(['A', 'B', 'C', 'D'] as $option)
-                                    <option value="{{ $option }}" @selected(old('correct_option') === $option)>{{ $option }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-semibold text-gray-700 mb-1">Order</label>
-                            <input type="number" min="0" name="order" value="{{ old('order', $learningSession->questions->count() + 1) }}" class="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-cyan-500">
-                        </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1">Correct Answer</label>
+                        <select name="correct_option" required class="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-cyan-500">
+                            <option value="">-- Select Correct Answer --</option>
+                            @foreach(['A', 'B', 'C', 'D'] as $option)
+                                <option value="{{ $option }}" @selected(old('correct_option') === $option)>{{ $option }}</option>
+                            @endforeach
+                        </select>
                     </div>
                 </div>
 
                 <div id="theory-options" class="@if(old('question_type', $learningSession->assessment_format === 'theory' ? 'theory' : 'objective') !== 'theory') hidden @endif">
                     <div class="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
-                        Theory questions do not need multiple-choice options. Students will respond in written form.
-                    </div>
-                    <div class="mt-4">
-                        <label class="block text-sm font-semibold text-gray-700 mb-1">Order</label>
-                        <input type="number" min="0" name="order" value="{{ old('order', $learningSession->questions->count() + 1) }}" class="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-cyan-500">
+                        Theory questions do not need multiple-choice options. Students will answer in written form.
                     </div>
                 </div>
 
-                <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-1">Explanation</label>
-                    <textarea name="explanation" rows="3" class="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-cyan-500">{{ old('explanation') }}</textarea>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1">Order</label>
+                        <input type="number" min="0" name="order" value="{{ old('order', $learningSession->questions->count() + 1) }}" class="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-cyan-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1">Explanation <span class="text-gray-500">(Optional)</span></label>
+                        <textarea name="explanation" rows="3" class="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-cyan-500">{{ old('explanation') }}</textarea>
+                    </div>
                 </div>
                 <button type="submit" class="bg-cyan-600 hover:bg-cyan-700 text-white px-6 py-3 rounded-lg font-bold">Add Question</button>
             </form>

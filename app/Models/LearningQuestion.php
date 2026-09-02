@@ -17,10 +17,13 @@ class LearningQuestion extends Model
         'correct_option',
         'explanation',
         'order',
+        'marks',
+        'image_path',
     ];
 
     protected $casts = [
         'options' => 'array',
+        'marks' => 'decimal:2',
     ];
 
     public function learningSession()
@@ -31,5 +34,14 @@ class LearningQuestion extends Model
     public function answers()
     {
         return $this->hasMany(LearningAnswer::class);
+    }
+
+    public function getImageUrl(): ?string
+    {
+        if ($this->image_path) {
+            return asset('storage/' . $this->image_path);
+        }
+
+        return null;
     }
 }
