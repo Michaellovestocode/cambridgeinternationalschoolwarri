@@ -8,6 +8,8 @@ use App\Models\SchoolClass;
 use App\Models\Subject;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class LearningSessionController extends Controller
 {
@@ -46,6 +48,7 @@ class LearningSessionController extends Controller
         $this->ensureAllowedAssignment((int) $data['subject_id'], (int) $data['school_class_id']);
         $data['created_by'] = Auth::id();
         $data['is_published'] = $request->boolean('is_published');
+        $data['show_answers_to_students'] = $request->boolean('show_answers_to_students');
 
         $session = LearningSession::create($data);
 
@@ -71,6 +74,7 @@ class LearningSessionController extends Controller
         $this->authorizeSession($learningSession);
         $this->ensureAllowedAssignment((int) $data['subject_id'], (int) $data['school_class_id']);
         $data['is_published'] = $request->boolean('is_published');
+        $data['show_answers_to_students'] = $request->boolean('show_answers_to_students');
 
         $learningSession->update($data);
 
@@ -163,6 +167,7 @@ class LearningSessionController extends Controller
             'estimated_minutes' => ['required', 'integer', 'min:1', 'max:300'],
             'assessment_type' => ['nullable', 'in:classwork,assignment,quiz,test'],
             'assessment_format' => ['nullable', 'in:objective,theory,mixed'],
+            'show_answers_to_students' => ['nullable', 'boolean'],
         ]);
     }
 
@@ -174,10 +179,13 @@ class LearningSessionController extends Controller
             return Subject::active()->ordered()->get();
         }
 
-        $subjects = $user->subjects()
-            ->where('is_active', true)
-            ->ordered()
-            ->get();
+        $subjectIds = $this->exactTeachingSubjectIds($user);
+        $subjects = empty($subjectIds)
+            ? $user->subjects()->where('is_active', true)->ordered()->get()
+            : Subject::whereIn('id', $subjectIds)
+                ->where('is_active', true)
+                ->ordered()
+                ->get();
 
         if ($currentSession && $currentSession->subject && ! $subjects->contains('id', $currentSession->subject_id)) {
             $subjects->push($currentSession->subject);
@@ -194,19 +202,16 @@ class LearningSessionController extends Controller
             return SchoolClass::orderBy('name')->get();
         }
 
-        $classIds = $user->formTeacherAssignments()
-            ->where('is_active', true)
-            ->pluck('class_id');
-
-        $classes = SchoolClass::whereIn('id', $classIds)
-            ->orderBy('name')
-            ->get();
+        $classIds = $this->exactTeachingClassIds($user);
+        $classes = empty($classIds)
+            ? $user->teachingClasses()->orderBy('name')->get()->merge($user->formTeacherAssignments()->where('is_active', true)->with('schoolClass')->get()->map->schoolClass->filter())
+            : SchoolClass::whereIn('id', $classIds)->orderBy('name')->get();
 
         if ($currentSession && $currentSession->schoolClass && ! $classes->contains('id', $currentSession->school_class_id)) {
             $classes->push($currentSession->schoolClass);
         }
 
-        return $classes->sortBy('name')->values();
+        return $classes->unique('id')->sortBy('name')->values();
     }
 
     private function ensureAllowedAssignment(int $subjectId, int $classId): void
@@ -217,18 +222,62 @@ class LearningSessionController extends Controller
             return;
         }
 
-        $teachesSubject = $user->subjects()
-            ->where('subjects.id', $subjectId)
-            ->exists();
+        if ($this->exactTeachingLoadIsAvailable()) {
+            $allowed = DB::table('teacher_class_subject')
+                ->where('teacher_id', $user->id)
+                ->where('subject_id', $subjectId)
+                ->where('school_class_id', $classId)
+                ->exists();
 
-        $assignedToClass = $user->formTeacherAssignments()
-            ->where('is_active', true)
-            ->where('class_id', $classId)
-            ->exists();
+            if (! $allowed) {
+                abort(403, 'You can only create lessons for assigned subject and class combinations.');
+            }
+
+            return;
+        }
+
+        $teachesSubject = $user->subjects()->where('subjects.id', $subjectId)->exists();
+        $assignedToClass = $user->teachingClasses()->whereKey($classId)->exists()
+            || $user->formTeacherAssignments()->where('is_active', true)->where('class_id', $classId)->exists();
 
         if (! $teachesSubject || ! $assignedToClass) {
             abort(403, 'You can only create lessons for assigned subject and class combinations.');
         }
+    }
+
+    private function exactTeachingLoadIsAvailable(): bool
+    {
+        return Schema::hasTable('teacher_class_subject');
+    }
+
+    private function exactTeachingSubjectIds($user): array
+    {
+        if (! $this->exactTeachingLoadIsAvailable()) {
+            return [];
+        }
+
+        return DB::table('teacher_class_subject')
+            ->where('teacher_id', $user->id)
+            ->pluck('subject_id')
+            ->map(fn ($id) => (int) $id)
+            ->unique()
+            ->values()
+            ->all();
+    }
+
+    private function exactTeachingClassIds($user): array
+    {
+        if (! $this->exactTeachingLoadIsAvailable()) {
+            return [];
+        }
+
+        return DB::table('teacher_class_subject')
+            ->where('teacher_id', $user->id)
+            ->pluck('school_class_id')
+            ->map(fn ($id) => (int) $id)
+            ->unique()
+            ->values()
+            ->all();
     }
 
     private function authorizeSession(LearningSession $learningSession): void

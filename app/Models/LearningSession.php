@@ -22,10 +22,12 @@ class LearningSession extends Model
         'assessment_type',
         'assessment_format',
         'is_published',
+        'show_answers_to_students',
     ];
 
     protected $casts = [
         'is_published' => 'boolean',
+        'show_answers_to_students' => 'boolean',
     ];
 
     public function subject()

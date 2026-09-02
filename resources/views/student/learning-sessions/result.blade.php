@@ -54,8 +54,12 @@
                 @if(!$answer->selected_option)
                     <p class="mt-3 text-sm text-red-700 font-semibold">You did not answer this question.</p>
                 @endif
-                @if($question->explanation)
+                @if($attempt->learningSession->show_answers_to_students && $question->explanation)
                     <p class="mt-4 text-sm text-gray-700"><strong>Explanation:</strong> {{ $question->explanation }}</p>
+                @elseif($attempt->learningSession->show_answers_to_students)
+                    <p class="mt-4 text-sm text-gray-700"><strong>Marking note:</strong> This answer has been marked automatically. The teacher has not added a written explanation yet.</p>
+                @else
+                    <p class="mt-4 text-sm text-gray-500"><strong>Answer script:</strong> Hidden until your teacher reveals the marking notes.</p>
                 @endif
             </div>
             @endforeach

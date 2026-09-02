@@ -143,10 +143,17 @@
         <textarea name="lesson_content" rows="10" class="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-cyan-500" placeholder="Write the teaching note, worked example, or explanation here.">{{ old('lesson_content', $learningSession->lesson_content ?? '') }}</textarea>
     </div>
 
-    <label class="inline-flex items-center gap-3">
-        <input type="checkbox" name="is_published" value="1" class="rounded border-gray-300" @checked(old('is_published', $learningSession->is_published ?? false))>
-        <span class="font-semibold text-gray-700">Publish for students</span>
-    </label>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <label class="inline-flex items-center gap-3 rounded-xl border border-emerald-200 bg-emerald-50 p-3">
+            <input type="checkbox" name="is_published" value="1" class="rounded border-gray-300" @checked(old('is_published', $learningSession->is_published ?? false))>
+            <span class="font-semibold text-gray-700">Publish for students</span>
+        </label>
+
+        <label class="inline-flex items-center gap-3 rounded-xl border border-violet-200 bg-violet-50 p-3">
+            <input type="checkbox" name="show_answers_to_students" value="1" class="rounded border-gray-300" @checked(old('show_answers_to_students', $learningSession->show_answers_to_students ?? false))>
+            <span class="font-semibold text-gray-700">Reveal answer script after marking</span>
+        </label>
+    </div>
 
     <div class="pt-2">
         <button type="submit" class="bg-cyan-600 hover:bg-cyan-700 text-white px-6 py-3 rounded-lg font-bold">
