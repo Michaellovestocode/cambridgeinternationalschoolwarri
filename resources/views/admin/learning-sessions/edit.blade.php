@@ -23,22 +23,28 @@
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div class="bg-white rounded-lg shadow p-6">
+        <div class="bg-white rounded-lg shadow p-6" x-data="{
+            questionType: '{{ old('question_type', $learningSession->assessment_format === 'theory' ? 'theory' : 'objective') }}'
+        }">
             <h2 class="text-xl font-bold text-gray-900 mb-4">Add Practice Question</h2>
             <form action="{{ route('admin.learning-sessions.questions.store', $learningSession) }}" method="POST" enctype="multipart/form-data" class="space-y-4">
                 @csrf
 
                 <div>
                     <label class="block text-sm font-semibold text-gray-700 mb-1">Question Type</label>
-                    <select name="question_type" id="question_type" class="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-cyan-500">
+                    <select name="question_type" x-model="questionType" class="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-cyan-500">
                         <option value="objective" @selected(old('question_type', $learningSession->assessment_format === 'theory' ? 'theory' : 'objective') === 'objective')>Objective / MCQ</option>
                         <option value="theory" @selected(old('question_type', $learningSession->assessment_format === 'theory' ? 'theory' : 'objective') === 'theory')>Theory / Written</option>
                     </select>
                 </div>
 
                 <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-1">Question</label>
-                    <textarea name="question_text" rows="4" required class="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-cyan-500">{{ old('question_text') }}</textarea>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Question Text *</label>
+                    @include('admin.exams.partials.rich-question-editor', [
+                        'name' => 'question_text',
+                        'value' => old('question_text'),
+                        'placeholder' => 'Enter your question here'
+                    ])
                 </div>
 
                 <div>
@@ -57,7 +63,7 @@
                                 reader.readAsDataURL(file);
                             }
                         " class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-cyan-500">
-                        <p class="text-xs text-gray-500">Upload a reference image if this question depends on a diagram, chart, or picture.</p>
+                        <p class="text-xs text-gray-500">Upload an image showing what students should design or reference. Max 5MB (JPG, PNG, GIF, WEBP)</p>
                         <div x-show="preview" class="mt-3 border rounded-lg overflow-hidden">
                             <div class="bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-600 flex justify-between items-center">
                                 <span>Preview</span>
@@ -68,18 +74,20 @@
                     </div>
                 </div>
 
-                <div id="objective-options" class="space-y-4 @if(old('question_type', $learningSession->assessment_format === 'theory' ? 'theory' : 'objective') === 'theory') hidden @endif">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div x-show="questionType === 'objective'" class="space-y-3">
+                    <label class="block text-sm font-medium text-gray-700">Options *</label>
+                    <div class="space-y-2">
                         @foreach(['A', 'B', 'C', 'D'] as $letter)
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-1">Option {{ $letter }}</label>
-                                <input type="text" name="options[{{ $letter }}]" value="{{ old('options.' . $letter) }}" required class="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-cyan-500" placeholder="Option {{ $letter }}">
+                            <div class="flex gap-2">
+                                <span class="font-bold text-gray-700 w-8">{{ $letter }}.</span>
+                                <input type="text" name="options[{{ $letter }}]" value="{{ old('options.' . $letter) }}" x-bind:required="questionType === 'objective'" class="flex-1 px-4 py-2 border border-gray-300 rounded-lg" placeholder="Option {{ $letter }}">
                             </div>
                         @endforeach
                     </div>
+
                     <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-1">Correct Answer</label>
-                        <select name="correct_option" required class="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-cyan-500">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Correct Answer *</label>
+                        <select name="correct_option" x-bind:required="questionType === 'objective'" class="w-full px-4 py-2 border border-gray-300 rounded-lg">
                             <option value="">-- Select Correct Answer --</option>
                             @foreach(['A', 'B', 'C', 'D'] as $option)
                                 <option value="{{ $option }}" @selected(old('correct_option') === $option)>{{ $option }}</option>
@@ -88,10 +96,8 @@
                     </div>
                 </div>
 
-                <div id="theory-options" class="@if(old('question_type', $learningSession->assessment_format === 'theory' ? 'theory' : 'objective') !== 'theory') hidden @endif">
-                    <div class="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
-                        Theory questions do not need multiple-choice options. Students will answer in written form.
-                    </div>
+                <div x-show="questionType === 'theory'" class="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
+                    Theory questions do not need multiple-choice options. Students will answer in written form.
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
