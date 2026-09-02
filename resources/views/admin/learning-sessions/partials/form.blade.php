@@ -111,6 +111,84 @@
         </div>
     </div>
 
+    <div class="rounded-2xl border border-cyan-200 bg-cyan-50 p-4">
+        <div class="flex items-center justify-between gap-3 mb-4">
+            <div>
+                <h3 class="text-lg font-bold text-slate-800">Question Builder</h3>
+                <p class="text-xs text-slate-600">Add as many questions as you need before publishing the task.</p>
+            </div>
+            <button id="add-question-block" type="button" class="bg-cyan-600 hover:bg-cyan-700 text-white px-4 py-2 rounded-lg text-sm font-semibold">
+                Add Another Question
+            </button>
+        </div>
+
+        <div id="question-block-list" class="space-y-4">
+            <div class="question-block rounded-2xl border border-cyan-200 bg-white p-4" data-index="0">
+                <div class="flex items-center justify-between gap-3 mb-3">
+                    <h4 class="font-bold text-slate-800">Question 1</h4>
+                    <button type="button" class="remove-question hidden text-sm text-red-600 hover:underline">Remove</button>
+                </div>
+
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1">Question</label>
+                        <textarea name="questions[0][question_text]" rows="4" class="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-cyan-500" placeholder="Type the question here..."></textarea>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1">Marks</label>
+                        <input type="number" name="questions[0][marks]" value="1" min="1" step="1" class="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-cyan-500">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1">Question Type</label>
+                        <select name="questions[0][question_type]" class="question-type-select w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-cyan-500">
+                            <option value="objective">Objective / MCQ</option>
+                            <option value="theory">Theory / Written</option>
+                        </select>
+                    </div>
+
+                    <div class="objective-block space-y-3">
+                        <label class="block text-sm font-semibold text-gray-700">Options</label>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            <div class="flex items-center gap-2">
+                                <span class="w-8 font-bold text-slate-700">A.</span>
+                                <input type="text" name="questions[0][options][A]" class="flex-1 border rounded-lg px-4 py-2 focus:ring-2 focus:ring-cyan-500" placeholder="Option A">
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="w-8 font-bold text-slate-700">B.</span>
+                                <input type="text" name="questions[0][options][B]" class="flex-1 border rounded-lg px-4 py-2 focus:ring-2 focus:ring-cyan-500" placeholder="Option B">
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="w-8 font-bold text-slate-700">C.</span>
+                                <input type="text" name="questions[0][options][C]" class="flex-1 border rounded-lg px-4 py-2 focus:ring-2 focus:ring-cyan-500" placeholder="Option C">
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="w-8 font-bold text-slate-700">D.</span>
+                                <input type="text" name="questions[0][options][D]" class="flex-1 border rounded-lg px-4 py-2 focus:ring-2 focus:ring-cyan-500" placeholder="Option D">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-1">Correct Answer</label>
+                            <select name="questions[0][correct_option]" class="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-cyan-500">
+                                <option value="">-- Select correct answer --</option>
+                                <option value="A">A</option>
+                                <option value="B">B</option>
+                                <option value="C">C</option>
+                                <option value="D">D</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="theory-block hidden rounded-xl border border-violet-200 bg-violet-50 p-3 text-sm text-violet-700">
+                        Theory answer box appears here once the task is set to theory format.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     @if($subjects->isEmpty() || $classes->isEmpty())
         <div class="bg-yellow-50 border border-yellow-200 text-yellow-800 rounded-lg p-4 text-sm">
             No available class and subject assignment was found for this account yet.
@@ -184,5 +262,129 @@
 
         assessmentFormatSelect.addEventListener('change', syncFormatTemplate);
         syncFormatTemplate();
+
+        const list = document.getElementById('question-block-list');
+        const addButton = document.getElementById('add-question-block');
+
+        if (list && addButton) {
+            const makeQuestionBlock = (index) => {
+                const block = document.createElement('div');
+                block.className = 'question-block rounded-2xl border border-cyan-200 bg-white p-4';
+                block.dataset.index = String(index);
+
+                block.innerHTML = `
+                    <div class="flex items-center justify-between gap-3 mb-3">
+                        <h4 class="font-bold text-slate-800">Question ${index + 1}</h4>
+                        <button type="button" class="remove-question text-sm text-red-600 hover:underline">Remove</button>
+                    </div>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-1">Question</label>
+                            <textarea name="questions[${index}][question_text]" rows="4" class="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-cyan-500" placeholder="Type the question here..."></textarea>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-1">Marks</label>
+                            <input type="number" name="questions[${index}][marks]" value="1" min="1" step="1" class="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-cyan-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-1">Question Type</label>
+                            <select name="questions[${index}][question_type]" class="question-type-select w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-cyan-500">
+                                <option value="objective">Objective / MCQ</option>
+                                <option value="theory">Theory / Written</option>
+                            </select>
+                        </div>
+                        <div class="objective-block space-y-3">
+                            <label class="block text-sm font-semibold text-gray-700">Options</label>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                <div class="flex items-center gap-2"><span class="w-8 font-bold text-slate-700">A.</span><input type="text" name="questions[${index}][options][A]" class="flex-1 border rounded-lg px-4 py-2 focus:ring-2 focus:ring-cyan-500" placeholder="Option A"></div>
+                                <div class="flex items-center gap-2"><span class="w-8 font-bold text-slate-700">B.</span><input type="text" name="questions[${index}][options][B]" class="flex-1 border rounded-lg px-4 py-2 focus:ring-2 focus:ring-cyan-500" placeholder="Option B"></div>
+                                <div class="flex items-center gap-2"><span class="w-8 font-bold text-slate-700">C.</span><input type="text" name="questions[${index}][options][C]" class="flex-1 border rounded-lg px-4 py-2 focus:ring-2 focus:ring-cyan-500" placeholder="Option C"></div>
+                                <div class="flex items-center gap-2"><span class="w-8 font-bold text-slate-700">D.</span><input type="text" name="questions[${index}][options][D]" class="flex-1 border rounded-lg px-4 py-2 focus:ring-2 focus:ring-cyan-500" placeholder="Option D"></div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-1">Correct Answer</label>
+                                <select name="questions[${index}][correct_option]" class="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-cyan-500">
+                                    <option value="">-- Select correct answer --</option>
+                                    <option value="A">A</option>
+                                    <option value="B">B</option>
+                                    <option value="C">C</option>
+                                    <option value="D">D</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="theory-block hidden rounded-xl border border-violet-200 bg-violet-50 p-3 text-sm text-violet-700">
+                            Theory answer box appears here once the task is set to theory format.
+                        </div>
+                    </div>
+                `;
+
+                const typeSelect = block.querySelector('.question-type-select');
+                const objectiveBlock = block.querySelector('.objective-block');
+                const theoryBlock = block.querySelector('.theory-block');
+                const removeBtn = block.querySelector('.remove-question');
+
+                const syncType = () => {
+                    const isTheory = typeSelect.value === 'theory';
+                    objectiveBlock.classList.toggle('hidden', isTheory);
+                    theoryBlock.classList.toggle('hidden', !isTheory);
+                };
+
+                typeSelect.addEventListener('change', syncType);
+                removeBtn.addEventListener('click', () => {
+                    block.remove();
+                    const blocks = list.querySelectorAll('.question-block');
+                    blocks.forEach((item, i) => {
+                        item.dataset.index = String(i);
+                        const heading = item.querySelector('h4');
+                        if (heading) heading.textContent = `Question ${i + 1}`;
+                        item.querySelectorAll('textarea, input, select').forEach((field) => {
+                            const oldName = field.getAttribute('name');
+                            if (!oldName) return;
+                            const updatedName = oldName.replace(/questions\[\d+\]/, `questions[${i}]`);
+                            field.setAttribute('name', updatedName);
+                        });
+                    });
+                    if (blocks.length <= 1) {
+                        list.querySelectorAll('.remove-question').forEach((btn) => btn.classList.add('hidden'));
+                    }
+                });
+
+                syncType();
+                return block;
+            };
+
+            addButton.addEventListener('click', () => {
+                const blocks = list.querySelectorAll('.question-block');
+                const nextIndex = blocks.length;
+                const block = makeQuestionBlock(nextIndex);
+                list.appendChild(block);
+                if (blocks.length >= 1) {
+                    list.querySelectorAll('.remove-question').forEach((btn) => btn.classList.remove('hidden'));
+                }
+            });
+
+            list.querySelectorAll('.remove-question').forEach((btn) => {
+                btn.addEventListener('click', () => {
+                    const block = btn.closest('.question-block');
+                    if (!block) return;
+                    block.remove();
+                    const blocks = list.querySelectorAll('.question-block');
+                    blocks.forEach((item, i) => {
+                        item.dataset.index = String(i);
+                        const heading = item.querySelector('h4');
+                        if (heading) heading.textContent = `Question ${i + 1}`;
+                        item.querySelectorAll('textarea, input, select').forEach((field) => {
+                            const oldName = field.getAttribute('name');
+                            if (!oldName) return;
+                            const updatedName = oldName.replace(/questions\[\d+\]/, `questions[${i}]`);
+                            field.setAttribute('name', updatedName);
+                        });
+                    });
+                    if (blocks.length <= 1) {
+                        list.querySelectorAll('.remove-question').forEach((btn) => btn.classList.add('hidden'));
+                    }
+                });
+            });
+        }
     });
 </script>
