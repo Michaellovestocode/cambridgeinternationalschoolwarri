@@ -36,6 +36,21 @@
                     </select>
                 </div>
 
+                <div id="question-template-preview" class="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                    <div id="preview-objective" class="space-y-2">
+                        <div class="text-[10px] font-black uppercase tracking-[0.2em] text-cyan-700">Objective template</div>
+                        <div class="rounded-xl border border-cyan-200 bg-white p-3 text-sm text-slate-700">A. First option</div>
+                        <div class="rounded-xl border border-cyan-200 bg-white p-3 text-sm text-slate-700">B. Second option</div>
+                        <div class="rounded-xl border border-cyan-200 bg-white p-3 text-sm text-slate-700">C. Third option</div>
+                        <div class="rounded-xl border border-cyan-200 bg-white p-3 text-sm text-slate-700">D. Fourth option</div>
+                    </div>
+                    <div id="preview-theory" class="hidden space-y-2">
+                        <div class="text-[10px] font-black uppercase tracking-[0.2em] text-violet-700">Theory template</div>
+                        <div class="rounded-xl border border-violet-200 bg-white p-3 text-sm text-slate-700">Explain the process...</div>
+                        <div class="h-24 rounded-xl border border-dashed border-violet-300 bg-violet-50 p-3 text-sm text-violet-700">Long-answer text area</div>
+                    </div>
+                </div>
+
                 <div>
                     <label class="block text-sm font-semibold text-gray-700 mb-1">Question</label>
                     <textarea name="question_text" rows="4" required class="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-cyan-500">{{ old('question_text') }}</textarea>
@@ -122,12 +137,17 @@
         const questionType = document.getElementById('question_type');
         const objectiveOptions = document.getElementById('objective-options');
         const theoryOptions = document.getElementById('theory-options');
+        const previewObjective = document.getElementById('preview-objective');
+        const previewTheory = document.getElementById('preview-theory');
 
         if (questionType) {
             const syncQuestionType = () => {
                 const isTheory = questionType.value === 'theory';
                 objectiveOptions.classList.toggle('hidden', isTheory);
                 theoryOptions.classList.toggle('hidden', !isTheory);
+
+                if (previewObjective) previewObjective.classList.toggle('hidden', isTheory);
+                if (previewTheory) previewTheory.classList.toggle('hidden', !isTheory);
             };
 
             questionType.addEventListener('change', syncQuestionType);

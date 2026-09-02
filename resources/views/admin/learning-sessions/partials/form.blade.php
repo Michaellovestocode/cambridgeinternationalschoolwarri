@@ -55,7 +55,7 @@
     <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
         <div>
             <label class="block text-sm font-semibold text-gray-700 mb-1">Assessment Format</label>
-            <select name="assessment_format" class="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-cyan-500">
+            <select id="assessment-format-select" name="assessment_format" class="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-cyan-500">
                 <option value="objective" @selected(old('assessment_format', $learningSession->assessment_format ?? request('assessment_format', 'objective')) == 'objective')>Objective</option>
                 <option value="theory" @selected(old('assessment_format', $learningSession->assessment_format ?? request('assessment_format', 'objective')) == 'theory')>Theory</option>
                 <option value="mixed" @selected(old('assessment_format', $learningSession->assessment_format ?? request('assessment_format', 'objective')) == 'mixed')>Mixed</option>
@@ -65,8 +65,49 @@
             <div class="rounded-xl bg-cyan-50 border border-cyan-100 px-4 py-3 text-sm text-cyan-800 w-full">
                 <strong>Type:</strong> {{ ucfirst(old('assessment_type', $learningSession->assessment_type ?? request('assessment_type', 'quiz'))) }}
                 <span class="mx-2 text-cyan-400">•</span>
-                <strong>Format:</strong> {{ ucfirst(old('assessment_format', $learningSession->assessment_format ?? 'objective')) }}
+                <strong>Format:</strong> <span id="assessment-format-label">{{ ucfirst(old('assessment_format', $learningSession->assessment_format ?? 'objective')) }}</span>
             </div>
+        </div>
+    </div>
+
+    <div id="assessment-format-template" class="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+        <div id="template-objective" class="space-y-3">
+            <div class="flex items-center gap-2">
+                <span class="rounded-full bg-cyan-100 px-2 py-1 text-[10px] font-black uppercase tracking-[0.2em] text-cyan-700">Objective</span>
+            </div>
+            <p class="text-sm font-semibold text-slate-800">Multiple-choice format</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm text-slate-600">
+                <div class="rounded-xl border border-cyan-200 bg-white p-3">A. Option A</div>
+                <div class="rounded-xl border border-cyan-200 bg-white p-3">B. Option B</div>
+                <div class="rounded-xl border border-cyan-200 bg-white p-3">C. Option C</div>
+                <div class="rounded-xl border border-cyan-200 bg-white p-3">D. Option D</div>
+            </div>
+            <p class="text-xs text-slate-500">Students choose the correct option. The system stores the correct answer and marks the response automatically.</p>
+        </div>
+
+        <div id="template-theory" class="hidden space-y-3">
+            <div class="flex items-center gap-2">
+                <span class="rounded-full bg-violet-100 px-2 py-1 text-[10px] font-black uppercase tracking-[0.2em] text-violet-700">Theory</span>
+            </div>
+            <p class="text-sm font-semibold text-slate-800">Written response format</p>
+            <div class="rounded-xl border border-violet-200 bg-white p-4 text-sm text-slate-600">
+                <p class="font-semibold text-violet-800 mb-2">Question prompt</p>
+                <p>Explain the process...</p>
+                <div class="mt-3 h-24 rounded-lg border border-dashed border-violet-300 bg-violet-50 p-3 text-violet-700">Students answer in a long text box.</div>
+            </div>
+            <p class="text-xs text-slate-500">This format is best for essays, explanations, structured writing, or extended responses.</p>
+        </div>
+
+        <div id="template-mixed" class="hidden space-y-3">
+            <div class="flex items-center gap-2">
+                <span class="rounded-full bg-emerald-100 px-2 py-1 text-[10px] font-black uppercase tracking-[0.2em] text-emerald-700">Mixed</span>
+            </div>
+            <p class="text-sm font-semibold text-slate-800">Objective + theory in one task</p>
+            <div class="grid grid-cols-1 gap-3 text-sm text-slate-600">
+                <div class="rounded-xl border border-emerald-200 bg-white p-3">Section 1: Objective questions</div>
+                <div class="rounded-xl border border-emerald-200 bg-white p-3">Section 2: Theory / explanation questions</div>
+            </div>
+            <p class="text-xs text-slate-500">Use mixed format when you want a quick check and a written explanation in the same classroom task.</p>
         </div>
     </div>
 
@@ -113,3 +154,28 @@
         </button>
     </div>
 </form>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const assessmentFormatSelect = document.getElementById('assessment-format-select');
+        const assessmentFormatLabel = document.getElementById('assessment-format-label');
+        const objectiveTemplate = document.getElementById('template-objective');
+        const theoryTemplate = document.getElementById('template-theory');
+        const mixedTemplate = document.getElementById('template-mixed');
+
+        if (!assessmentFormatSelect) return;
+
+        const syncFormatTemplate = () => {
+            const format = assessmentFormatSelect.value;
+            const labels = { objective: 'Objective', theory: 'Theory', mixed: 'Mixed' };
+            assessmentFormatLabel.textContent = labels[format] || 'Objective';
+
+            objectiveTemplate.classList.toggle('hidden', format !== 'objective');
+            theoryTemplate.classList.toggle('hidden', format !== 'theory');
+            mixedTemplate.classList.toggle('hidden', format !== 'mixed');
+        };
+
+        assessmentFormatSelect.addEventListener('change', syncFormatTemplate);
+        syncFormatTemplate();
+    });
+</script>
