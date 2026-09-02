@@ -23,16 +23,16 @@
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div class="bg-white rounded-lg shadow p-6" x-data="{
-            questionType: '{{ old('question_type', $learningSession->assessment_format === 'theory' ? 'theory' : 'objective') }}'
-        }">
-            <h2 class="text-xl font-bold text-gray-900 mb-4">Add Practice Question</h2>
-            <form action="{{ route('admin.learning-sessions.questions.store', $learningSession) }}" method="POST" enctype="multipart/form-data" class="space-y-4">
+        <div class="bg-white rounded-lg shadow p-6">
+            <h2 class="text-xl font-bold text-gray-900 mb-2">Add Practice Question</h2>
+            <p class="text-sm text-gray-500 mb-4">Add as many questions as you need before publishing the task.</p>
+
+            <form action="{{ route('admin.learning-sessions.questions.store', $learningSession) }}" method="POST" enctype="multipart/form-data" class="space-y-4" id="learning-question-form">
                 @csrf
 
                 <div>
                     <label class="block text-sm font-semibold text-gray-700 mb-1">Question Type</label>
-                    <select name="question_type" x-model="questionType" class="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-cyan-500">
+                    <select name="question_type" id="question_type" class="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-cyan-500">
                         <option value="objective" @selected(old('question_type', $learningSession->assessment_format === 'theory' ? 'theory' : 'objective') === 'objective')>Objective / MCQ</option>
                         <option value="theory" @selected(old('question_type', $learningSession->assessment_format === 'theory' ? 'theory' : 'objective') === 'theory')>Theory / Written</option>
                     </select>
@@ -54,40 +54,24 @@
 
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Reference Image <span class="text-gray-500">(Optional)</span></label>
-                    <div x-data="{ preview: null }" class="space-y-2">
-                        <input type="file" name="image" accept="image/*" @change="
-                            const file = $event.target.files[0];
-                            if (file) {
-                                const reader = new FileReader();
-                                reader.onload = (e) => { preview = e.target.result };
-                                reader.readAsDataURL(file);
-                            }
-                        " class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-cyan-500">
-                        <p class="text-xs text-gray-500">Upload an image showing what students should design or reference. Max 5MB (JPG, PNG, GIF, WEBP)</p>
-                        <div x-show="preview" class="mt-3 border rounded-lg overflow-hidden">
-                            <div class="bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-600 flex justify-between items-center">
-                                <span>Preview</span>
-                                <button type="button" @click="preview = null; $event.target.closest('div').querySelector('input[type=file]').value = ''" class="text-red-500 hover:text-red-700">Remove</button>
-                            </div>
-                            <img :src="preview" alt="Preview" class="max-h-48 w-full object-contain bg-white p-2">
-                        </div>
-                    </div>
+                    <input type="file" name="image" accept="image/*" class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-cyan-500">
+                    <p class="text-xs text-gray-500 mt-1">Upload an image showing what students should design or reference. Max 5MB (JPG, PNG, GIF, WEBP)</p>
                 </div>
 
-                <div x-show="questionType === 'objective'" class="space-y-3">
+                <div id="objective-options" class="space-y-4">
                     <label class="block text-sm font-medium text-gray-700">Options *</label>
                     <div class="space-y-2">
                         @foreach(['A', 'B', 'C', 'D'] as $letter)
                             <div class="flex gap-2">
                                 <span class="font-bold text-gray-700 w-8">{{ $letter }}.</span>
-                                <input type="text" name="options[{{ $letter }}]" value="{{ old('options.' . $letter) }}" x-bind:required="questionType === 'objective'" class="flex-1 px-4 py-2 border border-gray-300 rounded-lg" placeholder="Option {{ $letter }}">
+                                <input type="text" name="options[{{ $letter }}]" value="{{ old('options.' . $letter) }}" class="flex-1 px-4 py-2 border border-gray-300 rounded-lg" placeholder="Option {{ $letter }}">
                             </div>
                         @endforeach
                     </div>
 
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Correct Answer *</label>
-                        <select name="correct_option" x-bind:required="questionType === 'objective'" class="w-full px-4 py-2 border border-gray-300 rounded-lg">
+                        <select name="correct_option" class="w-full px-4 py-2 border border-gray-300 rounded-lg">
                             <option value="">-- Select Correct Answer --</option>
                             @foreach(['A', 'B', 'C', 'D'] as $option)
                                 <option value="{{ $option }}" @selected(old('correct_option') === $option)>{{ $option }}</option>
@@ -96,7 +80,7 @@
                     </div>
                 </div>
 
-                <div x-show="questionType === 'theory'" class="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
+                <div id="theory-options" class="hidden rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
                     Theory questions do not need multiple-choice options. Students will answer in written form.
                 </div>
 
@@ -110,7 +94,10 @@
                         <textarea name="explanation" rows="3" class="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-cyan-500">{{ old('explanation') }}</textarea>
                     </div>
                 </div>
-                <button type="submit" class="bg-cyan-600 hover:bg-cyan-700 text-white px-6 py-3 rounded-lg font-bold">Add Question</button>
+
+                <button type="submit" class="bg-cyan-600 hover:bg-cyan-700 text-white px-6 py-3 rounded-lg font-bold">
+                    Add Question
+                </button>
             </form>
         </div>
 
@@ -151,19 +138,16 @@
         const questionType = document.getElementById('question_type');
         const objectiveOptions = document.getElementById('objective-options');
         const theoryOptions = document.getElementById('theory-options');
-        const previewObjective = document.getElementById('preview-objective');
-        const previewTheory = document.getElementById('preview-theory');
+
+        function syncQuestionType() {
+            if (!questionType || !objectiveOptions || !theoryOptions) return;
+
+            const isTheory = questionType.value === 'theory';
+            objectiveOptions.classList.toggle('hidden', isTheory);
+            theoryOptions.classList.toggle('hidden', !isTheory);
+        }
 
         if (questionType) {
-            const syncQuestionType = () => {
-                const isTheory = questionType.value === 'theory';
-                objectiveOptions.classList.toggle('hidden', isTheory);
-                theoryOptions.classList.toggle('hidden', !isTheory);
-
-                if (previewObjective) previewObjective.classList.toggle('hidden', isTheory);
-                if (previewTheory) previewTheory.classList.toggle('hidden', !isTheory);
-            };
-
             questionType.addEventListener('change', syncQuestionType);
             syncQuestionType();
         }
