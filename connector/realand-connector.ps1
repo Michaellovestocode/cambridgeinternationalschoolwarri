@@ -18,7 +18,7 @@ function Save-State($path, $state) {
 
 function Send-Record($settings, $record) {
     $timestamp = $record.Clock.ToString('yyyy-MM-dd HH:mm:ss')
-    $direction = if ($record.Action -eq 1) { 'out' } else { 'in' }
+    $direction = if ($record.Action -eq 1) { 'out' } else { '' }
     $machineUserId = [string]$record.DIN
     $eventId = "{0}:{1}:{2}:{3}" -f $settings.F495_DEVICE_ID, $machineUserId, $timestamp, $record.Action
     $payload = @{
