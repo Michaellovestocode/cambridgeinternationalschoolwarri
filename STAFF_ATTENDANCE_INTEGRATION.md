@@ -41,14 +41,14 @@ Expected JSON:
 3. Enter the F-G495 `Enroll ID` in the `F-G495 Enroll ID` field.
 4. Save.
 
-For example, if the software shows `Enroll: 2`, enter `2` for Michael Opot.
+For example, if the software shows `Enroll: 2`, enter `2` for Michael Opot. The connector uses the Realand SDK user field (`DIN`), not the device number (`DN`).
 
 ## Laptop connector
 
 The screenshots show the desktop software polling the machine with `Get New Log` every two seconds. The website does not receive those records automatically. A Windows connector must read the new records from the existing software or F-G495 SDK and POST them to the endpoint above.
 
-The starter connector is in the `connector` folder. Copy that folder to the Windows laptop, rename `.env.example` to `.env`, fill in `STAFF_ATTENDANCE_KEY`, and update `F495_IP` if DHCP changes the machine address. Run `start-connector.bat`; it checks for new records every five seconds, remembers sent event IDs, and retries failed uploads. Add its shortcut to the Windows Startup folder after testing.
+The starter connector is in the `connector` folder. Copy that folder to the Windows laptop, rename `.env.example` to `.env`, fill in `STAFF_ATTENDANCE_KEY`, and update `F495_IP` if DHCP changes the machine address. Run `start-connector.bat`; it uses the installed `RealandAPI.dll` every five seconds, remembers sent event IDs, and retries failed uploads. Add its shortcut to the Windows Startup folder after testing.
 
-The connector uses the F-G495 local IP and configured port (your current settings show `192.168.43.184` and `5500`). If it cannot connect, try `F495_PORT=4370` because some firmware uses the ZKTeco SDK port. Do not expose the F-G495 local IP to the public internet.
+The connector uses the F-G495 local IP and configured port (your current settings show `192.168.43.184` and `5500`) and the installed Realand SDK's LAN mode (`Communication=1`). Do not expose the F-G495 local IP to the public internet.
 
 The machine's fingerprint and face templates stay on the F-G495. Only the Enroll ID, timestamp, direction, and device ID are sent to the website.
