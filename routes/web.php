@@ -83,6 +83,8 @@ Route::post('/apply/payment-request', [AdmissionEnquiryController::class, 'reque
 Route::post('/apply/verify-code', [AdmissionEnquiryController::class, 'verifyApplicationCode'])->name('apply.verify-code');
 Route::post('/apply', [AdmissionEnquiryController::class, 'submitApplication'])->name('apply.store');
 Route::post('/admission-enquiries', [AdmissionEnquiryController::class, 'store'])->name('admission-enquiries.store');
+Route::post('/api/staff-attendance/f-g495', [AttendanceController::class, 'staffPush'])->withoutMiddleware('web')->name('staff-attendance.f-g495');
+Route::match(['get', 'post'], '/iclock/cdata', [AttendanceController::class, 'admsPush'])->withoutMiddleware('web')->name('staff-attendance.adms');
 Route::get('/announcements/{announcement}', [AnnouncementController::class, 'show'])->name('announcements.show');
 Route::get('/blog', [BlogPostController::class, 'publicIndex'])->name('blog.index');
 Route::get('/blog/{post}', [BlogPostController::class, 'publicShow'])->name('blog.show');
@@ -109,6 +111,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/scan', [AttendanceController::class, 'scan'])->name('scan');
         Route::get('/today', [AttendanceController::class, 'today'])->name('today');
         Route::get('/monthly', [AttendanceController::class, 'monthly'])->name('monthly');
+        Route::get('/staff', [AttendanceController::class, 'staffReport'])->name('staff');
         Route::get('/people', [AttendanceController::class, 'people'])->name('people');
         Route::put('/people/{user}', [AttendanceController::class, 'updatePerson'])->name('people.update');
         Route::get('/non-teaching-staff/create', [AttendanceController::class, 'createNonTeachingStaff'])->name('non-teaching-staff.create');

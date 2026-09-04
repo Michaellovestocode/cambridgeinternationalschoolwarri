@@ -16,6 +16,7 @@ class User extends Authenticatable
         'email',
         'registration_number',
         'attendance_card_uid',
+        'attendance_machine_user_id',
         'attendance_section',
         'password',
         'role',

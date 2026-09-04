@@ -50,6 +50,7 @@
             <div class="mt-5 grid grid-cols-2 gap-3">
                 <a href="{{ route('admin.attendance.today') }}" class="rounded-2xl bg-blue-50 px-4 py-4 text-center text-sm font-bold text-blue-700">Today</a>
                 <a href="{{ route('admin.attendance.monthly') }}" class="rounded-2xl bg-violet-50 px-4 py-4 text-center text-sm font-bold text-violet-700">Monthly</a>
+                <a href="{{ route('admin.attendance.staff') }}" class="rounded-2xl bg-rose-50 px-4 py-4 text-center text-sm font-bold text-rose-700">Staff</a>
                 <a href="{{ route('admin.attendance.people') }}" class="rounded-2xl bg-amber-50 px-4 py-4 text-center text-sm font-bold text-amber-700">Cards</a>
                 <a href="{{ route('attendance.my') }}" class="rounded-2xl bg-slate-100 px-4 py-4 text-center text-sm font-bold text-slate-700">My Log</a>
             </div>

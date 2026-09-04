@@ -24,6 +24,9 @@ class AttendanceRecord extends Model
         'departure_status',
         'checked_in_by',
         'checked_out_by',
+        'source',
+        'machine_id',
+        'machine_event_id',
         'notes',
     ];
 
@@ -32,6 +35,11 @@ class AttendanceRecord extends Model
         'check_in_at' => 'datetime',
         'check_out_at' => 'datetime',
     ];
+
+    public function isStaffRecord(): bool
+    {
+        return in_array($this->user?->role, ['teacher', 'non_teaching_staff', 'admin'], true);
+    }
 
     public function user(): BelongsTo
     {

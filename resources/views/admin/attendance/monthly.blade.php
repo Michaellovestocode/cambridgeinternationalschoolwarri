@@ -11,6 +11,7 @@
                 <p class="text-sm text-gray-500">{{ $month->format('F Y') }} - {{ $workingDaysCount }} working days counted</p>
             </div>
             <a href="{{ route('admin.attendance.scanner') }}" class="rounded-xl bg-emerald-600 px-4 py-3 text-center text-sm font-bold text-white">Scanner</a>
+            <a href="{{ route('admin.attendance.staff') }}" class="rounded-xl bg-rose-600 px-4 py-3 text-center text-sm font-bold text-white">Staff Attendance</a>
         </div>
     </div>
 

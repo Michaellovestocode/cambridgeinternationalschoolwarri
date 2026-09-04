@@ -14,4 +14,9 @@ return [
         'base_url' => env('ROBASE_BASE_URL', 'https://api.robase.dev'),
     ],
 
+    'staff_attendance' => [
+        'key' => env('STAFF_ATTENDANCE_KEY'),
+        'device_id' => env('F_G495_DEVICE_ID'),
+    ],
+
 ];

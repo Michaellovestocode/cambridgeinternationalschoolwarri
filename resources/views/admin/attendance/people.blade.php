@@ -53,6 +53,9 @@
                     </div>
                     <div class="grid gap-3 sm:grid-cols-[1fr,auto]">
                         <input name="attendance_card_uid" value="{{ old('attendance_card_uid', $person->attendance_card_uid) }}" placeholder="Card / barcode / QR value" class="rounded-xl border border-gray-200 px-3 py-3 text-sm">
+                        @if(!$person->isStudent())
+                            <input name="attendance_machine_user_id" value="{{ old('attendance_machine_user_id', $person->attendance_machine_user_id) }}" placeholder="F-G495 Enroll ID" class="rounded-xl border border-gray-200 px-3 py-3 text-sm">
+                        @endif
                         <label class="flex items-center gap-2 rounded-xl bg-amber-50 px-3 py-3 text-sm font-semibold text-amber-800">
                             <input type="checkbox" name="can_manage_attendance" value="1" @checked(old('can_manage_attendance', $person->can_manage_attendance)) class="rounded border-amber-300 text-amber-600">
                             Can manage
