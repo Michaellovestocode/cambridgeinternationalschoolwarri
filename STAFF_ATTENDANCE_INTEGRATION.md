@@ -52,3 +52,5 @@ The starter connector is in the `connector` folder. Copy that folder to the Wind
 The connector uses the F-G495 local IP and configured port (your current settings show `192.168.43.184` and `5500`) and the installed Realand SDK's LAN mode (`Communication=1`). Do not expose the F-G495 local IP to the public internet.
 
 The machine's fingerprint and face templates stay on the F-G495. Only the Enroll ID, timestamp, direction, and device ID are sent to the website.
+
+For a replacement laptop, follow `connector/README.md`. The connector folder can be copied to another Windows laptop, but the official Realand SDK files must also be present and the new laptop's `.env` must contain the current machine IP and private website key.

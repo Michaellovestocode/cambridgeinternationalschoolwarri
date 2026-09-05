@@ -50,7 +50,12 @@ class LearningSessionController extends Controller
         $data['is_published'] = $request->boolean('is_published');
         $data['show_answers_to_students'] = $request->boolean('show_answers_to_students');
 
-        $session = LearningSession::create($data);
+        $session = DB::transaction(function () use ($data, $request) {
+            $session = LearningSession::create($data);
+            $this->storeInlineQuestions($request, $session);
+
+            return $session;
+        });
 
         return redirect()
             ->route('admin.learning-sessions.edit', $session)
@@ -183,8 +188,44 @@ class LearningSessionController extends Controller
             'estimated_minutes' => ['required', 'integer', 'min:1', 'max:300'],
             'assessment_type' => ['nullable', 'in:classwork,assignment,quiz,test'],
             'assessment_format' => ['nullable', 'in:objective,theory,mixed'],
+            'is_published' => ['nullable', 'boolean'],
             'show_answers_to_students' => ['nullable', 'boolean'],
+            'questions' => ['nullable', 'array'],
+            'questions.*.question_text' => ['nullable', 'string'],
+            'questions.*.marks' => ['nullable', 'numeric', 'min:0.01'],
+            'questions.*.question_type' => ['nullable', 'in:objective,theory'],
+            'questions.*.options' => ['nullable', 'array'],
+            'questions.*.correct_option' => ['nullable', 'in:A,B,C,D'],
         ]);
+    }
+
+    private function storeInlineQuestions(Request $request, LearningSession $session): void
+    {
+        foreach ($request->input('questions', []) as $index => $question) {
+            if (! filled($question['question_text'] ?? null)) {
+                continue;
+            }
+
+            $questionType = $question['question_type'] ?? ($session->assessment_format === 'theory' ? 'theory' : 'objective');
+            $options = $questionType === 'objective'
+                ? array_filter($question['options'] ?? [], fn ($option) => filled($option))
+                : [];
+
+            if ($questionType === 'objective' && (! filled($question['correct_option'] ?? null) || ! array_key_exists($question['correct_option'], $options))) {
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    "questions.{$index}.correct_option" => 'The correct option must match an option with text.',
+                ]);
+            }
+
+            $session->questions()->create([
+                'question_text' => $question['question_text'],
+                'question_type' => $questionType,
+                'options' => $options,
+                'correct_option' => $questionType === 'objective' ? $question['correct_option'] : null,
+                'order' => $index + 1,
+                'marks' => (float) ($question['marks'] ?? 1),
+            ]);
+        }
     }
 
     private function availableSubjects(?LearningSession $currentSession = null)

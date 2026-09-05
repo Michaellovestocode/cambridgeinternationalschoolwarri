@@ -10,9 +10,9 @@
         <div class="absolute -right-10 -top-10 w-40 h-40 bg-white opacity-10 rounded-full blur-3xl"></div>
         <div class="absolute -left-10 -bottom-10 w-40 h-40 bg-white opacity-10 rounded-full blur-3xl"></div>
         
-        <div class="relative p-4 md:p-8 text-white">
-            <div class="flex items-center justify-between flex-wrap gap-4">
-                <div class="flex items-center gap-4">
+        <div class="relative p-4 sm:p-6 lg:p-8 text-white">
+            <div class="flex items-start justify-between flex-wrap gap-4">
+                <div class="flex min-w-0 items-start gap-3 sm:gap-4">
                     @if(auth()->user()->photo)
                         <img src="{{ asset('storage/' . auth()->user()->photo) }}" alt="Profile Picture" class="w-12 h-12 md:w-20 md:h-20 rounded-full object-cover border-3 md:border-4 border-white shadow-lg">
                     @else
@@ -23,22 +23,22 @@
                         </div>
                     @endif
                     <div>
-                        <h1 class="text-2xl md:text-4xl font-bold mb-2">Welcome back, {{ auth()->user()->name }}! 👋</h1>
-                        <div class="flex items-center gap-3 flex-wrap mt-3">
-                            <p class="text-white/90 text-sm md:text-lg flex items-center">
+                        <h1 class="break-words text-2xl sm:text-3xl lg:text-4xl font-bold mb-2">Welcome back, {{ auth()->user()->name }}! 👋</h1>
+                        <div class="flex items-center gap-x-3 gap-y-2 flex-wrap mt-3">
+                            <p class="text-white/90 text-sm lg:text-lg flex items-center">
                                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2"></path>
                                 </svg>
                                 {{ auth()->user()->registration_number }}
                             </p>
-                            <p class="text-white/90 text-sm md:text-lg flex items-center">
+                            <p class="text-white/90 text-sm lg:text-lg flex items-center">
                                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
                                 </svg>
                                 {{ auth()->user()->class->name ?? 'N/A' }}
                             </p>
                             @if(auth()->user()->date_of_birth)
-                                <p class="text-white/90 text-sm md:text-lg flex items-center">
+                                <p class="text-white/90 text-sm lg:text-lg flex items-center">
                                     <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
                                     </svg>
@@ -46,7 +46,7 @@
                                 </p>
                             @endif
                             @if(auth()->user()->parent_phone_number)
-                                <p class="text-white/90 text-sm md:text-lg flex items-center">
+                                <p class="text-white/90 text-sm lg:text-lg flex items-center">
                                     <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path>
                                     </svg>
@@ -57,7 +57,7 @@
                         <p class="text-white/70 text-xs md:text-sm mt-3 italic">"My school is a place of light, where dreams are shaped both day and night"</p>
                     </div>
                 </div>
-                <div class="hidden sm:block bg-white/20 backdrop-blur-md rounded-2xl p-6 border border-white/30">
+                <div class="hidden sm:block shrink-0 bg-white/20 backdrop-blur-md rounded-2xl p-4 lg:p-6 border border-white/30">
                     <div class="text-center">
                         <div class="text-5xl font-bold">{{ \Carbon\Carbon::now()->format('d') }}</div>
                         <div class="text-sm mt-1">{{ \Carbon\Carbon::now()->format('F Y') }}</div>
@@ -75,7 +75,7 @@
             <span class="text-[10px] md:text-xs font-semibold uppercase tracking-wide text-gray-500">Learn fast</span>
         </div>
 
-        <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-3 md:gap-4">
+        <div class="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3 md:gap-4">
             <a href="{{ route('student.learning.index') }}" class="group border-2 border-cyan-200 hover:border-cyan-400 rounded-2xl p-3 md:p-4 bg-cyan-50 hover:bg-cyan-100 transition-all">
                 <div class="text-2xl md:text-3xl mb-2 md:mb-3">📚</div>
                 <div class="font-bold text-gray-800 text-xs md:text-sm lg:text-base">Classwork</div>
@@ -140,9 +140,9 @@
     @endif
 
     <!-- Quick Stats -->
-    <div class="grid grid-cols-2 md:grid-cols-2 xl:grid-cols-4 gap-3 md:gap-6">
+    <div class="grid grid-cols-2 md:grid-cols-2 xl:grid-cols-4 gap-3 md:gap-4 xl:gap-6">
         <!-- Available Exams -->
-        <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl shadow-lg p-6 text-white transform hover:scale-105 transition-transform duration-200">
+        <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl shadow-lg p-4 xl:p-6 text-white transform hover:scale-105 transition-transform duration-200">
             <div class="flex items-center justify-between mb-4">
                 <div class="bg-white/20 backdrop-blur-sm rounded-xl p-3">
                     <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -150,7 +150,7 @@
                     </svg>
                 </div>
                 <div class="text-right">
-                    <div class="text-4xl font-bold">{{ $availableExams->count() }}</div>
+                    <div class="text-3xl xl:text-4xl font-bold">{{ $availableExams->count() }}</div>
                 </div>
             </div>
             <div class="text-white/90 font-semibold text-lg">Available Exams</div>
@@ -158,7 +158,7 @@
         </div>
 
         <!-- Completed Exams -->
-        <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-2xl shadow-lg p-6 text-white transform hover:scale-105 transition-transform duration-200">
+        <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-2xl shadow-lg p-4 xl:p-6 text-white transform hover:scale-105 transition-transform duration-200">
             <div class="flex items-center justify-between mb-4">
                 <div class="bg-white/20 backdrop-blur-sm rounded-xl p-3">
                     <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -166,7 +166,7 @@
                     </svg>
                 </div>
                 <div class="text-right">
-                    <div class="text-4xl font-bold">{{ $completedAttempts->count() }}</div>
+                    <div class="text-3xl xl:text-4xl font-bold">{{ $completedAttempts->count() }}</div>
                 </div>
             </div>
             <div class="text-white/90 font-semibold text-lg">Completed</div>
@@ -174,7 +174,7 @@
         </div>
 
         <!-- In Progress -->
-        <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl shadow-lg p-6 text-white transform hover:scale-105 transition-transform duration-200">
+        <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl shadow-lg p-4 xl:p-6 text-white transform hover:scale-105 transition-transform duration-200">
             <div class="flex items-center justify-between mb-4">
                 <div class="bg-white/20 backdrop-blur-sm rounded-xl p-3">
                     <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -182,7 +182,7 @@
                     </svg>
                 </div>
                 <div class="text-right">
-                    <div class="text-4xl font-bold">{{ $inProgressAttempts->count() }}</div>
+                    <div class="text-3xl xl:text-4xl font-bold">{{ $inProgressAttempts->count() }}</div>
                 </div>
             </div>
             <div class="text-white/90 font-semibold text-lg">In Progress</div>
@@ -190,7 +190,7 @@
         </div>
 
         <!-- Learning Sessions -->
-        <a href="{{ route('student.learning.index') }}" class="block bg-gradient-to-br from-cyan-500 to-emerald-600 rounded-2xl shadow-lg p-6 text-white transform hover:scale-105 transition-transform duration-200">
+        <a href="{{ route('student.learning.index') }}" class="block bg-gradient-to-br from-cyan-500 to-emerald-600 rounded-2xl shadow-lg p-4 xl:p-6 text-white transform hover:scale-105 transition-transform duration-200">
             <div class="flex items-center justify-between mb-4">
                 <div class="bg-white/20 backdrop-blur-sm rounded-xl p-3">
                     <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -198,7 +198,7 @@
                     </svg>
                 </div>
                 <div class="text-right">
-                    <div class="text-4xl font-bold">{{ $completedLearningAttempts }}</div>
+                    <div class="text-3xl xl:text-4xl font-bold">{{ $completedLearningAttempts }}</div>
                 </div>
             </div>
             <div class="text-white/90 font-semibold text-lg">Classwork & Quiz</div>

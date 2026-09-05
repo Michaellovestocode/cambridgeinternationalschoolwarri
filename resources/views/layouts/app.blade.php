@@ -257,7 +257,7 @@
                     </div>
                 </div>
 
-                <div class="desktop-nav-links order-3 hidden w-full min-w-0 flex-1 items-center gap-1 overflow-visible px-2 md:flex xl:order-none xl:w-auto">
+                <div class="desktop-nav-links order-3 hidden w-full min-w-0 flex-1 items-center gap-1 overflow-visible px-2 lg:flex xl:order-none xl:w-auto">
                     <a href="{{ route($dashboardRoute) }}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-semibold transition">
                         Dashboard
                     </a>
@@ -366,7 +366,7 @@
                 </div>
             </div>
 
-            <div class="mobile-nav-shell md:hidden">
+            <div class="mobile-nav-shell lg:hidden">
                 <div class="mobile-nav-links flex flex-wrap gap-2">
                     <a href="{{ route($dashboardRoute) }}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-semibold transition text-sm">
                         Dashboard

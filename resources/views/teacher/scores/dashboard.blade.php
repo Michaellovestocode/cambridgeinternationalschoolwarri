@@ -3,9 +3,9 @@
 @section('title', 'Score Entry Dashboard')
 
 @section('content')
-<div class="max-w-6xl mx-auto px-4 py-8">
-    <div class="mb-8">
-        <h1 class="text-4xl font-bold text-gray-800 mb-2">📊 Score Entry Dashboard</h1>
+<div class="max-w-6xl mx-auto px-3 sm:px-4 py-5 sm:py-8">
+    <div class="mb-5 sm:mb-8">
+        <h1 class="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-800 mb-2">📊 Score Entry Dashboard</h1>
         <p class="text-gray-600">Save CBT-linked and paper-based CA1, CA2, and Exam scores as they become available, then submit when ready for report-card review.</p>
     </div>
 
@@ -19,7 +19,7 @@
     </div>
     @endif
 
-    <div class="bg-white rounded-lg shadow-lg p-6 mb-8">
+    <div class="bg-white rounded-lg shadow-lg p-4 sm:p-6 mb-5 sm:mb-8">
         <form method="GET" action="{{ route('teacher.scores.dashboard') }}" class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
                 <label for="session_id" class="block text-sm font-semibold text-gray-700 mb-2">Session</label>
@@ -53,42 +53,42 @@
     </div>
 
     <!-- Statistics Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg shadow-lg p-6 text-white">
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 mb-5 sm:mb-8">
+        <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg shadow-lg p-4 sm:p-6 text-white">
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-blue-100 text-sm">Total Scores Entered</p>
-                    <p class="text-4xl font-bold">{{ $totalScoresEntered ?? 0 }}</p>
+                    <p class="text-2xl sm:text-4xl font-bold">{{ $totalScoresEntered ?? 0 }}</p>
                 </div>
                 <div class="text-5xl opacity-30">📝</div>
             </div>
         </div>
 
-        <div class="bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-lg shadow-lg p-6 text-white">
+        <div class="bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-lg shadow-lg p-4 sm:p-6 text-white">
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-yellow-100 text-sm">Pending Scores</p>
-                    <p class="text-4xl font-bold">{{ $pendingScores ?? 0 }}</p>
+                    <p class="text-2xl sm:text-4xl font-bold">{{ $pendingScores ?? 0 }}</p>
                 </div>
                 <div class="text-5xl opacity-30">⏳</div>
             </div>
         </div>
 
-        <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-lg shadow-lg p-6 text-white">
+        <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-lg shadow-lg p-4 sm:p-6 text-white">
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-green-100 text-sm">Submitted Scores</p>
-                    <p class="text-4xl font-bold">{{ $submittedScores ?? 0 }}</p>
+                    <p class="text-2xl sm:text-4xl font-bold">{{ $submittedScores ?? 0 }}</p>
                 </div>
                 <div class="text-5xl opacity-30">✅</div>
             </div>
         </div>
 
-        <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg shadow-lg p-6 text-white">
+        <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg shadow-lg p-4 sm:p-6 text-white">
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-purple-100 text-sm">Total Subjects</p>
-                    <p class="text-4xl font-bold">{{ count($teacherSubjects ?? []) }}</p>
+                    <p class="text-2xl sm:text-4xl font-bold">{{ count($teacherSubjects ?? []) }}</p>
                 </div>
                 <div class="text-5xl opacity-30">📚</div>
             </div>
@@ -96,10 +96,10 @@
     </div>
 
     <!-- Main Actions -->
-    <div class="bg-white rounded-lg shadow-lg p-8 mb-8">
-        <h2 class="text-2xl font-bold text-gray-800 mb-6">Quick Actions</h2>
+    <div class="bg-white rounded-lg shadow-lg p-4 sm:p-8 mb-5 sm:mb-8">
+        <h2 class="text-xl sm:text-2xl font-bold text-gray-800 mb-4 sm:mb-6">Quick Actions</h2>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-6">
             <div class="border-2 border-indigo-300 rounded-lg p-6 hover:shadow-lg transition">
                 <div class="text-5xl mb-4">🧠</div>
                 <h3 class="text-xl font-bold text-gray-800 mb-2">Assessment Studio</h3>
