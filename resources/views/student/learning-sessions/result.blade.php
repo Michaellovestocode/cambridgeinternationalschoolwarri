@@ -11,13 +11,16 @@
                 <h1 class="text-3xl font-bold text-gray-900 mt-1">{{ $attempt->learningSession->title }}</h1>
                 <p class="text-gray-600 mt-2">Completed {{ $attempt->completed_at?->format('d M Y, h:i A') }}</p>
             </div>
-            <div class="text-center bg-cyan-50 rounded-2xl px-8 py-5">
-                <div class="text-4xl font-black text-cyan-700">{{ $attempt->percentage() }}%</div>
-                <div class="text-sm text-gray-600 mt-1">{{ $attempt->score }}/{{ $attempt->total_questions }} correct</div>
-            </div>
+            @if($attempt->learningSession->show_answers_to_students)
+                <div class="text-center bg-cyan-50 rounded-2xl px-8 py-5">
+                    <div class="text-4xl font-black text-cyan-700">{{ $attempt->percentage() }}%</div>
+                    <div class="text-sm text-gray-600 mt-1">{{ $attempt->score }}/{{ $attempt->total_questions }} correct</div>
+                </div>
+            @endif
         </div>
     </div>
 
+    @if($attempt->learningSession->show_answers_to_students)
     <div class="bg-white rounded-2xl shadow-lg p-6 md:p-8">
         <h2 class="text-2xl font-bold text-gray-900 mb-6">Corrections</h2>
         <div class="space-y-5">
@@ -70,5 +73,16 @@
             <a href="{{ route('student.learning.index') }}" class="bg-gray-100 hover:bg-gray-200 text-gray-800 px-6 py-3 rounded-xl font-bold">More Sessions</a>
         </div>
     </div>
+    @else
+    <div class="rounded-2xl border border-emerald-200 bg-emerald-50 p-8 text-center shadow-lg">
+        <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-emerald-600 text-3xl text-white">&#10003;</div>
+        <h2 class="mt-4 text-2xl font-bold text-emerald-900">Submitted Successfully</h2>
+        <p class="mx-auto mt-2 max-w-xl text-sm text-emerald-800">Your answers have been submitted. Your teacher will review the result and reveal the answer script when it is ready.</p>
+        <div class="mt-6 flex flex-wrap justify-center gap-3">
+            <a href="{{ route('student.learning.index') }}" class="rounded-xl bg-emerald-600 px-6 py-3 font-bold text-white hover:bg-emerald-700">Back to Learning</a>
+            <a href="{{ route('student.dashboard') }}" class="rounded-xl bg-white px-6 py-3 font-bold text-emerald-800 hover:bg-emerald-100">Dashboard</a>
+        </div>
+    </div>
+    @endif
 </div>
 @endsection

@@ -100,7 +100,7 @@ class StudentLearningSessionController extends Controller
 
         return redirect()
             ->route('student.learning.result', $attempt)
-            ->with('success', 'Learning session submitted. Review your corrections below.');
+            ->with('success', 'Learning session submitted successfully.');
     }
 
     public function result(LearningAttempt $attempt)
