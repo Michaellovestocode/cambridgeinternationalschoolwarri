@@ -509,6 +509,11 @@
             padding: 1.5px;
         }
 
+        .trait-rating {
+            font-family: DejaVu Sans, sans-serif;
+            font-weight: bold;
+        }
+
         .rating-cell {
             width: 15px;
             font-size: 7px;
@@ -1207,7 +1212,7 @@
                                     <tr>
                                         <td style="text-align: left;">{{ $trait }}</td>
                                         @for($rating = 5; $rating >= 1; $rating--)
-                                            <td>{!! (int) data_get($reportCard->affective_domain, $key) === $rating ? '&#10003;' : '' !!}</td>
+                                            <td class="trait-rating">{!! (int) data_get($reportCard->affective_domain, $key) === $rating ? '&#10003;' : '' !!}</td>
                                         @endfor
                                     </tr>
                                 @endforeach
@@ -1231,7 +1236,7 @@
                                     <tr>
                                         <td style="text-align: left;">{{ $skill }}</td>
                                         @for($rating = 5; $rating >= 1; $rating--)
-                                            <td>{!! (int) data_get($reportCard->psychomotor_skills, $key) === $rating ? '&#10003;' : '' !!}</td>
+                                            <td class="trait-rating">{!! (int) data_get($reportCard->psychomotor_skills, $key) === $rating ? '&#10003;' : '' !!}</td>
                                         @endfor
                                     </tr>
                                 @endforeach
