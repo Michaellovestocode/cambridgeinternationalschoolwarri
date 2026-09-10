@@ -18,7 +18,7 @@ use App\Jobs\SendParentAttendanceSms;
 class AttendanceController extends Controller
 {
     private const RESUMPTION_TIME = '07:15:00';
-    private const CLOSING_TIME = '16:00:00';
+    private const CLOSING_TIME = '15:30:00';
 
     public function scanner()
     {

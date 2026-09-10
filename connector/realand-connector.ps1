@@ -47,6 +47,7 @@ $stateFile = if ($settings.STATE_FILE) { $settings.STATE_FILE } else { 'connecto
 $statePath = Join-Path $PSScriptRoot $stateFile
 $state = if (Test-Path $statePath) { Get-Content $statePath -Raw | ConvertFrom-Json } else { [pscustomobject]@{ sent = @() } }
 $sent = [Collections.Generic.HashSet[string]]::new([string[]]@($state.sent))
+$minimumDate = if ($settings.MIN_EVENT_DATE) { [DateTime]::ParseExact($settings.MIN_EVENT_DATE, 'yyyy-MM-dd', $null).Date } else { $null }
 Write-Host "F-G495 connector started for $($settings.F495_IP):$($settings.F495_PORT)"
 
 while ($true) {
@@ -64,6 +65,7 @@ while ($true) {
         $records = $device.GetNewlyRecords($dates)
         foreach ($record in @($records)) {
             $timestamp = $record.Clock.ToString('yyyy-MM-dd HH:mm:ss')
+            if ($minimumDate -and $record.Clock.Date -lt $minimumDate) { continue }
             $machineUserId = [string]$record.DIN
             $eventId = "{0}:{1}:{2}:{3}" -f $settings.F495_DEVICE_ID, $machineUserId, $timestamp, $record.Action
             if ($sent.Contains($eventId)) { continue }
