@@ -158,6 +158,15 @@
                     Approve All Ready
                 </button>
             </form>
+            <form method="POST" action="{{ route('admin.report-cards.bulk-export') }}">
+                @csrf
+                <input type="hidden" name="class_id" value="{{ $selectedClass->id }}">
+                <input type="hidden" name="session_id" value="{{ request('session_id', $selectedSession?->id) }}">
+                <input type="hidden" name="term_id" value="{{ request('term_id', $selectedTerm?->id) }}">
+                <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium">
+                    Export All
+                </button>
+            </form>
         </div>
     @else
         <div class="bg-blue-50 border border-blue-100 rounded-xl p-6 text-blue-900">

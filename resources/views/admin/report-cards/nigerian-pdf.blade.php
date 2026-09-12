@@ -38,7 +38,7 @@
         }
 
         @page {
-            margin: 0;
+            margin: 4mm;
             size: A4 portrait;
         }
 
@@ -53,8 +53,8 @@
 
         body {
             font-family: Arial, Helvetica, sans-serif;
-            font-size: 10.5px;
-            line-height: 1.25;
+            font-size: 9.4px;
+            line-height: 1.18;
             color: #000;
             background: #fff;
         }
@@ -62,10 +62,10 @@
         .page {
             @if($scoreCount >= 16)
                 width: {{ ($renderMode ?? 'pdf') === 'browser' ? '287mm' : '282mm' }};
-                padding: 6mm;
+                padding: 5mm;
             @else
                 width: {{ ($renderMode ?? 'pdf') === 'browser' ? '210mm' : '204mm' }};
-                padding: 7mm;
+                padding: 5.5mm;
             @endif
             position: relative;
             border: 2px solid {{ $selectedColor['primary'] }};
@@ -566,9 +566,9 @@
         
         .comment-box {
             border: 1.5px solid {{ $selectedColor['primary'] }};
-            padding: 4px;
-            margin-bottom: 4px;
-            min-height: 32px;
+            padding: 3px 4px;
+            margin-bottom: 3px;
+            min-height: 24px;
             background: rgba(255, 255, 255, .9);
         }
 
@@ -587,10 +587,10 @@
         }
         
         .comment-text {
-            font-size: 8.8px;
+            font-size: 8.1px;
             font-style: italic;
-            min-height: 9px;
-            line-height: 1.02;
+            min-height: 8px;
+            line-height: 1.0;
             flex: 1;
         }
         
@@ -624,9 +624,9 @@
 
         .next-term-box {
             text-align: center;
-            margin-top: 4px;
-            padding: 3px;
-            font-size: 8.6px;
+            margin-top: 3px;
+            padding: 2px 3px;
+            font-size: 8.1px;
             border-top: 1px solid {{ $selectedColor['primary'] }};
             border-bottom: 1px solid {{ $selectedColor['primary'] }};
             background: {{ $selectedColor['light'] }};

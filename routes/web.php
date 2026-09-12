@@ -192,6 +192,7 @@ Route::middleware('auth')->group(function () {
         Route::put('/admin/report-cards/{id}/scores', [NigerianReportCardController::class, 'updateScores'])->name('admin.report-cards.scores');
         Route::put('/admin/report-cards/{id}/submit-review', [NigerianReportCardController::class, 'submitForReview'])->name('admin.report-cards.submit-review');
         Route::put('/admin/report-cards/bulk/approve-review', [NigerianReportCardController::class, 'bulkApproveAcademicReview'])->name('admin.report-cards.bulk-approve-review');
+        Route::post('/admin/report-cards/bulk/export', [NigerianReportCardController::class, 'bulkExportAcademicReview'])->name('admin.report-cards.bulk-export');
         Route::put('/admin/report-cards/bulk/publish', [NigerianReportCardController::class, 'bulkPublish'])->name('admin.report-cards.bulk-publish');
         Route::put('/admin/report-cards/{id}/approve-review', [NigerianReportCardController::class, 'approveAcademicReview'])->name('admin.report-cards.approve-review');
         Route::put('/admin/report-cards/{id}/reject-review', [NigerianReportCardController::class, 'rejectAcademicReview'])->name('admin.report-cards.reject-review');

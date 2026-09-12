@@ -939,6 +939,82 @@ class NigerianReportCardController extends Controller
         return back()->with('success', "{$approved} report cards approved. {$skipped} skipped.");
     }
 
+    public function bulkExportAcademicReview(Request $request)
+    {
+        $this->authorizeAcademicReview();
+
+        $validated = $request->validate([
+            'class_id' => 'required|exists:school_classes,id',
+            'session_id' => 'required|exists:academic_sessions,id',
+            'term_id' => 'required|exists:terms,id',
+        ]);
+
+        abort_unless(in_array((int) $validated['class_id'], $this->reviewerClassIdsFor(auth()->user()), true), 403);
+
+        $reportCards = ReportCard::with(['student', 'session', 'term', 'class'])
+            ->where('class_id', $validated['class_id'])
+            ->where('session_id', $validated['session_id'])
+            ->where('term_id', $validated['term_id'])
+            ->whereIn('workflow_status', [
+                ReportCard::WORKFLOW_ACADEMIC_APPROVED,
+                ReportCard::WORKFLOW_PUBLISHED,
+            ])
+            ->get();
+
+        if ($reportCards->isEmpty()) {
+            return back()->with('error', 'No approved or published report cards are available to export for this class.');
+        }
+
+        $zipPath = tempnam(sys_get_temp_dir(), 'report_cards_') . '.zip';
+        $zip = new \ZipArchive();
+        if ($zip->open($zipPath, \ZipArchive::CREATE | \ZipArchive::OVERWRITE) !== true) {
+            return back()->with('error', 'Could not create the export zip file.');
+        }
+
+        $session = Session::findOrFail($validated['session_id']);
+        $term = Term::findOrFail($validated['term_id']);
+        $class = SchoolClass::findOrFail($validated['class_id']);
+
+        foreach ($reportCards as $reportCard) {
+            $scores = Score::where('student_id', $reportCard->student_id)
+                ->where('session_id', $reportCard->session_id)
+                ->where('term_id', $reportCard->term_id)
+                ->where('total', '>', 0)
+                ->with('subject')
+                ->join('subjects', 'scores.subject_id', '=', 'subjects.id')
+                ->select('scores.*')
+                ->orderBy('subjects.name')
+                ->get();
+
+            $schoolSettings = \App\Models\SchoolSettings::getSettings();
+            $colorSchemes = [
+                'blue' => ['primary' => '#1E40AF', 'secondary' => '#3B82F6', 'light' => '#DBEAFE'],
+                'green' => ['primary' => '#15803D', 'secondary' => '#22C55E', 'light' => '#DCFCE7'],
+                'brown' => ['primary' => '#78350F', 'secondary' => '#A16207', 'light' => '#FEF3C7'],
+                'pink' => ['primary' => '#BE123C', 'secondary' => '#F472B6', 'light' => '#FCE7F3'],
+                'purple' => ['primary' => '#6B21A8', 'secondary' => '#A855F7', 'light' => '#F3E8FF'],
+            ];
+            $selectedColor = $colorSchemes[$reportCard->theme_color ?? 'blue'] ?? $colorSchemes['blue'];
+            $pdf = Pdf::loadView('admin.report-cards.nigerian-pdf', compact('reportCard', 'scores', 'schoolSettings', 'selectedColor', 'renderMode'));
+            $pdf->setPaper('A4', 'portrait');
+            $pdf->setOptions([
+                'isHtml5ParserEnabled' => true,
+                'isRemoteEnabled' => true,
+                'defaultPaperSize' => 'a4',
+            ]);
+
+            $safeName = preg_replace('/[^A-Za-z0-9_\-]+/', '_', trim($reportCard->student->name ?? 'student'));
+            $filename = sprintf('%s_%s_%s.pdf', $safeName, $session->name, $term->name);
+            $zip->addFromString($filename, $pdf->output());
+        }
+
+        $zip->close();
+
+        $archiveName = sprintf('%s_%s_%s_Export.zip', preg_replace('/[^A-Za-z0-9_\-]+/', '_', $class->display_name ?? 'Class'), $session->name, $term->name);
+
+        return response()->download($zipPath, $archiveName)->deleteFileAfterSend(true);
+    }
+
     public function bulkPublish(Request $request)
     {
         $this->authorizeReportCardManagement();
