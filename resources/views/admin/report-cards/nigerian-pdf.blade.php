@@ -46,6 +46,58 @@
         @if($scoreCount >= 16)
         @page { size: A4 landscape; margin: 2mm; }
         @endif
+
+        @if(($renderMode ?? 'pdf') === 'pdf')
+        @page { margin: 1.2mm; }
+        html { font-size: 7.2px; }
+        body {
+            font-size: 7.1px;
+            line-height: 1.0;
+        }
+        .page {
+            padding: 2.5mm !important;
+        }
+        .header {
+            padding: 4px 6px;
+            margin-bottom: 5px;
+        }
+        .student-info {
+            margin-bottom: 5px;
+        }
+        .student-info-table td {
+            padding: 2px 5px;
+        }
+        table {
+            margin-bottom: 5px;
+        }
+        th, td {
+            padding: 1.6px 1px;
+        }
+        .summary-section {
+            margin-bottom: 5px;
+        }
+        .summary-box {
+            padding: 3px;
+        }
+        .summary-title {
+            padding: 2px;
+        }
+        .comment-box {
+            min-height: 12px;
+            padding: 2px 3px;
+            margin-bottom: 2px;
+        }
+        .comment-text {
+            font-size: 6.5px;
+            line-height: 1.0;
+        }
+        .footer {
+            margin-top: 2px;
+        }
+        .official-note {
+            font-size: 6.6px;
+        }
+        @endif
         
         html {
             scroll-behavior: smooth;
