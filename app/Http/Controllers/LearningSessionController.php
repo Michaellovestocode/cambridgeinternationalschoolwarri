@@ -202,8 +202,15 @@ class LearningSessionController extends Controller
             'published_at' => $published ? now() : null,
         ]);
 
-        return redirect()->route('admin.learning-sessions.attempts.grade', $attempt)
-            ->with('success', $published ? 'Scores saved and published to the student.' : 'Scores saved as a draft.');
+        if ($published) {
+            return redirect()
+                ->route('admin.learning-sessions.submissions', $attempt->learningSession)
+                ->with('success', 'Scores saved and published to the student.');
+        }
+
+        return redirect()
+            ->route('admin.learning-sessions.attempts.grade', $attempt)
+            ->with('success', 'Scores saved as a draft.');
     }
 
     public function uploadAttachment(Request $request, LearningSession $learningSession)

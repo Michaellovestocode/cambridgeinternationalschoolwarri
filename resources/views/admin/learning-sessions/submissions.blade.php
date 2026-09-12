@@ -4,6 +4,12 @@
 
 @section('content')
 <div class="mx-auto max-w-6xl space-y-6">
+    @if(session('success'))
+        <div class="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-bold text-emerald-800" role="status">
+            {{ session('success') }}
+        </div>
+    @endif
+
     <div class="flex flex-col gap-4 rounded-2xl bg-white p-5 shadow sm:flex-row sm:items-center sm:justify-between sm:p-6">
         <div>
             <p class="text-xs font-bold uppercase tracking-wide text-cyan-700">Learning Hub</p>
