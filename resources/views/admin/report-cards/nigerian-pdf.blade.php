@@ -48,54 +48,86 @@
         @endif
 
         @if(($renderMode ?? 'pdf') === 'pdf')
-        @page { margin: 1.2mm; }
-        html { font-size: 7.2px; }
+        @page { margin: 1mm; }
+        html { font-size: 6.7px; }
         body {
-            font-size: 7.1px;
-            line-height: 1.0;
+            font-size: 6.8px;
+            line-height: 0.96;
         }
         .page {
-            padding: 2.5mm !important;
+            padding: 2.1mm !important;
         }
         .header {
-            padding: 4px 6px;
-            margin-bottom: 5px;
+            padding: 3px 5px;
+            margin-bottom: 4px;
+        }
+        .header-logo-cell, .header-photo-cell {
+            width: 70px;
+        }
+        .school-logo, .student-photo, .student-photo-placeholder {
+            width: 18mm !important;
+            height: 20mm !important;
         }
         .student-info {
-            margin-bottom: 5px;
+            margin-bottom: 4px;
         }
         .student-info-table td {
-            padding: 2px 5px;
+            padding: 2px 4px;
         }
         table {
-            margin-bottom: 5px;
+            margin-bottom: 4px;
         }
         th, td {
-            padding: 1.6px 1px;
+            padding: 1.2px 1px;
+        }
+        .scores-table tbody tr td {
+            height: 12px;
         }
         .summary-section {
-            margin-bottom: 5px;
+            margin-bottom: 4px;
         }
         .summary-box {
-            padding: 3px;
+            padding: 2px 3px;
         }
         .summary-title {
             padding: 2px;
+            font-size: 7.5px;
+        }
+        .summary-item {
+            font-size: 7px;
         }
         .comment-box {
-            min-height: 12px;
+            min-height: 10px;
             padding: 2px 3px;
             margin-bottom: 2px;
         }
+        .comment-row {
+            gap: 3px;
+        }
+        .comment-label {
+            font-size: 7.5px;
+        }
         .comment-text {
-            font-size: 6.5px;
-            line-height: 1.0;
+            font-size: 6.2px;
+            line-height: 0.95;
+        }
+        .signature-line {
+            margin-top: 4px;
+            font-size: 7px;
+        }
+        .signature-image {
+            width: 84px;
+            height: 22px;
         }
         .footer {
-            margin-top: 2px;
+            margin-top: 1px;
+            padding-top: 0;
         }
         .official-note {
-            font-size: 6.6px;
+            font-size: 6.2px;
+        }
+        .confidential {
+            font-size: 7px;
         }
         @endif
         
