@@ -974,6 +974,7 @@ class NigerianReportCardController extends Controller
         $session = Session::findOrFail($validated['session_id']);
         $term = Term::findOrFail($validated['term_id']);
         $class = SchoolClass::findOrFail($validated['class_id']);
+        $renderMode = 'pdf';
 
         foreach ($reportCards as $reportCard) {
             $scores = Score::where('student_id', $reportCard->student_id)
