@@ -943,10 +943,22 @@ class NigerianReportCardController extends Controller
     {
         $this->authorizeAcademicReview();
 
+        $termId = $request->input('term_id', Term::getActive()?->id);
+        $sessionId = $request->input('session_id', Session::getActive()?->id);
+
+        if (! $sessionId && $termId) {
+            $sessionId = Term::whereKey($termId)->value('session_id');
+        }
+
+        $request->merge([
+            'session_id' => $sessionId,
+            'term_id' => $termId,
+        ]);
+
         $validated = $request->validate([
             'class_id' => 'required|exists:school_classes,id',
-            'session_id' => 'required|exists:academic_sessions,id',
-            'term_id' => 'required|exists:terms,id',
+            'session_id' => ['required', 'exists:academic_sessions,id'],
+            'term_id' => ['required', 'exists:terms,id'],
         ]);
 
         abort_unless(in_array((int) $validated['class_id'], $this->reviewerClassIdsFor(auth()->user()), true), 403);
