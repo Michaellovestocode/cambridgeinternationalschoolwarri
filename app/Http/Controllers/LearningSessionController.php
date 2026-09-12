@@ -261,7 +261,7 @@ class LearningSessionController extends Controller
             'question_text' => $data['question_text'],
             'question_type' => $questionType,
             'options' => $options,
-            'correct_option' => $questionType === 'objective' ? $data['correct_option'] : null,
+            'correct_option' => $questionType === 'objective' ? $data['correct_option'] : '',
             'explanation' => $data['explanation'] ?? null,
             'order' => $data['order'] ?? ($learningSession->questions()->count() + 1),
             'marks' => (float) $data['marks'],
