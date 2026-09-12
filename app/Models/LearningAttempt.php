@@ -17,6 +17,7 @@ class LearningAttempt extends Model
         'started_at',
         'completed_at',
         'is_published',
+        'allow_resubmission',
         'published_by',
         'published_at',
     ];
@@ -25,6 +26,7 @@ class LearningAttempt extends Model
         'started_at' => 'datetime',
         'completed_at' => 'datetime',
         'is_published' => 'boolean',
+        'allow_resubmission' => 'boolean',
         'published_at' => 'datetime',
     ];
 

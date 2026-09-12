@@ -160,6 +160,13 @@
         </div>
     </div>
 
+@if($practiceLocked)
+<div class="rounded-2xl border border-emerald-200 bg-emerald-50 p-6 text-emerald-900 shadow-lg">
+    <h2 class="text-xl font-bold">Practice submitted and graded</h2>
+    <p class="mt-2 text-sm">Your teacher has published your result. The practice questions are locked. You can still read the lesson and join the class discussion.</p>
+    <a href="{{ route('student.learning.result', $latestAttempt) }}" class="mt-4 inline-block rounded-xl bg-emerald-700 px-5 py-3 text-sm font-bold text-white">View Published Result</a>
+</div>
+@else
 <form action="{{ route('student.learning.submit', $learningSession) }}" method="POST" class="space-y-6">
     @csrf
     <div class="bg-white rounded-2xl shadow-lg p-6 md:p-8">
@@ -203,6 +210,7 @@
         @endif
     </div>
 </form>
+@endif
 </div>
 
 <script>

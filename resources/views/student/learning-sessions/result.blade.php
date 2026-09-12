@@ -69,7 +69,9 @@
         </div>
 
         <div class="mt-8 flex flex-wrap gap-3">
-            <a href="{{ route('student.learning.show', $attempt->learningSession) }}" class="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-xl font-bold">Retake Session</a>
+            @if($attempt->allow_resubmission)
+                <a href="{{ route('student.learning.show', $attempt->learningSession) }}" class="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-xl font-bold">Submit Again</a>
+            @endif
             <a href="{{ route('student.learning.index') }}" class="bg-gray-100 hover:bg-gray-200 text-gray-800 px-6 py-3 rounded-xl font-bold">More Sessions</a>
         </div>
     </div>
@@ -79,6 +81,9 @@
         <h2 class="mt-4 text-2xl font-bold text-emerald-900">Submitted Successfully</h2>
         <p class="mx-auto mt-2 max-w-xl text-sm text-emerald-800">Your answers have been submitted. Your teacher will review the result and reveal the answer script when it is ready.</p>
         <div class="mt-6 flex flex-wrap justify-center gap-3">
+            @if($attempt->allow_resubmission)
+                <a href="{{ route('student.learning.show', $attempt->learningSession) }}" class="rounded-xl bg-cyan-600 px-6 py-3 font-bold text-white hover:bg-cyan-700">Submit Again</a>
+            @endif
             <a href="{{ route('student.learning.index') }}" class="rounded-xl bg-emerald-600 px-6 py-3 font-bold text-white hover:bg-emerald-700">Back to Learning</a>
             <a href="{{ route('student.dashboard') }}" class="rounded-xl bg-white px-6 py-3 font-bold text-emerald-800 hover:bg-emerald-100">Dashboard</a>
         </div>

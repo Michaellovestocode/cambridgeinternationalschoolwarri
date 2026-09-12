@@ -75,9 +75,16 @@
             </div>
 
             <div class="session-card-actions mt-6 flex gap-3">
-                <a href="{{ route('student.learning.show', $session) }}" class="flex-1 text-center bg-cyan-600 hover:bg-cyan-700 text-white px-4 py-3 rounded-xl font-bold">
-                    Start Session
-                </a>
+                @if($attempt?->is_published && ! $attempt->allow_resubmission)
+                    <div class="flex flex-1 flex-col gap-2">
+                        <span class="cursor-not-allowed rounded-xl bg-gray-200 px-4 py-3 text-center font-bold text-gray-500">Practice Locked</span>
+                        <a href="{{ route('student.learning.show', $session) }}" class="text-center text-xs font-bold text-cyan-700 hover:underline">View Lesson &amp; Discussion</a>
+                    </div>
+                @else
+                    <a href="{{ route('student.learning.show', $session) }}" class="flex-1 text-center bg-cyan-600 hover:bg-cyan-700 text-white px-4 py-3 rounded-xl font-bold">
+                        {{ $attempt?->allow_resubmission ? 'Submit Again' : 'Start Session' }}
+                    </a>
+                @endif
                 @if($attempt)
                     <a href="{{ route('student.learning.result', $attempt) }}" class="px-4 py-3 rounded-xl font-bold bg-gray-100 hover:bg-gray-200 text-gray-800">Review</a>
                 @endif

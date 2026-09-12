@@ -162,6 +162,7 @@ class LearningSessionController extends Controller
             'answers.*.teacher_score' => ['nullable', 'numeric', 'min:0'],
             'answers.*.teacher_feedback' => ['nullable', 'string', 'max:2000'],
             'publish' => ['nullable', 'boolean'],
+            'allow_resubmission' => ['nullable', 'boolean'],
         ]);
 
         foreach ($attempt->answers as $answer) {
@@ -198,6 +199,7 @@ class LearningSessionController extends Controller
         $attempt->update([
             'score' => round($score, 2),
             'is_published' => $published,
+            'allow_resubmission' => $published && $request->boolean('allow_resubmission'),
             'published_by' => $published ? Auth::id() : null,
             'published_at' => $published ? now() : null,
         ]);

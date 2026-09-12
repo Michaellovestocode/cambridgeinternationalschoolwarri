@@ -49,6 +49,10 @@ class StudentLearningSessionController extends Controller
         );
 
         $learningSession->load(['subject', 'schoolClass', 'questions', 'attachments', 'comments' => fn ($query) => $query->where('is_hidden', false)->whereNull('parent_id')->with(['user', 'replies.user'])]);
+        $latestAttempt = LearningAttempt::where('user_id', Auth::id())
+            ->where('learning_session_id', $learningSession->id)
+            ->latest()
+            ->first();
         $feedback = LearningFeedback::where('learning_session_id', $learningSession->id)
             ->where('user_id', Auth::id())
             ->value('status');
@@ -67,7 +71,9 @@ class StudentLearningSessionController extends Controller
             );
         }
 
-        return view('student.learning-sessions.show', compact('learningSession', 'feedback', 'unreadTeacherReplies'));
+        $practiceLocked = $latestAttempt?->is_published && ! $latestAttempt->allow_resubmission;
+
+        return view('student.learning-sessions.show', compact('learningSession', 'feedback', 'unreadTeacherReplies', 'latestAttempt', 'practiceLocked'));
     }
 
     public function feedback(Request $request, LearningSession $learningSession)
@@ -133,6 +139,12 @@ class StudentLearningSessionController extends Controller
             $learningSession->is_published && $learningSession->school_class_id === Auth::user()->class_id,
             404
         );
+
+        $latestAttempt = LearningAttempt::where('user_id', Auth::id())
+            ->where('learning_session_id', $learningSession->id)
+            ->latest()
+            ->first();
+        abort_if($latestAttempt?->is_published && ! $latestAttempt->allow_resubmission, 403, 'This activity has been graded and published. Your teacher has not enabled another submission.');
 
         $learningSession->load('questions');
 

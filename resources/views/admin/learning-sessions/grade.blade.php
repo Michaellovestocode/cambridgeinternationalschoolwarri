@@ -52,6 +52,10 @@
         @endforeach
 
         <div class="sticky bottom-3 flex flex-col gap-3 rounded-2xl bg-white/95 p-4 shadow-lg backdrop-blur sm:flex-row sm:justify-end">
+            <label class="mr-auto inline-flex items-center gap-3 text-sm font-semibold text-gray-700">
+                <input type="checkbox" name="allow_resubmission" value="1" @checked($attempt->allow_resubmission) class="rounded border-gray-300">
+                Allow this student to submit again
+            </label>
             <button name="publish" value="0" class="rounded-xl bg-gray-200 px-5 py-3 text-sm font-bold text-gray-800">Save Draft</button>
             <button name="publish" value="1" class="rounded-xl bg-emerald-600 px-5 py-3 text-sm font-bold text-white">Save and Publish Result</button>
         </div>
