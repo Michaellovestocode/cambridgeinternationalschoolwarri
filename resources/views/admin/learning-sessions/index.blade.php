@@ -44,13 +44,13 @@
         <div class="flex flex-wrap justify-between items-center gap-4">
             <div>
                 <h1 class="text-3xl font-bold">Learning Sessions</h1>
-                <p class="text-emerald-50 mt-1">Create lesson content and practice questions for students.</p>
+                <p class="text-emerald-50 mt-1">Share lesson notes, materials, and classroom discussion with students.</p>
             </div>
             <a href="{{ route('teacher.assessment-studio') }}" class="bg-white/15 hover:bg-white/20 text-white px-4 py-2 rounded-lg font-semibold border border-white/20">
-                Assessment Studio
+                Create Classwork / Quiz
             </a>
             <a href="{{ route('admin.learning-sessions.create') }}" class="bg-white text-emerald-700 hover:bg-emerald-50 px-6 py-2 rounded-lg font-semibold">
-                + New Session
+                + New Learning Topic
             </a>
         </div>
     </div>

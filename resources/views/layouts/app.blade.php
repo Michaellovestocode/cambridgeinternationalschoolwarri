@@ -311,7 +311,7 @@
                     @endif
                     @if(auth()->user()->isAdmin() || auth()->user()->isTeacher())
                     <a href="{{ route('admin.learning-sessions.index') }}" class="bg-cyan-500 hover:bg-cyan-600 text-white px-4 py-2 rounded-lg font-semibold transition">
-                        Learning
+                        Learning Hub
                     </a>
                     @endif
                     @if($canManageReportCards)
