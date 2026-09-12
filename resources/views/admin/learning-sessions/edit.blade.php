@@ -4,22 +4,13 @@
 
 @section('content')
 <div class="space-y-6">
-    <div class="bg-white rounded-lg shadow p-6">
-        <div class="flex flex-wrap justify-between items-center gap-4 mb-6">
-            <div>
-                <h1 class="text-2xl font-bold text-gray-900">Edit Learning Session</h1>
-                <p class="text-gray-600 text-sm">{{ $learningSession->schoolClass->display_name ?? 'No class' }} • {{ $learningSession->subject->name ?? 'N/A' }} • {{ $learningSession->topic }}</p>
-            </div>
-            <a href="{{ route('admin.learning-sessions.index') }}" class="text-blue-600 hover:underline">Back to sessions</a>
+    <div class="flex flex-col gap-3 rounded-lg bg-white p-5 shadow sm:flex-row sm:items-center sm:justify-between sm:p-6">
+        <div>
+            <p class="text-xs font-bold uppercase tracking-wide text-emerald-700">Learning Hub</p>
+            <h1 class="mt-1 text-2xl font-bold text-gray-900">{{ $learningSession->title }}</h1>
+            <p class="text-sm text-gray-600">{{ $learningSession->schoolClass->display_name ?? 'No class' }} • {{ $learningSession->subject->name ?? 'N/A' }} • {{ $learningSession->topic }}</p>
         </div>
-
-        @include('admin.learning-sessions.partials.form', [
-            'action' => route('admin.learning-sessions.update', $learningSession),
-            'method' => 'PUT',
-            'learningSession' => $learningSession,
-            'subjects' => $subjects,
-            'classes' => $classes,
-        ])
+        <a href="{{ route('admin.learning-sessions.index') }}" class="rounded-lg bg-gray-100 px-4 py-2 text-center text-sm font-semibold text-gray-700">Back to Learning Hub</a>
     </div>
 
     <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
