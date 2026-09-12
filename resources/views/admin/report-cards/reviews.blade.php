@@ -158,7 +158,7 @@
                     Approve All Ready
                 </button>
             </form>
-            <form method="POST" action="{{ route('admin.report-cards.bulk-export') }}">
+            <form method="POST" action="{{ route('admin.report-cards.bulk-export') }}" target="_blank">
                 @csrf
                 <input type="hidden" name="class_id" value="{{ $selectedClass->id }}">
                 <input type="hidden" name="session_id" value="{{ request('session_id', $selectedSession?->id) }}">

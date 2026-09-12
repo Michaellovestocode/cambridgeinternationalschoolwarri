@@ -980,37 +980,45 @@ class NigerianReportCardController extends Controller
         $class = SchoolClass::findOrFail($validated['class_id']);
         $renderMode = 'pdf';
 
-        foreach ($reportCards as $reportCard) {
-            $scores = Score::where('student_id', $reportCard->student_id)
-                ->where('session_id', $reportCard->session_id)
-                ->where('term_id', $reportCard->term_id)
-                ->where('total', '>', 0)
-                ->with('subject')
-                ->join('subjects', 'scores.subject_id', '=', 'subjects.id')
-                ->select('scores.*')
-                ->orderBy('subjects.name')
-                ->get();
+        try {
+            foreach ($reportCards as $reportCard) {
+                $scores = Score::where('student_id', $reportCard->student_id)
+                    ->where('session_id', $reportCard->session_id)
+                    ->where('term_id', $reportCard->term_id)
+                    ->where('total', '>', 0)
+                    ->with('subject')
+                    ->join('subjects', 'scores.subject_id', '=', 'subjects.id')
+                    ->select('scores.*')
+                    ->orderBy('subjects.name')
+                    ->get();
 
-            $schoolSettings = \App\Models\SchoolSettings::getSettings();
-            $colorSchemes = [
-                'blue' => ['primary' => '#1E40AF', 'secondary' => '#3B82F6', 'light' => '#DBEAFE'],
-                'green' => ['primary' => '#15803D', 'secondary' => '#22C55E', 'light' => '#DCFCE7'],
-                'brown' => ['primary' => '#78350F', 'secondary' => '#A16207', 'light' => '#FEF3C7'],
-                'pink' => ['primary' => '#BE123C', 'secondary' => '#F472B6', 'light' => '#FCE7F3'],
-                'purple' => ['primary' => '#6B21A8', 'secondary' => '#A855F7', 'light' => '#F3E8FF'],
-            ];
-            $selectedColor = $colorSchemes[$reportCard->theme_color ?? 'blue'] ?? $colorSchemes['blue'];
-            $pdf = Pdf::loadView('admin.report-cards.nigerian-pdf', compact('reportCard', 'scores', 'schoolSettings', 'selectedColor', 'renderMode'));
-            $pdf->setPaper('A4', 'portrait');
-            $pdf->setOptions([
-                'isHtml5ParserEnabled' => true,
-                'isRemoteEnabled' => true,
-                'defaultPaperSize' => 'a4',
-            ]);
+                $schoolSettings = \App\Models\SchoolSettings::getSettings();
+                $colorSchemes = [
+                    'blue' => ['primary' => '#1E40AF', 'secondary' => '#3B82F6', 'light' => '#DBEAFE'],
+                    'green' => ['primary' => '#15803D', 'secondary' => '#22C55E', 'light' => '#DCFCE7'],
+                    'brown' => ['primary' => '#78350F', 'secondary' => '#A16207', 'light' => '#FEF3C7'],
+                    'pink' => ['primary' => '#BE123C', 'secondary' => '#F472B6', 'light' => '#FCE7F3'],
+                    'purple' => ['primary' => '#6B21A8', 'secondary' => '#A855F7', 'light' => '#F3E8FF'],
+                ];
+                $selectedColor = $colorSchemes[$reportCard->theme_color ?? 'blue'] ?? $colorSchemes['blue'];
+                $pdf = Pdf::loadView('admin.report-cards.nigerian-pdf', compact('reportCard', 'scores', 'schoolSettings', 'selectedColor', 'renderMode'));
+                $pdf->setPaper('A4', 'portrait');
+                $pdf->setOptions([
+                    'isHtml5ParserEnabled' => true,
+                    'isRemoteEnabled' => true,
+                    'defaultPaperSize' => 'a4',
+                ]);
 
-            $safeName = preg_replace('/[^A-Za-z0-9_\-]+/', '_', trim($reportCard->student->name ?? 'student'));
-            $filename = sprintf('%s_%s_%s.pdf', $safeName, $session->name, $term->name);
-            $zip->addFromString($filename, $pdf->output());
+                $safeName = preg_replace('/[^A-Za-z0-9_\-]+/', '_', trim($reportCard->student->name ?? 'student'));
+                $filename = sprintf('%s_%s_%s.pdf', $safeName, $session->name, $term->name);
+                $zip->addFromString($filename, $pdf->output());
+            }
+        } catch (\Throwable $exception) {
+            $zip->close();
+            @unlink($zipPath);
+            report($exception);
+
+            return back()->with('error', 'Export failed while generating a report card. Please check the application log for details.');
         }
 
         $zip->close();
