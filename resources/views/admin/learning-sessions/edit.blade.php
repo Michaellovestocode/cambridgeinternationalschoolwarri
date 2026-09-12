@@ -22,6 +22,80 @@
         ])
     </div>
 
+    <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <div class="rounded-lg bg-white p-6 shadow">
+            <h2 class="text-xl font-bold text-gray-900">Study Materials</h2>
+            <p class="mt-1 text-sm text-gray-500">Share diagrams, PDFs, presentations, or reference images with the class.</p>
+            <form action="{{ route('admin.learning-sessions.attachments.store', $learningSession) }}" method="POST" enctype="multipart/form-data" class="mt-4 flex flex-col gap-3 sm:flex-row sm:items-end">
+                @csrf
+                <div class="flex-1">
+                    <label class="mb-1 block text-sm font-semibold text-gray-700">Upload file</label>
+                    <input type="file" name="attachment" required accept=".pdf,.doc,.docx,.ppt,.pptx,.jpg,.jpeg,.png,.gif,.webp" class="w-full rounded-lg border px-3 py-2 text-sm">
+                    <p class="mt-1 text-xs text-gray-500">Maximum 10MB.</p>
+                </div>
+                <button class="rounded-lg bg-sky-600 px-4 py-3 text-sm font-bold text-white">Upload Material</button>
+            </form>
+            <div class="mt-5 space-y-2">
+                @forelse($learningSession->attachments as $attachment)
+                    <a href="{{ $attachment->url() }}" target="_blank" rel="noopener" class="flex min-w-0 items-center justify-between rounded-lg bg-sky-50 px-4 py-3 text-sm font-semibold text-sky-800">
+                        <span class="truncate">{{ $attachment->name }}</span><span class="ml-3 text-xs">Open</span>
+                    </a>
+                @empty
+                    <p class="text-sm text-gray-500">No study materials uploaded yet.</p>
+                @endforelse
+            </div>
+        </div>
+
+        <div class="rounded-lg bg-white p-6 shadow">
+            <h2 class="text-xl font-bold text-gray-900">Class Discussion</h2>
+            <div class="mt-3 flex gap-3 text-xs font-bold">
+                <span class="rounded-full bg-emerald-100 px-3 py-1 text-emerald-800">{{ $feedbackCounts->get('understood', 0) }} understand</span>
+                <span class="rounded-full bg-amber-100 px-3 py-1 text-amber-800">{{ $feedbackCounts->get('needs_help', 0) }} need help</span>
+            </div>
+            <p class="mt-1 text-sm text-gray-500">Reply to questions, pin useful explanations, or hide inappropriate comments.</p>
+            <form action="{{ route('admin.learning-sessions.comments.store', $learningSession) }}" method="POST" class="mt-4">
+                @csrf
+                <textarea name="body" rows="3" required maxlength="3000" class="w-full rounded-lg border px-4 py-3 text-sm" placeholder="Post a teacher clarification..."></textarea>
+                <button class="mt-2 rounded-lg bg-cyan-600 px-4 py-3 text-sm font-bold text-white">Post Clarification</button>
+            </form>
+            <div class="mt-5 space-y-3">
+                @forelse($learningSession->comments as $comment)
+                    <div class="rounded-lg {{ $comment->is_hidden ? 'bg-red-50 opacity-70' : 'bg-gray-50' }} p-4">
+                        <div class="flex items-start justify-between gap-3">
+                            <div>
+                                <p class="text-xs font-bold text-gray-500">{{ $comment->user->name }}{{ $comment->is_pinned ? ' · Pinned' : '' }}</p>
+                                <p class="mt-1 whitespace-pre-line text-sm text-gray-800">{{ $comment->body }}</p>
+                            </div>
+                            <div class="flex shrink-0 gap-2">
+                                <form action="{{ route('admin.learning-comments.moderate', $comment) }}" method="POST">
+                                    @csrf
+                                    <input type="hidden" name="action" value="pin">
+                                    <button class="text-xs font-bold text-amber-700">{{ $comment->is_pinned ? 'Unpin' : 'Pin' }}</button>
+                                </form>
+                                <form action="{{ route('admin.learning-comments.moderate', $comment) }}" method="POST">
+                                    @csrf
+                                    <input type="hidden" name="action" value="{{ $comment->is_hidden ? 'show' : 'hide' }}">
+                                    <button class="text-xs font-bold text-red-700">{{ $comment->is_hidden ? 'Show' : 'Hide' }}</button>
+                                </form>
+                            </div>
+                        </div>
+                        @foreach($comment->replies as $reply)
+                            <p class="mt-3 border-l-2 border-cyan-200 pl-3 text-sm text-gray-700"><strong>{{ $reply->user->name }}:</strong> {{ $reply->body }}</p>
+                        @endforeach
+                        <form action="{{ route('admin.learning-sessions.comments.store', $learningSession) }}" method="POST" class="mt-3 flex flex-col gap-2 sm:flex-row">
+                            @csrf
+                            <input type="hidden" name="parent_id" value="{{ $comment->id }}">
+                            <input name="body" required maxlength="3000" class="min-w-0 flex-1 rounded-lg border border-gray-200 px-3 py-2 text-sm" placeholder="Reply to this question">
+                            <button class="rounded-lg bg-gray-900 px-3 py-2 text-xs font-bold text-white sm:shrink-0">Reply</button>
+                        </form>
+                    </div>
+                @empty
+                    <p class="text-sm text-gray-500">No student discussion yet.</p>
+                @endforelse
+            </div>
+        </div>
+    </div>
+
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div class="bg-white rounded-lg shadow p-6">
             <h2 class="text-xl font-bold text-gray-900 mb-2">Add Practice Question</h2>

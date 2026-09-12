@@ -4,12 +4,15 @@ namespace App\Http\Controllers;
 
 use App\Models\LearningQuestion;
 use App\Models\LearningSession;
+use App\Models\LearningComment;
+use App\Models\LearningAttachment;
 use App\Models\SchoolClass;
 use App\Models\Subject;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Storage;
 
 class LearningSessionController extends Controller
 {
@@ -68,9 +71,66 @@ class LearningSessionController extends Controller
 
         $subjects = $this->availableSubjects($learningSession);
         $classes = $this->availableClasses($learningSession);
-        $learningSession->load(['subject', 'schoolClass', 'questions']);
+        $learningSession->load(['subject', 'schoolClass', 'questions', 'attachments', 'comments' => fn ($query) => $query->whereNull('parent_id')->with(['user', 'replies.user'])->latest()]);
+        $feedbackCounts = $learningSession->feedback()
+            ->selectRaw("status, COUNT(*) as total")
+            ->groupBy('status')
+            ->pluck('total', 'status');
 
-        return view('admin.learning-sessions.edit', compact('learningSession', 'subjects', 'classes'));
+        return view('admin.learning-sessions.edit', compact('learningSession', 'subjects', 'classes', 'feedbackCounts'));
+    }
+
+    public function uploadAttachment(Request $request, LearningSession $learningSession)
+    {
+        $this->authorizeSession($learningSession);
+        $validated = $request->validate([
+            'attachment' => ['required', 'file', 'max:10240', 'mimes:pdf,doc,docx,ppt,pptx,jpg,jpeg,png,gif,webp'],
+        ]);
+
+        $file = $validated['attachment'];
+        $learningSession->attachments()->create([
+            'uploaded_by' => Auth::id(),
+            'name' => $file->getClientOriginalName(),
+            'path' => $file->store('learning-attachments', 'public'),
+            'mime_type' => $file->getMimeType(),
+            'size' => $file->getSize(),
+        ]);
+
+        return back()->with('success', 'Learning material uploaded.');
+    }
+
+    public function comment(Request $request, LearningSession $learningSession)
+    {
+        $this->authorizeSession($learningSession);
+        $validated = $request->validate([
+            'body' => ['required', 'string', 'max:3000'],
+            'parent_id' => ['nullable', 'integer', 'exists:learning_comments,id'],
+        ]);
+
+        if (! empty($validated['parent_id']) && ! LearningComment::whereKey($validated['parent_id'])->where('learning_session_id', $learningSession->id)->exists()) {
+            abort(422, 'That discussion thread does not belong to this lesson.');
+        }
+
+        LearningComment::create([
+            'learning_session_id' => $learningSession->id,
+            'user_id' => Auth::id(),
+            'parent_id' => $validated['parent_id'] ?? null,
+            'body' => $validated['body'],
+        ]);
+
+        return back()->with('success', 'Teacher reply posted.');
+    }
+
+    public function moderateComment(Request $request, LearningComment $comment)
+    {
+        $this->authorizeSession($comment->learningSession);
+        $action = $request->validate(['action' => ['required', 'in:pin,hide,show']])['action'];
+        $comment->update([
+            'is_pinned' => $action === 'pin' ? ! $comment->is_pinned : $comment->is_pinned,
+            'is_hidden' => $action === 'hide' ? true : ($action === 'show' ? false : $comment->is_hidden),
+        ]);
+
+        return back()->with('success', 'Discussion updated.');
     }
 
     public function update(Request $request, LearningSession $learningSession)

@@ -141,6 +141,8 @@ Route::middleware('auth')->group(function () {
         Route::get('/learning-sessions', [StudentLearningSessionController::class, 'index'])->name('learning.index');
         Route::get('/learning-sessions/{learningSession}', [StudentLearningSessionController::class, 'show'])->name('learning.show');
         Route::post('/learning-sessions/{learningSession}/submit', [StudentLearningSessionController::class, 'submit'])->name('learning.submit');
+        Route::post('/learning-sessions/{learningSession}/feedback', [StudentLearningSessionController::class, 'feedback'])->name('learning.feedback');
+        Route::post('/learning-sessions/{learningSession}/comments', [StudentLearningSessionController::class, 'comment'])->name('learning.comments.store');
         Route::get('/learning-attempts/{attempt}/result', [StudentLearningSessionController::class, 'result'])->name('learning.result');
         Route::get('/report-cards/{reportCard}', [StudentController::class, 'viewReportCard'])->name('report-cards.preview');
         Route::get('/report-cards/{reportCard}/download', [StudentController::class, 'downloadReportCard'])->name('report-cards.download');
@@ -364,8 +366,11 @@ Route::middleware('auth')->group(function () {
         Route::get('/learning-sessions/{learningSession}/edit', [LearningSessionController::class, 'edit'])->name('learning-sessions.edit');
         Route::put('/learning-sessions/{learningSession}', [LearningSessionController::class, 'update'])->name('learning-sessions.update');
         Route::delete('/learning-sessions/{learningSession}', [LearningSessionController::class, 'destroy'])->name('learning-sessions.destroy');
+        Route::post('/learning-sessions/{learningSession}/attachments', [LearningSessionController::class, 'uploadAttachment'])->name('learning-sessions.attachments.store');
+        Route::post('/learning-sessions/{learningSession}/comments', [LearningSessionController::class, 'comment'])->name('learning-sessions.comments.store');
         Route::post('/learning-sessions/{learningSession}/questions', [LearningSessionController::class, 'storeQuestion'])->name('learning-sessions.questions.store');
         Route::delete('/learning-questions/{question}', [LearningSessionController::class, 'destroyQuestion'])->name('learning-sessions.questions.destroy');
+        Route::post('/learning-comments/{comment}/moderate', [LearningSessionController::class, 'moderateComment'])->name('learning-comments.moderate');
         
         // Results & Grading
         Route::get('/exams/{exam}/results', [AdminController::class, 'examResults'])->name('exam.results');

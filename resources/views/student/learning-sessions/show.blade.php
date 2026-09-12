@@ -36,9 +36,7 @@
 @endpush
 
 @section('content')
-<form action="{{ route('student.learning.submit', $learningSession) }}" method="POST" class="space-y-6">
-    @csrf
-
+<div class="space-y-6">
     <div class="bg-white rounded-2xl shadow-lg overflow-hidden">
         <div class="student-session-hero bg-gradient-to-r from-cyan-600 to-emerald-600 text-white p-8">
             <div class="flex flex-wrap justify-between items-start gap-4">
@@ -73,9 +71,81 @@
                 <h2 class="text-xl font-bold text-gray-900 mb-3">Lesson</h2>
                 <div class="prose max-w-none text-gray-700 leading-8 whitespace-pre-line">{{ $learningSession->lesson_content ?: 'No lesson content has been added yet.' }}</div>
             </div>
+
+            @if($learningSession->attachments->isNotEmpty())
+                <div class="rounded-xl border border-sky-100 bg-sky-50 p-5">
+                    <h2 class="font-bold text-sky-900">Study Materials</h2>
+                    <div class="mt-3 grid gap-3 sm:grid-cols-2">
+                        @foreach($learningSession->attachments as $attachment)
+                            <a href="{{ $attachment->url() }}" target="_blank" rel="noopener" class="flex min-w-0 items-center justify-between rounded-xl bg-white p-4 text-sm font-semibold text-sky-800 shadow-sm hover:bg-sky-100">
+                                <span class="truncate">{{ $attachment->name }}</span>
+                                <span class="ml-3 shrink-0 text-xs text-sky-600">Open</span>
+                            </a>
+                        @endforeach
+                    </div>
+                </div>
+            @endif
         </div>
     </div>
 
+    <div class="grid gap-6 lg:grid-cols-[0.8fr_1.2fr]">
+        <div class="rounded-2xl bg-white p-6 shadow-lg">
+            <h2 class="text-xl font-bold text-gray-900">How are you feeling about this topic?</h2>
+            <p class="mt-2 text-sm text-gray-600">Your teacher uses this to know who needs another explanation.</p>
+            <div class="mt-4 flex flex-wrap gap-3">
+                <form action="{{ route('student.learning.feedback', $learningSession) }}" method="POST">
+                    @csrf
+                    <input type="hidden" name="status" value="understood">
+                    <button class="rounded-xl {{ $feedback === 'understood' ? 'bg-emerald-700 text-white' : 'bg-emerald-50 text-emerald-800' }} px-4 py-3 text-sm font-bold">I understand</button>
+                </form>
+                <form action="{{ route('student.learning.feedback', $learningSession) }}" method="POST">
+                    @csrf
+                    <input type="hidden" name="status" value="needs_help">
+                    <button class="rounded-xl {{ $feedback === 'needs_help' ? 'bg-amber-600 text-white' : 'bg-amber-50 text-amber-800' }} px-4 py-3 text-sm font-bold">I need help</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="rounded-2xl bg-white p-6 shadow-lg">
+            <div class="flex items-center justify-between gap-3">
+                <div>
+                    <h2 class="text-xl font-bold text-gray-900">Class Discussion</h2>
+                    <p class="mt-1 text-sm text-gray-600">Ask a question or help a classmate.</p>
+                </div>
+                <span class="rounded-full bg-cyan-100 px-3 py-1 text-xs font-bold text-cyan-800">Shared with class</span>
+            </div>
+            <form action="{{ route('student.learning.comments.store', $learningSession) }}" method="POST" class="mt-4">
+                @csrf
+                <textarea name="body" rows="3" required maxlength="3000" class="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm" placeholder="What do you understand, or where do you need help?"></textarea>
+                <button class="mt-2 rounded-xl bg-cyan-600 px-4 py-3 text-sm font-bold text-white">Post to Class</button>
+            </form>
+            <div class="mt-5 space-y-4">
+                @forelse($learningSession->comments as $comment)
+                    <div class="rounded-xl {{ $comment->is_pinned ? 'border-2 border-amber-300 bg-amber-50' : 'bg-gray-50' }} p-4">
+                        <p class="text-xs font-bold text-gray-500">{{ $comment->user->name }} {{ $comment->is_pinned ? ' · Pinned by teacher' : '' }}</p>
+                        <p class="mt-1 whitespace-pre-line text-sm text-gray-800">{{ $comment->body }}</p>
+                        @foreach($comment->replies as $reply)
+                            <div class="mt-3 border-l-2 border-cyan-200 pl-3 text-sm">
+                                <p class="text-xs font-bold text-gray-500">{{ $reply->user->name }}</p>
+                                <p class="mt-1 whitespace-pre-line text-gray-700">{{ $reply->body }}</p>
+                            </div>
+                        @endforeach
+                        <form action="{{ route('student.learning.comments.store', $learningSession) }}" method="POST" class="mt-3 flex flex-col gap-2 sm:flex-row">
+                            @csrf
+                            <input type="hidden" name="parent_id" value="{{ $comment->id }}">
+                            <input name="body" required maxlength="3000" class="min-w-0 flex-1 rounded-lg border border-gray-200 px-3 py-2 text-sm" placeholder="Reply to this discussion">
+                            <button class="rounded-lg bg-gray-900 px-3 py-2 text-xs font-bold text-white sm:shrink-0">Reply</button>
+                        </form>
+                    </div>
+                @empty
+                    <p class="text-sm text-gray-500">No discussion yet. Start the conversation.</p>
+                @endforelse
+            </div>
+        </div>
+    </div>
+
+<form action="{{ route('student.learning.submit', $learningSession) }}" method="POST" class="space-y-6">
+    @csrf
     <div class="bg-white rounded-2xl shadow-lg p-6 md:p-8">
         <div class="flex flex-wrap justify-between items-center gap-4 mb-6">
             <div>
@@ -117,4 +187,5 @@
         @endif
     </div>
 </form>
+</div>
 @endsection

@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\LearningAttempt;
+use App\Models\LearningComment;
+use App\Models\LearningFeedback;
 use App\Models\LearningSession;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -38,9 +40,47 @@ class StudentLearningSessionController extends Controller
             404
         );
 
-        $learningSession->load(['subject', 'schoolClass', 'questions']);
+        $learningSession->load(['subject', 'schoolClass', 'questions', 'attachments', 'comments' => fn ($query) => $query->where('is_hidden', false)->whereNull('parent_id')->with(['user', 'replies.user'])]);
+        $feedback = LearningFeedback::where('learning_session_id', $learningSession->id)
+            ->where('user_id', Auth::id())
+            ->value('status');
 
-        return view('student.learning-sessions.show', compact('learningSession'));
+        return view('student.learning-sessions.show', compact('learningSession', 'feedback'));
+    }
+
+    public function feedback(Request $request, LearningSession $learningSession)
+    {
+        $this->ensureStudentSessionAccess($learningSession);
+        $validated = $request->validate(['status' => ['required', 'in:understood,needs_help']]);
+
+        LearningFeedback::updateOrCreate(
+            ['learning_session_id' => $learningSession->id, 'user_id' => Auth::id()],
+            ['status' => $validated['status']]
+        );
+
+        return back()->with('success', 'Your understanding response was saved.');
+    }
+
+    public function comment(Request $request, LearningSession $learningSession)
+    {
+        $this->ensureStudentSessionAccess($learningSession);
+        $validated = $request->validate([
+            'body' => ['required', 'string', 'max:3000'],
+            'parent_id' => ['nullable', 'integer', 'exists:learning_comments,id'],
+        ]);
+
+        if (! empty($validated['parent_id']) && ! LearningComment::whereKey($validated['parent_id'])->where('learning_session_id', $learningSession->id)->exists()) {
+            abort(422, 'That discussion thread does not belong to this lesson.');
+        }
+
+        LearningComment::create([
+            'learning_session_id' => $learningSession->id,
+            'user_id' => Auth::id(),
+            'parent_id' => $validated['parent_id'] ?? null,
+            'body' => $validated['body'],
+        ]);
+
+        return back()->with('success', 'Your comment was posted.');
     }
 
     public function submit(Request $request, LearningSession $learningSession)
@@ -110,5 +150,10 @@ class StudentLearningSessionController extends Controller
         $attempt->load(['learningSession.subject', 'answers.question']);
 
         return view('student.learning-sessions.result', compact('attempt'));
+    }
+
+    private function ensureStudentSessionAccess(LearningSession $learningSession): void
+    {
+        abort_unless($learningSession->is_published && $learningSession->school_class_id === Auth::user()->class_id, 404);
     }
 }

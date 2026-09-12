@@ -55,6 +55,21 @@ class LearningSession extends Model
         return $this->hasMany(LearningAttempt::class);
     }
 
+    public function attachments()
+    {
+        return $this->hasMany(LearningAttachment::class)->latest();
+    }
+
+    public function comments()
+    {
+        return $this->hasMany(LearningComment::class)->latest();
+    }
+
+    public function feedback()
+    {
+        return $this->hasMany(LearningFeedback::class);
+    }
+
     public function scopePublished($query)
     {
         return $query->where('is_published', true);
