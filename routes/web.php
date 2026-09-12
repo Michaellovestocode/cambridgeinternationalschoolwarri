@@ -111,6 +111,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/scan', [AttendanceController::class, 'scan'])->name('scan');
         Route::get('/today', [AttendanceController::class, 'today'])->name('today');
         Route::get('/monthly', [AttendanceController::class, 'monthly'])->name('monthly');
+        Route::get('/payroll-export', [AttendanceController::class, 'payrollExport'])->name('payroll-export');
         Route::get('/staff', [AttendanceController::class, 'staffReport'])->name('staff');
         Route::get('/people', [AttendanceController::class, 'people'])->name('people');
         Route::put('/people/{user}', [AttendanceController::class, 'updatePerson'])->name('people.update');

@@ -352,6 +352,95 @@ class AttendanceController extends Controller
         ]);
     }
 
+    public function payrollExport(Request $request)
+    {
+        $this->authorizeAttendanceManager();
+
+        $validated = $request->validate([
+            'start_date' => ['required', 'date'],
+            'end_date' => ['required', 'date', 'after_or_equal:start_date'],
+            'section' => ['nullable', 'string', 'max:100'],
+        ]);
+
+        $startDate = Carbon::parse($validated['start_date'])->startOfDay();
+        $endDate = Carbon::parse($validated['end_date'])->endOfDay();
+        $workingDays = collect(CarbonPeriod::create($startDate->copy()->startOfDay(), $endDate->copy()->startOfDay()))
+            ->filter(fn (Carbon $date) => $date->isWeekday() && $date->lte(today()))
+            ->values();
+
+        $people = $this->attendancePeopleQuery($request)
+            ->whereIn('role', ['admin', 'teacher', 'non_teaching_staff'])
+            ->orderBy('name')
+            ->get();
+        $records = AttendanceRecord::whereBetween('attendance_date', [
+                $startDate->toDateString(),
+                $endDate->toDateString(),
+            ])
+            ->whereIn('user_id', $people->pluck('id'))
+            ->get()
+            ->groupBy('user_id');
+
+        $rows = $people->map(function (User $person) use ($records, $workingDays) {
+            $personRecords = $records->get($person->id, collect());
+            $present = $personRecords->whereNotNull('check_in_at')->count();
+            $expected = $workingDays->count();
+
+            return [
+                'name' => $person->name,
+                'role' => ucfirst(str_replace('_', ' ', $person->role)),
+                'department' => $this->attendanceSectionLabel($person),
+                'expected' => $expected,
+                'present' => $present,
+                'absent' => max($expected - $present, 0),
+                'late' => $personRecords->where('arrival_status', AttendanceRecord::ARRIVAL_LATE)->count(),
+                'early' => $personRecords->where('departure_status', AttendanceRecord::DEPARTURE_EARLY)->count(),
+                'missing_checkout' => $personRecords->whereNotNull('check_in_at')->whereNull('check_out_at')->count(),
+                'percentage' => $expected > 0 ? round(($present / $expected) * 100, 2) : 0,
+            ];
+        });
+
+        $totals = [
+            'expected' => $rows->sum('expected'),
+            'present' => $rows->sum('present'),
+            'absent' => $rows->sum('absent'),
+            'late' => $rows->sum('late'),
+            'early' => $rows->sum('early'),
+            'missing_checkout' => $rows->sum('missing_checkout'),
+        ];
+        $totals['percentage'] = $totals['expected'] > 0
+            ? round(($totals['present'] / $totals['expected']) * 100, 2)
+            : 0;
+
+        $filename = sprintf(
+            'Payroll_Attendance_%s_to_%s.csv',
+            $startDate->format('Y-m-d'),
+            $endDate->format('Y-m-d')
+        );
+
+        return response()->streamDownload(function () use ($rows, $totals, $startDate, $endDate, $workingDays) {
+            $output = fopen('php://output', 'w');
+            fputcsv($output, ['Payroll Attendance Report']);
+            fputcsv($output, ['Period', $startDate->toDateString(), 'to', $endDate->toDateString()]);
+            fputcsv($output, ['Working days counted', $workingDays->count()]);
+            fputcsv($output, []);
+            fputcsv($output, ['Staff Name', 'Role', 'Department', 'Expected Days', 'Present', 'Absent', 'Late', 'Early Departure', 'Missing Clock-out', 'Attendance %']);
+
+            foreach ($rows as $row) {
+                fputcsv($output, [
+                    $row['name'], $row['role'], $row['department'], $row['expected'], $row['present'],
+                    $row['absent'], $row['late'], $row['early'], $row['missing_checkout'], $row['percentage'],
+                ]);
+            }
+
+            fputcsv($output, []);
+            fputcsv($output, [
+                'TOTAL', '', '', $totals['expected'], $totals['present'], $totals['absent'],
+                $totals['late'], $totals['early'], $totals['missing_checkout'], $totals['percentage'],
+            ]);
+            fclose($output);
+        }, $filename, ['Content-Type' => 'text/csv; charset=UTF-8']);
+    }
+
     public function people(Request $request)
     {
         $this->authorizeAttendanceManager();

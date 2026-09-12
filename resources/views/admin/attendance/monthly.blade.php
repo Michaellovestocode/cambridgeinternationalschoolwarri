@@ -15,6 +15,27 @@
         </div>
     </div>
 
+    <form method="GET" action="{{ route('admin.attendance.payroll-export') }}" class="grid gap-3 rounded-2xl border border-emerald-100 bg-emerald-50 p-4 md:grid-cols-4 md:items-end">
+        <div>
+            <label for="payroll_start_date" class="mb-1 block text-xs font-bold text-emerald-900">Payroll start</label>
+            <input id="payroll_start_date" type="date" name="start_date" value="{{ $month->copy()->startOfMonth()->toDateString() }}" required class="w-full rounded-xl border border-emerald-200 bg-white px-3 py-3 text-sm">
+        </div>
+        <div>
+            <label for="payroll_end_date" class="mb-1 block text-xs font-bold text-emerald-900">Payroll end</label>
+            <input id="payroll_end_date" type="date" name="end_date" value="{{ $month->copy()->endOfMonth()->toDateString() }}" required class="w-full rounded-xl border border-emerald-200 bg-white px-3 py-3 text-sm">
+        </div>
+        <div>
+            <label for="payroll_section" class="mb-1 block text-xs font-bold text-emerald-900">Department</label>
+            <select id="payroll_section" name="section" class="w-full rounded-xl border border-emerald-200 bg-white px-3 py-3 text-sm">
+                <option value="">All staff</option>
+                @foreach($sections as $section => $label)
+                    <option value="{{ $section }}">{{ $label }}</option>
+                @endforeach
+            </select>
+        </div>
+        <button class="rounded-xl bg-emerald-700 px-4 py-3 text-sm font-bold text-white">Export Payroll Excel</button>
+    </form>
+
     <form method="GET" class="grid gap-3 rounded-2xl bg-white p-4 shadow md:grid-cols-5">
         <input type="month" name="month" value="{{ $filters['month'] }}" class="rounded-xl border border-gray-200 px-3 py-3 text-sm">
         <select name="role" class="rounded-xl border border-gray-200 px-3 py-3 text-sm">
