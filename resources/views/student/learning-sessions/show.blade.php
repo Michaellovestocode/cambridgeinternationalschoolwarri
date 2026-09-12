@@ -93,17 +93,18 @@
             <h2 class="text-xl font-bold text-gray-900">How are you feeling about this topic?</h2>
             <p class="mt-2 text-sm text-gray-600">Your teacher uses this to know who needs another explanation.</p>
             <div class="mt-4 flex flex-wrap gap-3">
-                <form action="{{ route('student.learning.feedback', $learningSession) }}" method="POST">
+                <form action="{{ route('student.learning.feedback', $learningSession) }}" method="POST" class="learning-feedback-form" data-status="understood">
                     @csrf
                     <input type="hidden" name="status" value="understood">
-                    <button class="rounded-xl {{ $feedback === 'understood' ? 'bg-emerald-700 text-white' : 'bg-emerald-50 text-emerald-800' }} px-4 py-3 text-sm font-bold">I understand</button>
+                    <button type="submit" class="feedback-button rounded-xl {{ $feedback === 'understood' ? 'bg-emerald-700 text-white' : 'bg-emerald-50 text-emerald-800' }} px-4 py-3 text-sm font-bold">I understand</button>
                 </form>
-                <form action="{{ route('student.learning.feedback', $learningSession) }}" method="POST">
+                <form action="{{ route('student.learning.feedback', $learningSession) }}" method="POST" class="learning-feedback-form" data-status="needs_help">
                     @csrf
                     <input type="hidden" name="status" value="needs_help">
-                    <button class="rounded-xl {{ $feedback === 'needs_help' ? 'bg-amber-600 text-white' : 'bg-amber-50 text-amber-800' }} px-4 py-3 text-sm font-bold">I need help</button>
+                    <button type="submit" class="feedback-button rounded-xl {{ $feedback === 'needs_help' ? 'bg-amber-600 text-white' : 'bg-amber-50 text-amber-800' }} px-4 py-3 text-sm font-bold">I need help</button>
                 </form>
             </div>
+            <p id="feedback-message" class="mt-3 hidden text-sm font-semibold text-emerald-700" role="status"></p>
         </div>
 
         <div class="rounded-2xl bg-white p-6 shadow-lg">
@@ -188,4 +189,49 @@
     </div>
 </form>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        document.querySelectorAll('.learning-feedback-form').forEach(function (form) {
+            form.addEventListener('submit', async function (event) {
+                event.preventDefault();
+
+                const button = form.querySelector('.feedback-button');
+                const message = document.getElementById('feedback-message');
+                const buttons = document.querySelectorAll('.feedback-button');
+                buttons.forEach((item) => item.disabled = true);
+
+                try {
+                    const response = await fetch(form.action, {
+                        method: 'POST',
+                        headers: {
+                            'Accept': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest',
+                        },
+                        body: new FormData(form),
+                    });
+
+                    if (!response.ok) throw new Error('Feedback could not be saved.');
+
+                    const result = await response.json();
+                    buttons.forEach((item) => {
+                        item.classList.remove('bg-emerald-700', 'bg-amber-600', 'text-white');
+                        item.classList.add(item.form.dataset.status === 'understood' ? 'bg-emerald-50' : 'bg-amber-50');
+                        item.classList.add(item.form.dataset.status === 'understood' ? 'text-emerald-800' : 'text-amber-800');
+                    });
+                    button.classList.remove('bg-emerald-50', 'bg-amber-50', 'text-emerald-800', 'text-amber-800');
+                    button.classList.add(form.dataset.status === 'understood' ? 'bg-emerald-700' : 'bg-amber-600', 'text-white');
+                    message.textContent = result.message;
+                    message.classList.remove('hidden');
+                } catch (error) {
+                    message.textContent = error.message;
+                    message.classList.remove('hidden', 'text-emerald-700');
+                    message.classList.add('text-red-700');
+                } finally {
+                    buttons.forEach((item) => item.disabled = false);
+                }
+            });
+        });
+    });
+</script>
 @endsection

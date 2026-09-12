@@ -58,6 +58,14 @@ class StudentLearningSessionController extends Controller
             ['status' => $validated['status']]
         );
 
+        if ($request->expectsJson()) {
+            return response()->json([
+                'ok' => true,
+                'status' => $validated['status'],
+                'message' => 'Your understanding response was saved.',
+            ]);
+        }
+
         return back()->with('success', 'Your understanding response was saved.');
     }
 
