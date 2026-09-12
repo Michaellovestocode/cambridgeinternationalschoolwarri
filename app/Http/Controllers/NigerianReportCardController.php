@@ -955,14 +955,14 @@ class NigerianReportCardController extends Controller
             ->where('class_id', $validated['class_id'])
             ->where('session_id', $validated['session_id'])
             ->where('term_id', $validated['term_id'])
-            ->whereIn('workflow_status', [
-                ReportCard::WORKFLOW_ACADEMIC_APPROVED,
-                ReportCard::WORKFLOW_PUBLISHED,
+            ->whereNotIn('workflow_status', [
+                ReportCard::WORKFLOW_DRAFT,
+                ReportCard::WORKFLOW_REJECTED,
             ])
             ->get();
 
         if ($reportCards->isEmpty()) {
-            return back()->with('error', 'No approved or published report cards are available to export for this class.');
+            return back()->with('error', 'No exportable report cards were found for this class. Please generate or approve at least one card before exporting.');
         }
 
         $zipPath = tempnam(sys_get_temp_dir(), 'report_cards_') . '.zip';
