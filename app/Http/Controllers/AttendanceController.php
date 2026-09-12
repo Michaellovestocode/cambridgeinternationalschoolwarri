@@ -189,7 +189,7 @@ class AttendanceController extends Controller
     {
         $this->authorizeAttendanceManager();
         $date = $request->filled('date') ? Carbon::parse($request->input('date')) : today();
-        $staff = User::whereIn('role', ['admin', 'teacher', 'non_teaching_staff'])->with(['attendanceRecords' => fn ($query) => $query->whereDate('attendance_date', $date)])->orderBy('name')->get();
+        $staff = User::whereIn('role', ['teacher', 'non_teaching_staff'])->with(['attendanceRecords' => fn ($query) => $query->whereDate('attendance_date', $date)])->orderBy('name')->get();
 
         return view('admin.attendance.staff', compact('date', 'staff'));
     }
@@ -197,7 +197,7 @@ class AttendanceController extends Controller
     public function staffPeriod(Request $request, User $user)
     {
         $this->authorizeAttendanceManager();
-        abort_unless(in_array($user->role, ['admin', 'teacher', 'non_teaching_staff'], true), 404);
+        abort_unless(in_array($user->role, ['teacher', 'non_teaching_staff'], true), 404);
 
         $validated = $request->validate([
             'start_date' => ['required', 'date'],
@@ -299,7 +299,10 @@ class AttendanceController extends Controller
             ? Carbon::parse($request->input('date'))->startOfDay()
             : today();
 
-        $people = $this->attendancePeopleQuery($request)->orderBy('name')->get();
+        $people = $this->attendancePeopleQuery($request)
+            ->whereIn('role', ['teacher', 'non_teaching_staff'])
+            ->orderBy('name')
+            ->get();
         $records = AttendanceRecord::with(['user.class'])
             ->whereDate('attendance_date', $date)
             ->whereIn('user_id', $people->pluck('id'))
@@ -332,7 +335,10 @@ class AttendanceController extends Controller
             ? Carbon::parse($request->input('month') . '-01')
             : today();
 
-        $people = $this->attendancePeopleQuery($request)->orderBy('name')->get();
+        $people = $this->attendancePeopleQuery($request)
+            ->whereIn('role', ['teacher', 'non_teaching_staff'])
+            ->orderBy('name')
+            ->get();
         $workingDays = $this->workingDaysForMonth($month);
         $records = AttendanceRecord::whereBetween('attendance_date', [
                 $month->copy()->startOfMonth()->toDateString(),
@@ -393,7 +399,7 @@ class AttendanceController extends Controller
             ->values();
 
         $people = $this->attendancePeopleQuery($request)
-            ->whereIn('role', ['admin', 'teacher', 'non_teaching_staff'])
+            ->whereIn('role', ['teacher', 'non_teaching_staff'])
             ->orderBy('name')
             ->get();
         $records = AttendanceRecord::whereBetween('attendance_date', [

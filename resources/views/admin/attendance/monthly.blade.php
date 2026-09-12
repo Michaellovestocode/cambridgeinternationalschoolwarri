@@ -40,7 +40,7 @@
         <input type="month" name="month" value="{{ $filters['month'] }}" class="rounded-xl border border-gray-200 px-3 py-3 text-sm">
         <select name="role" class="rounded-xl border border-gray-200 px-3 py-3 text-sm">
             <option value="">All groups</option>
-            @foreach(['student' => 'Students', 'teacher' => 'Teachers', 'non_teaching_staff' => 'Non-teaching staff', 'admin' => 'Admin'] as $role => $label)
+            @foreach(['teacher' => 'Teachers', 'non_teaching_staff' => 'Non-teaching staff'] as $role => $label)
                 <option value="{{ $role }}" @selected($filters['role'] === $role)>{{ $label }}</option>
             @endforeach
         </select>
