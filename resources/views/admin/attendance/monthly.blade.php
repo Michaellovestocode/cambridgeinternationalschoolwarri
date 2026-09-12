@@ -84,7 +84,10 @@
                                     <p class="font-bold text-gray-900">{{ $summary['person']->name }}</p>
                                     <p class="text-xs text-gray-500">{{ $summary['person']->registration_number }} - {{ ucfirst(str_replace('_', ' ', $summary['person']->role)) }}{{ $summary['person']->class ? ' - ' . $summary['person']->class->display_name : '' }}</p>
                                 </div>
-                                <p class="text-right text-xs text-gray-500">Avg in<br><strong class="text-gray-900">{{ $summary['average_check_in'] ?: '-' }}</strong></p>
+                                <div class="text-right">
+                                    <p class="text-xs text-gray-500">Avg in<br><strong class="text-gray-900">{{ $summary['average_check_in'] ?: '-' }}</strong></p>
+                                    <a href="{{ route('admin.attendance.staff.period', ['user' => $summary['person']->id, 'start_date' => $month->copy()->startOfMonth()->toDateString(), 'end_date' => $month->copy()->endOfMonth()->toDateString()]) }}" class="mt-2 inline-block rounded-lg bg-slate-900 px-3 py-2 text-xs font-bold text-white">View Details</a>
+                                </div>
                             </div>
                             <div class="mt-3 grid grid-cols-4 gap-2 text-center text-sm">
                                 <div class="rounded-xl bg-emerald-50 p-3"><strong class="text-lg text-emerald-700">{{ $summary['present'] }}</strong><br><span class="text-xs">Present</span></div>

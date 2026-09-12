@@ -194,6 +194,30 @@ class AttendanceController extends Controller
         return view('admin.attendance.staff', compact('date', 'staff'));
     }
 
+    public function staffPeriod(Request $request, User $user)
+    {
+        $this->authorizeAttendanceManager();
+        abort_unless(in_array($user->role, ['admin', 'teacher', 'non_teaching_staff'], true), 404);
+
+        $validated = $request->validate([
+            'start_date' => ['required', 'date'],
+            'end_date' => ['required', 'date', 'after_or_equal:start_date'],
+        ]);
+
+        $startDate = Carbon::parse($validated['start_date'])->startOfDay();
+        $endDate = Carbon::parse($validated['end_date'])->endOfDay();
+        $records = AttendanceRecord::where('user_id', $user->id)
+            ->whereBetween('attendance_date', [$startDate->toDateString(), $endDate->toDateString()])
+            ->orderBy('attendance_date')
+            ->get()
+            ->keyBy(fn (AttendanceRecord $record) => $record->attendance_date->toDateString());
+        $dates = collect(CarbonPeriod::create($startDate->copy()->startOfDay(), $endDate->copy()->startOfDay()))
+            ->filter(fn (Carbon $date) => $date->isWeekday() && $date->lte(today()))
+            ->values();
+
+        return view('admin.attendance.staff-period', compact('user', 'startDate', 'endDate', 'dates', 'records'));
+    }
+
     public function scan(Request $request): JsonResponse
     {
         $this->authorizeAttendanceManager();
