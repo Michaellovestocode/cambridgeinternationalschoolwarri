@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\LearningAttempt;
 use App\Models\LearningComment;
+use App\Models\LearningCommentRead;
 use App\Models\LearningFeedback;
 use App\Models\LearningSession;
 use Illuminate\Http\Request;
@@ -22,6 +23,13 @@ class StudentLearningSessionController extends Controller
             ->withCount('questions')
             ->latest()
             ->get();
+
+        $teacherComments = LearningComment::whereIn('learning_session_id', $sessions->pluck('id'))
+            ->whereHas('user', fn ($query) => $query->whereIn('role', ['teacher', 'admin']))
+            ->whereNotIn('id', LearningCommentRead::where('user_id', Auth::id())->pluck('learning_comment_id'))
+            ->get()
+            ->groupBy('learning_session_id');
+        $sessions->each(fn ($session) => $session->unread_teacher_replies = $teacherComments->get($session->id, collect())->count());
 
         $latestAttempts = LearningAttempt::where('user_id', Auth::id())
             ->with('learningSession')
@@ -44,8 +52,22 @@ class StudentLearningSessionController extends Controller
         $feedback = LearningFeedback::where('learning_session_id', $learningSession->id)
             ->where('user_id', Auth::id())
             ->value('status');
+        $teacherCommentIds = LearningComment::where('learning_session_id', $learningSession->id)
+            ->whereHas('user', fn ($query) => $query->whereIn('role', ['teacher', 'admin']))
+            ->pluck('id');
+        $unreadTeacherReplies = $teacherCommentIds->diff(
+            LearningCommentRead::where('user_id', Auth::id())
+                ->whereIn('learning_comment_id', $teacherCommentIds)
+                ->pluck('learning_comment_id')
+        )->count();
+        foreach ($teacherCommentIds as $commentId) {
+            LearningCommentRead::updateOrCreate(
+                ['learning_comment_id' => $commentId, 'user_id' => Auth::id()],
+                ['read_at' => now()]
+            );
+        }
 
-        return view('student.learning-sessions.show', compact('learningSession', 'feedback'));
+        return view('student.learning-sessions.show', compact('learningSession', 'feedback', 'unreadTeacherReplies'));
     }
 
     public function feedback(Request $request, LearningSession $learningSession)
@@ -97,6 +119,7 @@ class StudentLearningSessionController extends Controller
                     'parent_id' => $comment->parent_id,
                     'name' => $comment->user->name,
                     'body' => $comment->body,
+                    'is_teacher' => in_array($comment->user->role, ['teacher', 'admin'], true),
                 ],
             ]);
         }

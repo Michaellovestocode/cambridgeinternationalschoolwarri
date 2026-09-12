@@ -56,6 +56,12 @@
                 <p class="text-sm font-semibold text-emerald-700 mb-3">{{ $session->schoolClass->display_name ?? 'Your class' }} • {{ $session->topic }}</p>
                 <p class="text-gray-600 text-sm leading-6">{{ Str::limit($session->description, 130) }}</p>
 
+                @if($session->unread_teacher_replies > 0)
+                    <div class="mt-3 inline-flex items-center rounded-full bg-amber-100 px-3 py-1 text-xs font-bold text-amber-800">
+                        New teacher reply{{ $session->unread_teacher_replies === 1 ? '' : 'ies' }}
+                    </div>
+                @endif
+
                 <div class="mt-5 grid grid-cols-2 gap-3 text-sm">
                     <div class="bg-gray-50 rounded-xl p-3">
                         <div class="text-gray-500">Questions</div>

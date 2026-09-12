@@ -72,6 +72,12 @@
                 <div class="prose max-w-none text-gray-700 leading-8 whitespace-pre-line">{{ $learningSession->lesson_content ?: 'No lesson content has been added yet.' }}</div>
             </div>
 
+            @if($unreadTeacherReplies > 0)
+                <div class="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-800">
+                    You have {{ $unreadTeacherReplies }} new teacher {{ $unreadTeacherReplies === 1 ? 'reply' : 'replies' }} in the class discussion.
+                </div>
+            @endif
+
             @if($learningSession->attachments->isNotEmpty())
                 <div class="rounded-xl border border-sky-100 bg-sky-50 p-5">
                     <h2 class="font-bold text-sky-900">Study Materials</h2>
@@ -125,7 +131,7 @@
                     <div data-comment-id="{{ $comment->id }}" class="learning-comment-card rounded-xl border border-gray-100 bg-gray-50 p-4">
                         <button type="button" class="learning-thread-toggle flex w-full items-start justify-between gap-3 text-left" aria-expanded="false">
                             <span class="min-w-0">
-                                <span class="block truncate text-xs font-bold text-gray-500">{{ $comment->user->name }}{{ $comment->is_pinned ? ' · Pinned by teacher' : '' }}</span>
+                                <span class="block truncate text-xs font-bold text-gray-500">{{ $comment->user->name }} @if(in_array($comment->user->role, ['teacher', 'admin'], true))<span class="ml-1 rounded-full bg-cyan-100 px-2 py-0.5 text-[10px] text-cyan-800">Teacher</span>@endif{{ $comment->is_pinned ? ' · Pinned by teacher' : '' }}</span>
                                 <span class="mt-1 block overflow-hidden text-sm text-gray-800" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;">{{ $comment->body }}</span>
                             </span>
                             <span class="learning-thread-label shrink-0 rounded-full bg-white px-3 py-1 text-xs font-bold text-cyan-700">{{ $comment->replies->count() }} {{ $comment->replies->count() === 1 ? 'reply' : 'replies' }}</span>
@@ -134,7 +140,7 @@
                             <div class="learning-replies space-y-3">
                                 @foreach($comment->replies as $reply)
                                     <div class="border-l-2 border-cyan-200 pl-3 text-sm" data-reply-id="{{ $reply->id }}">
-                                        <p class="text-xs font-bold text-gray-500">{{ $reply->user->name }}</p>
+                                        <p class="text-xs font-bold text-gray-500">{{ $reply->user->name }} @if(in_array($reply->user->role, ['teacher', 'admin'], true))<span class="ml-1 rounded-full bg-cyan-100 px-2 py-0.5 text-[10px] text-cyan-800">Teacher</span>@endif</p>
                                         <p class="mt-1 whitespace-pre-line text-gray-700">{{ $reply->body }}</p>
                                     </div>
                                 @endforeach
@@ -284,7 +290,7 @@
                     replyMarkup.dataset.replyId = comment.id;
                     const replyName = document.createElement('p');
                     replyName.className = 'text-xs font-bold text-gray-500';
-                    replyName.textContent = comment.name;
+                    replyName.textContent = comment.is_teacher ? comment.name + ' · Teacher' : comment.name;
                     const replyBody = document.createElement('p');
                     replyBody.className = 'mt-1 whitespace-pre-line text-gray-700';
                     replyBody.textContent = comment.body;
@@ -311,7 +317,7 @@
                         summary.className = 'min-w-0';
                         const name = document.createElement('span');
                         name.className = 'block truncate text-xs font-bold text-gray-500';
-                        name.textContent = comment.name;
+                        name.textContent = comment.is_teacher ? comment.name + ' · Teacher' : comment.name;
                         const text = document.createElement('span');
                         text.className = 'mt-1 block text-sm text-gray-800';
                         text.textContent = comment.body;
