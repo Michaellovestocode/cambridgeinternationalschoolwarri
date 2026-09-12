@@ -81,17 +81,23 @@ class StudentLearningSessionController extends Controller
             abort(422, 'That discussion thread does not belong to this lesson.');
         }
 
-        LearningComment::create([
+        $comment = LearningComment::create([
             'learning_session_id' => $learningSession->id,
             'user_id' => Auth::id(),
             'parent_id' => $validated['parent_id'] ?? null,
             'body' => $validated['body'],
-        ]);
+        ])->load('user');
 
         if ($request->expectsJson()) {
             return response()->json([
                 'ok' => true,
                 'message' => 'Your comment was posted.',
+                'comment' => [
+                    'id' => $comment->id,
+                    'parent_id' => $comment->parent_id,
+                    'name' => $comment->user->name,
+                    'body' => $comment->body,
+                ],
             ]);
         }
 

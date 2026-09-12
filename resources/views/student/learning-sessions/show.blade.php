@@ -120,17 +120,19 @@
                 <textarea name="body" rows="3" required maxlength="3000" class="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm" placeholder="What do you understand, or where do you need help?"></textarea>
                 <button class="mt-2 rounded-xl bg-cyan-600 px-4 py-3 text-sm font-bold text-white">Post to Class</button>
             </form>
-            <div class="mt-5 space-y-4">
+            <div id="learning-comments-list" class="mt-5 space-y-4">
                 @forelse($learningSession->comments as $comment)
-                    <div class="rounded-xl {{ $comment->is_pinned ? 'border-2 border-amber-300 bg-amber-50' : 'bg-gray-50' }} p-4">
+                    <div data-comment-id="{{ $comment->id }}" class="rounded-xl {{ $comment->is_pinned ? 'border-2 border-amber-300 bg-amber-50' : 'bg-gray-50' }} p-4">
                         <p class="text-xs font-bold text-gray-500">{{ $comment->user->name }} {{ $comment->is_pinned ? ' · Pinned by teacher' : '' }}</p>
                         <p class="mt-1 whitespace-pre-line text-sm text-gray-800">{{ $comment->body }}</p>
+                        <div class="learning-replies">
                         @foreach($comment->replies as $reply)
-                            <div class="mt-3 border-l-2 border-cyan-200 pl-3 text-sm">
+                            <div class="mt-3 border-l-2 border-cyan-200 pl-3 text-sm" data-reply-id="{{ $reply->id }}">
                                 <p class="text-xs font-bold text-gray-500">{{ $reply->user->name }}</p>
                                 <p class="mt-1 whitespace-pre-line text-gray-700">{{ $reply->body }}</p>
                             </div>
                         @endforeach
+                        </div>
                         <form action="{{ route('student.learning.comments.store', $learningSession) }}" method="POST" class="learning-comment-form mt-3 flex flex-col gap-2 sm:flex-row">
                             @csrf
                             <input type="hidden" name="parent_id" value="{{ $comment->id }}">
@@ -257,11 +259,37 @@
                     if (!response.ok) throw new Error('Comment could not be posted.');
 
                     const result = await response.json();
-                    const notice = document.createElement('p');
-                    notice.className = 'mt-2 text-sm font-semibold text-emerald-700';
-                    notice.textContent = result.message;
-                    form.appendChild(notice);
+                    const comment = result.comment;
                     const bodyField = form.querySelector('[name="body"]');
+                    const replyMarkup = document.createElement('div');
+                    replyMarkup.className = 'mt-3 border-l-2 border-cyan-200 pl-3 text-sm';
+                    replyMarkup.dataset.replyId = comment.id;
+                    const replyName = document.createElement('p');
+                    replyName.className = 'text-xs font-bold text-gray-500';
+                    replyName.textContent = comment.name;
+                    const replyBody = document.createElement('p');
+                    replyBody.className = 'mt-1 whitespace-pre-line text-gray-700';
+                    replyBody.textContent = comment.body;
+                    replyMarkup.append(replyName, replyBody);
+
+                    if (comment.parent_id) {
+                        const parent = document.querySelector('[data-comment-id="' + comment.parent_id + '"] .learning-replies');
+                        if (parent) parent.appendChild(replyMarkup);
+                    } else {
+                        const commentCard = document.createElement('div');
+                        commentCard.dataset.commentId = comment.id;
+                        commentCard.className = 'rounded-xl bg-gray-50 p-4';
+                        const name = document.createElement('p');
+                        name.className = 'text-xs font-bold text-gray-500';
+                        name.textContent = comment.name;
+                        const text = document.createElement('p');
+                        text.className = 'mt-1 whitespace-pre-line text-sm text-gray-800';
+                        text.textContent = comment.body;
+                        const replies = document.createElement('div');
+                        replies.className = 'learning-replies';
+                        commentCard.append(name, text, replies);
+                        document.getElementById('learning-comments-list').appendChild(commentCard);
+                    }
                     if (bodyField) bodyField.value = '';
                 } catch (error) {
                     const notice = document.createElement('p');
