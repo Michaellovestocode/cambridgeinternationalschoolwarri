@@ -14,10 +14,16 @@ class LearningAnswer extends Model
         'learning_question_id',
         'selected_option',
         'is_correct',
+        'teacher_score',
+        'teacher_feedback',
+        'graded_by',
+        'graded_at',
     ];
 
     protected $casts = [
         'is_correct' => 'boolean',
+        'teacher_score' => 'decimal:2',
+        'graded_at' => 'datetime',
     ];
 
     public function attempt()

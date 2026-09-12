@@ -92,6 +92,7 @@
                         <td class="px-6 py-4">
                             <div class="learning-session-actions flex flex-wrap gap-2">
                                 <a href="{{ route('admin.learning-sessions.edit', $session) }}" class="bg-blue-100 text-blue-800 hover:bg-blue-200 px-3 py-1 rounded-md text-sm font-medium text-center">Edit</a>
+                                <a href="{{ route('admin.learning-sessions.submissions', $session) }}" class="bg-cyan-100 text-cyan-800 hover:bg-cyan-200 px-3 py-1 rounded-md text-sm font-medium text-center">Submissions</a>
                                 @if($session->is_published)
                                     <a href="{{ route('student.learning.show', $session) }}" class="bg-emerald-100 text-emerald-800 hover:bg-emerald-200 px-3 py-1 rounded-md text-sm font-medium text-center">View</a>
                                 @endif

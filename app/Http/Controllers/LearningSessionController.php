@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\LearningQuestion;
+use App\Models\LearningAttempt;
 use App\Models\LearningSession;
 use App\Models\LearningComment;
 use App\Models\LearningAttachment;
@@ -128,6 +129,81 @@ class LearningSessionController extends Controller
             ->pluck('total', 'status');
 
         return view('admin.learning-sessions.edit', compact('learningSession', 'subjects', 'classes', 'feedbackCounts'));
+    }
+
+    public function submissions(LearningSession $learningSession)
+    {
+        $this->authorizeSession($learningSession);
+        $learningSession->load(['subject', 'schoolClass']);
+        $attempts = $learningSession->attempts()
+            ->with('user')
+            ->withCount('answers')
+            ->latest('completed_at')
+            ->get();
+
+        return view('admin.learning-sessions.submissions', compact('learningSession', 'attempts'));
+    }
+
+    public function gradeAttempt(LearningAttempt $attempt)
+    {
+        $attempt->load(['user', 'learningSession.subject', 'answers.question']);
+        $this->authorizeSession($attempt->learningSession);
+
+        return view('admin.learning-sessions.grade', compact('attempt'));
+    }
+
+    public function updateAttempt(Request $request, LearningAttempt $attempt)
+    {
+        $attempt->load(['learningSession', 'answers.question']);
+        $this->authorizeSession($attempt->learningSession);
+
+        $validated = $request->validate([
+            'answers' => ['nullable', 'array'],
+            'answers.*.teacher_score' => ['nullable', 'numeric', 'min:0'],
+            'answers.*.teacher_feedback' => ['nullable', 'string', 'max:2000'],
+            'publish' => ['nullable', 'boolean'],
+        ]);
+
+        foreach ($attempt->answers as $answer) {
+            if ($answer->question->question_type !== 'theory') {
+                continue;
+            }
+
+            $input = $validated['answers'][$answer->id] ?? [];
+            $maxScore = max((float) ($answer->question->marks ?? 1), 0);
+            $score = array_key_exists('teacher_score', $input) && $input['teacher_score'] !== null
+                ? min((float) $input['teacher_score'], $maxScore)
+                : null;
+
+            $answer->update([
+                'teacher_score' => $score,
+                'teacher_feedback' => $input['teacher_feedback'] ?? null,
+                'graded_by' => Auth::id(),
+                'graded_at' => now(),
+            ]);
+        }
+
+        $score = 0;
+        foreach ($attempt->fresh('answers.question')->answers as $answer) {
+            if ($answer->question->question_type === 'theory') {
+                $score += $answer->teacher_score !== null
+                    ? ((float) $answer->teacher_score / max((float) ($answer->question->marks ?? 1), 1))
+                    : 0;
+            } elseif ($answer->is_correct) {
+                $score++;
+            }
+        }
+
+        $published = $request->boolean('publish');
+        $attempt->update([
+            'score' => round($score, 2),
+            'is_published' => $published,
+            'published_by' => $published ? Auth::id() : null,
+            'published_at' => $published ? now() : null,
+        ]);
+
+        return redirect()->route('admin.learning-sessions.attempts.grade', $attempt)
+            ->with('success', $published ? 'Scores saved and published to the student.' : 'Scores saved as a draft.');
     }
 
     public function uploadAttachment(Request $request, LearningSession $learningSession)

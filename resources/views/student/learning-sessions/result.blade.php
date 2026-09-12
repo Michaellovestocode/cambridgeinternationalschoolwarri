@@ -11,7 +11,7 @@
                 <h1 class="text-3xl font-bold text-gray-900 mt-1">{{ $attempt->learningSession->title }}</h1>
                 <p class="text-gray-600 mt-2">Completed {{ $attempt->completed_at?->format('d M Y, h:i A') }}</p>
             </div>
-            @if($attempt->learningSession->show_answers_to_students)
+            @if($attempt->is_published || $attempt->learningSession->show_answers_to_students)
                 <div class="text-center bg-cyan-50 rounded-2xl px-8 py-5">
                     <div class="text-4xl font-black text-cyan-700">{{ $attempt->percentage() }}%</div>
                     <div class="text-sm text-gray-600 mt-1">{{ $attempt->score }}/{{ $attempt->total_questions }} correct</div>
@@ -20,7 +20,7 @@
         </div>
     </div>
 
-    @if($attempt->learningSession->show_answers_to_students)
+    @if($attempt->is_published || $attempt->learningSession->show_answers_to_students)
     <div class="bg-white rounded-2xl shadow-lg p-6 md:p-8">
         <h2 class="text-2xl font-bold text-gray-900 mb-6">Corrections</h2>
         <div class="space-y-5">
@@ -57,9 +57,9 @@
                 @if(!$answer->selected_option)
                     <p class="mt-3 text-sm text-red-700 font-semibold">You did not answer this question.</p>
                 @endif
-                @if($attempt->learningSession->show_answers_to_students && $question->explanation)
+                @if(($attempt->is_published || $attempt->learningSession->show_answers_to_students) && $question->explanation)
                     <p class="mt-4 text-sm text-gray-700"><strong>Explanation:</strong> {{ $question->explanation }}</p>
-                @elseif($attempt->learningSession->show_answers_to_students)
+                @elseif($attempt->is_published || $attempt->learningSession->show_answers_to_students)
                     <p class="mt-4 text-sm text-gray-700"><strong>Marking note:</strong> This answer has been marked automatically. The teacher has not added a written explanation yet.</p>
                 @else
                     <p class="mt-4 text-sm text-gray-500"><strong>Answer script:</strong> Hidden until your teacher reveals the marking notes.</p>

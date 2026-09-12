@@ -16,11 +16,16 @@ class LearningAttempt extends Model
         'total_questions',
         'started_at',
         'completed_at',
+        'is_published',
+        'published_by',
+        'published_at',
     ];
 
     protected $casts = [
         'started_at' => 'datetime',
         'completed_at' => 'datetime',
+        'is_published' => 'boolean',
+        'published_at' => 'datetime',
     ];
 
     public function user()
@@ -36,6 +41,11 @@ class LearningAttempt extends Model
     public function answers()
     {
         return $this->hasMany(LearningAnswer::class);
+    }
+
+    public function publisher()
+    {
+        return $this->belongsTo(User::class, 'published_by');
     }
 
     public function percentage(): int
