@@ -965,6 +965,10 @@ class NigerianReportCardController extends Controller
             return back()->with('error', 'No exportable report cards were found for this class. Please generate or approve at least one card before exporting.');
         }
 
+        if (! class_exists(\ZipArchive::class)) {
+            return back()->with('error', 'The export service is missing PHP ZIP support. Please enable the PHP zip extension and try again.');
+        }
+
         $zipPath = tempnam(sys_get_temp_dir(), 'report_cards_') . '.zip';
         $zip = new \ZipArchive();
         if ($zip->open($zipPath, \ZipArchive::CREATE | \ZipArchive::OVERWRITE) !== true) {
