@@ -56,6 +56,10 @@
         }
         .page {
             padding: 2.1mm !important;
+            border: none !important;
+        }
+        .inner-frame {
+            display: none !important;
         }
         .header {
             padding: 3px 5px;
