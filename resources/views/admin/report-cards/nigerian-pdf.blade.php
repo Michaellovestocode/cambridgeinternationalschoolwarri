@@ -38,13 +38,13 @@
         }
 
         @page {
-            margin: 4mm;
+            margin: 2mm;
             size: A4 portrait;
         }
 
         /* If there are many subjects, prefer landscape to get more vertical space */
         @if($scoreCount >= 16)
-        @page { size: A4 landscape; margin: 3mm; }
+        @page { size: A4 landscape; margin: 2mm; }
         @endif
         
         html {
@@ -53,8 +53,8 @@
 
         body {
             font-family: Arial, Helvetica, sans-serif;
-            font-size: 9.4px;
-            line-height: 1.18;
+            font-size: 8.2px;
+            line-height: 1.08;
             color: #000;
             background: #fff;
         }
@@ -62,10 +62,10 @@
         .page {
             @if($scoreCount >= 16)
                 width: {{ ($renderMode ?? 'pdf') === 'browser' ? '287mm' : '282mm' }};
-                padding: 5mm;
+                padding: 3.2mm;
             @else
                 width: {{ ($renderMode ?? 'pdf') === 'browser' ? '210mm' : '204mm' }};
-                padding: 5.5mm;
+                padding: 3.8mm;
             @endif
             position: relative;
             border: 2px solid {{ $selectedColor['primary'] }};
@@ -566,9 +566,9 @@
         
         .comment-box {
             border: 1.5px solid {{ $selectedColor['primary'] }};
-            padding: 3px 4px;
-            margin-bottom: 3px;
-            min-height: 24px;
+            padding: 2px 3px;
+            margin-bottom: 2px;
+            min-height: 18px;
             background: rgba(255, 255, 255, .9);
         }
 
@@ -587,9 +587,9 @@
         }
         
         .comment-text {
-            font-size: 8.1px;
+            font-size: 7.2px;
             font-style: italic;
-            min-height: 8px;
+            min-height: 7px;
             line-height: 1.0;
             flex: 1;
         }
@@ -623,15 +623,7 @@
         }
 
         .next-term-box {
-            text-align: center;
-            margin-top: 3px;
-            padding: 2px 3px;
-            font-size: 8.1px;
-            border-top: 1px solid {{ $selectedColor['primary'] }};
-            border-bottom: 1px solid {{ $selectedColor['primary'] }};
-            background: {{ $selectedColor['light'] }};
-            width: 100%;
-            clear: both;
+            display: none;
         }
         
         /* Footer */
@@ -1316,10 +1308,7 @@
                 </div>
             </div>
             
-<div class="next-term-box">
-                <strong>Next Term Begins:</strong> {{ $reportCard->term->next_term_begins ? $reportCard->term->next_term_begins->format('l, d-M-Y') : 'TBA' }}
-            </div>
-        </div>
+</div>
         
         <!-- Footer -->
         <div class="footer">
