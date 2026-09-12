@@ -1035,7 +1035,10 @@ class NigerianReportCardController extends Controller
 
         $zip->close();
 
-        $archiveName = sprintf('%s_%s_%s_Export.zip', preg_replace('/[^A-Za-z0-9_\-]+/', '_', $class->display_name ?? 'Class'), $session->name, $term->name);
+        $safeClassName = preg_replace('/[^A-Za-z0-9_-]+/', '_', trim($class->display_name ?? 'Class'));
+        $safeSessionName = preg_replace('/[^A-Za-z0-9_-]+/', '_', trim($session->name ?? 'Session'));
+        $safeTermName = preg_replace('/[^A-Za-z0-9_-]+/', '_', trim($term->name ?? 'Term'));
+        $archiveName = sprintf('%s_%s_%s_Export.zip', $safeClassName, $safeSessionName, $safeTermName);
 
         return response()->download($zipPath, $archiveName)->deleteFileAfterSend(true);
     }
