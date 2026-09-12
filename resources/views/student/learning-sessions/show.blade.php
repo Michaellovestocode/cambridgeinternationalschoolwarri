@@ -120,25 +120,32 @@
                 <textarea name="body" rows="3" required maxlength="3000" class="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm" placeholder="What do you understand, or where do you need help?"></textarea>
                 <button class="mt-2 rounded-xl bg-cyan-600 px-4 py-3 text-sm font-bold text-white">Post to Class</button>
             </form>
-            <div id="learning-comments-list" class="mt-5 space-y-4">
+            <div id="learning-comments-list" class="mt-5 space-y-3">
                 @forelse($learningSession->comments as $comment)
-                    <div data-comment-id="{{ $comment->id }}" class="rounded-xl {{ $comment->is_pinned ? 'border-2 border-amber-300 bg-amber-50' : 'bg-gray-50' }} p-4">
-                        <p class="text-xs font-bold text-gray-500">{{ $comment->user->name }} {{ $comment->is_pinned ? ' · Pinned by teacher' : '' }}</p>
-                        <p class="mt-1 whitespace-pre-line text-sm text-gray-800">{{ $comment->body }}</p>
-                        <div class="learning-replies">
-                        @foreach($comment->replies as $reply)
-                            <div class="mt-3 border-l-2 border-cyan-200 pl-3 text-sm" data-reply-id="{{ $reply->id }}">
-                                <p class="text-xs font-bold text-gray-500">{{ $reply->user->name }}</p>
-                                <p class="mt-1 whitespace-pre-line text-gray-700">{{ $reply->body }}</p>
+                    <div data-comment-id="{{ $comment->id }}" class="learning-comment-card rounded-xl border border-gray-100 bg-gray-50 p-4">
+                        <button type="button" class="learning-thread-toggle flex w-full items-start justify-between gap-3 text-left" aria-expanded="false">
+                            <span class="min-w-0">
+                                <span class="block truncate text-xs font-bold text-gray-500">{{ $comment->user->name }}{{ $comment->is_pinned ? ' · Pinned by teacher' : '' }}</span>
+                                <span class="mt-1 block overflow-hidden text-sm text-gray-800" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;">{{ $comment->body }}</span>
+                            </span>
+                            <span class="learning-thread-label shrink-0 rounded-full bg-white px-3 py-1 text-xs font-bold text-cyan-700">{{ $comment->replies->count() }} {{ $comment->replies->count() === 1 ? 'reply' : 'replies' }}</span>
+                        </button>
+                        <div class="learning-thread-content mt-3 hidden border-t border-gray-200 pt-3">
+                            <div class="learning-replies space-y-3">
+                                @foreach($comment->replies as $reply)
+                                    <div class="border-l-2 border-cyan-200 pl-3 text-sm" data-reply-id="{{ $reply->id }}">
+                                        <p class="text-xs font-bold text-gray-500">{{ $reply->user->name }}</p>
+                                        <p class="mt-1 whitespace-pre-line text-gray-700">{{ $reply->body }}</p>
+                                    </div>
+                                @endforeach
                             </div>
-                        @endforeach
+                            <form action="{{ route('student.learning.comments.store', $learningSession) }}" method="POST" class="learning-comment-form mt-3 flex flex-col gap-2 sm:flex-row">
+                                @csrf
+                                <input type="hidden" name="parent_id" value="{{ $comment->id }}">
+                                <input name="body" required maxlength="3000" class="min-w-0 flex-1 rounded-lg border border-gray-200 px-3 py-2 text-sm" placeholder="Reply to this discussion">
+                                <button type="submit" class="comment-submit rounded-lg bg-gray-900 px-3 py-2 text-xs font-bold text-white sm:shrink-0">Reply</button>
+                            </form>
                         </div>
-                        <form action="{{ route('student.learning.comments.store', $learningSession) }}" method="POST" class="learning-comment-form mt-3 flex flex-col gap-2 sm:flex-row">
-                            @csrf
-                            <input type="hidden" name="parent_id" value="{{ $comment->id }}">
-                            <input name="body" required maxlength="3000" class="min-w-0 flex-1 rounded-lg border border-gray-200 px-3 py-2 text-sm" placeholder="Reply to this discussion">
-                            <button type="submit" class="comment-submit rounded-lg bg-gray-900 px-3 py-2 text-xs font-bold text-white sm:shrink-0">Reply</button>
-                        </form>
                     </div>
                 @empty
                     <p class="text-sm text-gray-500">No discussion yet. Start the conversation.</p>
@@ -235,6 +242,17 @@
             });
         });
 
+        document.querySelectorAll('.learning-thread-toggle').forEach(function (toggle) {
+            toggle.addEventListener('click', function () {
+                const card = toggle.closest('.learning-comment-card');
+                const content = card.querySelector('.learning-thread-content');
+                const isOpen = toggle.getAttribute('aria-expanded') === 'true';
+                toggle.setAttribute('aria-expanded', String(!isOpen));
+                content.classList.toggle('hidden', isOpen);
+                card.querySelector('.learning-thread-label').textContent = isOpen ? 'View thread' : 'Hide thread';
+            });
+        });
+
         document.querySelectorAll('.learning-comment-form').forEach(function (form) {
             form.addEventListener('submit', async function (event) {
                 event.preventDefault();
@@ -273,22 +291,48 @@
                     replyMarkup.append(replyName, replyBody);
 
                     if (comment.parent_id) {
-                        const parent = document.querySelector('[data-comment-id="' + comment.parent_id + '"] .learning-replies');
-                        if (parent) parent.appendChild(replyMarkup);
+                        const parentCard = document.querySelector('[data-comment-id="' + comment.parent_id + '"]');
+                        const parent = parentCard ? parentCard.querySelector('.learning-replies') : null;
+                        if (parent) {
+                            parent.appendChild(replyMarkup);
+                            parentCard.querySelector('.learning-thread-content').classList.remove('hidden');
+                            parentCard.querySelector('.learning-thread-toggle').setAttribute('aria-expanded', 'true');
+                            parentCard.querySelector('.learning-thread-label').textContent = 'Hide thread';
+                        }
                     } else {
                         const commentCard = document.createElement('div');
                         commentCard.dataset.commentId = comment.id;
-                        commentCard.className = 'rounded-xl bg-gray-50 p-4';
-                        const name = document.createElement('p');
-                        name.className = 'text-xs font-bold text-gray-500';
+                        commentCard.className = 'learning-comment-card rounded-xl border border-gray-100 bg-gray-50 p-4';
+                        const toggle = document.createElement('button');
+                        toggle.type = 'button';
+                        toggle.className = 'learning-thread-toggle flex w-full items-start justify-between gap-3 text-left';
+                        toggle.setAttribute('aria-expanded', 'true');
+                        const summary = document.createElement('span');
+                        summary.className = 'min-w-0';
+                        const name = document.createElement('span');
+                        name.className = 'block truncate text-xs font-bold text-gray-500';
                         name.textContent = comment.name;
-                        const text = document.createElement('p');
-                        text.className = 'mt-1 whitespace-pre-line text-sm text-gray-800';
+                        const text = document.createElement('span');
+                        text.className = 'mt-1 block text-sm text-gray-800';
                         text.textContent = comment.body;
+                        const label = document.createElement('span');
+                        label.className = 'learning-thread-label shrink-0 rounded-full bg-white px-3 py-1 text-xs font-bold text-cyan-700';
+                        label.textContent = 'Hide thread';
+                        summary.append(name, text);
+                        toggle.append(summary, label);
                         const replies = document.createElement('div');
-                        replies.className = 'learning-replies';
-                        commentCard.append(name, text, replies);
+                        replies.className = 'learning-replies space-y-3';
+                        const content = document.createElement('div');
+                        content.className = 'learning-thread-content mt-3 border-t border-gray-200 pt-3';
+                        content.append(replies);
+                        commentCard.append(toggle, content);
                         document.getElementById('learning-comments-list').appendChild(commentCard);
+                        toggle.addEventListener('click', function () {
+                            const isOpen = toggle.getAttribute('aria-expanded') === 'true';
+                            toggle.setAttribute('aria-expanded', String(!isOpen));
+                            content.classList.toggle('hidden', isOpen);
+                            label.textContent = isOpen ? 'View thread' : 'Hide thread';
+                        });
                     }
                     if (bodyField) bodyField.value = '';
                 } catch (error) {
