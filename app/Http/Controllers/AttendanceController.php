@@ -212,7 +212,7 @@ class AttendanceController extends Controller
             ->get()
             ->keyBy(fn (AttendanceRecord $record) => $record->attendance_date->toDateString());
         $dates = collect(CarbonPeriod::create($startDate->copy()->startOfDay(), $endDate->copy()->startOfDay()))
-            ->filter(fn (Carbon $date) => $date->isWeekday() && $date->lte(today()))
+            ->filter(fn (Carbon $date) => $date->isWeekday() && $date->gte($this->attendanceStartDate()) && $date->lte(today()))
             ->values();
 
         return view('admin.attendance.staff-period', compact('user', 'startDate', 'endDate', 'dates', 'records'));
@@ -660,7 +660,12 @@ class AttendanceController extends Controller
     private function workingDaysForMonth(Carbon $month): Collection
     {
         return collect(CarbonPeriod::create($month->copy()->startOfMonth(), $month->copy()->endOfMonth()))
-            ->filter(fn (Carbon $date) => $date->isWeekday() && $date->lte(today()));
+            ->filter(fn (Carbon $date) => $date->isWeekday() && $date->gte($this->attendanceStartDate()) && $date->lte(today()));
+    }
+
+    private function attendanceStartDate(): Carbon
+    {
+        return Carbon::parse(config('services.staff_attendance.start_date'))->startOfDay();
     }
 
     private function averageCheckIn(Collection $records): ?string

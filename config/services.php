@@ -17,6 +17,7 @@ return [
     'staff_attendance' => [
         'key' => env('STAFF_ATTENDANCE_KEY'),
         'device_id' => env('F_G495_DEVICE_ID'),
+        'start_date' => env('ATTENDANCE_START_DATE', '2026-09-14'),
     ],
 
 ];
