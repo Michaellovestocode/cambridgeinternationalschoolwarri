@@ -65,9 +65,12 @@ class LearningSessionController extends Controller
             'learning_goals' => ['nullable', 'string'],
             'estimated_minutes' => ['required', 'integer', 'min:1', 'max:300'],
             'is_published' => ['nullable', 'boolean'],
+            'attachment' => ['nullable', 'file', 'max:10240', 'mimes:pdf,doc,docx,ppt,pptx,jpg,jpeg,png,gif,webp'],
         ]);
 
         $this->ensureAllowedAssignment((int) $data['subject_id'], (int) $data['school_class_id']);
+        $attachment = $request->file('attachment');
+        unset($data['attachment']);
         $session = LearningSession::create([
             ...$data,
             'created_by' => Auth::id(),
@@ -76,6 +79,17 @@ class LearningSessionController extends Controller
             'is_published' => $request->boolean('is_published'),
             'show_answers_to_students' => false,
         ]);
+
+        if ($attachment) {
+            $file = $attachment;
+            $session->attachments()->create([
+                'uploaded_by' => Auth::id(),
+                'name' => $file->getClientOriginalName(),
+                'path' => $file->store('learning-attachments', 'public'),
+                'mime_type' => $file->getMimeType(),
+                'size' => $file->getSize(),
+            ]);
+        }
 
         return redirect()->route('admin.learning-sessions.edit', $session)
             ->with('success', 'Learning topic created. You can now upload materials and join the class discussion.');

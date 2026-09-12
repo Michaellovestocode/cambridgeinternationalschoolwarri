@@ -20,7 +20,7 @@
         </div>
     @endif
 
-    <form action="{{ route('admin.learning-sessions.store-topic') }}" method="POST" class="space-y-6 rounded-2xl bg-white p-5 shadow-lg sm:p-8">
+    <form action="{{ route('admin.learning-sessions.store-topic') }}" method="POST" enctype="multipart/form-data" class="space-y-6 rounded-2xl bg-white p-5 shadow-lg sm:p-8">
         @csrf
 
         <div class="grid gap-5 md:grid-cols-2">
@@ -73,6 +73,12 @@
         <div>
             <label for="estimated_minutes" class="mb-1 block text-sm font-semibold text-gray-700">Estimated reading time</label>
             <input id="estimated_minutes" type="number" name="estimated_minutes" value="{{ old('estimated_minutes', 20) }}" required min="1" max="300" class="w-full rounded-xl border border-gray-200 px-4 py-3 sm:max-w-xs">
+        </div>
+
+        <div class="rounded-xl border border-sky-200 bg-sky-50 p-4">
+            <label for="attachment" class="mb-1 block text-sm font-semibold text-sky-900">Upload a diagram or study material <span class="font-normal text-sky-700">(optional)</span></label>
+            <input id="attachment" type="file" name="attachment" accept=".pdf,.doc,.docx,.ppt,.pptx,.jpg,.jpeg,.png,.gif,.webp" class="w-full rounded-xl border border-sky-200 bg-white px-3 py-3 text-sm">
+            <p class="mt-1 text-xs text-sky-700">Images, PDF, Word, and PowerPoint files up to 10MB.</p>
         </div>
 
         <div class="flex flex-col gap-4 border-t border-gray-100 pt-5 sm:flex-row sm:items-center sm:justify-between">
