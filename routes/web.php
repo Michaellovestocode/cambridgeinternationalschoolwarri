@@ -361,6 +361,8 @@ Route::middleware('auth')->group(function () {
 
         // Learning Sessions
         Route::get('/learning-sessions', [LearningSessionController::class, 'index'])->name('learning-sessions.index');
+        Route::get('/learning-sessions/create-topic', [LearningSessionController::class, 'createTopic'])->name('learning-sessions.create-topic');
+        Route::post('/learning-sessions/create-topic', [LearningSessionController::class, 'storeTopic'])->name('learning-sessions.store-topic');
         Route::get('/learning-sessions/create', [LearningSessionController::class, 'create'])->name('learning-sessions.create');
         Route::post('/learning-sessions', [LearningSessionController::class, 'store'])->name('learning-sessions.store');
         Route::get('/learning-sessions/{learningSession}/edit', [LearningSessionController::class, 'edit'])->name('learning-sessions.edit');

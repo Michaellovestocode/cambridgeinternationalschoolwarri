@@ -45,6 +45,42 @@ class LearningSessionController extends Controller
         return view('admin.learning-sessions.create', compact('subjects', 'classes', 'selectedType', 'selectedFormat'));
     }
 
+    public function createTopic()
+    {
+        $subjects = $this->availableSubjects();
+        $classes = $this->availableClasses();
+
+        return view('admin.learning-sessions.create-topic', compact('subjects', 'classes'));
+    }
+
+    public function storeTopic(Request $request)
+    {
+        $data = $request->validate([
+            'subject_id' => ['required', 'exists:subjects,id'],
+            'school_class_id' => ['required', 'exists:school_classes,id'],
+            'title' => ['required', 'string', 'max:255'],
+            'topic' => ['required', 'string', 'max:255'],
+            'description' => ['nullable', 'string'],
+            'lesson_content' => ['required', 'string'],
+            'learning_goals' => ['nullable', 'string'],
+            'estimated_minutes' => ['required', 'integer', 'min:1', 'max:300'],
+            'is_published' => ['nullable', 'boolean'],
+        ]);
+
+        $this->ensureAllowedAssignment((int) $data['subject_id'], (int) $data['school_class_id']);
+        $session = LearningSession::create([
+            ...$data,
+            'created_by' => Auth::id(),
+            'assessment_type' => 'lesson',
+            'assessment_format' => 'theory',
+            'is_published' => $request->boolean('is_published'),
+            'show_answers_to_students' => false,
+        ]);
+
+        return redirect()->route('admin.learning-sessions.edit', $session)
+            ->with('success', 'Learning topic created. You can now upload materials and join the class discussion.');
+    }
+
     public function store(Request $request)
     {
         $data = $this->validatedSessionData($request);

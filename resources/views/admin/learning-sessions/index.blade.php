@@ -46,10 +46,7 @@
                 <h1 class="text-3xl font-bold">Learning Sessions</h1>
                 <p class="text-emerald-50 mt-1">Share lesson notes, materials, and classroom discussion with students.</p>
             </div>
-            <a href="{{ route('teacher.assessment-studio') }}" class="bg-white/15 hover:bg-white/20 text-white px-4 py-2 rounded-lg font-semibold border border-white/20">
-                Create Classwork / Quiz
-            </a>
-            <a href="{{ route('admin.learning-sessions.create') }}" class="bg-white text-emerald-700 hover:bg-emerald-50 px-6 py-2 rounded-lg font-semibold">
+            <a href="{{ route('admin.learning-sessions.create-topic') }}" class="bg-white text-emerald-700 hover:bg-emerald-50 px-6 py-2 rounded-lg font-semibold">
                 + New Learning Topic
             </a>
         </div>
@@ -109,7 +106,7 @@
                     @empty
                     <tr>
                         <td colspan="6" class="px-6 py-10 text-center text-gray-500">
-                            No learning sessions yet. <a href="{{ route('admin.learning-sessions.create') }}" class="text-blue-600 hover:underline">Create the first one</a>.
+                            No learning sessions yet. <a href="{{ route('admin.learning-sessions.create-topic') }}" class="text-blue-600 hover:underline">Create the first one</a>.
                         </td>
                     </tr>
                     @endforelse
