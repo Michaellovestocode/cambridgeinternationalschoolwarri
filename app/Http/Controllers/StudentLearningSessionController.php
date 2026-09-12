@@ -88,6 +88,13 @@ class StudentLearningSessionController extends Controller
             'body' => $validated['body'],
         ]);
 
+        if ($request->expectsJson()) {
+            return response()->json([
+                'ok' => true,
+                'message' => 'Your comment was posted.',
+            ]);
+        }
+
         return back()->with('success', 'Your comment was posted.');
     }
 

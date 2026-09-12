@@ -115,7 +115,7 @@
                 </div>
                 <span class="rounded-full bg-cyan-100 px-3 py-1 text-xs font-bold text-cyan-800">Shared with class</span>
             </div>
-            <form action="{{ route('student.learning.comments.store', $learningSession) }}" method="POST" class="mt-4">
+            <form action="{{ route('student.learning.comments.store', $learningSession) }}" method="POST" class="learning-comment-form mt-4">
                 @csrf
                 <textarea name="body" rows="3" required maxlength="3000" class="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm" placeholder="What do you understand, or where do you need help?"></textarea>
                 <button class="mt-2 rounded-xl bg-cyan-600 px-4 py-3 text-sm font-bold text-white">Post to Class</button>
@@ -131,11 +131,11 @@
                                 <p class="mt-1 whitespace-pre-line text-gray-700">{{ $reply->body }}</p>
                             </div>
                         @endforeach
-                        <form action="{{ route('student.learning.comments.store', $learningSession) }}" method="POST" class="mt-3 flex flex-col gap-2 sm:flex-row">
+                        <form action="{{ route('student.learning.comments.store', $learningSession) }}" method="POST" class="learning-comment-form mt-3 flex flex-col gap-2 sm:flex-row">
                             @csrf
                             <input type="hidden" name="parent_id" value="{{ $comment->id }}">
                             <input name="body" required maxlength="3000" class="min-w-0 flex-1 rounded-lg border border-gray-200 px-3 py-2 text-sm" placeholder="Reply to this discussion">
-                            <button class="rounded-lg bg-gray-900 px-3 py-2 text-xs font-bold text-white sm:shrink-0">Reply</button>
+                            <button type="submit" class="comment-submit rounded-lg bg-gray-900 px-3 py-2 text-xs font-bold text-white sm:shrink-0">Reply</button>
                         </form>
                     </div>
                 @empty
@@ -229,6 +229,50 @@
                     message.classList.add('text-red-700');
                 } finally {
                     buttons.forEach((item) => item.disabled = false);
+                }
+            });
+        });
+
+        document.querySelectorAll('.learning-comment-form').forEach(function (form) {
+            form.addEventListener('submit', async function (event) {
+                event.preventDefault();
+
+                const submitButton = form.querySelector('.comment-submit') || form.querySelector('button[type="submit"]');
+                const originalText = submitButton ? submitButton.textContent : '';
+                if (submitButton) {
+                    submitButton.disabled = true;
+                    submitButton.textContent = 'Posting...';
+                }
+
+                try {
+                    const response = await fetch(form.action, {
+                        method: 'POST',
+                        headers: {
+                            'Accept': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest',
+                        },
+                        body: new FormData(form),
+                    });
+
+                    if (!response.ok) throw new Error('Comment could not be posted.');
+
+                    const result = await response.json();
+                    const notice = document.createElement('p');
+                    notice.className = 'mt-2 text-sm font-semibold text-emerald-700';
+                    notice.textContent = result.message;
+                    form.appendChild(notice);
+                    const bodyField = form.querySelector('[name="body"]');
+                    if (bodyField) bodyField.value = '';
+                } catch (error) {
+                    const notice = document.createElement('p');
+                    notice.className = 'mt-2 text-sm font-semibold text-red-700';
+                    notice.textContent = error.message;
+                    form.appendChild(notice);
+                } finally {
+                    if (submitButton) {
+                        submitButton.disabled = false;
+                        submitButton.textContent = originalText;
+                    }
                 }
             });
         });
