@@ -51,6 +51,7 @@ class StudentLearningSessionController extends Controller
         $learningSession->load(['subject', 'schoolClass', 'questions', 'attachments', 'comments' => fn ($query) => $query->where('is_hidden', false)->whereNull('parent_id')->with(['user', 'replies.user'])]);
         $latestAttempt = LearningAttempt::where('user_id', Auth::id())
             ->where('learning_session_id', $learningSession->id)
+            ->with(['answers.question'])
             ->latest()
             ->first();
         $feedback = LearningFeedback::where('learning_session_id', $learningSession->id)
@@ -72,8 +73,9 @@ class StudentLearningSessionController extends Controller
         }
 
         $practiceLocked = $latestAttempt?->is_published && ! $latestAttempt->allow_resubmission;
+        $practicePendingReview = $latestAttempt && ! $latestAttempt->is_published && ! $latestAttempt->allow_resubmission;
 
-        return view('student.learning-sessions.show', compact('learningSession', 'feedback', 'unreadTeacherReplies', 'latestAttempt', 'practiceLocked'));
+        return view('student.learning-sessions.show', compact('learningSession', 'feedback', 'unreadTeacherReplies', 'latestAttempt', 'practiceLocked', 'practicePendingReview'));
     }
 
     public function feedback(Request $request, LearningSession $learningSession)
@@ -144,7 +146,9 @@ class StudentLearningSessionController extends Controller
             ->where('learning_session_id', $learningSession->id)
             ->latest()
             ->first();
-        abort_if($latestAttempt?->is_published && ! $latestAttempt->allow_resubmission, 403, 'This activity has been graded and published. Your teacher has not enabled another submission.');
+        abort_if($latestAttempt && ! $latestAttempt->allow_resubmission, 403, $latestAttempt->is_published
+            ? 'This activity has been graded and published. Your teacher has not enabled another submission.'
+            : 'This activity has already been submitted and is awaiting teacher review.');
 
         $learningSession->load('questions');
 
