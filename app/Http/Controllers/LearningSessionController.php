@@ -111,9 +111,13 @@ class LearningSessionController extends Controller
             return $session;
         });
 
+        $destination = Auth::user()->isTeacher()
+            ? 'teacher.assessment-studio'
+            : 'admin.learning-sessions.index';
+
         return redirect()
-            ->route('admin.learning-sessions.edit', $session)
-            ->with('success', 'Learning session created. Add practice questions below.');
+            ->route($destination)
+            ->with('success', 'Classwork / quiz saved successfully.');
     }
 
     public function edit(LearningSession $learningSession)
