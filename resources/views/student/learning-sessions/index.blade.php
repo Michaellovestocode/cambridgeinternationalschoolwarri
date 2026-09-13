@@ -77,7 +77,7 @@
             <div class="session-card-actions mt-6 flex gap-3">
                 @if($attempt && ! $attempt->is_published && ! $attempt->allow_resubmission)
                     <div class="flex flex-1 flex-col gap-2">
-                        <span class="cursor-not-allowed rounded-xl bg-amber-100 px-4 py-3 text-center font-bold text-amber-800">Task Already Submitted</span>
+                        <span class="cursor-not-allowed rounded-xl bg-amber-100 px-4 py-3 text-center font-bold text-amber-800">Task Taken</span>
                         <a href="{{ route('student.learning.show', $session) }}" class="text-center text-xs font-bold text-cyan-700 hover:underline">View Lesson &amp; Discussion</a>
                     </div>
                 @elseif($attempt?->is_published && ! $attempt->allow_resubmission)
