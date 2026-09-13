@@ -231,9 +231,15 @@
                     </div>
                 </div>
                 <div class="mt-4 pt-4 border-t border-gray-100 flex justify-end">
-                    <a href="{{ route('student.learning.show', $session) }}" class="bg-cyan-600 hover:bg-cyan-700 text-white px-6 py-3 rounded-xl font-bold shadow">
-                        Start Task
-                    </a>
+                    @if($session->student_attempt && ! $session->student_attempt->is_published && ! $session->student_attempt->allow_resubmission)
+                        <a href="{{ route('student.learning.show', $session) }}" class="rounded-xl bg-amber-100 px-6 py-3 font-bold text-amber-800 shadow">Task Taken</a>
+                    @elseif($session->student_attempt?->is_published && ! $session->student_attempt->allow_resubmission)
+                        <a href="{{ route('student.learning.show', $session) }}" class="rounded-xl bg-gray-200 px-6 py-3 font-bold text-gray-500 shadow">Practice Locked</a>
+                    @else
+                        <a href="{{ route('student.learning.show', $session) }}" class="bg-cyan-600 hover:bg-cyan-700 text-white px-6 py-3 rounded-xl font-bold shadow">
+                            {{ $session->student_attempt?->allow_resubmission ? 'Submit Again' : 'Start Task' }}
+                        </a>
+                    @endif
                 </div>
             </div>
             @empty

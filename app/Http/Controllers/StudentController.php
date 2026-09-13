@@ -68,6 +68,16 @@ class StudentController extends Controller
             ->take(3)
             ->get();
 
+        $learningAttempts = LearningAttempt::where('user_id', $student->id)
+            ->whereIn('learning_session_id', $availableLearningSessions->pluck('id'))
+            ->latest()
+            ->get()
+            ->unique('learning_session_id')
+            ->keyBy('learning_session_id');
+        $availableLearningSessions->each(function ($session) use ($learningAttempts) {
+            $session->student_attempt = $learningAttempts->get($session->id);
+        });
+
         $completedLearningAttempts = LearningAttempt::where('user_id', $student->id)
             ->whereNotNull('completed_at')
             ->count();
