@@ -568,6 +568,7 @@ class AttendanceController extends Controller
             'attendance_machine_user_id' => ['nullable', 'string', 'max:100', 'unique:users,attendance_machine_user_id,' . $user->id],
             'attendance_section' => ['nullable', 'string', 'max:100'],
             'can_manage_attendance' => ['nullable', 'boolean'],
+            'staff_role' => ['nullable', 'in:non_teaching_staff,nurse'],
         ]);
 
         $user->update([
@@ -579,6 +580,7 @@ class AttendanceController extends Controller
                 : null,
             'attendance_section' => $validated['attendance_section'] ?? null,
             'can_manage_attendance' => $request->boolean('can_manage_attendance'),
+            'role' => $validated['staff_role'] ?? $user->role,
         ]);
 
         return back()->with('success', 'Attendance access updated.');

@@ -54,6 +54,8 @@
             <div class="mt-4 grid gap-3">
                 <a href="{{ route('clinic.visits.create') }}" class="rounded-xl bg-amber-100 px-4 py-4 font-bold text-amber-900">Record New Visit</a>
                 <a href="{{ route('clinic.students.index') }}" class="rounded-xl bg-blue-100 px-4 py-4 font-bold text-blue-900">Search Students</a>
+                <a href="{{ route('clinic.incidents.index') }}" class="rounded-xl bg-rose-100 px-4 py-4 font-bold text-rose-900">Incident Reports</a>
+                <a href="{{ route('clinic.inventory.index') }}" class="rounded-xl bg-violet-100 px-4 py-4 font-bold text-violet-900">Clinic Inventory{{ $lowStockCount ? ' · ' . $lowStockCount . ' low' : '' }}</a>
             </div>
             <p class="mt-6 rounded-xl bg-slate-50 p-4 text-xs leading-5 text-slate-600">Clinic records are restricted to authorized clinic and administrator users.</p>
         </section>

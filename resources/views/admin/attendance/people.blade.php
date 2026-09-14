@@ -52,6 +52,12 @@
                         <p class="text-xs text-gray-500">{{ $person->registration_number }} • {{ ucfirst(str_replace('_', ' ', $person->role)) }}{{ $person->class ? ' • ' . $person->class->display_name : '' }}</p>
                     </div>
                     <div class="grid gap-3 sm:grid-cols-[1fr,auto]">
+                        @if(in_array($person->role, ['non_teaching_staff', 'nurse'], true))
+                            <select name="staff_role" class="rounded-xl border border-gray-200 px-3 py-3 text-sm">
+                                <option value="non_teaching_staff" @selected($person->role === 'non_teaching_staff')>Non-teaching staff</option>
+                                <option value="nurse" @selected($person->role === 'nurse')>School nurse</option>
+                            </select>
+                        @endif
                         <input name="attendance_card_uid" value="{{ old('attendance_card_uid', $person->attendance_card_uid) }}" placeholder="Card / barcode / QR value" class="rounded-xl border border-gray-200 px-3 py-3 text-sm">
                         @if(!$person->isStudent())
                             <input name="attendance_machine_user_id" value="{{ old('attendance_machine_user_id', $person->attendance_machine_user_id) }}" placeholder="F-G495 Enroll ID" class="rounded-xl border border-gray-200 px-3 py-3 text-sm">

@@ -14,6 +14,9 @@
                 <input type="month" name="month" value="{{ $month->format('Y-m') }}" onchange="this.form.submit()" class="rounded-xl border border-gray-200 px-3 py-3 text-sm">
             </form>
         </div>
+        @if(auth()->user()->isNurse())
+            <a href="{{ route('clinic.dashboard') }}" class="mt-4 inline-block rounded-xl bg-amber-400 px-4 py-3 text-sm font-black text-slate-900">Open Clinic Dashboard</a>
+        @endif
         <div class="mt-5 grid grid-cols-4 gap-2 text-center">
             <div class="rounded-xl bg-slate-50 p-3"><strong class="text-lg">{{ $workingDaysCount }}</strong><br><span class="text-xs">Days</span></div>
             <div class="rounded-xl bg-emerald-50 p-3"><strong class="text-lg text-emerald-700">{{ $summary['present'] }}</strong><br><span class="text-xs">Present</span></div>
