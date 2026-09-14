@@ -121,6 +121,9 @@ Route::middleware('auth')->group(function () {
         Route::post('/incidents', [ClinicController::class, 'storeIncident'])->name('incidents.store');
         Route::get('/inventory', [ClinicController::class, 'inventory'])->name('inventory.index');
         Route::post('/inventory', [ClinicController::class, 'storeInventoryItem'])->name('inventory.store');
+        Route::post('/inventory/{item}/transactions', [ClinicController::class, 'storeInventoryTransaction'])->name('inventory.transactions.store');
+        Route::post('/supply-requests', [ClinicController::class, 'storeSupplyRequest'])->name('supply-requests.store');
+        Route::put('/supply-requests/{supplyRequest}', [ClinicController::class, 'reviewSupplyRequest'])->name('supply-requests.review');
     });
 
     Route::prefix('admin/attendance')->name('admin.attendance.')->group(function () {

@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\ClinicVisit;
 use App\Models\ClinicIncident;
 use App\Models\ClinicInventoryItem;
+use App\Models\ClinicInventoryTransaction;
+use App\Models\ClinicSupplyRequest;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -151,7 +153,8 @@ class ClinicController extends Controller
     {
         $this->authorizeClinic();
         $items = ClinicInventoryItem::where('is_active', true)->orderBy('name')->get();
-        return view('clinic.inventory.index', compact('items'));
+        $requests = ClinicSupplyRequest::with(['requester', 'reviewer'])->latest()->take(30)->get();
+        return view('clinic.inventory.index', compact('items', 'requests'));
     }
 
     public function storeInventoryItem(Request $request)
@@ -160,6 +163,52 @@ class ClinicController extends Controller
         $data = $request->validate(['name' => ['required', 'string', 'max:255'], 'category' => ['nullable', 'string', 'max:100'], 'quantity' => ['required', 'numeric', 'min:0'], 'minimum_quantity' => ['required', 'numeric', 'min:0'], 'unit' => ['required', 'string', 'max:50']]);
         ClinicInventoryItem::create($data);
         return back()->with('success', 'Inventory item added.');
+    }
+
+    public function storeInventoryTransaction(Request $request, ClinicInventoryItem $item)
+    {
+        $this->authorizeClinic();
+        $data = $request->validate([
+            'type' => ['required', 'in:received,used,adjusted'],
+            'quantity' => ['required', 'numeric', 'gt:0'],
+            'reason' => ['nullable', 'string', 'max:1000'],
+        ]);
+
+        $change = $data['type'] === 'used' ? -abs((float) $data['quantity']) : abs((float) $data['quantity']);
+        abort_if($change < 0 && (float) $item->quantity + $change < 0, 422, 'Quantity used cannot exceed stock remaining.');
+
+        ClinicInventoryTransaction::create([
+            'inventory_item_id' => $item->id,
+            'recorded_by' => Auth::id(),
+            ...$data,
+        ]);
+        $item->increment('quantity', $change);
+
+        return back()->with('success', 'Inventory quantity updated.');
+    }
+
+    public function storeSupplyRequest(Request $request)
+    {
+        $this->authorizeClinic();
+        $data = $request->validate([
+            'item_name' => ['required', 'string', 'max:255'],
+            'quantity_requested' => ['required', 'numeric', 'gt:0'],
+            'unit' => ['required', 'string', 'max:50'],
+            'reason' => ['nullable', 'string', 'max:1000'],
+        ]);
+        ClinicSupplyRequest::create([...$data, 'requested_by' => Auth::id()]);
+        return back()->with('success', 'Supply request submitted to administration.');
+    }
+
+    public function reviewSupplyRequest(Request $request, ClinicSupplyRequest $supplyRequest)
+    {
+        abort_unless(Auth::user()?->isAdmin(), 403);
+        $data = $request->validate([
+            'status' => ['required', 'in:approved,rejected,fulfilled'],
+            'review_notes' => ['nullable', 'string', 'max:1000'],
+        ]);
+        $supplyRequest->update([...$data, 'reviewed_by' => Auth::id(), 'reviewed_at' => now()]);
+        return back()->with('success', 'Supply request updated.');
     }
 
     private function authorizeClinic(): void
