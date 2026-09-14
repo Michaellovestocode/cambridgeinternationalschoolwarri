@@ -17,7 +17,6 @@ return new class extends Migration
             $table->string('patient_identifier')->nullable()->after('patient_name');
             $table->index(['patient_type', 'visited_at']);
             $table->dropIndex(['student_id', 'visited_at']);
-            $table->index(['student_id', 'visited_at']);
             $table->foreign('student_id')->references('id')->on('users')->nullOnDelete();
         });
     }
