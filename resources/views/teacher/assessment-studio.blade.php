@@ -57,9 +57,14 @@
                     <div class="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500">Today</div>
                     <div class="mt-1 text-xl font-black text-slate-800">4 tasks</div>
                 </div>
-                <a href="{{ route('teacher.scores.dashboard') }}" class="inline-flex items-center justify-center rounded-2xl bg-slate-900 px-4 py-3 text-sm font-bold text-white shadow-lg shadow-slate-900/20 transition hover:bg-slate-800">
-                    View score dashboard
-                </a>
+                <div class="flex flex-col gap-2 sm:flex-row">
+                    <a href="{{ route('admin.classroom-activities') }}" class="inline-flex items-center justify-center rounded-2xl bg-white px-4 py-3 text-sm font-bold text-slate-800 shadow-lg ring-1 ring-slate-200 transition hover:bg-slate-50">
+                        My activities
+                    </a>
+                    <a href="{{ route('teacher.scores.dashboard') }}" class="inline-flex items-center justify-center rounded-2xl bg-slate-900 px-4 py-3 text-sm font-bold text-white shadow-lg shadow-slate-900/20 transition hover:bg-slate-800">
+                        View score dashboard
+                    </a>
+                </div>
             </div>
         </div>
     </div>

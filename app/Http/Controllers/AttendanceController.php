@@ -226,13 +226,25 @@ class AttendanceController extends Controller
             'card_uid' => ['required', 'string', 'max:255'],
         ]);
 
-        $cardUid = trim($validated['card_uid']);
+        $rawCardValue = $validated['card_uid'];
+        $scanValues = $this->attendanceScanValues($rawCardValue);
         $user = User::with('class')
-            ->where('attendance_card_uid', $cardUid)
             ->whereIn('role', ['admin', 'teacher', 'student', 'non_teaching_staff'])
+            ->where(function ($query) use ($scanValues) {
+                $query->whereIn('attendance_card_uid', $scanValues)
+                    ->orWhere(function ($studentQuery) use ($scanValues) {
+                        $studentQuery->where('role', 'student')
+                            ->whereIn('registration_number', $scanValues);
+                    });
+            })
             ->first();
 
         if (! $user) {
+            Log::warning('Attendance QR value was not matched.', [
+                'raw_value' => $rawCardValue,
+                'candidate_values' => $scanValues,
+            ]);
+
             return response()->json([
                 'ok' => false,
                 'message' => 'Card not assigned to any student or staff member.',
@@ -289,6 +301,52 @@ class AttendanceController extends Controller
         }
 
         return response()->json($this->scanResponse($record->fresh('user.class'), 'Already checked in and out today.'));
+    }
+
+    private function attendanceScanValues(string $rawValue): array
+    {
+        $value = trim(preg_replace('/[\x00-\x1F\x7F\x{FEFF}]+/u', '', $rawValue));
+        $candidates = [$value];
+
+        $decoded = json_decode($value, true);
+        if (is_array($decoded)) {
+            foreach (['card_uid', 'attendance_card_uid', 'registration_number', 'student_id', 'id', 'value'] as $key) {
+                if (isset($decoded[$key]) && is_scalar($decoded[$key])) {
+                    $candidates[] = (string) $decoded[$key];
+                }
+            }
+        }
+
+        if (filter_var($value, FILTER_VALIDATE_URL)) {
+            $parts = parse_url($value);
+            parse_str($parts['query'] ?? '', $query);
+            foreach (['card_uid', 'attendance_card_uid', 'registration_number', 'student_id', 'id', 'value'] as $key) {
+                if (isset($query[$key])) {
+                    $candidates[] = (string) $query[$key];
+                }
+            }
+
+            $path = trim($parts['path'] ?? '', '/');
+            if ($path !== '') {
+                $candidates[] = basename($path);
+            }
+        }
+
+        if (str_contains($value, ':')) {
+            foreach (preg_split('/[\s,;|]+/', $value) as $part) {
+                if (str_contains($part, ':')) {
+                    [, $candidate] = explode(':', $part, 2);
+                    $candidates[] = $candidate;
+                }
+            }
+        }
+
+        return collect($candidates)
+            ->map(fn ($candidate) => trim((string) $candidate))
+            ->filter()
+            ->unique()
+            ->values()
+            ->all();
     }
 
     public function today(Request $request)

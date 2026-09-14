@@ -30,6 +30,19 @@ class LearningSessionController extends Controller
         return view('admin.learning-sessions.index', compact('sessions'));
     }
 
+    public function assessmentActivities()
+    {
+        $user = Auth::user();
+        $sessions = LearningSession::with(['subject', 'schoolClass'])
+            ->withCount('questions')
+            ->when(! $user->isAdmin(), fn ($query) => $query->where('created_by', $user->id))
+            ->whereIn('assessment_type', ['classwork', 'assignment', 'quiz', 'test'])
+            ->latest()
+            ->paginate(20);
+
+        return view('admin.learning-sessions.assessment-activities', compact('sessions'));
+    }
+
     public function create(Request $request)
     {
         $subjects = $this->availableSubjects();
@@ -111,9 +124,7 @@ class LearningSessionController extends Controller
             return $session;
         });
 
-        $destination = Auth::user()->isTeacher()
-            ? 'teacher.assessment-studio'
-            : 'admin.learning-sessions.index';
+        $destination = 'admin.classroom-activities';
 
         return redirect()
             ->route($destination)
