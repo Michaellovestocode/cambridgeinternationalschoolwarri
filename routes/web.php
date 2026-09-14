@@ -28,6 +28,7 @@ use App\Http\Controllers\GalleryAccessController;
 use App\Http\Controllers\HomepageNoticeController;
 use App\Http\Controllers\TeacherLearnerController;
 use App\Http\Controllers\DevelopmentalReportController;
+use App\Http\Controllers\ClinicController;
 use App\Models\Announcement;
 use App\Models\GalleryAlbum;
 use App\Models\SchoolSettings;
@@ -48,6 +49,8 @@ Route::get('/', function () {
             return redirect()->route('parent.dashboard');
         } elseif ($user->isNonTeachingStaff()) {
             return redirect()->route('attendance.my');
+        } elseif ($user->isNurse()) {
+            return redirect()->route('clinic.dashboard');
         } elseif ($user->isBlogManager()) {
             return redirect()->route('admin.blog.index');
         } elseif ($user->isTeacher() || $user->isAdmin()) {
@@ -105,6 +108,15 @@ Route::middleware('guest')->group(function () {
 Route::middleware('auth')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
     Route::get('/attendance/my', [AttendanceController::class, 'myAttendance'])->name('attendance.my');
+
+    Route::prefix('clinic')->name('clinic.')->middleware('role:nurse,admin')->group(function () {
+        Route::get('/dashboard', [ClinicController::class, 'dashboard'])->name('dashboard');
+        Route::get('/students', [ClinicController::class, 'students'])->name('students.index');
+        Route::get('/students/{student}', [ClinicController::class, 'student'])->name('students.show');
+        Route::get('/visits/create', [ClinicController::class, 'createVisit'])->name('visits.create');
+        Route::post('/visits', [ClinicController::class, 'storeVisit'])->name('visits.store');
+        Route::get('/visits/{visit}', [ClinicController::class, 'showVisit'])->name('visits.show');
+    });
 
     Route::prefix('admin/attendance')->name('admin.attendance.')->group(function () {
         Route::get('/scanner', [AttendanceController::class, 'scanner'])->name('scanner');

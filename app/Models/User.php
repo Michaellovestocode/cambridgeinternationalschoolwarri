@@ -86,6 +86,11 @@ class User extends Authenticatable
         return $this->role === 'non_teaching_staff';
     }
 
+    public function isNurse(): bool
+    {
+        return $this->role === 'nurse';
+    }
+
     public function canManageBlogStudio(): bool
     {
         return $this->isAdmin() || $this->isBlogManager() || (bool) $this->can_manage_blog;
@@ -125,7 +130,12 @@ class User extends Authenticatable
 
     public function participatesInAttendance(): bool
     {
-        return in_array($this->role, ['admin', 'teacher', 'student', 'non_teaching_staff'], true);
+        return in_array($this->role, ['admin', 'teacher', 'student', 'non_teaching_staff', 'nurse'], true);
+    }
+
+    public function clinicVisits()
+    {
+        return $this->hasMany(ClinicVisit::class, 'student_id');
     }
 
     public function class()

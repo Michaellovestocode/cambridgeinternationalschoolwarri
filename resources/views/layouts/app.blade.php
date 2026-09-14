@@ -210,6 +210,8 @@
             $dashboardRoute = 'parent.dashboard';
         } elseif (auth()->user()->isNonTeachingStaff()) {
             $dashboardRoute = 'attendance.my';
+        } elseif (auth()->user()->isNurse()) {
+            $dashboardRoute = 'clinic.dashboard';
         } else {
             $dashboardRoute = 'admin.dashboard';
         }
@@ -278,6 +280,10 @@
                     @elseif(auth()->user()->isNonTeachingStaff())
                     <a href="{{ route('attendance.my') }}" class="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg font-semibold transition">
                         My Attendance
+                    </a>
+                    @elseif(auth()->user()->isNurse())
+                    <a href="{{ route('clinic.dashboard') }}" class="bg-amber-400 hover:bg-amber-300 text-slate-900 px-4 py-2 rounded-lg font-semibold transition">
+                        Clinic
                     </a>
                     @elseif(auth()->user()->isStudent())
                     <a href="{{ route('attendance.my') }}" class="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg font-semibold transition">

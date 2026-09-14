@@ -1,0 +1,18 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Support\Facades\DB;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        DB::statement("ALTER TABLE users MODIFY COLUMN role ENUM('admin', 'teacher', 'student', 'parent', 'blog_manager', 'non_teaching_staff', 'nurse') DEFAULT 'student'");
+    }
+
+    public function down(): void
+    {
+        DB::statement("UPDATE users SET role = 'non_teaching_staff' WHERE role = 'nurse'");
+        DB::statement("ALTER TABLE users MODIFY COLUMN role ENUM('admin', 'teacher', 'student', 'parent', 'blog_manager', 'non_teaching_staff') DEFAULT 'student'");
+    }
+};

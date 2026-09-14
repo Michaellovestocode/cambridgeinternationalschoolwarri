@@ -1,15 +1,22 @@
 @extends('layouts.app')
 
-@section('title', 'Add Non-teaching Staff')
+@section('title', 'Add Staff')
 
 @section('content')
 <div class="mx-auto max-w-2xl">
     <div class="rounded-2xl bg-white p-5 shadow-xl sm:p-6">
-        <h1 class="text-2xl font-black text-gray-900">Add Non-teaching Staff</h1>
-        <p class="mt-1 text-sm text-gray-500">Create a profile that can be scanned for attendance.</p>
+        <h1 class="text-2xl font-black text-gray-900">Add Staff</h1>
+        <p class="mt-1 text-sm text-gray-500">Create a staff or nurse profile that can be scanned for attendance.</p>
 
         <form method="POST" action="{{ route('admin.attendance.non-teaching-staff.store') }}" class="mt-6 space-y-4">
             @csrf
+            <div>
+                <label class="mb-1 block text-sm font-semibold text-gray-700">Staff type *</label>
+                <select name="role" required class="w-full rounded-xl border border-gray-200 px-4 py-3">
+                    <option value="non_teaching_staff" @selected(old('role', 'non_teaching_staff') === 'non_teaching_staff')>Non-teaching staff</option>
+                    <option value="nurse" @selected(old('role') === 'nurse')>School nurse</option>
+                </select>
+            </div>
             <div>
                 <label class="mb-1 block text-sm font-semibold text-gray-700">Full Name *</label>
                 <input name="name" value="{{ old('name') }}" required class="w-full rounded-xl border border-gray-200 px-4 py-3">

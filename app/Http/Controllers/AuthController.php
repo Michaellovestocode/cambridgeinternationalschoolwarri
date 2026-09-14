@@ -33,6 +33,8 @@ class AuthController extends Controller
             // Redirect based on role
             if ($user->isBlogManager()) {
                 return redirect()->route('admin.blog.index');
+            } elseif ($user->isNurse()) {
+                return redirect()->route('clinic.dashboard');
             } elseif ($user->isAdmin() || $user->isTeacher()) {
                 return redirect()->route('admin.dashboard');
             } elseif ($user->isParent()) {

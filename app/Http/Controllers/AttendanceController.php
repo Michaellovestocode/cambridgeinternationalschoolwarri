@@ -234,7 +234,7 @@ class AttendanceController extends Controller
         $rawCardValue = $validated['card_uid'];
         $scanValues = $this->attendanceScanValues($rawCardValue);
         $user = User::with('class')
-            ->whereIn('role', ['admin', 'teacher', 'student', 'non_teaching_staff'])
+            ->whereIn('role', ['admin', 'teacher', 'student', 'non_teaching_staff', 'nurse'])
             ->where(function ($query) use ($scanValues) {
                 $query->whereIn('attendance_card_uid', $scanValues)
                     ->orWhere(function ($studentQuery) use ($scanValues) {
@@ -602,6 +602,7 @@ class AttendanceController extends Controller
             'attendance_card_uid' => ['nullable', 'string', 'max:255', 'unique:users,attendance_card_uid'],
             'attendance_section' => ['nullable', 'string', 'max:100'],
             'password' => ['required', 'string', 'min:6'],
+            'role' => ['required', 'in:non_teaching_staff,nurse'],
         ]);
 
         User::create([
@@ -611,10 +612,10 @@ class AttendanceController extends Controller
             'attendance_card_uid' => $validated['attendance_card_uid'] ?? null,
             'attendance_section' => $validated['attendance_section'] ?? null,
             'password' => $validated['password'],
-            'role' => 'non_teaching_staff',
+            'role' => $validated['role'],
         ]);
 
-        return redirect()->route('admin.attendance.people')->with('success', 'Non-teaching staff profile created.');
+        return redirect()->route('admin.attendance.people')->with('success', $validated['role'] === 'nurse' ? 'Nurse profile created.' : 'Non-teaching staff profile created.');
     }
 
     public function myAttendance(Request $request)
@@ -674,7 +675,7 @@ class AttendanceController extends Controller
 
         return User::query()
             ->with('class')
-            ->whereIn('role', ['admin', 'teacher', 'student', 'non_teaching_staff'])
+            ->whereIn('role', ['admin', 'teacher', 'student', 'non_teaching_staff', 'nurse'])
             ->when($request->filled('search'), function ($query) use ($request) {
                 $search = trim($request->input('search'));
                 $query->where(function ($sub) use ($search) {
@@ -704,7 +705,7 @@ class AttendanceController extends Controller
 
     private function dailyStats(Carbon $date, ?Collection $people = null): array
     {
-        $people ??= User::whereIn('role', ['admin', 'teacher', 'student', 'non_teaching_staff'])->get();
+        $people ??= User::whereIn('role', ['admin', 'teacher', 'student', 'non_teaching_staff', 'nurse'])->get();
         $records = AttendanceRecord::whereDate('attendance_date', $date)
             ->whereIn('user_id', $people->pluck('id'))
             ->get();
