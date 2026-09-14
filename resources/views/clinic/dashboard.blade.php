@@ -39,7 +39,7 @@
                 @forelse($todayVisits as $visit)
                     <a href="{{ route('clinic.visits.show', $visit) }}" class="block p-5 hover:bg-blue-50">
                         <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                            <div><p class="font-bold text-gray-900">{{ $visit->student->name }}</p><p class="text-sm text-gray-500">{{ $visit->student->class?->display_name }} · {{ $visit->reason }}</p></div>
+                            <div><p class="font-bold text-gray-900">{{ $visit->display_name }}</p><p class="text-sm text-gray-500">{{ $visit->person?->class?->display_name ?: ucfirst($visit->patient_type) }} · {{ $visit->reason }}</p></div>
                             <div class="text-left sm:text-right"><p class="text-sm font-bold text-gray-700">{{ $visit->visited_at->format('g:i A') }}</p><p class="text-xs text-gray-500">{{ str_replace('_', ' ', ucfirst($visit->outcome)) }}</p></div>
                         </div>
                     </a>
@@ -56,6 +56,7 @@
                 <a href="{{ route('clinic.students.index') }}" class="rounded-xl bg-blue-100 px-4 py-4 font-bold text-blue-900">Search Students</a>
                 <a href="{{ route('clinic.incidents.index') }}" class="rounded-xl bg-rose-100 px-4 py-4 font-bold text-rose-900">Incident Reports</a>
                 <a href="{{ route('clinic.inventory.index') }}" class="rounded-xl bg-violet-100 px-4 py-4 font-bold text-violet-900">Clinic Inventory{{ $lowStockCount ? ' · ' . $lowStockCount . ' low' : '' }}</a>
+                <a href="{{ route('clinic.inventory.index') }}#supply-request" class="rounded-xl bg-amber-100 px-4 py-4 font-bold text-amber-900">Request Clinic Supplies</a>
             </div>
             <p class="mt-6 rounded-xl bg-slate-50 p-4 text-xs leading-5 text-slate-600">Clinic records are restricted to authorized clinic and administrator users.</p>
         </section>

@@ -7,6 +7,7 @@ use App\Models\ClinicIncident;
 use App\Models\ClinicInventoryItem;
 use App\Models\ClinicInventoryTransaction;
 use App\Models\ClinicSupplyRequest;
+use App\Models\SchoolClass;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -20,7 +21,7 @@ class ClinicController extends Controller
         $today = today();
         $weekStart = now()->startOfWeek();
 
-        $todayVisits = ClinicVisit::with(['student.class', 'recorder'])
+        $todayVisits = ClinicVisit::with(['person.class', 'student.class', 'recorder'])
             ->whereDate('visited_at', $today)
             ->latest('visited_at')
             ->get();
@@ -76,8 +77,14 @@ class ClinicController extends Controller
         $student = $request->filled('student_id')
             ? User::with('class')->where('role', 'student')->findOrFail($request->student_id)
             : null;
+        $classes = SchoolClass::with(['students' => fn ($query) => $query->orderBy('name')])
+            ->orderBy('name')
+            ->get();
+        $staff = User::whereIn('role', ['teacher', 'non_teaching_staff', 'nurse', 'admin'])
+            ->orderBy('name')
+            ->get(['id', 'name', 'role']);
 
-        return view('clinic.visits.create', compact('student'));
+        return view('clinic.visits.create', compact('student', 'classes', 'staff'));
     }
 
     public function storeVisit(Request $request)
@@ -85,7 +92,11 @@ class ClinicController extends Controller
         $this->authorizeClinic();
 
         $validated = $request->validate([
-            'student_id' => ['required', 'exists:users,id'],
+            'patient_type' => ['required', 'in:student,staff,not_listed'],
+            'class_id' => ['nullable', 'exists:school_classes,id'],
+            'person_id' => ['nullable', 'exists:users,id'],
+            'patient_name' => ['nullable', 'string', 'max:255'],
+            'patient_identifier' => ['nullable', 'string', 'max:100'],
             'visited_at' => ['required', 'date'],
             'reason' => ['required', 'string', 'max:255'],
             'symptoms' => ['nullable', 'string', 'max:5000'],
@@ -100,15 +111,26 @@ class ClinicController extends Controller
             'notes' => ['nullable', 'string', 'max:5000'],
         ]);
 
-        abort_unless(User::whereKey($validated['student_id'])->where('role', 'student')->exists(), 422);
+        $person = null;
+        if ($validated['patient_type'] === 'student') {
+            $person = User::whereKey($validated['person_id'] ?? null)->where('role', 'student')->first();
+            abort_unless($person && (int) $person->class_id === (int) ($validated['class_id'] ?? 0), 422, 'Select a student from the selected class.');
+        } elseif ($validated['patient_type'] === 'staff') {
+            $person = User::whereKey($validated['person_id'] ?? null)->whereIn('role', ['teacher', 'non_teaching_staff', 'nurse', 'admin'])->first();
+            abort_unless($person, 422, 'Select a valid staff member.');
+        } else {
+            abort_unless(filled($validated['patient_name'] ?? null), 422, 'Enter the name of the person not listed.');
+        }
 
         $visit = ClinicVisit::create([
             ...$validated,
+            'student_id' => $validated['patient_type'] === 'student' ? $person->id : null,
+            'person_id' => $person?->id,
             'recorded_by' => Auth::id(),
             'parent_contacted' => $request->boolean('parent_contacted'),
         ]);
 
-        return redirect()->route('clinic.students.show', $visit->student_id)
+        return redirect()->route('clinic.visits.show', $visit)
             ->with('success', 'Clinic visit recorded successfully.');
     }
 

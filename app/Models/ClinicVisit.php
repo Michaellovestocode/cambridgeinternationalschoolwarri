@@ -12,6 +12,10 @@ class ClinicVisit extends Model
 
     protected $fillable = [
         'student_id',
+        'person_id',
+        'patient_type',
+        'patient_name',
+        'patient_identifier',
         'recorded_by',
         'visited_at',
         'reason',
@@ -37,6 +41,16 @@ class ClinicVisit extends Model
     public function student()
     {
         return $this->belongsTo(User::class, 'student_id');
+    }
+
+    public function person()
+    {
+        return $this->belongsTo(User::class, 'person_id');
+    }
+
+    public function getDisplayNameAttribute(): string
+    {
+        return $this->person?->name ?: $this->patient_name ?: $this->student?->name ?: 'Unnamed patient';
     }
 
     public function recorder()
