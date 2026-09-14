@@ -76,7 +76,11 @@ class AttendanceController extends Controller
         ]);
         $direction = strtolower((string) ($validated['direction'] ?? ''));
 
-        if ($direction === 'out' || ($record->check_in_at && ! $record->check_out_at)) {
+        $isOut = $record->check_in_at
+            && ! $record->check_out_at
+            && in_array($direction, ['', 'out'], true);
+
+        if ($isOut) {
             $record->fill([
                 'check_out_at' => $record->check_out_at ?: $punchedAt,
                 'departure_status' => $punchedAt->format('H:i:s') < self::CLOSING_TIME
@@ -154,8 +158,9 @@ class AttendanceController extends Controller
                 'user_id' => $user->id,
                 'attendance_date' => $punchedAt->toDateString(),
             ]);
-            $isOut = in_array($direction, ['1', 'out', 'checkout', 'check-out'], true)
-                || ($record->check_in_at && ! $record->check_out_at);
+            $isOut = $record->check_in_at
+                && ! $record->check_out_at
+                && in_array($direction, ['', '1', 'out', 'checkout', 'check-out'], true);
 
             if ($isOut) {
                 $record->fill([
