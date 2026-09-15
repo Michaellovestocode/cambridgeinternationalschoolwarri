@@ -94,7 +94,7 @@
                                 <a href="{{ route('admin.learning-sessions.edit', $session) }}" class="bg-blue-100 text-blue-800 hover:bg-blue-200 px-3 py-1 rounded-md text-sm font-medium text-center">Edit</a>
                                 <a href="{{ route('admin.learning-sessions.submissions', $session) }}" class="bg-cyan-100 text-cyan-800 hover:bg-cyan-200 px-3 py-1 rounded-md text-sm font-medium text-center">Submissions</a>
                                 @if($session->is_published)
-                                    <a href="{{ route('student.learning.show', $session) }}" class="bg-emerald-100 text-emerald-800 hover:bg-emerald-200 px-3 py-1 rounded-md text-sm font-medium text-center">View</a>
+                                    <a href="{{ route('admin.learning-sessions.submissions', $session) }}" class="bg-emerald-100 text-emerald-800 hover:bg-emerald-200 px-3 py-1 rounded-md text-sm font-medium text-center">View Submissions</a>
                                 @endif
                                 <form action="{{ route('admin.learning-sessions.destroy', $session) }}" method="POST" class="inline-block">
                                     @csrf
