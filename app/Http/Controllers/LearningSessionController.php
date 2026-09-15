@@ -150,7 +150,7 @@ class LearningSessionController extends Controller
 
     public function submissions(LearningSession $learningSession)
     {
-        $this->authorizeSession($learningSession);
+        $this->authorizeSubmissionAccess();
         $learningSession->load(['subject', 'schoolClass']);
         $attempts = $learningSession->attempts()
             ->with('user')
@@ -176,7 +176,7 @@ class LearningSessionController extends Controller
     {
         $attempt->load(['user', 'learningSession.subject', 'answers.question']);
         abort_unless($attempt->learningSession, 404);
-        $this->authorizeSession($attempt->learningSession);
+        $this->authorizeSubmissionAccess();
 
         return view('admin.learning-sessions.grade', compact('attempt'));
     }
@@ -184,7 +184,8 @@ class LearningSessionController extends Controller
     public function updateAttempt(Request $request, LearningAttempt $attempt)
     {
         $attempt->load(['learningSession', 'answers.question']);
-        $this->authorizeSession($attempt->learningSession);
+        abort_unless($attempt->learningSession, 404);
+        $this->authorizeSubmissionAccess();
 
         $validated = $request->validate([
             'answers' => ['nullable', 'array'],
@@ -589,5 +590,10 @@ class LearningSessionController extends Controller
         if (! $assigned) {
             abort(403, 'You are not assigned to this subject and class.');
         }
+    }
+
+    private function authorizeSubmissionAccess(): void
+    {
+        abort_unless(Auth::user()?->isAdmin() || Auth::user()?->isTeacher(), 403);
     }
 }
