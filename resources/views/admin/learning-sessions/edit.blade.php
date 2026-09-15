@@ -11,7 +11,17 @@
             <p class="text-sm text-gray-600">{{ $learningSession->schoolClass->display_name ?? 'No class' }} • {{ $learningSession->subject->name ?? 'N/A' }} • {{ $learningSession->topic }}</p>
         </div>
         <a href="{{ route('admin.learning-sessions.index') }}" class="rounded-lg bg-gray-100 px-4 py-2 text-center text-sm font-semibold text-gray-700">Back to Learning Hub</a>
-        <a href="{{ route('admin.learning-sessions.submissions', $learningSession) }}" class="rounded-lg bg-cyan-600 px-4 py-2 text-center text-sm font-semibold text-white">View Submissions</a>
+        <div class="flex flex-col gap-2 sm:flex-row">
+            <a href="{{ route('admin.learning-sessions.submissions', $learningSession) }}" class="rounded-lg bg-cyan-600 px-4 py-2 text-center text-sm font-semibold text-white">View Submissions</a>
+            @if(! $learningSession->is_published)
+                <form action="{{ route('admin.learning-sessions.publish', $learningSession) }}" method="POST">
+                    @csrf
+                    <button type="submit" class="w-full rounded-lg bg-emerald-600 px-4 py-2 text-center text-sm font-semibold text-white">Publish for Students</button>
+                </form>
+            @else
+                <span class="rounded-lg bg-emerald-100 px-4 py-2 text-center text-sm font-semibold text-emerald-800">Published for Students</span>
+            @endif
+        </div>
     </div>
 
     <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">

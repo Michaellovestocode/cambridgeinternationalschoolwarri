@@ -388,6 +388,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/learning-sessions', [LearningSessionController::class, 'store'])->name('learning-sessions.store');
         Route::get('/learning-sessions/{learningSession}/edit', [LearningSessionController::class, 'edit'])->name('learning-sessions.edit');
         Route::get('/learning-sessions/{learningSession}/submissions', [LearningSessionController::class, 'submissions'])->name('learning-sessions.submissions');
+        Route::post('/learning-sessions/{learningSession}/publish', [LearningSessionController::class, 'publish'])->name('learning-sessions.publish');
         Route::get('/learning-attempts/{attempt}/grade', [LearningSessionController::class, 'gradeAttempt'])->name('learning-sessions.attempts.grade');
         Route::put('/learning-attempts/{attempt}/grade', [LearningSessionController::class, 'updateAttempt'])->name('learning-sessions.attempts.update');
         Route::put('/learning-sessions/{learningSession}', [LearningSessionController::class, 'update'])->name('learning-sessions.update');

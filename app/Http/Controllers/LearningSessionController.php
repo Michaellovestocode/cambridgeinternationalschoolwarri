@@ -161,6 +161,17 @@ class LearningSessionController extends Controller
         return view('admin.learning-sessions.submissions', compact('learningSession', 'attempts'));
     }
 
+    public function publish(LearningSession $learningSession)
+    {
+        $this->authorizeSession($learningSession);
+
+        abort_if($learningSession->questions()->count() === 0, 422, 'Add at least one question before publishing this activity.');
+
+        $learningSession->update(['is_published' => true]);
+
+        return back()->with('success', 'Activity published for students.');
+    }
+
     public function gradeAttempt(LearningAttempt $attempt)
     {
         $attempt->load(['user', 'learningSession.subject', 'answers.question']);
