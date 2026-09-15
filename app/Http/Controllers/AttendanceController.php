@@ -64,7 +64,7 @@ class AttendanceController extends Controller
         }
 
         $user = User::where('attendance_machine_user_id', $machineUserId)
-            ->whereIn('role', ['admin', 'teacher', 'non_teaching_staff'])
+            ->whereIn('role', ['admin', 'teacher', 'non_teaching_staff', 'nurse'])
             ->first();
 
         abort_unless($user, 422, 'Machine user ID is not assigned to staff.');
@@ -76,9 +76,17 @@ class AttendanceController extends Controller
         ]);
         $direction = strtolower((string) ($validated['direction'] ?? ''));
 
-        $isOut = $record->check_in_at
-            && ! $record->check_out_at
-            && in_array($direction, ['', 'out'], true);
+        if ($record->check_in_at && ! $record->check_out_at && $punchedAt->diffInSeconds($record->check_in_at) < 1200) {
+            return response()->json([
+                'ok' => true,
+                'ignored' => true,
+                'message' => 'Duplicate punch ignored; clock-in remains recorded.',
+                'user' => $user->name,
+                'event_id' => $eventId,
+            ]);
+        }
+
+        $isOut = $record->check_in_at && ! $record->check_out_at;
 
         if ($isOut) {
             $record->fill([
@@ -147,7 +155,7 @@ class AttendanceController extends Controller
             }
 
             $user = User::where('attendance_machine_user_id', $machineUserId)
-                ->whereIn('role', ['admin', 'teacher', 'non_teaching_staff'])
+                ->whereIn('role', ['admin', 'teacher', 'non_teaching_staff', 'nurse'])
                 ->first();
             if (! $user) {
                 Log::warning('F-G495 attendance user is not mapped', compact('deviceId', 'machineUserId'));
@@ -158,9 +166,10 @@ class AttendanceController extends Controller
                 'user_id' => $user->id,
                 'attendance_date' => $punchedAt->toDateString(),
             ]);
-            $isOut = $record->check_in_at
-                && ! $record->check_out_at
-                && in_array($direction, ['', '1', 'out', 'checkout', 'check-out'], true);
+            if ($record->check_in_at && ! $record->check_out_at && $punchedAt->diffInSeconds($record->check_in_at) < 1200) {
+                continue;
+            }
+            $isOut = $record->check_in_at && ! $record->check_out_at;
 
             if ($isOut) {
                 $record->fill([
@@ -194,7 +203,7 @@ class AttendanceController extends Controller
     {
         $this->authorizeAttendanceManager();
         $date = $request->filled('date') ? Carbon::parse($request->input('date')) : today();
-        $staff = User::whereIn('role', ['teacher', 'non_teaching_staff'])->with(['attendanceRecords' => fn ($query) => $query->whereDate('attendance_date', $date)])->orderBy('name')->get();
+        $staff = User::whereIn('role', ['teacher', 'non_teaching_staff', 'nurse'])->with(['attendanceRecords' => fn ($query) => $query->whereDate('attendance_date', $date)])->orderBy('name')->get();
 
         return view('admin.attendance.staff', compact('date', 'staff'));
     }
@@ -202,7 +211,7 @@ class AttendanceController extends Controller
     public function staffPeriod(Request $request, User $user)
     {
         $this->authorizeAttendanceManager();
-        abort_unless(in_array($user->role, ['teacher', 'non_teaching_staff'], true), 404);
+        abort_unless(in_array($user->role, ['teacher', 'non_teaching_staff', 'nurse'], true), 404);
 
         $validated = $request->validate([
             'start_date' => ['required', 'date'],
@@ -280,11 +289,11 @@ class AttendanceController extends Controller
 
         if (! $record->check_out_at) {
             // Prevent accidental immediate check-out right after check-in
-            if ($record->check_in_at && $now->diffInSeconds($record->check_in_at) < 10) {
+            if ($record->check_in_at && $now->diffInSeconds($record->check_in_at) < 1200) {
                 // Log ignored scan for auditing and debugging
                 Log::info('Ignored attendance scan due to recent check-in', [
                     'user_id' => $user->id,
-                    'card_uid' => $cardUid,
+                    'card_uid' => $rawCardValue,
                     'seconds_since_checkin' => $now->diffInSeconds($record->check_in_at),
                 ]);
 

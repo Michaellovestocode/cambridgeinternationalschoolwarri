@@ -40,7 +40,7 @@
                     <input id="card_uid" name="card_uid" autocomplete="off" autofocus
                         class="mt-2 w-full rounded-2xl border-2 border-emerald-200 bg-emerald-50 px-4 py-5 text-center text-xl font-black tracking-wide text-gray-900 outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
                         placeholder="Tap scanner here">
-                    <p class="mt-2 text-xs text-gray-500">Most scanners type the card value and press Enter automatically.</p>
+                    <p class="mt-2 text-xs text-gray-500">A scanner can press Enter automatically. Learners can type the full CIS number, then press Enter or Record Scan.</p>
                 </div>
                 <button type="submit" class="w-full rounded-2xl bg-emerald-600 px-5 py-4 font-bold text-white shadow-lg">Record Scan</button>
             </form>
@@ -107,7 +107,7 @@ function showResult(data, ok = true) {
 
 // debounce duplicate quick scans per UID
 const recentBlocked = new Map(); // uid -> timeoutId
-const blockMs = 5000; // 5 seconds
+const blockMs = 20000; // 20 seconds in the browser; the server enforces 20 minutes for clocking
 
 async function postCard(cardUid) {
     if (!cardUid) return;
@@ -142,27 +142,5 @@ form.addEventListener('submit', (event) => {
 window.addEventListener('load', () => input.focus());
 document.addEventListener('click', () => input.focus());
 
-// Auto-submit fallback: submit on Enter and after a short pause from scanner input
-(function () {
-    let submitTimer = null;
-    const minLen = 3; // don't submit for extremely short inputs
-
-    input.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') {
-            // Let the existing submit handler run
-            return;
-        }
-    });
-
-    input.addEventListener('input', () => {
-        clearTimeout(submitTimer);
-        const v = input.value.trim();
-        if (!v || v.length < minLen) return;
-        // Wait briefly for the scanner to finish typing, then submit
-        submitTimer = setTimeout(() => {
-            try { form.requestSubmit(); } catch (err) { form.submit(); }
-        }, 250);
-    });
-})();
 </script>
 @endsection

@@ -38,7 +38,7 @@ class AttendanceRecord extends Model
 
     public function isStaffRecord(): bool
     {
-        return in_array($this->user?->role, ['teacher', 'non_teaching_staff', 'admin'], true);
+        return in_array($this->user?->role, ['teacher', 'non_teaching_staff', 'nurse', 'admin'], true);
     }
 
     public function user(): BelongsTo
