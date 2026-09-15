@@ -372,7 +372,7 @@ class AttendanceController extends Controller
             : today();
 
         $people = $this->attendancePeopleQuery($request)
-            ->whereIn('role', ['teacher', 'non_teaching_staff'])
+            ->whereIn('role', ['teacher', 'non_teaching_staff', 'nurse'])
             ->orderBy('name')
             ->get();
         $records = AttendanceRecord::with(['user.class'])
@@ -408,7 +408,7 @@ class AttendanceController extends Controller
             : today();
 
         $people = $this->attendancePeopleQuery($request)
-            ->whereIn('role', ['teacher', 'non_teaching_staff'])
+            ->whereIn('role', ['teacher', 'non_teaching_staff', 'nurse'])
             ->orderBy('name')
             ->get();
         $workingDays = $this->workingDaysForMonth($month);
@@ -471,7 +471,7 @@ class AttendanceController extends Controller
             ->values();
 
         $people = $this->attendancePeopleQuery($request)
-            ->whereIn('role', ['teacher', 'non_teaching_staff'])
+            ->whereIn('role', ['teacher', 'non_teaching_staff', 'nurse'])
             ->orderBy('name')
             ->get();
         $records = AttendanceRecord::whereBetween('attendance_date', [
