@@ -9,8 +9,8 @@
     <form method="POST" action="{{ route('clinic.visits.store') }}" class="space-y-6 rounded-2xl bg-white p-5 shadow-xl sm:p-8">
         @csrf
         <div class="grid gap-4 sm:grid-cols-3">
-            <div><label class="mb-1 block text-sm font-bold text-gray-700">Person type</label><select name="patient_type" id="patient_type" required class="w-full rounded-xl border border-gray-200 px-4 py-3"><option value="student" @selected(old('patient_type', 'student') === 'student')>Student</option><option value="staff" @selected(old('patient_type') === 'staff')>Staff</option><option value="not_listed" @selected(old('patient_type') === 'not_listed')>Not listed</option></select></div>
-            <div id="class_picker"><label class="mb-1 block text-sm font-bold text-gray-700">Class</label><select name="class_id" id="class_id" class="w-full rounded-xl border border-gray-200 px-4 py-3"><option value="">Select class</option>@foreach($classes as $class)<option value="{{ $class->id }}" @selected(old('class_id', $student?->class_id) == $class->id)>{{ $class->display_name }}</option>@endforeach</select></div>
+            <div><label class="mb-1 block text-sm font-bold text-gray-700">Person type</label><select name="patient_type" id="patient_type" required class="w-full rounded-xl border border-gray-200 px-4 py-3"><option value="student" {{ old('patient_type', 'student') === 'student' ? 'selected' : '' }}>Student</option><option value="staff" {{ old('patient_type') === 'staff' ? 'selected' : '' }}>Staff</option><option value="not_listed" {{ old('patient_type') === 'not_listed' ? 'selected' : '' }}>Not listed</option></select></div>
+            <div id="class_picker"><label class="mb-1 block text-sm font-bold text-gray-700">Class</label><select name="class_id" id="class_id" class="w-full rounded-xl border border-gray-200 px-4 py-3"><option value="">Select class</option>@foreach($classes as $class)<option value="{{ $class->id }}" {{ old('class_id', $student?->class_id) == $class->id ? 'selected' : '' }}>{{ $class->display_name }}</option>@endforeach</select></div>
             <div id="person_picker"><label class="mb-1 block text-sm font-bold text-gray-700">Name</label><select name="person_id" id="person_id" class="w-full rounded-xl border border-gray-200 px-4 py-3"><option value="">Select class first</option></select></div>
         </div>
         <div id="not_listed_fields" class="hidden grid gap-4 rounded-xl bg-amber-50 p-4 sm:grid-cols-2"><div><label class="mb-1 block text-sm font-bold text-amber-900">Name as reported</label><input name="patient_name" value="{{ old('patient_name') }}" class="w-full rounded-xl border border-amber-200 px-4 py-3"></div><div><label class="mb-1 block text-sm font-bold text-amber-900">Student/staff ID, if known</label><input name="patient_identifier" value="{{ old('patient_identifier') }}" class="w-full rounded-xl border border-amber-200 px-4 py-3"></div><p class="text-xs text-amber-800 sm:col-span-2">Use this when the person is not in the list. Administration can identify and update the record later.</p></div>
@@ -28,8 +28,8 @@
     </form>
 </div>
 <script>
-    const classData = @json($classes->mapWithKeys(fn ($class) => [$class->id => $class->students->map(fn ($person) => ['id' => $person->id, 'name' => $person->name, 'identifier' => $person->registration_number])->values()]));
-    const staffData = @json($staff->map(fn ($person) => ['id' => $person->id, 'name' => $person->name, 'role' => ucwords(str_replace('_', ' ', $person->role))])->values());
+    const classData = @json($classData);
+    const staffData = @json($staffData);
     const type = document.getElementById('patient_type');
     const classPicker = document.getElementById('class_picker');
     const classSelect = document.getElementById('class_id');

@@ -12,6 +12,7 @@ use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Throwable;
 
 class ClinicController extends Controller
 {
@@ -77,14 +78,38 @@ class ClinicController extends Controller
         $student = $request->filled('student_id')
             ? User::with('class')->where('role', 'student')->findOrFail($request->student_id)
             : null;
-        $classes = SchoolClass::with(['students' => fn ($query) => $query->orderBy('name')])
-            ->orderBy('name')
-            ->get();
-        $staff = User::whereIn('role', ['teacher', 'non_teaching_staff', 'nurse', 'admin'])
-            ->orderBy('name')
-            ->get(['id', 'name', 'role']);
+        $classes = collect();
+        $classData = [];
+        $staffData = [];
 
-        return view('clinic.visits.create', compact('student', 'classes', 'staff'));
+        try {
+            $classes = SchoolClass::with(['students' => fn ($query) => $query->orderBy('name')])
+                ->orderBy('name')
+                ->get();
+            $classData = $classes->mapWithKeys(function ($class) {
+                return [$class->id => $class->students->map(function ($person) {
+                    return [
+                        'id' => $person->id,
+                        'name' => $person->name,
+                        'identifier' => $person->registration_number,
+                    ];
+                })->values()->all()];
+            })->all();
+            $staffData = User::whereIn('role', ['teacher', 'non_teaching_staff', 'nurse', 'admin'])
+                ->orderBy('name')
+                ->get(['id', 'name', 'role'])
+                ->map(function ($person) {
+                    return [
+                        'id' => $person->id,
+                        'name' => $person->name,
+                        'role' => ucwords(str_replace('_', ' ', $person->role)),
+                    ];
+                })->values()->all();
+        } catch (Throwable $exception) {
+            report($exception);
+        }
+
+        return view('clinic.visits.create', compact('student', 'classes', 'classData', 'staffData'));
     }
 
     public function storeVisit(Request $request)
