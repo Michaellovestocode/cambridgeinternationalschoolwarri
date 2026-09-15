@@ -153,7 +153,8 @@ class StudentLearningSessionController extends Controller
         $learningSession->load('questions');
 
         $request->validate([
-            'answers' => ['array'],
+            'answers' => ['nullable', 'array'],
+            'answers.*' => ['nullable', 'string', 'max:10000'],
         ]);
 
         $submittedAnswers = $request->input('answers', []);
@@ -182,7 +183,7 @@ class StudentLearningSessionController extends Controller
                     $isCorrect = $selected !== '' && $selected === strtoupper((string) $question->correct_option);
                 }
 
-                if ($isCorrect) {
+                if ($isCorrect && $question->question_type !== 'theory') {
                     $score++;
                 }
 

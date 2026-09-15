@@ -15,6 +15,18 @@
     </div>
 
     <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <div class="rounded-lg bg-white p-6 shadow lg:col-span-2">
+            <h2 class="text-xl font-bold text-gray-900">Activity Settings</h2>
+            <p class="mt-1 text-sm text-gray-500">Save changes as a draft while you add questions, then publish when the activity is ready.</p>
+            @include('admin.learning-sessions.partials.form', [
+                'action' => route('admin.learning-sessions.update', $learningSession),
+                'method' => 'PUT',
+                'learningSession' => $learningSession,
+                'subjects' => $subjects,
+                'classes' => $classes,
+            ])
+        </div>
+
         <div class="rounded-lg bg-white p-6 shadow">
             <h2 class="text-xl font-bold text-gray-900">Study Materials</h2>
             <p class="mt-1 text-sm text-gray-500">Share diagrams, PDFs, presentations, or reference images with the class.</p>

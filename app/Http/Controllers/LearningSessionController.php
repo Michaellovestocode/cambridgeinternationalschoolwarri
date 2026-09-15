@@ -162,6 +162,7 @@ class LearningSessionController extends Controller
     public function gradeAttempt(LearningAttempt $attempt)
     {
         $attempt->load(['user', 'learningSession.subject', 'answers.question']);
+        abort_unless($attempt->learningSession, 404);
         $this->authorizeSession($attempt->learningSession);
 
         return view('admin.learning-sessions.grade', compact('attempt'));
@@ -181,6 +182,9 @@ class LearningSessionController extends Controller
         ]);
 
         foreach ($attempt->answers as $answer) {
+            if (! $answer->question) {
+                continue;
+            }
             if ($answer->question->question_type !== 'theory') {
                 continue;
             }
@@ -320,8 +324,8 @@ class LearningSessionController extends Controller
             'question_type' => ['nullable', 'in:objective,theory'],
             'marks' => ['required', 'numeric', 'min:0.01'],
             'image' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif,webp', 'max:5120'],
-            'option_a' => [$questionType === 'theory' ? 'nullable' : 'required', 'string', 'max:1000'],
-            'option_b' => [$questionType === 'theory' ? 'nullable' : 'required', 'string', 'max:1000'],
+            'option_a' => ['nullable', 'string', 'max:1000'],
+            'option_b' => ['nullable', 'string', 'max:1000'],
             'option_c' => ['nullable', 'string', 'max:1000'],
             'option_d' => ['nullable', 'string', 'max:1000'],
             'options' => ['nullable', 'array'],

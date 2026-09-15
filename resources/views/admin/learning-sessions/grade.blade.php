@@ -22,6 +22,9 @@
         @method('PUT')
         @foreach($attempt->answers as $answer)
             @php($question = $answer->question)
+            @if(! $question)
+                @continue
+            @endif
             <div class="rounded-2xl bg-white p-5 shadow">
                 <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                     <div class="min-w-0">
