@@ -114,7 +114,9 @@ class LearningSessionController extends Controller
         $data = $this->validatedSessionData($request);
         $this->ensureAllowedAssignment((int) $data['subject_id'], (int) $data['school_class_id']);
         $data['created_by'] = Auth::id();
-        $data['is_published'] = $request->boolean('is_published');
+        $data['is_published'] = $request->has('publish')
+            ? $request->boolean('publish')
+            : $request->boolean('is_published');
         $data['show_answers_to_students'] = $request->boolean('show_answers_to_students');
 
         $session = DB::transaction(function () use ($data, $request) {
@@ -292,7 +294,9 @@ class LearningSessionController extends Controller
         $data = $this->validatedSessionData($request);
         $this->authorizeSession($learningSession);
         $this->ensureAllowedAssignment((int) $data['subject_id'], (int) $data['school_class_id']);
-        $data['is_published'] = $request->boolean('is_published');
+        $data['is_published'] = $request->has('publish')
+            ? $request->boolean('publish')
+            : $request->boolean('is_published');
         $data['show_answers_to_students'] = $request->boolean('show_answers_to_students');
 
         $learningSession->update($data);

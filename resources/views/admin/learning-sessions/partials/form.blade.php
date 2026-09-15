@@ -178,9 +178,14 @@
     </div>
 
     <div class="pt-2">
-        <button type="submit" class="bg-cyan-600 hover:bg-cyan-700 text-white px-6 py-3 rounded-lg font-bold">
-            {{ $method === 'POST' ? 'Save Classwork / Quiz' : 'Update Classwork / Quiz' }}
-        </button>
+        <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
+            <button type="submit" name="publish" value="0" class="bg-gray-700 hover:bg-gray-800 text-white px-6 py-3 rounded-lg font-bold">
+                {{ $method === 'POST' ? 'Save as Draft' : 'Save Draft' }}
+            </button>
+            <button type="submit" name="publish" value="1" class="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-lg font-bold">
+                Publish for Students
+            </button>
+        </div>
     </div>
 </form>
 
