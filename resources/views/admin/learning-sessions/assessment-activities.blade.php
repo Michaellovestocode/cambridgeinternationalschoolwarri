@@ -39,7 +39,17 @@
                         <div class="rounded-xl bg-gray-50 p-3"><strong class="block text-lg text-gray-900">{{ $session->questions_count }}</strong><span class="text-gray-500">Questions</span></div>
                         <div class="rounded-xl bg-gray-50 p-3"><strong class="block text-lg text-gray-900">{{ $session->estimated_minutes }}</strong><span class="text-gray-500">Minutes</span></div>
                     </div>
-                    <a href="{{ route('admin.learning-sessions.edit', $session) }}" class="rounded-xl bg-cyan-600 px-5 py-3 text-center text-sm font-bold text-white">Open / Edit</a>
+                    <div class="flex flex-col gap-2 sm:min-w-[150px]">
+                        <a href="{{ route('admin.learning-sessions.edit', $session) }}" class="rounded-xl bg-cyan-600 px-5 py-3 text-center text-sm font-bold text-white">Open / Edit</a>
+                        @if(! $session->is_published)
+                            <form action="{{ route('admin.learning-sessions.publish', $session) }}" method="POST">
+                                @csrf
+                                <button type="submit" class="w-full rounded-xl bg-emerald-600 px-5 py-3 text-center text-sm font-bold text-white">Publish for Students</button>
+                            </form>
+                        @else
+                            <span class="rounded-xl bg-emerald-100 px-5 py-3 text-center text-sm font-bold text-emerald-800">Published</span>
+                        @endif
+                    </div>
                 </div>
             </div>
         @empty
