@@ -570,8 +570,24 @@ class LearningSessionController extends Controller
     {
         $user = Auth::user();
 
-        if (! $user->isAdmin() && $learningSession->created_by !== $user->id) {
-            abort(403);
+        if ($user->isAdmin() || $learningSession->created_by === $user->id) {
+            return;
+        }
+
+        if ($this->exactTeachingLoadIsAvailable()) {
+            $assigned = DB::table('teacher_class_subject')
+                ->where('teacher_id', $user->id)
+                ->where('subject_id', $learningSession->subject_id)
+                ->where('school_class_id', $learningSession->school_class_id)
+                ->exists();
+        } else {
+            $assigned = $user->subjects()->whereKey($learningSession->subject_id)->exists()
+                && ($user->teachingClasses()->whereKey($learningSession->school_class_id)->exists()
+                    || $user->formTeacherAssignments()->where('is_active', true)->where('class_id', $learningSession->school_class_id)->exists());
+        }
+
+        if (! $assigned) {
+            abort(403, 'You are not assigned to this subject and class.');
         }
     }
 }

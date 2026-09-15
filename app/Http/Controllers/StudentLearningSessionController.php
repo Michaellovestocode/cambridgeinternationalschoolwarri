@@ -146,9 +146,11 @@ class StudentLearningSessionController extends Controller
             ->where('learning_session_id', $learningSession->id)
             ->latest()
             ->first();
-        abort_if($latestAttempt && ! $latestAttempt->allow_resubmission, 403, $latestAttempt->is_published
-            ? 'This activity has been graded and published. Your teacher has not enabled another submission.'
-            : 'This activity has already been submitted and is awaiting teacher review.');
+        if ($latestAttempt && ! $latestAttempt->allow_resubmission) {
+            abort(403, $latestAttempt->is_published
+                ? 'This activity has been graded and published. Your teacher has not enabled another submission.'
+                : 'This activity has already been submitted and is awaiting teacher review.');
+        }
 
         $learningSession->load('questions');
 
