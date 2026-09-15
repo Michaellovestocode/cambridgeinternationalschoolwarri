@@ -111,6 +111,7 @@ const blockMs = 20000; // 20 seconds in the browser; the server enforces 20 minu
 
 async function postCard(cardUid) {
     if (!cardUid) return;
+    const submittedValue = cardUid;
     if (recentBlocked.has(cardUid)) return; // ignore quick duplicates
     recentBlocked.set(cardUid, true);
     setTimeout(() => recentBlocked.delete(cardUid), blockMs);
@@ -130,8 +131,10 @@ async function postCard(cardUid) {
         showResult({ message: 'Network error. Please try again.' }, false);
     }
 
-    input.value = '';
-    input.focus();
+    if (input.value.trim() === submittedValue) {
+        input.value = '';
+        input.focus();
+    }
 }
 
 form.addEventListener('submit', (event) => {
@@ -140,7 +143,6 @@ form.addEventListener('submit', (event) => {
 });
 
 window.addEventListener('load', () => input.focus());
-document.addEventListener('click', () => input.focus());
 
 </script>
 @endsection
