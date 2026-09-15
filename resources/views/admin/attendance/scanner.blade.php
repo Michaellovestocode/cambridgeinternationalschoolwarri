@@ -37,12 +37,12 @@
             <form id="scanner-form" class="space-y-4">
                 <div>
                     <label for="card_uid" class="block text-sm font-bold text-gray-800">Scan card</label>
-                    <input id="card_uid" name="card_uid" autocomplete="off" autofocus
+                    <input id="card_uid" name="card_uid" type="text" minlength="5" autocomplete="off" autofocus
                         class="mt-2 w-full rounded-2xl border-2 border-emerald-200 bg-emerald-50 px-4 py-5 text-center text-xl font-black tracking-wide text-gray-900 outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
                         placeholder="Tap scanner here">
                     <p class="mt-2 text-xs text-gray-500">A scanner can press Enter automatically. Learners can type the full CIS number, then press Enter or Record Scan.</p>
                 </div>
-                <button type="submit" class="w-full rounded-2xl bg-emerald-600 px-5 py-4 font-bold text-white shadow-lg">Record Scan</button>
+                <button id="record-scan" type="button" class="w-full rounded-2xl bg-emerald-600 px-5 py-4 font-bold text-white shadow-lg">Record Scan</button>
             </form>
 
             <div id="scan-result" class="mt-5 hidden rounded-2xl border p-5"></div>
@@ -88,7 +88,6 @@
 </style>
 
 <script>
-const form = document.getElementById('scanner-form');
 const input = document.getElementById('card_uid');
 const result = document.getElementById('scan-result');
 // No audio playback in browser — use the scanner's hardware beep (default)
@@ -110,8 +109,10 @@ const recentBlocked = new Map(); // uid -> timeoutId
 const blockMs = 20000; // 20 seconds in the browser; the server enforces 20 minutes for clocking
 
 async function postCard(cardUid) {
-    if (!cardUid) return;
-    const submittedValue = cardUid;
+    if (cardUid.length < 5) {
+        showResult({ message: 'Please finish typing the complete CIS number before scanning.' }, false);
+        return;
+    }
     if (recentBlocked.has(cardUid)) return; // ignore quick duplicates
     recentBlocked.set(cardUid, true);
     setTimeout(() => recentBlocked.delete(cardUid), blockMs);
@@ -131,15 +132,20 @@ async function postCard(cardUid) {
         showResult({ message: 'Network error. Please try again.' }, false);
     }
 
-    if (input.value.trim() === submittedValue) {
-        input.value = '';
-        input.focus();
-    }
 }
 
-form.addEventListener('submit', (event) => {
-    event.preventDefault();
+document.getElementById('record-scan').addEventListener('click', () => {
     postCard(input.value.trim());
+});
+
+input.addEventListener('keydown', (event) => {
+    if (event.key !== 'Enter') return;
+    event.preventDefault();
+    if (input.value.trim().length >= 5) {
+        postCard(input.value.trim());
+    } else {
+        showResult({ message: 'Please finish typing the complete CIS number before scanning.' }, false);
+    }
 });
 
 window.addEventListener('load', () => input.focus());
