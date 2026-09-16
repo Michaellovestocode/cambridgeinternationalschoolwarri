@@ -187,7 +187,7 @@ class StudentLearningSessionController extends Controller
                     }
 
                     $binary = base64_decode(substr($page, strpos($page, ',') + 1), true);
-                    if ($binary === false || strlen($binary) > 9000000) {
+                    if ($binary === false || strlen($binary) > 3000000) {
                         continue;
                     }
 

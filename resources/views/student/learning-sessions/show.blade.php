@@ -274,6 +274,10 @@
                 return canvas.toDataURL('image/png');
             }
 
+            function submissionImage(canvas) {
+                return canvas.toDataURL('image/jpeg', 0.72);
+            }
+
             function restore(canvas, image) {
                 const context = canvas.getContext('2d');
                 const imageObject = new Image();
@@ -294,8 +298,8 @@
                 const wrapper = document.createElement('div');
                 wrapper.className = 'rounded-xl border border-violet-100 bg-white p-2';
                 const canvas = document.createElement('canvas');
-                canvas.width = 1400;
-                canvas.height = 850;
+                canvas.width = 1000;
+                canvas.height = 620;
                 canvas.className = 'learning-notepad-canvas h-auto w-full rounded-lg border border-gray-200';
                 canvas.name = 'handwriting_pages[]';
                 wrapper.appendChild(canvas);
@@ -336,7 +340,7 @@
                 ['pointerup', 'pointercancel', 'pointerleave'].forEach(type => canvas.addEventListener(type, function () {
                     if (!drawing) return;
                     drawing = false;
-                    hidden.value = snapshot(canvas);
+                    hidden.value = canvas.toDataURL('image/jpeg', 0.72);
                 }));
                 wrapper.addEventListener('pointerdown', () => { activePage = { canvas, context, hidden, pageHistory }; });
                 activePage = { canvas, context, hidden, pageHistory };
@@ -349,13 +353,13 @@
                 if (!activePage || !activePage.pageHistory.length) return;
                 future.push(snapshot(activePage.canvas));
                 restore(activePage.canvas, activePage.pageHistory.pop());
-                activePage.hidden.value = snapshot(activePage.canvas);
+                activePage.hidden.value = submissionImage(activePage.canvas);
             });
             redo.addEventListener('click', function () {
                 if (!activePage || !future.length) return;
                 activePage.pageHistory.push(snapshot(activePage.canvas));
                 restore(activePage.canvas, future.pop());
-                activePage.hidden.value = snapshot(activePage.canvas);
+                activePage.hidden.value = submissionImage(activePage.canvas);
             });
             erase.addEventListener('click', function () {
                 if (!activePage) return;

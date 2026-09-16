@@ -134,6 +134,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/payroll-export', [AttendanceController::class, 'payrollExport'])->name('payroll-export');
         Route::get('/staff/{user}/period', [AttendanceController::class, 'staffPeriod'])->name('staff.period');
         Route::get('/staff', [AttendanceController::class, 'staffReport'])->name('staff');
+        Route::post('/staff/{user}/manual', [AttendanceController::class, 'updateManualStaffAttendance'])->name('staff.manual');
         Route::get('/people', [AttendanceController::class, 'people'])->name('people');
         Route::put('/people/{user}', [AttendanceController::class, 'updatePerson'])->name('people.update');
         Route::get('/non-teaching-staff/create', [AttendanceController::class, 'createNonTeachingStaff'])->name('non-teaching-staff.create');

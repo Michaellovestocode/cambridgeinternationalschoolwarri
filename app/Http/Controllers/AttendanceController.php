@@ -208,6 +208,40 @@ class AttendanceController extends Controller
         return view('admin.attendance.staff', compact('date', 'staff'));
     }
 
+    public function updateManualStaffAttendance(Request $request, User $user)
+    {
+        abort_unless(Auth::user()?->isAdmin(), 403);
+        abort_unless(in_array($user->role, ['teacher', 'non_teaching_staff', 'nurse'], true), 404);
+
+        $data = $request->validate([
+            'attendance_date' => ['required', 'date'],
+            'check_in' => ['nullable', 'date_format:H:i'],
+            'check_out' => ['nullable', 'date_format:H:i'],
+            'notes' => ['nullable', 'string', 'max:1000'],
+        ]);
+        abort_unless(filled($data['check_in'] ?? null) || filled($data['check_out'] ?? null), 422, 'Enter a clock-in or clock-out time.');
+
+        $date = Carbon::parse($data['attendance_date'])->toDateString();
+        $checkIn = filled($data['check_in'] ?? null) ? Carbon::parse($date . ' ' . $data['check_in']) : null;
+        $checkOut = filled($data['check_out'] ?? null) ? Carbon::parse($date . ' ' . $data['check_out']) : null;
+
+        AttendanceRecord::updateOrCreate(
+            ['user_id' => $user->id, 'attendance_date' => $date],
+            [
+                'check_in_at' => $checkIn,
+                'check_out_at' => $checkOut,
+                'arrival_status' => $checkIn ? ($checkIn->format('H:i:s') <= self::RESUMPTION_TIME ? AttendanceRecord::ARRIVAL_ON_TIME : AttendanceRecord::ARRIVAL_LATE) : null,
+                'departure_status' => $checkOut ? ($checkOut->format('H:i:s') < self::CLOSING_TIME ? AttendanceRecord::DEPARTURE_EARLY : AttendanceRecord::DEPARTURE_NORMAL) : null,
+                'checked_in_by' => $checkIn ? Auth::id() : null,
+                'checked_out_by' => $checkOut ? Auth::id() : null,
+                'source' => 'manual',
+                'notes' => $data['notes'] ?? 'Entered manually by administrator.',
+            ]
+        );
+
+        return redirect()->route('admin.attendance.staff', ['date' => $date])->with('success', 'Manual attendance saved.');
+    }
+
     public function staffPeriod(Request $request, User $user)
     {
         $this->authorizeAttendanceManager();
