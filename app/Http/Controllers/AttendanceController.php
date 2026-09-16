@@ -76,6 +76,21 @@ class AttendanceController extends Controller
         ]);
         $direction = strtolower((string) ($validated['direction'] ?? ''));
 
+        if ($record->exists && $record->source === 'manual') {
+            StaffAttendanceEvent::create([
+                'user_id' => $user->id,
+                'machine_id' => $validated['device_id'],
+                'machine_user_id' => $machineUserId,
+                'event_id' => $eventId,
+                'punched_at' => $punchedAt,
+                'direction' => $direction ?: null,
+                'payload' => $request->all(),
+                'attendance_record_id' => $record->id,
+            ]);
+
+            return response()->json(['ok' => true, 'manual_record_preserved' => true, 'user' => $user->name, 'event_id' => $eventId]);
+        }
+
         if ($record->check_in_at && ! $record->check_out_at && $punchedAt->diffInSeconds($record->check_in_at) < 1200) {
             return response()->json([
                 'ok' => true,
@@ -166,6 +181,19 @@ class AttendanceController extends Controller
                 'user_id' => $user->id,
                 'attendance_date' => $punchedAt->toDateString(),
             ]);
+            if ($record->exists && $record->source === 'manual') {
+                StaffAttendanceEvent::create([
+                    'user_id' => $user->id,
+                    'machine_id' => $deviceId,
+                    'machine_user_id' => $machineUserId,
+                    'event_id' => $eventId,
+                    'punched_at' => $punchedAt,
+                    'direction' => $direction ?: null,
+                    'payload' => ['raw' => $line, 'query' => $request->query()],
+                    'attendance_record_id' => $record->id,
+                ]);
+                continue;
+            }
             if ($record->check_in_at && ! $record->check_out_at && $punchedAt->diffInSeconds($record->check_in_at) < 1200) {
                 continue;
             }
