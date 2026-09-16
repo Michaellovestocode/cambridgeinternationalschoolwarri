@@ -13,6 +13,7 @@ class LearningAnswer extends Model
         'learning_attempt_id',
         'learning_question_id',
         'selected_option',
+        'handwriting_pages',
         'is_correct',
         'teacher_score',
         'teacher_feedback',
@@ -22,6 +23,7 @@ class LearningAnswer extends Model
 
     protected $casts = [
         'is_correct' => 'boolean',
+        'handwriting_pages' => 'array',
         'teacher_score' => 'decimal:2',
         'graded_at' => 'datetime',
     ];

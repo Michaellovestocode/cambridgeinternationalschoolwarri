@@ -38,6 +38,18 @@
                     @endif
                 </div>
                 <div class="mt-4 rounded-xl border border-gray-100 bg-gray-50 p-4 whitespace-pre-line text-sm text-gray-800">{{ $answer->selected_option ?: 'No answer submitted.' }}</div>
+                @if(!empty($answer->handwriting_pages))
+                    <div class="mt-4 rounded-xl border border-violet-200 bg-violet-50 p-4">
+                        <p class="mb-3 text-xs font-bold uppercase tracking-wide text-violet-800">Handwritten workings ({{ count($answer->handwriting_pages) }} page{{ count($answer->handwriting_pages) === 1 ? '' : 's' }})</p>
+                        <div class="space-y-3">
+                            @foreach($answer->handwriting_pages as $page)
+                                <a href="{{ asset('storage/' . $page) }}" target="_blank" rel="noopener" class="block overflow-hidden rounded-lg border border-violet-100 bg-white">
+                                    <img src="{{ asset('storage/' . $page) }}" alt="Handwritten answer page {{ $loop->iteration }}" class="h-auto w-full">
+                                </a>
+                            @endforeach
+                        </div>
+                    </div>
+                @endif
 
                 @if($question->question_type === 'theory')
                     <div class="mt-4 grid gap-4 sm:grid-cols-[180px_1fr]">

@@ -10,6 +10,7 @@ use App\Models\LearningSession;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class StudentLearningSessionController extends Controller
 {
@@ -157,11 +158,15 @@ class StudentLearningSessionController extends Controller
         $request->validate([
             'answers' => ['nullable', 'array'],
             'answers.*' => ['nullable', 'string', 'max:10000'],
+            'handwriting_pages' => ['nullable', 'array'],
+            'handwriting_pages.*' => ['nullable', 'array', 'max:12'],
+            'handwriting_pages.*.*' => ['nullable', 'string', 'max:12000000'],
         ]);
 
         $submittedAnswers = $request->input('answers', []);
+        $submittedHandwriting = $request->input('handwriting_pages', []);
 
-        $attempt = DB::transaction(function () use ($learningSession, $submittedAnswers) {
+        $attempt = DB::transaction(function () use ($learningSession, $submittedAnswers, $submittedHandwriting) {
             $attempt = LearningAttempt::create([
                 'user_id' => Auth::id(),
                 'learning_session_id' => $learningSession->id,
@@ -175,6 +180,22 @@ class StudentLearningSessionController extends Controller
             foreach ($learningSession->questions as $question) {
                 $rawAnswer = $submittedAnswers[$question->id] ?? '';
                 $selected = is_string($rawAnswer) ? trim($rawAnswer) : '';
+                $pagePaths = [];
+                foreach ($submittedHandwriting[$question->id] ?? [] as $page) {
+                    if (! is_string($page) || ! preg_match('/^data:image\/(png|jpeg);base64,/', $page, $matches)) {
+                        continue;
+                    }
+
+                    $binary = base64_decode(substr($page, strpos($page, ',') + 1), true);
+                    if ($binary === false || strlen($binary) > 9000000) {
+                        continue;
+                    }
+
+                    $extension = $matches[1] === 'jpeg' ? 'jpg' : 'png';
+                    $path = 'learning-handwriting/' . uniqid('page_', true) . '.' . $extension;
+                    Storage::disk('public')->put($path, $binary);
+                    $pagePaths[] = $path;
+                }
 
                 if (($question->correct_option === null || $question->correct_option === '') && $question->question_type === 'theory') {
                     $normalizedSelected = strtolower($selected);
@@ -192,6 +213,7 @@ class StudentLearningSessionController extends Controller
                 $attempt->answers()->create([
                     'learning_question_id' => $question->id,
                     'selected_option' => $selected !== '' ? $selected : null,
+                    'handwriting_pages' => $pagePaths ?: null,
                     'is_correct' => $isCorrect,
                 ]);
             }

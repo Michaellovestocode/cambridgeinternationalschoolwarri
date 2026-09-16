@@ -217,6 +217,22 @@
                     </div>
                 @else
                     <textarea name="answers[{{ $question->id }}]" rows="5" class="w-full border rounded-xl px-4 py-3 focus:ring-2 focus:ring-cyan-500" placeholder="Write your answer here..."></textarea>
+                    <div class="mt-4 rounded-2xl border border-violet-200 bg-violet-50 p-4" data-notepad>
+                        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                            <div>
+                                <p class="font-bold text-violet-900">Optional writing pad</p>
+                                <p class="text-xs text-violet-700">Use a stylus, finger, or mouse for workings. Add pages when you need more space.</p>
+                            </div>
+                            <div class="flex flex-wrap gap-2">
+                                <button type="button" data-undo class="rounded-lg bg-white px-3 py-2 text-xs font-bold text-violet-800">Undo</button>
+                                <button type="button" data-redo class="rounded-lg bg-white px-3 py-2 text-xs font-bold text-violet-800">Redo</button>
+                                <button type="button" data-erase class="rounded-lg bg-white px-3 py-2 text-xs font-bold text-violet-800">Eraser</button>
+                                <button type="button" data-clear class="rounded-lg bg-white px-3 py-2 text-xs font-bold text-rose-700">Clear</button>
+                                <button type="button" data-add-page class="rounded-lg bg-violet-700 px-3 py-2 text-xs font-bold text-white">Add Page</button>
+                            </div>
+                        </div>
+                        <div class="mt-3 space-y-3" data-pages></div>
+                    </div>
                 @endif
             </div>
             @empty
@@ -236,8 +252,125 @@
 @endif
 </div>
 
+<style>
+    .learning-notepad-canvas { touch-action: none; background: #fff; cursor: crosshair; }
+</style>
+
 <script>
     document.addEventListener('DOMContentLoaded', function () {
+        document.querySelectorAll('[data-notepad]').forEach(function (notepad) {
+            const pages = notepad.querySelector('[data-pages]');
+            const addPage = notepad.querySelector('[data-add-page]');
+            const undo = notepad.querySelector('[data-undo]');
+            const redo = notepad.querySelector('[data-redo]');
+            const erase = notepad.querySelector('[data-erase]');
+            const clear = notepad.querySelector('[data-clear]');
+            let pageNumber = 0;
+            let activePage = null;
+            let history = [];
+            let future = [];
+
+            function snapshot(canvas) {
+                return canvas.toDataURL('image/png');
+            }
+
+            function restore(canvas, image) {
+                const context = canvas.getContext('2d');
+                const imageObject = new Image();
+                imageObject.onload = function () {
+                    context.clearRect(0, 0, canvas.width, canvas.height);
+                    context.drawImage(imageObject, 0, 0);
+                };
+                imageObject.src = image;
+            }
+
+            function addNewPage() {
+                if (pageNumber >= 12) {
+                    addPage.disabled = true;
+                    addPage.textContent = 'Maximum 12 pages';
+                    return;
+                }
+                pageNumber++;
+                const wrapper = document.createElement('div');
+                wrapper.className = 'rounded-xl border border-violet-100 bg-white p-2';
+                const canvas = document.createElement('canvas');
+                canvas.width = 1400;
+                canvas.height = 850;
+                canvas.className = 'learning-notepad-canvas h-auto w-full rounded-lg border border-gray-200';
+                canvas.name = 'handwriting_pages[]';
+                wrapper.appendChild(canvas);
+                pages.appendChild(wrapper);
+                const hidden = document.createElement('input');
+                hidden.type = 'hidden';
+                hidden.name = 'handwriting_pages[' + notepad.closest('.student-question-card').querySelector('textarea').name.match(/\d+/)[0] + '][]';
+                wrapper.appendChild(hidden);
+                const context = canvas.getContext('2d');
+                context.lineCap = 'round';
+                context.lineJoin = 'round';
+                context.lineWidth = 4;
+                context.strokeStyle = '#111827';
+                let drawing = false;
+                let lastPoint = null;
+                let pageHistory = [];
+                function point(event) {
+                    const bounds = canvas.getBoundingClientRect();
+                    return { x: (event.clientX - bounds.left) * canvas.width / bounds.width, y: (event.clientY - bounds.top) * canvas.height / bounds.height };
+                }
+                canvas.addEventListener('pointerdown', function (event) {
+                    event.preventDefault();
+                    canvas.setPointerCapture(event.pointerId);
+                    drawing = true;
+                    lastPoint = point(event);
+                    pageHistory.push(snapshot(canvas));
+                    future = [];
+                });
+                canvas.addEventListener('pointermove', function (event) {
+                    if (!drawing) return;
+                    const nextPoint = point(event);
+                    context.beginPath();
+                    context.moveTo(lastPoint.x, lastPoint.y);
+                    context.lineTo(nextPoint.x, nextPoint.y);
+                    context.stroke();
+                    lastPoint = nextPoint;
+                });
+                ['pointerup', 'pointercancel', 'pointerleave'].forEach(type => canvas.addEventListener(type, function () {
+                    if (!drawing) return;
+                    drawing = false;
+                    hidden.value = snapshot(canvas);
+                }));
+                wrapper.addEventListener('pointerdown', () => { activePage = { canvas, context, hidden, pageHistory }; });
+                activePage = { canvas, context, hidden, pageHistory };
+                if (pageNumber >= 12) {
+                    addPage.disabled = true;
+                    addPage.textContent = 'Maximum 12 pages';
+                }
+            }
+            undo.addEventListener('click', function () {
+                if (!activePage || !activePage.pageHistory.length) return;
+                future.push(snapshot(activePage.canvas));
+                restore(activePage.canvas, activePage.pageHistory.pop());
+                activePage.hidden.value = snapshot(activePage.canvas);
+            });
+            redo.addEventListener('click', function () {
+                if (!activePage || !future.length) return;
+                activePage.pageHistory.push(snapshot(activePage.canvas));
+                restore(activePage.canvas, future.pop());
+                activePage.hidden.value = snapshot(activePage.canvas);
+            });
+            erase.addEventListener('click', function () {
+                if (!activePage) return;
+                activePage.context.globalCompositeOperation = activePage.context.globalCompositeOperation === 'destination-out' ? 'source-over' : 'destination-out';
+                erase.classList.toggle('bg-amber-200');
+            });
+            clear.addEventListener('click', function () {
+                if (!activePage) return;
+                activePage.context.clearRect(0, 0, activePage.canvas.width, activePage.canvas.height);
+                activePage.hidden.value = '';
+            });
+            addPage.addEventListener('click', addNewPage);
+            addNewPage();
+        });
+
         document.querySelectorAll('.learning-feedback-form').forEach(function (form) {
             form.addEventListener('submit', async function (event) {
                 event.preventDefault();
