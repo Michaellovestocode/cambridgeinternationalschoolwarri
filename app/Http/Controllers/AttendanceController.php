@@ -19,7 +19,8 @@ class AttendanceController extends Controller
 {
     private const STAFF_RESUMPTION_TIME = '07:15';
     private const STUDENT_RESUMPTION_TIME = '08:00';
-    private const CLOSING_TIME = '15:30:00';
+    private const STAFF_CLOSING_TIME = '16:00';
+    private const STUDENT_CLOSING_TIME = '15:00';
 
     public function scanner()
     {
@@ -37,7 +38,8 @@ class AttendanceController extends Controller
             'stats' => $this->dailyStats($today),
             'resumptionTime' => self::STAFF_RESUMPTION_TIME . ':00',
             'studentResumptionTime' => self::STUDENT_RESUMPTION_TIME . ':00',
-            'closingTime' => self::CLOSING_TIME,
+            'closingTime' => self::STAFF_CLOSING_TIME . ':00',
+            'studentClosingTime' => self::STUDENT_CLOSING_TIME . ':00',
         ]);
     }
 
@@ -93,7 +95,7 @@ class AttendanceController extends Controller
             return response()->json(['ok' => true, 'manual_record_preserved' => true, 'user' => $user->name, 'event_id' => $eventId]);
         }
 
-        if ($record->check_in_at && ! $record->check_out_at && $punchedAt->diffInSeconds($record->check_in_at) < 1200) {
+        if ($record->check_in_at && ! $record->check_out_at && abs($punchedAt->diffInSeconds($record->check_in_at)) < 1200) {
             return response()->json([
                 'ok' => true,
                 'ignored' => true,
@@ -113,9 +115,7 @@ class AttendanceController extends Controller
         if ($isOut) {
             $record->fill([
                 'check_out_at' => $record->check_out_at ?: $punchedAt,
-                'departure_status' => $punchedAt->format('H:i:s') < self::CLOSING_TIME
-                    ? AttendanceRecord::DEPARTURE_EARLY
-                    : AttendanceRecord::DEPARTURE_NORMAL,
+                'departure_status' => $this->departureStatusFor($user, $punchedAt),
                 'source' => 'f-g495',
                 'machine_id' => $validated['device_id'],
             ]);
@@ -199,7 +199,7 @@ class AttendanceController extends Controller
                 ]);
                 continue;
             }
-            if ($record->check_in_at && ! $record->check_out_at && $punchedAt->diffInSeconds($record->check_in_at) < 1200) {
+            if ($record->check_in_at && ! $record->check_out_at && abs($punchedAt->diffInSeconds($record->check_in_at)) < 1200) {
                 continue;
             }
             // ADMS devices may upload stored logs later.  Use the supplied action
@@ -211,7 +211,7 @@ class AttendanceController extends Controller
             if ($isOut) {
                 $record->fill([
                     'check_out_at' => $record->check_out_at ?: $punchedAt,
-                    'departure_status' => $punchedAt->format('H:i:s') < self::CLOSING_TIME ? AttendanceRecord::DEPARTURE_EARLY : AttendanceRecord::DEPARTURE_NORMAL,
+                    'departure_status' => $this->departureStatusFor($user, $punchedAt),
                 ]);
             } else {
                 $record->fill([
@@ -268,7 +268,7 @@ class AttendanceController extends Controller
                 'check_in_at' => $checkIn,
                 'check_out_at' => $checkOut,
                 'arrival_status' => $checkIn ? $this->arrivalStatusFor($user, $checkIn) : null,
-                'departure_status' => $checkOut ? ($checkOut->format('H:i:s') < self::CLOSING_TIME ? AttendanceRecord::DEPARTURE_EARLY : AttendanceRecord::DEPARTURE_NORMAL) : null,
+                'departure_status' => $checkOut ? $this->departureStatusFor($user, $checkOut) : null,
                 'checked_in_by' => $checkIn ? Auth::id() : null,
                 'checked_out_by' => $checkOut ? Auth::id() : null,
                 'source' => 'manual',
@@ -358,12 +358,12 @@ class AttendanceController extends Controller
 
         if (! $record->check_out_at) {
             // Prevent accidental immediate check-out right after check-in
-            if ($record->check_in_at && $now->diffInSeconds($record->check_in_at) < 1200) {
+            if ($record->check_in_at && abs($now->diffInSeconds($record->check_in_at)) < 1200) {
                 // Log ignored scan for auditing and debugging
                 Log::info('Ignored attendance scan due to recent check-in', [
                     'user_id' => $user->id,
                     'card_uid' => $rawCardValue,
-                    'seconds_since_checkin' => $now->diffInSeconds($record->check_in_at),
+                    'seconds_since_checkin' => abs($now->diffInSeconds($record->check_in_at)),
                 ]);
 
                 return response()->json($this->scanResponse($record->fresh('user.class'), 'Scan ignored: recent check-in.'), 200);
@@ -371,9 +371,7 @@ class AttendanceController extends Controller
 
             $record->fill([
                 'check_out_at' => $now,
-                'departure_status' => $now->format('H:i:s') < self::CLOSING_TIME
-                    ? AttendanceRecord::DEPARTURE_EARLY
-                    : AttendanceRecord::DEPARTURE_NORMAL,
+                'departure_status' => $this->departureStatusFor($user, $now),
                 'checked_out_by' => Auth::id(),
             ])->save();
 
@@ -821,6 +819,17 @@ class AttendanceController extends Controller
         return $punchedAt->format('H:i') <= $resumptionTime
             ? AttendanceRecord::ARRIVAL_ON_TIME
             : AttendanceRecord::ARRIVAL_LATE;
+    }
+
+    private function departureStatusFor(User $user, Carbon $punchedAt): string
+    {
+        $closingTime = $user->isStudent()
+            ? self::STUDENT_CLOSING_TIME
+            : self::STAFF_CLOSING_TIME;
+
+        return $punchedAt->format('H:i') < $closingTime
+            ? AttendanceRecord::DEPARTURE_EARLY
+            : AttendanceRecord::DEPARTURE_NORMAL;
     }
 
     private function averageCheckIn(Collection $records): ?string

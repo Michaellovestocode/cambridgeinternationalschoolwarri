@@ -9,7 +9,7 @@
             <div>
                 <p class="text-xs font-bold uppercase tracking-[0.18em] text-emerald-300">School Attendance</p>
                 <h1 class="mt-2 text-2xl font-black sm:text-3xl">Scanner</h1>
-                <p class="mt-1 text-sm text-white/70">Staff resumption: {{ \Carbon\Carbon::createFromFormat('H:i:s', $resumptionTime)->format('g:i A') }}. Student resumption: {{ \Carbon\Carbon::createFromFormat('H:i:s', $studentResumptionTime)->format('g:i A') }}. Closing: {{ \Carbon\Carbon::createFromFormat('H:i:s', $closingTime)->format('g:i A') }}.</p>
+                <p class="mt-1 text-sm text-white/70">Staff resumption: {{ \Carbon\Carbon::createFromFormat('H:i:s', $resumptionTime)->format('g:i A') }}. Staff closing: {{ \Carbon\Carbon::createFromFormat('H:i:s', $closingTime)->format('g:i A') }}. Student resumption: {{ \Carbon\Carbon::createFromFormat('H:i:s', $studentResumptionTime)->format('g:i A') }}. Student closing: {{ \Carbon\Carbon::createFromFormat('H:i:s', $studentClosingTime)->format('g:i A') }}.</p>
             </div>
             <div class="grid grid-cols-2 gap-2 text-center sm:grid-cols-4">
                 <div class="rounded-xl bg-white/10 px-3 py-2">
