@@ -17,7 +17,8 @@ use App\Jobs\SendParentAttendanceSms;
 
 class AttendanceController extends Controller
 {
-    private const RESUMPTION_TIME = '07:15:00';
+    private const STAFF_RESUMPTION_TIME = '07:15';
+    private const STUDENT_RESUMPTION_TIME = '08:00';
     private const CLOSING_TIME = '15:30:00';
 
     public function scanner()
@@ -34,7 +35,8 @@ class AttendanceController extends Controller
         return view('admin.attendance.scanner', [
             'records' => $records,
             'stats' => $this->dailyStats($today),
-            'resumptionTime' => self::RESUMPTION_TIME,
+            'resumptionTime' => self::STAFF_RESUMPTION_TIME . ':00',
+            'studentResumptionTime' => self::STUDENT_RESUMPTION_TIME . ':00',
             'closingTime' => self::CLOSING_TIME,
         ]);
     }
@@ -115,9 +117,7 @@ class AttendanceController extends Controller
         } else {
             $record->fill([
                 'check_in_at' => $record->check_in_at ?: $punchedAt,
-                'arrival_status' => $punchedAt->format('H:i:s') <= self::RESUMPTION_TIME
-                    ? AttendanceRecord::ARRIVAL_ON_TIME
-                    : AttendanceRecord::ARRIVAL_LATE,
+                'arrival_status' => $this->arrivalStatusFor($user, $punchedAt),
                 'source' => 'f-g495',
                 'machine_id' => $validated['device_id'],
             ]);
@@ -207,7 +207,7 @@ class AttendanceController extends Controller
             } else {
                 $record->fill([
                     'check_in_at' => $record->check_in_at ?: $punchedAt,
-                    'arrival_status' => $punchedAt->format('H:i:s') <= self::RESUMPTION_TIME ? AttendanceRecord::ARRIVAL_ON_TIME : AttendanceRecord::ARRIVAL_LATE,
+                    'arrival_status' => $this->arrivalStatusFor($user, $punchedAt),
                 ]);
             }
 
@@ -258,7 +258,7 @@ class AttendanceController extends Controller
             [
                 'check_in_at' => $checkIn,
                 'check_out_at' => $checkOut,
-                'arrival_status' => $checkIn ? ($checkIn->format('H:i:s') <= self::RESUMPTION_TIME ? AttendanceRecord::ARRIVAL_ON_TIME : AttendanceRecord::ARRIVAL_LATE) : null,
+                'arrival_status' => $checkIn ? $this->arrivalStatusFor($user, $checkIn) : null,
                 'departure_status' => $checkOut ? ($checkOut->format('H:i:s') < self::CLOSING_TIME ? AttendanceRecord::DEPARTURE_EARLY : AttendanceRecord::DEPARTURE_NORMAL) : null,
                 'checked_in_by' => $checkIn ? Auth::id() : null,
                 'checked_out_by' => $checkOut ? Auth::id() : null,
@@ -337,9 +337,7 @@ class AttendanceController extends Controller
         if (! $record->check_in_at) {
             $record->fill([
                 'check_in_at' => $now,
-                'arrival_status' => $now->format('H:i:s') <= self::RESUMPTION_TIME
-                    ? AttendanceRecord::ARRIVAL_ON_TIME
-                    : AttendanceRecord::ARRIVAL_LATE,
+                'arrival_status' => $this->arrivalStatusFor($user, $now),
                 'checked_in_by' => Auth::id(),
             ])->save();
 
@@ -803,6 +801,17 @@ class AttendanceController extends Controller
     private function attendanceStartDate(): Carbon
     {
         return Carbon::parse(config('services.staff_attendance.start_date'))->startOfDay();
+    }
+
+    private function arrivalStatusFor(User $user, Carbon $punchedAt): string
+    {
+        $resumptionTime = $user->isStudent()
+            ? self::STUDENT_RESUMPTION_TIME
+            : self::STAFF_RESUMPTION_TIME;
+
+        return $punchedAt->format('H:i') <= $resumptionTime
+            ? AttendanceRecord::ARRIVAL_ON_TIME
+            : AttendanceRecord::ARRIVAL_LATE;
     }
 
     private function averageCheckIn(Collection $records): ?string
