@@ -103,7 +103,12 @@ class AttendanceController extends Controller
             ]);
         }
 
-        $isOut = $record->check_in_at && ! $record->check_out_at;
+        // The connector supplies a direction when the machine knows it.  Honor it
+        // instead of relying solely on punch order, since queued machine events can
+        // be delivered after the day they occurred.
+        $isOut = $direction === 'out'
+            ? ! $record->check_out_at
+            : ($direction === 'in' ? false : $record->check_in_at && ! $record->check_out_at);
 
         if ($isOut) {
             $record->fill([
@@ -197,7 +202,11 @@ class AttendanceController extends Controller
             if ($record->check_in_at && ! $record->check_out_at && $punchedAt->diffInSeconds($record->check_in_at) < 1200) {
                 continue;
             }
-            $isOut = $record->check_in_at && ! $record->check_out_at;
+            // ADMS devices may upload stored logs later.  Use the supplied action
+            // where available so an explicit clock-out is written to its punch date.
+            $isOut = $direction === 'out'
+                ? ! $record->check_out_at
+                : ($direction === 'in' ? false : $record->check_in_at && ! $record->check_out_at);
 
             if ($isOut) {
                 $record->fill([
