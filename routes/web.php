@@ -114,6 +114,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/records', [ClinicController::class, 'records'])->name('records.index');
         Route::get('/term-health-checks', [ClinicController::class, 'healthChecks'])->name('health-checks.index');
         Route::post('/term-health-checks', [ClinicController::class, 'storeHealthCheck'])->name('health-checks.store');
+        Route::post('/term-health-checks/batch', [ClinicController::class, 'storeHealthChecks'])->name('health-checks.store-batch');
         Route::get('/students', [ClinicController::class, 'students'])->name('students.index');
         Route::get('/students/{student}', [ClinicController::class, 'student'])->name('students.show');
         Route::get('/visits/create', [ClinicController::class, 'createVisit'])->name('visits.create');

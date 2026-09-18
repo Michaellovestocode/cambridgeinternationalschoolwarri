@@ -13,6 +13,8 @@ use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 use Throwable;
 
 class ClinicController extends Controller
@@ -163,6 +165,67 @@ class ClinicController extends Controller
         ClinicTermHealthCheck::create([...$validated, 'recorded_by' => Auth::id()]);
 
         return redirect()->route('clinic.health-checks.index')->with('success', 'Health check saved successfully.');
+    }
+
+    public function storeHealthChecks(Request $request)
+    {
+        $this->authorizeClinic();
+
+        $validator = Validator::make($request->all(), [
+            'term_label' => ['required', 'string', 'max:100'],
+            'check_type' => ['required', 'string', 'max:100'],
+            'hostel_name' => ['nullable', 'string', 'max:255'],
+            'checked_at' => ['required', 'date'],
+            'rows' => ['required', 'array', 'min:1'],
+            'rows.*.student_id' => ['nullable', 'integer', 'exists:users,id'],
+            'rows.*.temperature' => ['nullable', 'numeric', 'between:30,45'],
+            'rows.*.pulse' => ['nullable', 'integer', 'between:20,250'],
+            'rows.*.weight_kg' => ['nullable', 'numeric', 'between:1,300'],
+            'rows.*.respiration' => ['nullable', 'integer', 'between:1,100'],
+            'rows.*.blood_pressure' => ['nullable', 'string', 'max:30'],
+            'rows.*.remark' => ['nullable', 'string', 'max:255'],
+            'rows.*.clearance_status' => ['nullable', 'in:normal,needs_observation,referred'],
+        ]);
+
+        $validator->after(function ($validator) use ($request) {
+            foreach ($request->input('rows', []) as $index => $row) {
+                $hasMeasurements = collect($row)->except(['student_id', 'clearance_status'])
+                    ->contains(fn ($value) => filled($value));
+
+                if ($hasMeasurements && ! filled($row['student_id'] ?? null)) {
+                    $validator->errors()->add("rows.{$index}.student_id", 'Select the student for every completed row.');
+                }
+            }
+        });
+
+        $data = $validator->validate();
+        $rows = collect($data['rows'])->filter(fn ($row) => filled($row['student_id'] ?? null))->values();
+
+        abort_if($rows->isEmpty(), 422, 'Enter at least one student in the vital-sign register.');
+        abort_unless(User::whereIn('id', $rows->pluck('student_id'))->where('role', 'student')->count() === $rows->pluck('student_id')->unique()->count(), 422, 'Every row must contain a valid student.');
+        abort_if($rows->pluck('student_id')->duplicates()->isNotEmpty(), 422, 'A student can only appear once in the same register.');
+
+        DB::transaction(function () use ($data, $rows) {
+            $rows->each(function ($row) use ($data) {
+                ClinicTermHealthCheck::create([
+                    'student_id' => $row['student_id'],
+                    'recorded_by' => Auth::id(),
+                    'term_label' => $data['term_label'],
+                    'check_type' => $data['check_type'],
+                    'hostel_name' => $data['hostel_name'] ?? null,
+                    'temperature' => $row['temperature'] ?? null,
+                    'pulse' => $row['pulse'] ?? null,
+                    'weight_kg' => $row['weight_kg'] ?? null,
+                    'respiration' => $row['respiration'] ?? null,
+                    'blood_pressure' => $row['blood_pressure'] ?? null,
+                    'remark' => filled($row['remark'] ?? null) ? $row['remark'] : 'Normal',
+                    'clearance_status' => $row['clearance_status'] ?? 'normal',
+                    'checked_at' => $data['checked_at'],
+                ]);
+            });
+        });
+
+        return redirect()->route('clinic.health-checks.index')->with('success', "{$rows->count()} vital-sign record(s) saved successfully.");
     }
 
     public function student(User $student)
