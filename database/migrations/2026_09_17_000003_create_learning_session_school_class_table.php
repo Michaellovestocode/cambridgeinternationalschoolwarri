@@ -14,7 +14,10 @@ return new class extends Migration
             $table->foreignId('learning_session_id')->constrained()->cascadeOnDelete();
             $table->foreignId('school_class_id')->constrained('school_classes')->cascadeOnDelete();
             $table->timestamps();
-            $table->unique(['learning_session_id', 'school_class_id']);
+            $table->unique(
+                ['learning_session_id', 'school_class_id'],
+                'learning_session_class_unique'
+            );
         });
 
         DB::table('learning_sessions')
