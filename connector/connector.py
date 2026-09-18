@@ -62,7 +62,10 @@ def parse_min_date():
 
 def event_from_attendance(attendance):
     timestamp = attendance.timestamp
-    direction = 'out' if str(getattr(attendance, 'punch', '')).lower() in {'1', 'out', 'checkout'} else 'in'
+    # The F-G495 punch value varies by verification method (for example,
+    # fingerprint) and is not a reliable in/out marker. Let the website use
+    # punch order to assign clock-in and clock-out consistently.
+    direction = ''
     machine_user_id = str(getattr(attendance, 'user_id', '')).strip()
     timestamp_text = timestamp.strftime('%Y-%m-%d %H:%M:%S')
     event_id = f"{os.environ.get('F495_DEVICE_ID', '1')}:{machine_user_id}:{timestamp_text}:{getattr(attendance, 'status', '')}:{getattr(attendance, 'punch', '')}"

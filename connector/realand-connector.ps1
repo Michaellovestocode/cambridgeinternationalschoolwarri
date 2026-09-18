@@ -18,7 +18,10 @@ function Save-State($path, $state) {
 
 function Send-Record($settings, $record) {
     $timestamp = $record.Clock.ToString('yyyy-MM-dd HH:mm:ss')
-    $direction = if ($record.Action -eq 1) { 'out' } else { '' }
+    # On the F-G495, Action identifies the verification event, not reliably an
+    # in/out direction. Sending "out" for fingerprint events puts first punches
+    # into the clock-out column, so let the website assign punch order instead.
+    $direction = ''
     $machineUserId = [string]$record.DIN
     $eventId = "{0}:{1}:{2}:{3}" -f $settings.F495_DEVICE_ID, $machineUserId, $timestamp, $record.Action
     $payload = @{
