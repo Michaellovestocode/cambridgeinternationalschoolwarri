@@ -57,8 +57,8 @@
 <script>
 document.addEventListener('DOMContentLoaded', () => {
     const body = document.getElementById('health-check-rows');
-    const students = @json($students->map(fn ($student) => ['id' => $student->id, 'label' => $student->name . ($student->class ? ' — ' . $student->class->display_name : '') . ($student->registration_number ? ' (' . $student->registration_number . ')' : '')])->values());
-    const savedRows = @json(old('rows', array_fill(0, 10, [])));
+    const students = {!! $studentOptionsJson !!};
+    const savedRows = {!! $initialRowsJson !!};
     let rowIndex = 0;
     const escapeHtml = (value) => String(value ?? '').replace(/[&<>"']/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[character]));
 

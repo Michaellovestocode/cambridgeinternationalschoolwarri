@@ -137,7 +137,21 @@ class ClinicController extends Controller
             ->take(15)
             ->get();
 
-        return view('clinic.health-checks.index', compact('students', 'recentChecks'));
+        $studentOptionsJson = json_encode(
+            $students->map(fn ($student) => [
+                'id' => $student->id,
+                'label' => $student->name
+                    . ($student->class ? ' — ' . $student->class->display_name : '')
+                    . ($student->registration_number ? ' (' . $student->registration_number . ')' : ''),
+            ])->values()->all(),
+            JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT
+        );
+        $initialRowsJson = json_encode(
+            session()->getOldInput('rows', array_fill(0, 10, [])),
+            JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT
+        );
+
+        return view('clinic.health-checks.index', compact('students', 'recentChecks', 'studentOptionsJson', 'initialRowsJson'));
     }
 
     public function storeHealthCheck(Request $request)
