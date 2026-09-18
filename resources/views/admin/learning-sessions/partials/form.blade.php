@@ -14,23 +14,11 @@
         @method($method)
     @endif
 
-    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5">
+    @php($selectedClassIds = old('school_class_ids', $learningSession?->targetClasses?->pluck('id')->all() ?: ($learningSession?->school_class_id ? [$learningSession->school_class_id] : [])))
+    <div class="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
         <div>
-            @php($selectedClassIds = old('school_class_ids', $learningSession?->targetClasses?->pluck('id')->all() ?: ($learningSession?->school_class_id ? [$learningSession->school_class_id] : [])))
-            <label class="block text-sm font-semibold text-gray-700 mb-1">Classes / Arms</label>
-            <div class="grid max-h-64 gap-2 overflow-y-auto rounded-lg border border-gray-200 p-3 sm:grid-cols-2">
-                @foreach($classes as $class)
-                    <label class="flex cursor-pointer items-center gap-3 rounded-lg border border-gray-200 px-3 py-2 text-sm font-medium text-gray-700 hover:border-cyan-300 hover:bg-cyan-50">
-                        <input type="checkbox" name="school_class_ids[]" value="{{ $class->id }}" class="rounded border-gray-300 text-cyan-600 focus:ring-cyan-500" @checked(in_array($class->id, array_map('intval', $selectedClassIds), true))>
-                        <span>{{ $class->display_name }}</span>
-                    </label>
-                @endforeach
-            </div>
-            <p class="mt-1 text-xs text-gray-500">Tick every arm taking this subject. Students only see work assigned to their own class.</p>
-        </div>
-        <div>
-            <label class="block text-sm font-semibold text-gray-700 mb-1">Subject</label>
-            <select name="subject_id" required class="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-cyan-500">
+            <label for="subject-id" class="block text-sm font-semibold text-gray-700 mb-1">1. Subject</label>
+            <select id="subject-id" name="subject_id" required class="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-cyan-500">
                 <option value="">Choose subject</option>
                 @foreach($subjects as $subject)
                     <option value="{{ $subject->id }}" @selected(old('subject_id', $learningSession->subject_id ?? '') == $subject->id)>
@@ -41,7 +29,7 @@
         </div>
         <div>
             <label class="block text-sm font-semibold text-gray-700 mb-1">Assessment Type</label>
-            <select name="assessment_type" class="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-cyan-500">
+            <select id="assessment-type-select" name="assessment_type" class="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-cyan-500">
                 <option value="classwork" @selected(old('assessment_type', $learningSession->assessment_type ?? request('assessment_type', 'quiz')) == 'classwork')>Classwork</option>
                 <option value="assignment" @selected(old('assessment_type', $learningSession->assessment_type ?? request('assessment_type', 'quiz')) == 'assignment')>Assignment</option>
                 <option value="quiz" @selected(old('assessment_type', $learningSession->assessment_type ?? request('assessment_type', 'quiz')) == 'quiz')>Quiz</option>
@@ -52,6 +40,25 @@
             <label class="block text-sm font-semibold text-gray-700 mb-1">Estimated Minutes</label>
             <input type="number" min="1" max="300" name="estimated_minutes" value="{{ old('estimated_minutes', $learningSession->estimated_minutes ?? 20) }}" required class="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-cyan-500">
         </div>
+    </div>
+
+    <div id="class-assignment-panel" class="hidden rounded-2xl border border-cyan-100 bg-cyan-50/60 p-4 sm:p-5">
+        <div class="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+                <label class="block text-sm font-bold text-gray-800">2. Classes / Arms</label>
+                <p class="text-xs text-gray-600">Tick every arm taking the selected subject.</p>
+            </div>
+            <p id="class-assignment-count" class="text-xs font-semibold text-cyan-800"></p>
+        </div>
+        <div id="class-assignment-list" class="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+            @foreach($classes as $class)
+                <label data-class-id="{{ $class->id }}" class="hidden min-w-0 cursor-pointer items-center gap-3 rounded-xl border border-white bg-white px-3 py-3 text-sm font-medium text-gray-700 shadow-sm transition hover:border-cyan-300 hover:bg-cyan-50">
+                    <input type="checkbox" name="school_class_ids[]" value="{{ $class->id }}" class="shrink-0 rounded border-gray-300 text-cyan-600 focus:ring-cyan-500" @checked(in_array($class->id, array_map('intval', $selectedClassIds), true))>
+                    <span class="break-words">{{ $class->display_name }}</span>
+                </label>
+            @endforeach
+        </div>
+        <p id="no-classes-for-subject" class="mt-3 hidden text-sm font-semibold text-amber-800">You are not assigned to this subject for any class.</p>
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -65,7 +72,7 @@
         </div>
         <div class="flex items-end">
             <div class="rounded-xl bg-cyan-50 border border-cyan-100 px-4 py-3 text-sm text-cyan-800 w-full">
-                <strong>Type:</strong> {{ ucfirst(old('assessment_type', $learningSession->assessment_type ?? request('assessment_type', 'quiz'))) }}
+                <strong>Type:</strong> <span id="assessment-type-label">{{ ucfirst(old('assessment_type', $learningSession->assessment_type ?? request('assessment_type', 'quiz'))) }}</span>
                 <span class="mx-2 text-cyan-400">•</span>
                 <strong>Format:</strong> <span id="assessment-format-label">{{ ucfirst(old('assessment_format', $learningSession->assessment_format ?? 'objective')) }}</span>
             </div>
@@ -193,9 +200,48 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
+        const subjectSelect = document.getElementById('subject-id');
+        const classPanel = document.getElementById('class-assignment-panel');
+        const classCount = document.getElementById('class-assignment-count');
+        const noClasses = document.getElementById('no-classes-for-subject');
+        const subjectClassIds = @json($subjectClassIds);
+
+        const syncClassOptions = () => {
+            const allowedIds = (subjectClassIds[subjectSelect?.value] || []).map(String);
+            const hasSubject = Boolean(subjectSelect?.value);
+            classPanel?.classList.toggle('hidden', !hasSubject);
+            noClasses?.classList.toggle('hidden', !hasSubject || allowedIds.length > 0);
+            classCount.textContent = allowedIds.length ? `${allowedIds.length} class${allowedIds.length === 1 ? '' : 'es'} available` : '';
+
+            document.querySelectorAll('#class-assignment-list [data-class-id]').forEach((option) => {
+                const allowed = allowedIds.includes(option.dataset.classId);
+                option.classList.toggle('hidden', !allowed);
+                option.classList.toggle('flex', allowed);
+                const checkbox = option.querySelector('input');
+                if (!allowed && checkbox) checkbox.checked = false;
+            });
+        };
+
+        subjectSelect?.addEventListener('change', syncClassOptions);
+        syncClassOptions();
+
         const list = document.getElementById('question-block-list');
         const addButton = document.getElementById('add-question-block');
         const assessmentFormatSelect = document.getElementById('assessment-format-select');
+        const assessmentTypeSelect = document.getElementById('assessment-type-select');
+        const assessmentTypeLabel = document.getElementById('assessment-type-label');
+        const assessmentFormatLabel = document.getElementById('assessment-format-label');
+
+        const syncAssessmentLabels = () => {
+            if (assessmentTypeLabel && assessmentTypeSelect) {
+                assessmentTypeLabel.textContent = assessmentTypeSelect.value.charAt(0).toUpperCase() + assessmentTypeSelect.value.slice(1);
+            }
+            if (assessmentFormatLabel && assessmentFormatSelect) {
+                assessmentFormatLabel.textContent = assessmentFormatSelect.value.charAt(0).toUpperCase() + assessmentFormatSelect.value.slice(1);
+            }
+        };
+
+        assessmentTypeSelect?.addEventListener('change', syncAssessmentLabels);
 
         if (list && addButton) {
             const makeQuestionBlock = (index) => {
@@ -305,7 +351,9 @@
             };
 
             assessmentFormatSelect?.addEventListener('change', syncAssessmentFormat);
+            assessmentFormatSelect?.addEventListener('change', syncAssessmentLabels);
             syncAssessmentFormat();
+            syncAssessmentLabels();
 
             addButton.addEventListener('click', () => {
                 const blocks = list.querySelectorAll('.question-block');

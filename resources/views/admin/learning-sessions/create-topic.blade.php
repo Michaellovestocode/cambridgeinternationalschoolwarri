@@ -23,18 +23,10 @@
     <form action="{{ route('admin.learning-sessions.store-topic') }}" method="POST" enctype="multipart/form-data" class="space-y-6 rounded-2xl bg-white p-5 shadow-lg sm:p-8">
         @csrf
 
+        @php($selectedClassIds = old('school_class_ids', []))
         <div class="grid gap-5 md:grid-cols-2">
             <div>
-                <label for="school_class_id" class="mb-1 block text-sm font-semibold text-gray-700">Class</label>
-                <select id="school_class_id" name="school_class_id" required class="w-full rounded-xl border border-gray-200 px-4 py-3">
-                    <option value="">Choose class</option>
-                    @foreach($classes as $class)
-                        <option value="{{ $class->id }}" @selected(old('school_class_id') == $class->id)>{{ $class->display_name }}</option>
-                    @endforeach
-                </select>
-            </div>
-            <div>
-                <label for="subject_id" class="mb-1 block text-sm font-semibold text-gray-700">Subject</label>
+                <label for="subject_id" class="mb-1 block text-sm font-semibold text-gray-700">1. Subject</label>
                 <select id="subject_id" name="subject_id" required class="w-full rounded-xl border border-gray-200 px-4 py-3">
                     <option value="">Choose subject</option>
                     @foreach($subjects as $subject)
@@ -42,6 +34,22 @@
                     @endforeach
                 </select>
             </div>
+        </div>
+
+        <div id="topic-class-panel" class="hidden rounded-2xl border border-emerald-100 bg-emerald-50 p-4 sm:p-5">
+            <div class="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+                <div><p class="text-sm font-bold text-gray-800">2. Classes / Arms</p><p class="text-xs text-gray-600">Tick every class arm this learning topic is for.</p></div>
+                <p id="topic-class-count" class="text-xs font-semibold text-emerald-800"></p>
+            </div>
+            <div id="topic-class-list" class="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                @foreach($classes as $class)
+                    <label data-class-id="{{ $class->id }}" class="hidden min-w-0 cursor-pointer items-center gap-3 rounded-xl border border-white bg-white px-3 py-3 text-sm font-medium text-gray-700 shadow-sm transition hover:border-emerald-300 hover:bg-emerald-50">
+                        <input type="checkbox" name="school_class_ids[]" value="{{ $class->id }}" class="shrink-0 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500" @checked(in_array($class->id, array_map('intval', $selectedClassIds), true))>
+                        <span class="break-words">{{ $class->display_name }}</span>
+                    </label>
+                @endforeach
+            </div>
+            <p id="topic-no-classes" class="mt-3 hidden text-sm font-semibold text-amber-800">You are not assigned to this subject for any class.</p>
         </div>
 
         <div class="grid gap-5 md:grid-cols-2">
@@ -93,4 +101,32 @@
         </div>
     </form>
 </div>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const subjectSelect = document.getElementById('subject_id');
+        const classPanel = document.getElementById('topic-class-panel');
+        const classCount = document.getElementById('topic-class-count');
+        const noClasses = document.getElementById('topic-no-classes');
+        const subjectClassIds = @json($subjectClassIds);
+
+        const syncClassOptions = () => {
+            const allowedIds = (subjectClassIds[subjectSelect?.value] || []).map(String);
+            const hasSubject = Boolean(subjectSelect?.value);
+            classPanel?.classList.toggle('hidden', !hasSubject);
+            noClasses?.classList.toggle('hidden', !hasSubject || allowedIds.length > 0);
+            classCount.textContent = allowedIds.length ? `${allowedIds.length} class${allowedIds.length === 1 ? '' : 'es'} available` : '';
+
+            document.querySelectorAll('#topic-class-list [data-class-id]').forEach((option) => {
+                const allowed = allowedIds.includes(option.dataset.classId);
+                option.classList.toggle('hidden', !allowed);
+                option.classList.toggle('flex', allowed);
+                const checkbox = option.querySelector('input');
+                if (!allowed && checkbox) checkbox.checked = false;
+            });
+        };
+
+        subjectSelect?.addEventListener('change', syncClassOptions);
+        syncClassOptions();
+    });
+</script>
 @endsection

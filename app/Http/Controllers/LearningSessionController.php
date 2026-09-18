@@ -47,6 +47,7 @@ class LearningSessionController extends Controller
     {
         $subjects = $this->availableSubjects();
         $classes = $this->availableClasses();
+        $subjectClassIds = $this->subjectClassIds($subjects, $classes);
 
         $selectedType = in_array($request->query('assessment_type'), ['classwork', 'assignment', 'quiz', 'test'], true)
             ? $request->query('assessment_type')
@@ -56,22 +57,24 @@ class LearningSessionController extends Controller
             ? $request->query('assessment_format')
             : 'objective';
 
-        return view('admin.learning-sessions.create', compact('subjects', 'classes', 'selectedType', 'selectedFormat'));
+        return view('admin.learning-sessions.create', compact('subjects', 'classes', 'subjectClassIds', 'selectedType', 'selectedFormat'));
     }
 
     public function createTopic()
     {
         $subjects = $this->availableSubjects();
         $classes = $this->availableClasses();
+        $subjectClassIds = $this->subjectClassIds($subjects, $classes);
 
-        return view('admin.learning-sessions.create-topic', compact('subjects', 'classes'));
+        return view('admin.learning-sessions.create-topic', compact('subjects', 'classes', 'subjectClassIds'));
     }
 
     public function storeTopic(Request $request)
     {
         $data = $request->validate([
             'subject_id' => ['required', 'exists:subjects,id'],
-            'school_class_id' => ['required', 'exists:school_classes,id'],
+            'school_class_ids' => ['required', 'array', 'min:1'],
+            'school_class_ids.*' => ['required', 'integer', 'distinct', 'exists:school_classes,id'],
             'title' => ['required', 'string', 'max:255'],
             'topic' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
@@ -82,17 +85,25 @@ class LearningSessionController extends Controller
             'attachment' => ['nullable', 'file', 'max:10240', 'mimes:pdf,doc,docx,ppt,pptx,jpg,jpeg,png,gif,webp'],
         ]);
 
-        $this->ensureAllowedAssignment((int) $data['subject_id'], (int) $data['school_class_id']);
+        $classIds = collect($data['school_class_ids'])->map(fn ($id) => (int) $id)->unique()->values();
+        $this->ensureAllowedAssignments((int) $data['subject_id'], $classIds->all());
         $attachment = $request->file('attachment');
-        unset($data['attachment']);
-        $session = LearningSession::create([
-            ...$data,
-            'created_by' => Auth::id(),
-            'assessment_type' => 'lesson',
-            'assessment_format' => 'theory',
-            'is_published' => $request->boolean('is_published'),
-            'show_answers_to_students' => false,
-        ]);
+        $isPublished = $request->boolean('is_published');
+        unset($data['attachment'], $data['school_class_ids']);
+        $session = DB::transaction(function () use ($data, $classIds, $isPublished) {
+            $session = LearningSession::create([
+                ...$data,
+                'school_class_id' => $classIds->first(),
+                'created_by' => Auth::id(),
+                'assessment_type' => 'lesson',
+                'assessment_format' => 'theory',
+                'is_published' => $isPublished,
+                'show_answers_to_students' => false,
+            ]);
+            $session->targetClasses()->sync($classIds->all());
+
+            return $session;
+        });
 
         if ($attachment) {
             $file = $attachment;
@@ -143,13 +154,14 @@ class LearningSessionController extends Controller
 
         $subjects = $this->availableSubjects($learningSession);
         $classes = $this->availableClasses($learningSession);
+        $subjectClassIds = $this->subjectClassIds($subjects, $classes);
         $learningSession->load(['subject', 'schoolClass', 'targetClasses', 'questions', 'attachments', 'comments' => fn ($query) => $query->whereNull('parent_id')->with(['user', 'replies.user'])->latest()]);
         $feedbackCounts = $learningSession->feedback()
             ->selectRaw("status, COUNT(*) as total")
             ->groupBy('status')
             ->pluck('total', 'status');
 
-        return view('admin.learning-sessions.edit', compact('learningSession', 'subjects', 'classes', 'feedbackCounts'));
+        return view('admin.learning-sessions.edit', compact('learningSession', 'subjects', 'classes', 'subjectClassIds', 'feedbackCounts'));
     }
 
     public function submissions(LearningSession $learningSession)
@@ -510,6 +522,36 @@ class LearningSessionController extends Controller
         }
 
         return $classes->unique('id')->sortBy('name')->values();
+    }
+
+    private function subjectClassIds($subjects, $classes): array
+    {
+        $subjectIds = $subjects->pluck('id')->map(fn ($id) => (int) $id)->all();
+        $classIds = $classes->pluck('id')->map(fn ($id) => (int) $id)->all();
+        $result = array_fill_keys($subjectIds, []);
+
+        if (empty($subjectIds) || empty($classIds)) {
+            return $result;
+        }
+
+        $table = ! Auth::user()->isAdmin() && $this->exactTeachingLoadIsAvailable()
+            ? 'teacher_class_subject'
+            : 'class_subject';
+
+        if (! Schema::hasTable($table)) {
+            return $result;
+        }
+
+        DB::table($table)
+            ->when($table === 'teacher_class_subject', fn ($query) => $query->where('teacher_id', Auth::id()))
+            ->whereIn('subject_id', $subjectIds)
+            ->whereIn('school_class_id', $classIds)
+            ->get(['subject_id', 'school_class_id'])
+            ->each(function ($assignment) use (&$result) {
+                $result[(int) $assignment->subject_id][] = (int) $assignment->school_class_id;
+            });
+
+        return $result;
     }
 
     private function ensureAllowedAssignment(int $subjectId, int $classId): void
