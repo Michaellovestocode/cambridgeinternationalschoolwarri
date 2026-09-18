@@ -12,6 +12,7 @@
                 <p class="mt-2 text-blue-100">Secure student care records and daily clinic activity.</p>
             </div>
             <div class="flex flex-col gap-3 sm:flex-row">
+                <a href="{{ route('clinic.records.index') }}" class="rounded-xl bg-blue-900 px-5 py-3 text-center font-black text-white shadow hover:bg-blue-950">My Records</a>
                 <a href="{{ route('clinic.health-checks.index') }}" class="rounded-xl bg-white px-5 py-3 text-center font-black text-blue-800 shadow hover:bg-blue-50">Hostel Vital Signs</a>
                 <a href="{{ route('clinic.visits.create') }}" class="rounded-xl bg-amber-400 px-5 py-3 text-center font-black text-slate-900 shadow hover:bg-amber-300">Record New Visit</a>
             </div>
@@ -20,15 +21,16 @@
 
     <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         @foreach([
-            ['label' => "Today's Visits", 'value' => $todayCount, 'class' => 'bg-blue-50 text-blue-800'],
-            ['label' => 'Visits This Week', 'value' => $weekCount, 'class' => 'bg-cyan-50 text-cyan-800'],
-            ['label' => 'Currently in Clinic', 'value' => $inClinicCount, 'class' => 'bg-amber-50 text-amber-800'],
-            ['label' => 'Sent Home Today', 'value' => $sentHomeCount, 'class' => 'bg-rose-50 text-rose-800'],
+            ['label' => "Today's Visits", 'value' => $todayCount, 'class' => 'bg-blue-50 text-blue-800', 'url' => route('clinic.records.index', ['type' => 'visits', 'period' => 'today'])],
+            ['label' => 'Visits This Week', 'value' => $weekCount, 'class' => 'bg-cyan-50 text-cyan-800', 'url' => route('clinic.records.index', ['type' => 'visits', 'period' => 'week'])],
+            ['label' => 'Currently in Clinic', 'value' => $inClinicCount, 'class' => 'bg-amber-50 text-amber-800', 'url' => route('clinic.records.index', ['type' => 'visits', 'period' => 'current'])],
+            ['label' => 'Sent Home Today', 'value' => $sentHomeCount, 'class' => 'bg-rose-50 text-rose-800', 'url' => route('clinic.records.index', ['type' => 'visits', 'period' => 'sent-home'])],
         ] as $stat)
-            <div class="rounded-2xl {{ $stat['class'] }} p-5 shadow-sm">
+            <a href="{{ $stat['url'] }}" class="rounded-2xl {{ $stat['class'] }} p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
                 <p class="text-sm font-bold">{{ $stat['label'] }}</p>
                 <p class="mt-2 text-4xl font-black">{{ $stat['value'] }}</p>
-            </div>
+                <p class="mt-2 text-xs font-semibold underline">View records</p>
+            </a>
         @endforeach
     </div>
 
@@ -55,6 +57,7 @@
         <section class="rounded-2xl bg-white p-5 shadow-xl">
             <h2 class="text-xl font-black text-gray-900">Quick Actions</h2>
             <div class="mt-4 grid gap-3">
+                <a href="{{ route('clinic.records.index') }}" class="rounded-xl bg-slate-100 px-4 py-4 font-bold text-slate-900">My Entered Records</a>
                 <a href="{{ route('clinic.health-checks.index') }}" class="rounded-xl bg-emerald-100 px-4 py-4 font-bold text-emerald-900">Hostel Vital Signs Check</a>
                 <a href="{{ route('clinic.visits.create') }}" class="rounded-xl bg-amber-100 px-4 py-4 font-bold text-amber-900">Record New Visit</a>
                 <a href="{{ route('clinic.students.index') }}" class="rounded-xl bg-blue-100 px-4 py-4 font-bold text-blue-900">Search Students</a>

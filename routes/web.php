@@ -111,6 +111,7 @@ Route::middleware('auth')->group(function () {
 
     Route::prefix('clinic')->name('clinic.')->middleware('role:nurse,admin')->group(function () {
         Route::get('/dashboard', [ClinicController::class, 'dashboard'])->name('dashboard');
+        Route::get('/records', [ClinicController::class, 'records'])->name('records.index');
         Route::get('/term-health-checks', [ClinicController::class, 'healthChecks'])->name('health-checks.index');
         Route::post('/term-health-checks', [ClinicController::class, 'storeHealthCheck'])->name('health-checks.store');
         Route::get('/students', [ClinicController::class, 'students'])->name('students.index');

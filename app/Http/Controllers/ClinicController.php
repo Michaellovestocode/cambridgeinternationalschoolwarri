@@ -23,18 +23,80 @@ class ClinicController extends Controller
         $today = today();
         $weekStart = now()->startOfWeek();
 
-        $todayVisits = ClinicVisit::with(['person.class', 'student.class', 'recorder'])
+        $todayVisitsQuery = ClinicVisit::with(['person.class', 'student.class', 'recorder']);
+        $this->scopeToCurrentClinicUser($todayVisitsQuery, 'recorded_by');
+        $todayVisits = $todayVisitsQuery
             ->whereDate('visited_at', $today)
             ->latest('visited_at')
             ->get();
 
+        $weekVisitsQuery = ClinicVisit::query();
+        $this->scopeToCurrentClinicUser($weekVisitsQuery, 'recorded_by');
+
+        $inClinicVisitsQuery = ClinicVisit::query();
+        $this->scopeToCurrentClinicUser($inClinicVisitsQuery, 'recorded_by');
+
+        $sentHomeVisitsQuery = ClinicVisit::query();
+        $this->scopeToCurrentClinicUser($sentHomeVisitsQuery, 'recorded_by');
+
         return view('clinic.dashboard', [
             'todayVisits' => $todayVisits,
             'todayCount' => $todayVisits->count(),
-            'weekCount' => ClinicVisit::where('visited_at', '>=', $weekStart)->count(),
-            'inClinicCount' => ClinicVisit::whereDate('visited_at', $today)->where('outcome', 'remained_in_clinic')->count(),
-            'sentHomeCount' => ClinicVisit::whereDate('visited_at', $today)->where('outcome', 'sent_home')->count(),
+            'weekCount' => $weekVisitsQuery->where('visited_at', '>=', $weekStart)->count(),
+            'inClinicCount' => $inClinicVisitsQuery->whereDate('visited_at', $today)->where('outcome', 'remained_in_clinic')->count(),
+            'sentHomeCount' => $sentHomeVisitsQuery->whereDate('visited_at', $today)->where('outcome', 'sent_home')->count(),
             'lowStockCount' => ClinicInventoryItem::where('is_active', true)->whereColumn('quantity', '<=', 'minimum_quantity')->count(),
+        ]);
+    }
+
+    public function records(Request $request)
+    {
+        $this->authorizeClinic();
+
+        $type = $request->string('type', 'visits')->value();
+        abort_unless(in_array($type, ['visits', 'health-checks', 'incidents'], true), 404);
+
+        $period = $request->string('period')->value();
+        abort_unless($period === '' || in_array($period, ['today', 'week', 'current', 'sent-home'], true), 404);
+        $search = trim((string) $request->input('search', ''));
+
+        if ($type === 'health-checks') {
+            $records = ClinicTermHealthCheck::with(['student.class', 'recorder']);
+            $this->scopeToCurrentClinicUser($records, 'recorded_by');
+            $this->applyPeriodFilter($records, $period, 'checked_at');
+            $records->when($search !== '', fn ($query) => $query->whereHas('student', fn ($studentQuery) => $studentQuery->where('name', 'like', "%{$search}%")));
+            $records->latest('checked_at');
+        } elseif ($type === 'incidents') {
+            $records = ClinicIncident::with(['student.class', 'reporter']);
+            $this->scopeToCurrentClinicUser($records, 'reported_by');
+            $this->applyPeriodFilter($records, $period, 'incident_at');
+            $records->when($search !== '', fn ($query) => $query->whereHas('student', fn ($studentQuery) => $studentQuery->where('name', 'like', "%{$search}%")));
+            $records->latest('incident_at');
+        } else {
+            $records = ClinicVisit::with(['person.class', 'student.class', 'recorder']);
+            $this->scopeToCurrentClinicUser($records, 'recorded_by');
+            $this->applyPeriodFilter($records, $period, 'visited_at');
+            if ($period === 'current') {
+                $records->where('outcome', 'remained_in_clinic');
+            }
+            if ($period === 'sent-home') {
+                $records->where('outcome', 'sent_home');
+            }
+            $records->when($search !== '', function ($query) use ($search) {
+                $query->where(function ($visitQuery) use ($search) {
+                    $visitQuery->where('patient_name', 'like', "%{$search}%")
+                        ->orWhereHas('person', fn ($personQuery) => $personQuery->where('name', 'like', "%{$search}%"))
+                        ->orWhereHas('student', fn ($studentQuery) => $studentQuery->where('name', 'like', "%{$search}%"));
+                });
+            });
+            $records->latest('visited_at');
+        }
+
+        return view('clinic.records.index', [
+            'records' => $records->paginate(25)->withQueryString(),
+            'type' => $type,
+            'period' => $period,
+            'search' => $search,
         ]);
     }
 
@@ -306,5 +368,23 @@ class ClinicController extends Controller
     private function authorizeClinic(): void
     {
         abort_unless(Auth::user()?->isAdmin() || Auth::user()?->isNurse(), 403);
+    }
+
+    private function scopeToCurrentClinicUser($query, string $column): void
+    {
+        if (Auth::user()?->isNurse()) {
+            $query->where($column, Auth::id());
+        }
+    }
+
+    private function applyPeriodFilter($query, string $period, string $dateColumn): void
+    {
+        if ($period === 'today' || $period === 'current' || $period === 'sent-home') {
+            $query->whereDate($dateColumn, today());
+        }
+
+        if ($period === 'week') {
+            $query->where($dateColumn, '>=', now()->startOfWeek());
+        }
     }
 }

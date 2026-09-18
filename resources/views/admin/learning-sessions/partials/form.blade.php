@@ -18,14 +18,15 @@
         <div>
             @php($selectedClassIds = old('school_class_ids', $learningSession?->targetClasses?->pluck('id')->all() ?: ($learningSession?->school_class_id ? [$learningSession->school_class_id] : [])))
             <label class="block text-sm font-semibold text-gray-700 mb-1">Classes / Arms</label>
-            <select name="school_class_ids[]" multiple required size="{{ min(max($classes->count(), 2), 6) }}" class="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-cyan-500">
+            <div class="grid max-h-64 gap-2 overflow-y-auto rounded-lg border border-gray-200 p-3 sm:grid-cols-2">
                 @foreach($classes as $class)
-                    <option value="{{ $class->id }}" @selected(in_array($class->id, array_map('intval', $selectedClassIds), true))>
-                        {{ $class->display_name }}
-                    </option>
+                    <label class="flex cursor-pointer items-center gap-3 rounded-lg border border-gray-200 px-3 py-2 text-sm font-medium text-gray-700 hover:border-cyan-300 hover:bg-cyan-50">
+                        <input type="checkbox" name="school_class_ids[]" value="{{ $class->id }}" class="rounded border-gray-300 text-cyan-600 focus:ring-cyan-500" @checked(in_array($class->id, array_map('intval', $selectedClassIds), true))>
+                        <span>{{ $class->display_name }}</span>
+                    </label>
                 @endforeach
-            </select>
-            <p class="mt-1 text-xs text-gray-500">Hold Ctrl (Windows) or Command (Mac) to select more than one class arm.</p>
+            </div>
+            <p class="mt-1 text-xs text-gray-500">Tick every arm taking this subject. Students only see work assigned to their own class.</p>
         </div>
         <div>
             <label class="block text-sm font-semibold text-gray-700 mb-1">Subject</label>
