@@ -21,7 +21,7 @@ class LearningSessionController extends Controller
     {
         $user = Auth::user();
 
-        $sessions = LearningSession::with(['subject', 'schoolClass', 'creator'])
+        $sessions = LearningSession::with(['subject', 'schoolClass', 'targetClasses', 'creator'])
             ->withCount('questions')
             ->when(! $user->isAdmin(), fn ($query) => $query->where('created_by', $user->id))
             ->latest()
@@ -33,7 +33,7 @@ class LearningSessionController extends Controller
     public function assessmentActivities()
     {
         $user = Auth::user();
-        $sessions = LearningSession::with(['subject', 'schoolClass'])
+        $sessions = LearningSession::with(['subject', 'schoolClass', 'targetClasses'])
             ->withCount('questions')
             ->when(! $user->isAdmin(), fn ($query) => $query->where('created_by', $user->id))
             ->whereIn('assessment_type', ['classwork', 'assignment', 'quiz', 'test'])
@@ -112,15 +112,19 @@ class LearningSessionController extends Controller
     public function store(Request $request)
     {
         $data = $this->validatedSessionData($request);
-        $this->ensureAllowedAssignment((int) $data['subject_id'], (int) $data['school_class_id']);
+        $classIds = collect($data['school_class_ids'])->map(fn ($id) => (int) $id)->unique()->values();
+        $this->ensureAllowedAssignments((int) $data['subject_id'], $classIds->all());
+        unset($data['school_class_ids']);
+        $data['school_class_id'] = $classIds->first();
         $data['created_by'] = Auth::id();
         $data['is_published'] = $request->has('publish')
             ? $request->boolean('publish')
             : $request->boolean('is_published');
         $data['show_answers_to_students'] = $request->boolean('show_answers_to_students');
 
-        $session = DB::transaction(function () use ($data, $request) {
+        $session = DB::transaction(function () use ($data, $request, $classIds) {
             $session = LearningSession::create($data);
+            $session->targetClasses()->sync($classIds->all());
             $this->storeInlineQuestions($request, $session);
 
             return $session;
@@ -139,7 +143,7 @@ class LearningSessionController extends Controller
 
         $subjects = $this->availableSubjects($learningSession);
         $classes = $this->availableClasses($learningSession);
-        $learningSession->load(['subject', 'schoolClass', 'questions', 'attachments', 'comments' => fn ($query) => $query->whereNull('parent_id')->with(['user', 'replies.user'])->latest()]);
+        $learningSession->load(['subject', 'schoolClass', 'targetClasses', 'questions', 'attachments', 'comments' => fn ($query) => $query->whereNull('parent_id')->with(['user', 'replies.user'])->latest()]);
         $feedbackCounts = $learningSession->feedback()
             ->selectRaw("status, COUNT(*) as total")
             ->groupBy('status')
@@ -305,13 +309,19 @@ class LearningSessionController extends Controller
     {
         $data = $this->validatedSessionData($request);
         $this->authorizeSession($learningSession);
-        $this->ensureAllowedAssignment((int) $data['subject_id'], (int) $data['school_class_id']);
+        $classIds = collect($data['school_class_ids'])->map(fn ($id) => (int) $id)->unique()->values();
+        $this->ensureAllowedAssignments((int) $data['subject_id'], $classIds->all());
+        unset($data['school_class_ids']);
+        $data['school_class_id'] = $classIds->first();
         $data['is_published'] = $request->has('publish')
             ? $request->boolean('publish')
             : $request->boolean('is_published');
         $data['show_answers_to_students'] = $request->boolean('show_answers_to_students');
 
-        $learningSession->update($data);
+        DB::transaction(function () use ($learningSession, $data, $classIds) {
+            $learningSession->update($data);
+            $learningSession->targetClasses()->sync($classIds->all());
+        });
 
         return redirect()
             ->route('admin.learning-sessions.edit', $learningSession)
@@ -409,7 +419,8 @@ class LearningSessionController extends Controller
     {
         return $request->validate([
             'subject_id' => ['required', 'exists:subjects,id'],
-            'school_class_id' => ['required', 'exists:school_classes,id'],
+            'school_class_ids' => ['required', 'array', 'min:1'],
+            'school_class_ids.*' => ['required', 'integer', 'distinct', 'exists:school_classes,id'],
             'title' => ['required', 'string', 'max:255'],
             'topic' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
@@ -529,6 +540,13 @@ class LearningSessionController extends Controller
 
         if (! $teachesSubject || ! $assignedToClass) {
             abort(403, 'You can only create lessons for assigned subject and class combinations.');
+        }
+    }
+
+    private function ensureAllowedAssignments(int $subjectId, array $classIds): void
+    {
+        foreach ($classIds as $classId) {
+            $this->ensureAllowedAssignment($subjectId, (int) $classId);
         }
     }
 

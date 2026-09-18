@@ -11,7 +11,10 @@
                 <h1 class="mt-2 text-3xl font-black">School Clinic</h1>
                 <p class="mt-2 text-blue-100">Secure student care records and daily clinic activity.</p>
             </div>
-            <a href="{{ route('clinic.visits.create') }}" class="rounded-xl bg-amber-400 px-5 py-3 text-center font-black text-slate-900 shadow hover:bg-amber-300">Record New Visit</a>
+            <div class="flex flex-col gap-3 sm:flex-row">
+                <a href="{{ route('clinic.health-checks.index') }}" class="rounded-xl bg-white px-5 py-3 text-center font-black text-blue-800 shadow hover:bg-blue-50">Hostel Vital Signs</a>
+                <a href="{{ route('clinic.visits.create') }}" class="rounded-xl bg-amber-400 px-5 py-3 text-center font-black text-slate-900 shadow hover:bg-amber-300">Record New Visit</a>
+            </div>
         </div>
     </div>
 
@@ -52,6 +55,7 @@
         <section class="rounded-2xl bg-white p-5 shadow-xl">
             <h2 class="text-xl font-black text-gray-900">Quick Actions</h2>
             <div class="mt-4 grid gap-3">
+                <a href="{{ route('clinic.health-checks.index') }}" class="rounded-xl bg-emerald-100 px-4 py-4 font-bold text-emerald-900">Hostel Vital Signs Check</a>
                 <a href="{{ route('clinic.visits.create') }}" class="rounded-xl bg-amber-100 px-4 py-4 font-bold text-amber-900">Record New Visit</a>
                 <a href="{{ route('clinic.students.index') }}" class="rounded-xl bg-blue-100 px-4 py-4 font-bold text-blue-900">Search Students</a>
                 <a href="{{ route('clinic.incidents.index') }}" class="rounded-xl bg-rose-100 px-4 py-4 font-bold text-rose-900">Incident Reports</a>

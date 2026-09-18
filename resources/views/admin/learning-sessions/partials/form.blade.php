@@ -16,15 +16,16 @@
 
     <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5">
         <div>
-            <label class="block text-sm font-semibold text-gray-700 mb-1">Class</label>
-            <select name="school_class_id" required class="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-cyan-500">
-                <option value="">Choose class</option>
+            @php($selectedClassIds = old('school_class_ids', $learningSession?->targetClasses?->pluck('id')->all() ?: ($learningSession?->school_class_id ? [$learningSession->school_class_id] : [])))
+            <label class="block text-sm font-semibold text-gray-700 mb-1">Classes / Arms</label>
+            <select name="school_class_ids[]" multiple required size="{{ min(max($classes->count(), 2), 6) }}" class="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-cyan-500">
                 @foreach($classes as $class)
-                    <option value="{{ $class->id }}" @selected(old('school_class_id', $learningSession->school_class_id ?? '') == $class->id)>
+                    <option value="{{ $class->id }}" @selected(in_array($class->id, array_map('intval', $selectedClassIds), true))>
                         {{ $class->display_name }}
                     </option>
                 @endforeach
             </select>
+            <p class="mt-1 text-xs text-gray-500">Hold Ctrl (Windows) or Command (Mac) to select more than one class arm.</p>
         </div>
         <div>
             <label class="block text-sm font-semibold text-gray-700 mb-1">Subject</label>

@@ -19,8 +19,8 @@ class StudentLearningSessionController extends Controller
         $student = Auth::user();
 
         $sessions = LearningSession::published()
-            ->where('school_class_id', $student->class_id)
-            ->with(['subject', 'schoolClass'])
+            ->forSchoolClass((int) $student->class_id)
+            ->with(['subject', 'schoolClass', 'targetClasses'])
             ->withCount('questions')
             ->latest()
             ->get();
@@ -45,11 +45,11 @@ class StudentLearningSessionController extends Controller
     public function show(LearningSession $learningSession)
     {
         abort_unless(
-            $learningSession->is_published && $learningSession->school_class_id === Auth::user()->class_id,
+            $learningSession->is_published && $learningSession->isAssignedToClass((int) Auth::user()->class_id),
             404
         );
 
-        $learningSession->load(['subject', 'schoolClass', 'questions', 'attachments', 'comments' => fn ($query) => $query->where('is_hidden', false)->whereNull('parent_id')->with(['user', 'replies.user'])]);
+        $learningSession->load(['subject', 'schoolClass', 'targetClasses', 'questions', 'attachments', 'comments' => fn ($query) => $query->where('is_hidden', false)->whereNull('parent_id')->with(['user', 'replies.user'])]);
         $latestAttempt = LearningAttempt::where('user_id', Auth::id())
             ->where('learning_session_id', $learningSession->id)
             ->with(['answers.question'])
@@ -139,7 +139,7 @@ class StudentLearningSessionController extends Controller
     public function submit(Request $request, LearningSession $learningSession)
     {
         abort_unless(
-            $learningSession->is_published && $learningSession->school_class_id === Auth::user()->class_id,
+            $learningSession->is_published && $learningSession->isAssignedToClass((int) Auth::user()->class_id),
             404
         );
 
@@ -239,6 +239,6 @@ class StudentLearningSessionController extends Controller
 
     private function ensureStudentSessionAccess(LearningSession $learningSession): void
     {
-        abort_unless($learningSession->is_published && $learningSession->school_class_id === Auth::user()->class_id, 404);
+        abort_unless($learningSession->is_published && $learningSession->isAssignedToClass((int) Auth::user()->class_id), 404);
     }
 }

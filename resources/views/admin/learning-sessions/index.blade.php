@@ -80,7 +80,7 @@
                             <div class="mt-1 text-[11px] uppercase tracking-wide text-gray-500">{{ $session->assessment_format ?? 'objective' }}</div>
                         </td>
                         <td class="px-6 py-4 text-sm text-gray-700">{{ $session->subject->name ?? 'N/A' }}</td>
-                        <td class="px-6 py-4 text-sm text-gray-700">{{ $session->schoolClass->display_name ?? 'N/A' }}</td>
+                        <td class="px-6 py-4 text-sm text-gray-700">{{ $session->targetClasses->pluck('display_name')->join(', ') ?: ($session->schoolClass->display_name ?? 'N/A') }}</td>
                         <td class="px-6 py-4 text-center font-bold text-cyan-700">{{ $session->questions_count }}</td>
                         <td class="px-6 py-4">
                             @if($session->is_published)

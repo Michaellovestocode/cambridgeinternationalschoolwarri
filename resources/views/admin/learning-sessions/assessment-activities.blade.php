@@ -33,7 +33,7 @@
                             <span class="rounded-full px-3 py-1 text-xs font-bold {{ $session->is_published ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800' }}">{{ $session->is_published ? 'Published' : 'Draft' }}</span>
                         </div>
                         <h2 class="mt-3 truncate text-xl font-black text-gray-900">{{ $session->title }}</h2>
-                        <p class="mt-1 text-sm font-semibold text-emerald-700">{{ $session->schoolClass->display_name ?? 'Class' }} · {{ $session->subject->name ?? 'Subject' }} · {{ $session->topic }}</p>
+                        <p class="mt-1 text-sm font-semibold text-emerald-700">{{ $session->targetClasses->pluck('display_name')->join(', ') ?: ($session->schoolClass->display_name ?? 'Class') }} · {{ $session->subject->name ?? 'Subject' }} · {{ $session->topic }}</p>
                     </div>
                     <div class="grid grid-cols-2 gap-3 text-center text-sm sm:min-w-[240px]">
                         <div class="rounded-xl bg-gray-50 p-3"><strong class="block text-lg text-gray-900">{{ $session->questions_count }}</strong><span class="text-gray-500">Questions</span></div>

@@ -53,7 +53,7 @@
                     <span class="text-xs text-gray-500">{{ $session->estimated_minutes }} mins</span>
                 </div>
                 <h2 class="text-xl font-bold text-gray-900 mb-2">{{ $session->title }}</h2>
-                <p class="text-sm font-semibold text-emerald-700 mb-3">{{ $session->schoolClass->display_name ?? 'Your class' }} • {{ $session->topic }}</p>
+                <p class="text-sm font-semibold text-emerald-700 mb-3">{{ $session->targetClasses->pluck('display_name')->join(', ') ?: ($session->schoolClass->display_name ?? 'Your class') }} • {{ $session->topic }}</p>
                 <p class="text-gray-600 text-sm leading-6">{{ Str::limit($session->description, 130) }}</p>
 
                 @if($session->unread_teacher_replies > 0)

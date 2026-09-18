@@ -61,8 +61,8 @@ class StudentController extends Controller
         $inProgressAttempts = $inProgressAttempts->filter->isInProgress();
 
         $availableLearningSessions = LearningSession::published()
-            ->where('school_class_id', $student->class_id)
-            ->with(['subject', 'schoolClass'])
+            ->forSchoolClass((int) $student->class_id)
+            ->with(['subject', 'schoolClass', 'targetClasses'])
             ->withCount('questions')
             ->latest()
             ->take(3)

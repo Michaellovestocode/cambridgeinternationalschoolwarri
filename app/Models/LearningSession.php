@@ -40,6 +40,37 @@ class LearningSession extends Model
         return $this->belongsTo(SchoolClass::class, 'school_class_id');
     }
 
+    public function targetClasses()
+    {
+        return $this->belongsToMany(SchoolClass::class, 'learning_session_school_class')
+            ->orderBy('name');
+    }
+
+    public function scopeForSchoolClass($query, int $classId)
+    {
+        return $query->where(function ($query) use ($classId) {
+            $query->where('school_class_id', $classId)
+                ->orWhereHas('targetClasses', fn ($classQuery) => $classQuery->whereKey($classId));
+        });
+    }
+
+    public function isAssignedToClass(?int $classId): bool
+    {
+        if (! $classId) {
+            return false;
+        }
+
+        if ((int) $this->school_class_id === $classId) {
+            return true;
+        }
+
+        if ($this->relationLoaded('targetClasses')) {
+            return $this->targetClasses->contains('id', $classId);
+        }
+
+        return $this->targetClasses()->whereKey($classId)->exists();
+    }
+
     public function creator()
     {
         return $this->belongsTo(User::class, 'created_by');

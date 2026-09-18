@@ -222,7 +222,7 @@
                         <span class="bg-cyan-100 text-cyan-800 text-xs font-bold px-3 py-1 rounded-full">{{ $session->assessment_type ?? 'Quiz' }}</span>
                         <span class="ml-2 bg-emerald-100 text-emerald-800 text-xs font-bold px-3 py-1 rounded-full">{{ $session->assessment_format ?? 'Objective' }}</span>
                         <h4 class="font-bold text-gray-800 text-lg mt-3">{{ $session->title }}</h4>
-                        <p class="text-sm text-emerald-700 font-semibold mt-1">{{ $session->schoolClass->display_name ?? 'Your class' }} • {{ $session->topic }}</p>
+                        <p class="text-sm text-emerald-700 font-semibold mt-1">{{ $session->targetClasses->pluck('display_name')->join(', ') ?: ($session->schoolClass->display_name ?? 'Your class') }} • {{ $session->topic }}</p>
                         <p class="text-sm text-gray-600 mt-2">{{ Str::limit($session->description, 120) }}</p>
                     </div>
                     <div class="text-sm text-gray-600 bg-gray-50 rounded-xl px-4 py-3">

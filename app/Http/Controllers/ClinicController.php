@@ -7,6 +7,7 @@ use App\Models\ClinicIncident;
 use App\Models\ClinicInventoryItem;
 use App\Models\ClinicInventoryTransaction;
 use App\Models\ClinicSupplyRequest;
+use App\Models\ClinicTermHealthCheck;
 use App\Models\SchoolClass;
 use App\Models\User;
 use Carbon\Carbon;
@@ -56,6 +57,50 @@ class ClinicController extends Controller
             ->withQueryString();
 
         return view('clinic.students.index', compact('students', 'search'));
+    }
+
+    public function healthChecks()
+    {
+        $this->authorizeClinic();
+
+        $students = User::where('role', 'student')
+            ->with('class')
+            ->orderBy('name')
+            ->get();
+
+        $recentChecks = ClinicTermHealthCheck::with(['student.class', 'recorder'])
+            ->latest('checked_at')
+            ->take(15)
+            ->get();
+
+        return view('clinic.health-checks.index', compact('students', 'recentChecks'));
+    }
+
+    public function storeHealthCheck(Request $request)
+    {
+        $this->authorizeClinic();
+
+        $validated = $request->validate([
+            'student_id' => ['required', 'exists:users,id'],
+            'term_label' => ['required', 'string', 'max:100'],
+            'check_type' => ['required', 'string', 'max:100'],
+            'hostel_name' => ['nullable', 'string', 'max:255'],
+            'temperature' => ['nullable', 'numeric', 'between:30,45'],
+            'pulse' => ['nullable', 'integer', 'between:20,250'],
+            'weight_kg' => ['nullable', 'numeric', 'between:1,300'],
+            'respiration' => ['nullable', 'integer', 'between:1,100'],
+            'blood_pressure' => ['nullable', 'string', 'max:30'],
+            'health_notes' => ['nullable', 'string', 'max:2000'],
+            'remark' => ['nullable', 'string', 'max:255'],
+            'clearance_status' => ['required', 'in:normal,needs_observation,referred'],
+            'checked_at' => ['required', 'date'],
+        ]);
+
+        abort_unless(User::whereKey($validated['student_id'])->where('role', 'student')->exists(), 422, 'Select a valid student.');
+
+        ClinicTermHealthCheck::create([...$validated, 'recorded_by' => Auth::id()]);
+
+        return redirect()->route('clinic.health-checks.index')->with('success', 'Health check saved successfully.');
     }
 
     public function student(User $student)
