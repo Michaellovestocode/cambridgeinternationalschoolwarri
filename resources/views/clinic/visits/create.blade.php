@@ -13,6 +13,11 @@
             <div id="class_picker"><label class="mb-1 block text-sm font-bold text-gray-700">Class</label><select name="class_id" id="class_id" class="w-full rounded-xl border border-gray-200 px-4 py-3"><option value="">Select class</option>@foreach($classes as $class)<option value="{{ $class->id }}" {{ old('class_id', $student?->class_id) == $class->id ? 'selected' : '' }}>{{ $class->display_name }}</option>@endforeach</select></div>
             <div id="person_picker"><label class="mb-1 block text-sm font-bold text-gray-700">Name</label><select name="person_id" id="person_id" class="w-full rounded-xl border border-gray-200 px-4 py-3"><option value="">Select class first</option></select></div>
         </div>
+        <div class="grid gap-4 rounded-xl bg-slate-50 p-4 sm:grid-cols-3">
+            <div><label class="mb-1 block text-sm font-bold text-gray-700">Sex</label><select name="patient_sex" id="patient_sex" class="w-full rounded-xl border border-gray-200 bg-white px-4 py-3"><option value="">Select sex</option><option value="male" @selected(old('patient_sex') === 'male')>Male</option><option value="female" @selected(old('patient_sex') === 'female')>Female</option><option value="other" @selected(old('patient_sex') === 'other')>Other</option><option value="not_specified" @selected(old('patient_sex') === 'not_specified')>Not specified</option></select></div>
+            <div><label class="mb-1 block text-sm font-bold text-gray-700">Date of birth</label><input type="date" name="patient_date_of_birth" id="patient_date_of_birth" value="{{ old('patient_date_of_birth') }}" max="{{ now()->toDateString() }}" class="w-full rounded-xl border border-gray-200 bg-white px-4 py-3"></div>
+            <div><label class="mb-1 block text-sm font-bold text-gray-700">Student type</label><select name="residence_type" class="w-full rounded-xl border border-gray-200 bg-white px-4 py-3"><option value="">Select student type</option><option value="boarder" @selected(old('residence_type') === 'boarder')>Boarder</option><option value="day_student" @selected(old('residence_type') === 'day_student')>Day student</option></select></div>
+        </div>
         <div id="not_listed_fields" class="hidden grid gap-4 rounded-xl bg-amber-50 p-4 sm:grid-cols-2"><div><label class="mb-1 block text-sm font-bold text-amber-900">Name as reported</label><input name="patient_name" value="{{ old('patient_name') }}" class="w-full rounded-xl border border-amber-200 px-4 py-3"></div><div><label class="mb-1 block text-sm font-bold text-amber-900">Student/staff ID, if known</label><input name="patient_identifier" value="{{ old('patient_identifier') }}" class="w-full rounded-xl border border-amber-200 px-4 py-3"></div><p class="text-xs text-amber-800 sm:col-span-2">Use this when the person is not in the list. Administration can identify and update the record later.</p></div>
         @if($student)<div class="rounded-xl bg-blue-50 p-4 text-sm font-bold text-blue-900">{{ $student->name }} · {{ $student->registration_number ?: 'No student ID' }} · {{ $student->class?->display_name }}</div>@endif
         <div class="grid gap-4 sm:grid-cols-2"><div><label class="mb-1 block text-sm font-bold text-gray-700">Date and time</label><input type="datetime-local" name="visited_at" value="{{ old('visited_at', now()->format('Y-m-d\TH:i')) }}" required class="w-full rounded-xl border border-gray-200 px-4 py-3"></div><div><label class="mb-1 block text-sm font-bold text-gray-700">Reason</label><input name="reason" value="{{ old('reason') }}" required class="w-full rounded-xl border border-gray-200 px-4 py-3" placeholder="Headache, injury, stomach pain..."></div></div>
@@ -36,6 +41,8 @@
     const personSelect = document.getElementById('person_id');
     const personPicker = document.getElementById('person_picker');
     const notListed = document.getElementById('not_listed_fields');
+    const sexSelect = document.getElementById('patient_sex');
+    const dateOfBirthInput = document.getElementById('patient_date_of_birth');
     const selectedPersonId = '{{ old('person_id', $student?->id) }}';
     function updatePeople() {
         const selectedType = type.value;
@@ -49,9 +56,22 @@
             personSelect.add(option);
         });
         if (selectedPersonId) personSelect.value = selectedPersonId;
+        const selectedPerson = people.find(person => String(person.id) === String(personSelect.value));
+        if (selectedPerson) {
+            sexSelect.value = selectedPerson.sex || '';
+            dateOfBirthInput.value = selectedPerson.date_of_birth || '';
+        }
     }
     type.addEventListener('change', updatePeople);
     classSelect.addEventListener('change', updatePeople);
+    personSelect.addEventListener('change', () => {
+        const people = type.value === 'staff' ? staffData : (classData[classSelect.value] || []);
+        const selectedPerson = people.find(person => String(person.id) === String(personSelect.value));
+        if (selectedPerson) {
+            sexSelect.value = selectedPerson.sex || '';
+            dateOfBirthInput.value = selectedPerson.date_of_birth || '';
+        }
+    });
     updatePeople();
 </script>
 @endsection

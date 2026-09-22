@@ -276,17 +276,21 @@ class ClinicController extends Controller
                         'id' => $person->id,
                         'name' => $person->name,
                         'identifier' => $person->registration_number,
+                        'sex' => $person->sex,
+                        'date_of_birth' => $person->date_of_birth?->format('Y-m-d'),
                     ];
                 })->values()->all()];
             })->all();
             $staffData = User::whereIn('role', ['teacher', 'non_teaching_staff', 'nurse', 'admin'])
                 ->orderBy('name')
-                ->get(['id', 'name', 'role'])
+                ->get(['id', 'name', 'role', 'sex', 'date_of_birth'])
                 ->map(function ($person) {
                     return [
                         'id' => $person->id,
                         'name' => $person->name,
                         'role' => ucwords(str_replace('_', ' ', $person->role)),
+                        'sex' => $person->sex,
+                        'date_of_birth' => $person->date_of_birth?->format('Y-m-d'),
                     ];
                 })->values()->all();
         } catch (Throwable $exception) {
@@ -306,6 +310,9 @@ class ClinicController extends Controller
             'person_id' => ['nullable', 'exists:users,id'],
             'patient_name' => ['nullable', 'string', 'max:255'],
             'patient_identifier' => ['nullable', 'string', 'max:100'],
+            'patient_sex' => ['nullable', 'in:male,female,other,not_specified'],
+            'patient_date_of_birth' => ['nullable', 'date', 'before_or_equal:today'],
+            'residence_type' => ['nullable', 'in:boarder,day_student'],
             'visited_at' => ['required', 'date'],
             'reason' => ['required', 'string', 'max:255'],
             'symptoms' => ['nullable', 'string', 'max:5000'],

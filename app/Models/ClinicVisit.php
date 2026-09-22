@@ -16,6 +16,9 @@ class ClinicVisit extends Model
         'patient_type',
         'patient_name',
         'patient_identifier',
+        'patient_sex',
+        'patient_date_of_birth',
+        'residence_type',
         'recorded_by',
         'visited_at',
         'reason',
@@ -36,6 +39,7 @@ class ClinicVisit extends Model
         'parent_contacted' => 'boolean',
         'parent_contacted_at' => 'datetime',
         'temperature' => 'decimal:1',
+        'patient_date_of_birth' => 'date',
     ];
 
     public function student()

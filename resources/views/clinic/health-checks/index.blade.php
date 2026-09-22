@@ -51,7 +51,7 @@
         </div>
         <div class="mt-4 overflow-x-auto rounded-xl border border-gray-200">
             <table class="min-w-[1200px] w-full text-left text-sm">
-                <thead class="bg-emerald-800 text-xs uppercase text-white"><tr><th class="w-12 px-3 py-3">S/N</th><th class="min-w-[260px] px-3 py-3">Student</th><th class="min-w-[120px] px-3 py-3">Temp (°C)</th><th class="min-w-[120px] px-3 py-3">Pulse (bpm)</th><th class="min-w-[120px] px-3 py-3">Weight (kg)</th><th class="min-w-[140px] px-3 py-3">Respiration (/min)</th><th class="min-w-[150px] px-3 py-3">Blood pressure (mmHg)</th><th class="min-w-[180px] px-3 py-3">Remark</th><th class="min-w-[160px] px-3 py-3">Status</th><th class="w-16 px-3 py-3"></th></tr></thead>
+                <thead class="bg-emerald-800 text-xs uppercase text-white"><tr><th class="w-12 px-3 py-3">S/N</th><th class="min-w-[260px] px-3 py-3">Student</th><th class="min-w-[120px] px-3 py-3">Temp (°C)</th><th class="min-w-[120px] px-3 py-3">Pulse (bpm)</th><th class="min-w-[120px] px-3 py-3">Weight (kg)</th><th class="min-w-[140px] px-3 py-3">Respiration (c/m)</th><th class="min-w-[150px] px-3 py-3">Blood pressure (mmHg)</th><th class="min-w-[180px] px-3 py-3">Remark</th><th class="min-w-[160px] px-3 py-3">Status</th><th class="w-16 px-3 py-3"></th></tr></thead>
                 <tbody id="health-check-rows" class="divide-y divide-gray-100 bg-white"></tbody>
             </table>
         </div>
@@ -101,7 +101,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <td class="px-2 py-2">${number('temperature', '0.1', '30', '45', saved.temperature ?? '', '°C')}</td>
             <td class="px-2 py-2">${number('pulse', '1', '20', '250', saved.pulse ?? '', 'bpm')}</td>
             <td class="px-2 py-2">${number('weight_kg', '0.01', '1', '300', saved.weight_kg ?? '', 'kg')}</td>
-            <td class="px-2 py-2">${number('respiration', '1', '1', '100', saved.respiration ?? '', '/min')}</td>
+            <td class="px-2 py-2">${number('respiration', '1', '1', '100', saved.respiration ?? '', 'c/m')}</td>
             <td class="px-2 py-2"><div class="relative"><input name="rows[${index}][blood_pressure]" value="${escapeHtml(saved.blood_pressure)}" maxlength="30" placeholder="120/80" class="w-full min-h-[44px] rounded-lg border border-gray-200 bg-white px-3 py-2.5 pr-16 text-sm shadow-sm focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-200"><span class="pointer-events-none absolute inset-y-0 right-3 flex items-center text-xs font-bold text-gray-500">mmHg</span></div></td>
             <td class="px-2 py-2"><input name="rows[${index}][remark]" value="${escapeHtml(saved.remark)}" maxlength="255" placeholder="Normal" class="w-full min-h-[44px] rounded-lg border border-gray-200 bg-white px-3 py-2.5 text-sm shadow-sm focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-200"></td>
             <td class="px-2 py-2"><select name="rows[${index}][clearance_status]" class="w-full min-h-[44px] rounded-lg border border-gray-200 bg-white px-3 py-2.5 text-sm shadow-sm focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-200"><option value="normal">Normal</option><option value="needs_observation">Observation</option><option value="referred">Referred</option></select></td>
