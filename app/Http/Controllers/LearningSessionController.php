@@ -43,6 +43,59 @@ class LearningSessionController extends Controller
         return view('admin.learning-sessions.assessment-activities', compact('sessions'));
     }
 
+    public function oversight()
+    {
+        abort_unless(Auth::user()?->isAdmin(), 403);
+
+        $sessions = LearningSession::with([
+            'subject', 'schoolClass.students', 'targetClasses.students', 'creator', 'attempts.publisher',
+        ])->withCount('questions')
+            ->whereIn('assessment_type', ['classwork', 'assignment', 'quiz', 'test'])
+            ->latest()
+            ->get();
+
+        $today = now()->startOfDay();
+        $todayQuestionByClass = collect();
+        $activityRows = $sessions->map(function (LearningSession $session) use ($today, $todayQuestionByClass) {
+            $classes = $session->targetClasses->isNotEmpty()
+                ? $session->targetClasses
+                : collect([$session->schoolClass])->filter();
+            $students = $classes->flatMap->students->unique('id')->values();
+            $attempts = $session->attempts->unique('user_id')->values();
+            $todayQuestions = $session->questions()->where('created_at', '>=', $today)->count();
+
+            foreach ($classes as $class) {
+                $todayQuestionByClass[$class->id] = [
+                    'class_name' => $class->display_name,
+                    'questions' => ($todayQuestionByClass[$class->id]['questions'] ?? 0) + $todayQuestions,
+                ];
+            }
+
+            return (object) [
+                'session' => $session,
+                'class_names' => $classes->pluck('display_name')->join(', '),
+                'assigned' => $students->count(),
+                'completed' => $attempts->pluck('user_id')->unique()->intersect($students->pluck('id'))->count(),
+                'marked' => $attempts->where('is_published', true)->count(),
+                'awaiting_review' => $attempts->where('is_published', false)->count(),
+            ];
+        });
+
+        $summary = [
+            'activities' => $activityRows->count(),
+            'assigned' => $activityRows->sum('assigned'),
+            'completed' => $activityRows->sum('completed'),
+            'awaiting_review' => $activityRows->sum('awaiting_review'),
+        ];
+        $teacherReview = $activityRows->groupBy(fn ($row) => $row->session->created_by)
+            ->map(function ($rows) {
+                $teacher = $rows->first()->session->creator;
+                return (object) ['name' => $teacher?->name ?? 'Unknown teacher', 'activities' => $rows->count(), 'marked' => $rows->sum('marked'), 'awaiting_review' => $rows->sum('awaiting_review')];
+            })->sortBy('name')->values();
+
+        return view('admin.learning-sessions.oversight', compact('activityRows', 'summary', 'teacherReview', 'todayQuestionByClass'));
+    }
+
     public function create(Request $request)
     {
         $subjects = $this->availableSubjects();
@@ -167,14 +220,20 @@ class LearningSessionController extends Controller
     public function submissions(LearningSession $learningSession)
     {
         $this->authorizeSubmissionAccess();
-        $learningSession->load(['subject', 'schoolClass']);
+        $learningSession->load(['subject', 'schoolClass', 'targetClasses.students']);
         $attempts = $learningSession->attempts()
             ->with('user')
             ->withCount('answers')
             ->latest('completed_at')
             ->get();
 
-        return view('admin.learning-sessions.submissions', compact('learningSession', 'attempts'));
+        $classes = $learningSession->targetClasses->isNotEmpty()
+            ? $learningSession->targetClasses
+            : collect([$learningSession->schoolClass])->filter();
+        $learners = $classes->flatMap->students->unique('id')->sortBy('name')->values();
+        $attemptsByLearner = $attempts->unique('user_id')->keyBy('user_id');
+
+        return view('admin.learning-sessions.submissions', compact('learningSession', 'attempts', 'learners', 'attemptsByLearner'));
     }
 
     public function publish(LearningSession $learningSession)

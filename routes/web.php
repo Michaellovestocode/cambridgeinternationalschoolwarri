@@ -385,6 +385,7 @@ Route::middleware('auth')->group(function () {
         Route::delete('/questions/{question}', [AdminController::class, 'deleteQuestion'])->name('question.delete');
 
         // Learning Sessions
+        Route::get('/classroom-oversight', [LearningSessionController::class, 'oversight'])->name('classroom-oversight');
         Route::get('/classroom-activities', [LearningSessionController::class, 'assessmentActivities'])->name('classroom-activities');
         Route::get('/learning-sessions', [LearningSessionController::class, 'index'])->name('learning-sessions.index');
         Route::get('/learning-sessions/create-topic', [LearningSessionController::class, 'createTopic'])->name('learning-sessions.create-topic');
