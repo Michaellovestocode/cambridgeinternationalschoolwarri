@@ -41,6 +41,47 @@
         <button class="rounded-xl bg-blue-600 px-4 py-3 text-sm font-bold text-white">Filter</button>
     </form>
 
+    @php
+        $schoolSections = \App\Models\SchoolClass::sectionDefinitions();
+        $classesBySection = $classes->groupBy(fn ($class) => $class->section_key);
+        $filterBase = array_filter([
+            'search' => $filters['search'],
+            'role' => $filters['role'],
+        ]);
+    @endphp
+    <section class="rounded-2xl bg-white p-5 shadow">
+        <div class="mb-4 flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+                <h2 class="text-lg font-black text-gray-900">Browse by school section</h2>
+                <p class="text-sm text-gray-500">Choose a class card to show only its students—such as KG 1 IRIS.</p>
+            </div>
+            @if($filters['section'] || $filters['class_id'])
+                <a href="{{ route('admin.attendance.people', $filterBase) }}" class="text-sm font-bold text-blue-600 hover:underline">Clear class selection</a>
+            @endif
+        </div>
+
+        <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+            @foreach($schoolSections as $sectionKey => $section)
+                @php($sectionClasses = $classesBySection->get($sectionKey, collect()))
+                @continue($sectionClasses->isEmpty())
+                <div class="overflow-hidden rounded-2xl border {{ $section['soft'] }}">
+                    <a href="{{ route('admin.attendance.people', array_merge($filterBase, ['section' => $sectionKey])) }}" class="block bg-gradient-to-r {{ $section['color'] }} px-4 py-3 text-white hover:brightness-105">
+                        <p class="font-black">{{ $section['label'] }}</p>
+                        <p class="text-xs text-white/85">{{ $sectionClasses->count() }} {{ Str::plural('class', $sectionClasses->count()) }} · {{ $section['description'] }}</p>
+                    </a>
+                    <div class="flex flex-wrap gap-2 p-3">
+                        @foreach($sectionClasses as $class)
+                            <a href="{{ route('admin.attendance.people', array_merge($filterBase, ['section' => $sectionKey, 'class_id' => $class->id])) }}"
+                                class="rounded-xl border px-3 py-2 text-xs font-bold transition {{ (string) $filters['class_id'] === (string) $class->id ? 'border-slate-900 bg-slate-900 text-white' : 'border-white bg-white/80 text-gray-700 hover:border-gray-300 hover:bg-white' }}">
+                                {{ $class->display_name }}
+                            </a>
+                        @endforeach
+                    </div>
+                </div>
+            @endforeach
+        </div>
+    </section>
+
     <div class="space-y-3">
         @foreach($people as $person)
             <form method="POST" action="{{ route('admin.attendance.people.update', $person) }}" class="rounded-2xl bg-white p-4 shadow">

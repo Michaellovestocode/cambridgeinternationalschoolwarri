@@ -28,7 +28,7 @@
                 <div class="flex items-center justify-between gap-3">
                     <div>
                         <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">Record Type</p>
-                        <p class="text-lg font-bold text-gray-900">{{ ucfirst($enquiry->inquiry_type) }}</p>
+                        <p class="text-lg font-bold text-gray-900">{{ $enquiry->entry_source === 'offline' ? 'Offline / walk-in application' : 'Online ' . ucfirst($enquiry->inquiry_type) }}</p>
                     </div>
                     <span class="inline-flex px-3 py-1 rounded-full text-xs font-semibold {{ $statusClasses[$enquiry->status] ?? 'bg-gray-100 text-gray-700' }}">
                         {{ ucfirst(str_replace('_', ' ', $enquiry->status)) }}
@@ -64,12 +64,23 @@
                     @if($enquiry->student_date_of_birth)
                         <p class="text-sm text-gray-500">DOB: {{ $enquiry->student_date_of_birth->format('F j, Y') }}</p>
                     @endif
+                    @if($enquiry->student)
+                        <div class="mt-3 rounded-xl border border-emerald-200 bg-emerald-50 p-3">
+                            <p class="text-sm font-bold text-emerald-800">Enrolled as {{ $enquiry->student->registration_number }}</p>
+                            <p class="text-xs text-emerald-800">{{ $enquiry->enrolled_at?->format('F j, Y g:i A') }}{{ $enquiry->enrolledBy ? ' · by ' . $enquiry->enrolledBy->name : '' }}</p>
+                            <a href="{{ route('admin.student.edit', $enquiry->student) }}" class="text-sm font-semibold text-emerald-700 underline">Open student record</a>
+                        </div>
+                    @endif
                 </div>
 
                 <div>
                     <h3 class="text-sm font-semibold text-gray-500">Submitted</h3>
                     <p class="text-sm text-gray-500">{{ $enquiry->created_at->format('F j, Y g:i A') }}</p>
-                    <p class="text-xs text-gray-400">IP: {{ $enquiry->ip_address ?? 'Unknown' }}</p>
+                    @if($enquiry->entry_source === 'offline' && $enquiry->createdBy)
+                        <p class="text-xs text-gray-400">Entered by: {{ $enquiry->createdBy->name }}</p>
+                    @else
+                        <p class="text-xs text-gray-400">IP: {{ $enquiry->ip_address ?? 'Unknown' }}</p>
+                    @endif
                 </div>
             </div>
 
@@ -229,6 +240,31 @@
 
             <div class="bg-white shadow rounded-2xl p-6">
                 <h3 class="text-lg font-bold text-gray-900 mb-4">Admin Actions</h3>
+                @if($enquiry->inquiry_type === \App\Models\AdmissionEnquiry::TYPE_APPLICATION && !$enquiry->student_id)
+                    @if($enquiry->status === \App\Models\AdmissionEnquiry::STATUS_APPROVED)
+                        <form action="{{ route('admin.enquiries.enroll', $enquiry) }}" method="POST" class="mb-5 rounded-xl border border-emerald-200 bg-emerald-50 p-4">
+                            @csrf
+                            <p class="text-sm text-emerald-900">Create a student record using this application’s name, date of birth, gender, parent phone, and selected class.</p>
+                            <label for="enrollment_class_id" class="mt-3 block text-sm font-semibold text-emerald-900">Confirm class</label>
+                            <select id="enrollment_class_id" name="class_id" required class="mt-1 w-full rounded-lg border border-emerald-200 bg-white px-3 py-2 text-sm text-gray-800">
+                                <option value="">Choose the student’s class</option>
+                                @foreach($classes as $class)
+                                    <option value="{{ $class->id }}" @selected($class->name === $enquiry->class_level || $class->display_name === $enquiry->class_level)>{{ $class->display_name }}</option>
+                                @endforeach
+                            </select>
+                            @error('class_id')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+                            <label for="enrollment_password" class="mt-3 block text-sm font-semibold text-emerald-900">Initial student password</label>
+                            <input id="enrollment_password" type="password" name="password" required minlength="6" autocomplete="new-password" class="mt-1 w-full rounded-lg border border-emerald-200 bg-white px-3 py-2 text-sm text-gray-800" placeholder="At least 6 characters">
+                            <label for="enrollment_password_confirmation" class="mt-3 block text-sm font-semibold text-emerald-900">Confirm password</label>
+                            <input id="enrollment_password_confirmation" type="password" name="password_confirmation" required minlength="6" autocomplete="new-password" class="mt-1 w-full rounded-lg border border-emerald-200 bg-white px-3 py-2 text-sm text-gray-800">
+                            @error('password')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+                            <p class="mt-1 text-xs text-emerald-800">A registration number will be generated. You can open the student record afterward to complete any remaining details.</p>
+                            <button type="submit" class="mt-3 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-bold text-white hover:bg-emerald-700" onclick="return confirm('Enroll this approved applicant as a student?')">Enroll as student</button>
+                        </form>
+                    @else
+                        <p class="mb-4 rounded-xl bg-amber-50 p-3 text-sm text-amber-800">Approve this application to enable student enrollment.</p>
+                    @endif
+                @endif
                 <form action="{{ route('admin.enquiries.update', $enquiry) }}" method="POST" class="space-y-4">
                     @csrf
                     @method('PUT')

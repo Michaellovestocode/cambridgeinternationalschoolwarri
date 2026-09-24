@@ -345,8 +345,11 @@ Route::middleware('auth')->group(function () {
                 Route::delete('/form-teachers/{formTeacher}', [FormTeacherController::class, 'destroy'])->name('form-teachers.destroy');
 
             Route::get('/enquiries', [AdminAdmissionEnquiryController::class, 'index'])->name('enquiries.index');
+            Route::get('/enquiries/offline/create', [AdminAdmissionEnquiryController::class, 'createOffline'])->name('enquiries.offline.create');
+            Route::post('/enquiries/offline', [AdminAdmissionEnquiryController::class, 'storeOffline'])->name('enquiries.offline.store');
             Route::get('/enquiries/{enquiry}', [AdminAdmissionEnquiryController::class, 'show'])->name('enquiries.show');
             Route::put('/enquiries/{enquiry}', [AdminAdmissionEnquiryController::class, 'update'])->name('enquiries.update');
+            Route::post('/enquiries/{enquiry}/enroll', [AdminAdmissionEnquiryController::class, 'enroll'])->name('enquiries.enroll');
             Route::get('/admission-form-payments', [AdminAdmissionFormPaymentController::class, 'index'])->name('admission-form-payments.index');
             Route::get('/admission-form-payments/{payment}', [AdminAdmissionFormPaymentController::class, 'show'])->name('admission-form-payments.show');
             Route::put('/admission-form-payments/{payment}', [AdminAdmissionFormPaymentController::class, 'update'])->name('admission-form-payments.update');

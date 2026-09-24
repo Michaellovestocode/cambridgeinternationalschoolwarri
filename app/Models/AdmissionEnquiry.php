@@ -12,6 +12,8 @@ class AdmissionEnquiry extends Model
 
     protected $fillable = [
         'inquiry_type',
+        'entry_source',
+        'created_by',
         'admission_form_payment_id',
         'parent_name',
         'phone',
@@ -92,8 +94,12 @@ class AdmissionEnquiry extends Model
     public const TYPE_ENQUIRY = 'enquiry';
     public const TYPE_APPLICATION = 'application';
 
+    public const SOURCE_ONLINE = 'online';
+    public const SOURCE_OFFLINE = 'offline';
+
     protected $casts = [
         'student_date_of_birth' => 'date',
+        'enrolled_at' => 'datetime',
         'has_siblings_applying' => 'boolean',
         'has_been_suspended_or_dismissed' => 'boolean',
         'previously_applied_to_cis' => 'boolean',
@@ -124,5 +130,20 @@ class AdmissionEnquiry extends Model
     public function admissionFormPayment(): BelongsTo
     {
         return $this->belongsTo(AdmissionFormPayment::class);
+    }
+
+    public function createdBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function student(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'student_id')->where('role', 'student');
+    }
+
+    public function enrolledBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'enrolled_by');
     }
 }

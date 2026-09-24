@@ -6,10 +6,11 @@
 <div class="space-y-6">
     <div class="flex items-center justify-between gap-4">
         <div>
-            <h1 class="text-3xl font-extrabold text-gray-900">Admissions Inbox</h1>
-            <p class="text-sm text-gray-500">Review website enquiries and full admission applications in one place.</p>
+            <h1 class="text-3xl font-extrabold text-gray-900">Admissions Register</h1>
+            <p class="text-sm text-gray-500">View and manage every online and offline admission record in one place.</p>
         </div>
         <div class="flex items-center gap-3">
+            <a href="{{ route('admin.enquiries.offline.create') }}" class="rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-indigo-700">Add offline application</a>
             <a href="{{ route('admin.admission-form-payments.index') }}" class="text-sm font-semibold text-emerald-600 hover:underline">Form payment requests</a>
             <a href="{{ route('admin.dashboard') }}" class="text-sm text-blue-600 hover:underline">Back to dashboard</a>
         </div>
@@ -35,11 +36,19 @@
     </div>
 
     <div class="bg-white shadow rounded-2xl p-6">
-        <form method="GET" action="{{ route('admin.enquiries.index') }}" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <form method="GET" action="{{ route('admin.enquiries.index') }}" class="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>
                 <label for="search" class="block text-xs font-semibold text-gray-500 mb-1">Search</label>
                 <input id="search" name="search" type="text" value="{{ $filters['search'] }}"
                     placeholder="Parent, email, phone, student" class="w-full border border-gray-200 rounded-xl px-3 py-2 focus:ring-2 focus:ring-blue-500">
+            </div>
+            <div>
+                <label for="source" class="block text-xs font-semibold text-gray-500 mb-1">Source</label>
+                <select name="source" id="source" class="w-full border border-gray-200 rounded-xl px-3 py-2 focus:ring-2 focus:ring-blue-500">
+                    <option value="">All sources</option>
+                    <option value="online" {{ $filters['source'] === 'online' ? 'selected' : '' }}>Online</option>
+                    <option value="offline" {{ $filters['source'] === 'offline' ? 'selected' : '' }}>Offline / walk-in</option>
+                </select>
             </div>
             <div>
                 <label for="status" class="block text-xs font-semibold text-gray-500 mb-1">Status</label>
@@ -76,7 +85,7 @@
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
                     <tr>
-                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">Parent / Type</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">Parent / Source</th>
                         <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">Student</th>
                         <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">Details</th>
                         <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">Status</th>
@@ -94,8 +103,11 @@
                                 <p class="text-[11px] text-gray-400">{{ $enquiry->academic_year }}</p>
                             @endif
                             <span class="mt-2 inline-flex rounded-full bg-gray-100 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-gray-700">
-                                {{ $enquiry->inquiry_type }}
+                                {{ $enquiry->entry_source === 'offline' ? 'Offline / walk-in' : 'Online' }}
                             </span>
+                            @if($enquiry->createdBy)
+                                <p class="mt-1 text-[11px] text-gray-400">Entered by {{ $enquiry->createdBy->name }}</p>
+                            @endif
                         </td>
                         <td class="px-4 py-3">
                             <p class="text-sm font-semibold">{{ $enquiry->student_name }}</p>
