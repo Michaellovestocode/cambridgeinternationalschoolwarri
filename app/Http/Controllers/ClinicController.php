@@ -223,7 +223,7 @@ class ClinicController extends Controller
             'checked_at' => ['required', 'date'],
             'rows' => ['required', 'array', 'min:1'],
             'rows.*.student_id' => ['nullable', 'integer', 'exists:users,id'],
-            'rows.*.temperature' => ['nullable', 'numeric', 'between:30,45'],
+            'rows.*.temperature' => ['nullable', 'numeric'],
             'rows.*.pulse' => ['nullable', 'integer', 'between:20,250'],
             'rows.*.weight_kg' => ['nullable', 'numeric', 'between:1,300'],
             'rows.*.respiration' => ['nullable', 'integer', 'between:1,100'],

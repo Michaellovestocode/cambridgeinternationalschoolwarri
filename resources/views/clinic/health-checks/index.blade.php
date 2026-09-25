@@ -33,7 +33,7 @@
             <div><label class="mb-1 block text-sm font-bold text-gray-700">Term / report title</label><input name="term_label" value="{{ old('term_label', 'Summer Term ' . now()->format('Y')) }}" required class="w-full rounded-xl border border-gray-200 px-4 py-3"></div>
             <div><label class="mb-1 block text-sm font-bold text-gray-700">Check type</label><input name="check_type" value="{{ old('check_type', 'Hostel check-out') }}" required class="w-full rounded-xl border border-gray-200 px-4 py-3"></div>
             <div><label class="mb-1 block text-sm font-bold text-gray-700">Hostel</label><input name="hostel_name" value="{{ old('hostel_name') }}" class="w-full rounded-xl border border-gray-200 px-4 py-3" placeholder="Optional"></div>
-            <div><label class="mb-1 block text-sm font-bold text-gray-700">Temperature (°C)</label><input type="number" step="0.1" min="30" max="45" name="temperature" value="{{ old('temperature') }}" class="w-full rounded-xl border border-gray-200 px-4 py-3"></div>
+            <div><label class="mb-1 block text-sm font-bold text-gray-700">Temperature (°C)</label><input type="number" step="0.1" name="temperature" value="{{ old('temperature') }}" class="w-full rounded-xl border border-gray-200 px-4 py-3"></div>
             <div><label class="mb-1 block text-sm font-bold text-gray-700">Pulse (bpm)</label><input type="number" min="20" max="250" name="pulse" value="{{ old('pulse') }}" class="w-full rounded-xl border border-gray-200 px-4 py-3"></div>
             <div><label class="mb-1 block text-sm font-bold text-gray-700">Weight (kg)</label><input type="number" step="0.01" min="1" max="300" name="weight_kg" value="{{ old('weight_kg') }}" class="w-full rounded-xl border border-gray-200 px-4 py-3"></div>
             <div><label class="mb-1 block text-sm font-bold text-gray-700">Respiration (/min)</label><input type="number" min="1" max="100" name="respiration" value="{{ old('respiration') }}" class="w-full rounded-xl border border-gray-200 px-4 py-3"></div>
@@ -102,7 +102,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <input type="hidden" name="rows[${index}][student_id]" value="${escapeHtml(selectedStudentId)}">
                 </div>
             </td>
-            <td class="px-2 py-2">${number('temperature', '0.1', '30', '45', saved.temperature ?? '', '°C')}</td>
+            <td class="px-2 py-2">${number('temperature', '0.1', '', '', saved.temperature ?? '', '°C')}</td>
             <td class="px-2 py-2">${number('pulse', '1', '20', '250', saved.pulse ?? '', 'bpm')}</td>
             <td class="px-2 py-2">${number('weight_kg', '0.01', '1', '300', saved.weight_kg ?? '', 'kg')}</td>
             <td class="px-2 py-2">${number('respiration', '1', '1', '100', saved.respiration ?? '', 'c/m')}</td>
