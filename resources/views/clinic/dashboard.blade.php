@@ -57,8 +57,9 @@
         <section class="rounded-2xl bg-white p-5 shadow-xl">
             <h2 class="text-xl font-black text-gray-900">Quick Actions</h2>
             <div class="mt-4 grid gap-3">
-                <a href="{{ route('clinic.records.index') }}" class="rounded-xl bg-slate-100 px-4 py-4 font-bold text-slate-900">My Entered Records</a>
+                <a href="{{ route('clinic.records.index') }}" class="rounded-xl bg-slate-100 px-4 py-4 font-bold text-slate-900">{{ auth()->user()->isAdmin() ? 'All Clinic Records' : 'My Entered Records' }}</a>
                 <a href="{{ route('clinic.health-checks.index') }}" class="rounded-xl bg-emerald-100 px-4 py-4 font-bold text-emerald-900">Hostel Vital Signs Check</a>
+                <a href="{{ route('clinic.health-checks.recent') }}" class="rounded-xl bg-teal-100 px-4 py-4 font-bold text-teal-900">Recent Health Checks</a>
                 <a href="{{ route('clinic.visits.create') }}" class="rounded-xl bg-amber-100 px-4 py-4 font-bold text-amber-900">Record New Visit</a>
                 <a href="{{ route('clinic.students.index') }}" class="rounded-xl bg-blue-100 px-4 py-4 font-bold text-blue-900">Search Students</a>
                 <a href="{{ route('clinic.incidents.index') }}" class="rounded-xl bg-rose-100 px-4 py-4 font-bold text-rose-900">Incident Reports</a>

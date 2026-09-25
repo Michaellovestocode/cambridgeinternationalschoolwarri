@@ -83,10 +83,17 @@
                     <h2 class="font-bold text-sky-900">Study Materials</h2>
                     <div class="mt-3 grid gap-3 sm:grid-cols-2">
                         @foreach($learningSession->attachments as $attachment)
-                            <a href="{{ $attachment->url() }}" target="_blank" rel="noopener" class="flex min-w-0 items-center justify-between rounded-xl bg-white p-4 text-sm font-semibold text-sky-800 shadow-sm hover:bg-sky-100">
-                                <span class="truncate">{{ $attachment->name }}</span>
-                                <span class="ml-3 shrink-0 text-xs text-sky-600">Open</span>
-                            </a>
+                            @if(str_starts_with((string) $attachment->mime_type, 'image/'))
+                                <a href="{{ $attachment->url() }}" target="_blank" rel="noopener" class="group overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-sky-100">
+                                    <img src="{{ $attachment->url() }}" alt="{{ $attachment->name }}" loading="lazy" class="max-h-96 w-full bg-slate-50 object-contain transition group-hover:scale-[1.01]">
+                                    <span class="block truncate px-4 py-3 text-sm font-semibold text-sky-800">{{ $attachment->name }}</span>
+                                </a>
+                            @else
+                                <a href="{{ $attachment->url() }}" target="_blank" rel="noopener" class="flex min-w-0 items-center justify-between rounded-xl bg-white p-4 text-sm font-semibold text-sky-800 shadow-sm hover:bg-sky-100">
+                                    <span class="truncate">{{ $attachment->name }}</span>
+                                    <span class="ml-3 shrink-0 text-xs text-sky-600">Open</span>
+                                </a>
+                            @endif
                         @endforeach
                     </div>
                 </div>

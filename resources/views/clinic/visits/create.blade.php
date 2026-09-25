@@ -15,7 +15,7 @@
         </div>
         <div class="grid gap-4 rounded-xl bg-slate-50 p-4 sm:grid-cols-3">
             <div><label class="mb-1 block text-sm font-bold text-gray-700">Sex</label><select name="patient_sex" id="patient_sex" class="w-full rounded-xl border border-gray-200 bg-white px-4 py-3"><option value="">Select sex</option><option value="male" @selected(old('patient_sex') === 'male')>Male</option><option value="female" @selected(old('patient_sex') === 'female')>Female</option><option value="other" @selected(old('patient_sex') === 'other')>Other</option><option value="not_specified" @selected(old('patient_sex') === 'not_specified')>Not specified</option></select></div>
-            <div><label class="mb-1 block text-sm font-bold text-gray-700">Date of birth</label><input type="date" name="patient_date_of_birth" id="patient_date_of_birth" value="{{ old('patient_date_of_birth') }}" max="{{ now()->toDateString() }}" class="w-full rounded-xl border border-gray-200 bg-white px-4 py-3"></div>
+            <div><label class="mb-1 block text-sm font-bold text-gray-700" for="patient_age">Age</label><input type="number" name="patient_age" id="patient_age" value="{{ old('patient_age') }}" min="0" max="120" inputmode="numeric" class="w-full rounded-xl border border-gray-200 bg-white px-4 py-3" placeholder="Age in years"></div>
             <div><label class="mb-1 block text-sm font-bold text-gray-700">Student type</label><select name="residence_type" class="w-full rounded-xl border border-gray-200 bg-white px-4 py-3"><option value="">Select student type</option><option value="boarder" @selected(old('residence_type') === 'boarder')>Boarder</option><option value="day_student" @selected(old('residence_type') === 'day_student')>Day student</option></select></div>
         </div>
         <div id="not_listed_fields" class="hidden grid gap-4 rounded-xl bg-amber-50 p-4 sm:grid-cols-2"><div><label class="mb-1 block text-sm font-bold text-amber-900">Name as reported</label><input name="patient_name" value="{{ old('patient_name') }}" class="w-full rounded-xl border border-amber-200 px-4 py-3"></div><div><label class="mb-1 block text-sm font-bold text-amber-900">Student/staff ID, if known</label><input name="patient_identifier" value="{{ old('patient_identifier') }}" class="w-full rounded-xl border border-amber-200 px-4 py-3"></div><p class="text-xs text-amber-800 sm:col-span-2">Use this when the person is not in the list. Administration can identify and update the record later.</p></div>
@@ -42,7 +42,17 @@
     const personPicker = document.getElementById('person_picker');
     const notListed = document.getElementById('not_listed_fields');
     const sexSelect = document.getElementById('patient_sex');
-    const dateOfBirthInput = document.getElementById('patient_date_of_birth');
+    const ageInput = document.getElementById('patient_age');
+    function ageFromDate(dateValue) {
+        if (!dateValue) return '';
+        const birthDate = new Date(dateValue + 'T00:00:00');
+        if (Number.isNaN(birthDate.getTime())) return '';
+        const today = new Date();
+        let age = today.getFullYear() - birthDate.getFullYear();
+        const beforeBirthday = today.getMonth() < birthDate.getMonth() || (today.getMonth() === birthDate.getMonth() && today.getDate() < birthDate.getDate());
+        if (beforeBirthday) age--;
+        return age >= 0 ? age : '';
+    }
     const selectedPersonId = '{{ old('person_id', $student?->id) }}';
     function updatePeople() {
         const selectedType = type.value;
@@ -59,7 +69,7 @@
         const selectedPerson = people.find(person => String(person.id) === String(personSelect.value));
         if (selectedPerson) {
             sexSelect.value = selectedPerson.sex || '';
-            dateOfBirthInput.value = selectedPerson.date_of_birth || '';
+            ageInput.value = ageFromDate(selectedPerson.date_of_birth);
         }
     }
     type.addEventListener('change', updatePeople);
@@ -69,7 +79,7 @@
         const selectedPerson = people.find(person => String(person.id) === String(personSelect.value));
         if (selectedPerson) {
             sexSelect.value = selectedPerson.sex || '';
-            dateOfBirthInput.value = selectedPerson.date_of_birth || '';
+            ageInput.value = ageFromDate(selectedPerson.date_of_birth);
         }
     });
     updatePeople();

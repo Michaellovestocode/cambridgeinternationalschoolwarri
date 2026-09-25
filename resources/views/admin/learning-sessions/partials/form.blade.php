@@ -8,7 +8,7 @@
     </div>
 @endif
 
-<form action="{{ $action }}" method="POST" class="space-y-5">
+<form action="{{ $action }}" method="POST" enctype="multipart/form-data" class="space-y-5">
     @csrf
     @if($method !== 'POST')
         @method($method)
@@ -172,6 +172,16 @@
             <label class="block text-sm font-semibold text-gray-700 mb-1">Topic</label>
             <input type="text" name="topic" value="{{ old('topic', $learningSession->topic ?? '') }}" required class="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-cyan-500">
         </div>
+    </div>
+
+    <div class="rounded-2xl border border-sky-200 bg-sky-50 p-4">
+        <label for="assignment-illustration" class="block text-sm font-bold text-sky-950">Assignment illustration (optional)</label>
+        <p class="mt-1 text-xs text-sky-800">Upload a picture students should see with this classwork or assignment. JPG, PNG, GIF, or WebP, up to 5 MB.</p>
+        <input id="assignment-illustration" type="file" name="illustration" accept="image/jpeg,image/png,image/gif,image/webp" class="mt-3 block w-full rounded-xl border border-sky-200 bg-white px-3 py-2 text-sm text-gray-700 file:mr-3 file:rounded-lg file:border-0 file:bg-sky-100 file:px-3 file:py-2 file:font-bold file:text-sky-800">
+        @error('illustration')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
+        @if($learningSession?->attachments?->contains(fn ($attachment) => str_starts_with((string) $attachment->mime_type, 'image/')))
+            <p class="mt-2 text-xs font-semibold text-sky-800">An image is already attached. Uploading another image will add it to the student view.</p>
+        @endif
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">

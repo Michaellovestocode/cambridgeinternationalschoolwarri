@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Http\UploadedFile;
 
 class LearningSessionController extends Controller
 {
@@ -176,9 +177,10 @@ class LearningSessionController extends Controller
     public function store(Request $request)
     {
         $data = $this->validatedSessionData($request);
+        $illustration = $request->file('illustration');
         $classIds = collect($data['school_class_ids'])->map(fn ($id) => (int) $id)->unique()->values();
         $this->ensureAllowedAssignments((int) $data['subject_id'], $classIds->all());
-        unset($data['school_class_ids']);
+        unset($data['school_class_ids'], $data['illustration']);
         $data['school_class_id'] = $classIds->first();
         $data['created_by'] = Auth::id();
         $data['is_published'] = $request->has('publish')
@@ -193,6 +195,10 @@ class LearningSessionController extends Controller
 
             return $session;
         });
+
+        if ($illustration) {
+            $this->storeIllustration($session, $illustration);
+        }
 
         $destination = 'admin.classroom-activities';
 
@@ -380,9 +386,10 @@ class LearningSessionController extends Controller
     {
         $data = $this->validatedSessionData($request);
         $this->authorizeSession($learningSession);
+        $illustration = $request->file('illustration');
         $classIds = collect($data['school_class_ids'])->map(fn ($id) => (int) $id)->unique()->values();
         $this->ensureAllowedAssignments((int) $data['subject_id'], $classIds->all());
-        unset($data['school_class_ids']);
+        unset($data['school_class_ids'], $data['illustration']);
         $data['school_class_id'] = $classIds->first();
         $data['is_published'] = $request->has('publish')
             ? $request->boolean('publish')
@@ -393,6 +400,10 @@ class LearningSessionController extends Controller
             $learningSession->update($data);
             $learningSession->targetClasses()->sync($classIds->all());
         });
+
+        if ($illustration) {
+            $this->storeIllustration($learningSession, $illustration);
+        }
 
         return redirect()
             ->route('admin.learning-sessions.edit', $learningSession)
@@ -508,6 +519,18 @@ class LearningSessionController extends Controller
             'questions.*.question_type' => ['nullable', 'in:objective,theory'],
             'questions.*.options' => ['nullable', 'array'],
             'questions.*.correct_option' => ['nullable', 'in:A,B,C,D'],
+            'illustration' => ['nullable', 'image', 'mimes:jpg,jpeg,png,gif,webp', 'max:5120'],
+        ]);
+    }
+
+    private function storeIllustration(LearningSession $session, UploadedFile $image): void
+    {
+        $session->attachments()->create([
+            'uploaded_by' => Auth::id(),
+            'name' => $image->getClientOriginalName(),
+            'path' => $image->store('learning-attachments', 'public'),
+            'mime_type' => $image->getMimeType(),
+            'size' => $image->getSize(),
         ]);
     }
 

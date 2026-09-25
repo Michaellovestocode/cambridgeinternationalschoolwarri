@@ -15,6 +15,7 @@ use App\Models\Score;
 use App\Models\Session;
 use App\Models\Term;
 use App\Models\AdmissionEnquiry;
+use App\Models\ParentFeedback;
 use App\Models\FormTeacher;
 use App\Models\Message;
 use App\Services\CbtReportCardSyncService;
@@ -131,6 +132,9 @@ class AdminController extends Controller
         }
 
         $newEnquiriesCount = AdmissionEnquiry::where('status', AdmissionEnquiry::STATUS_NEW)->count();
+        $newParentFeedbackCount = $user->isAdmin()
+            ? ParentFeedback::where('status', ParentFeedback::STATUS_NEW)->count()
+            : 0;
         $unreadMessagesCount = Message::where('recipient_id', $user->id)
             ->whereNull('read_at')
             ->count();
@@ -143,6 +147,7 @@ class AdminController extends Controller
             'recentAttemptsCount',
             'isFormTeacher',
             'newEnquiriesCount',
+            'newParentFeedbackCount',
             'unreadMessagesCount',
             'formTeacherAssignment',
             'formTeacherAssignments',

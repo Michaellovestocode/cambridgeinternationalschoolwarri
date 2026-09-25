@@ -549,6 +549,19 @@
                     </svg>
                 </a>
 
+                <a href="{{ route('admin.enquiries.offline.create') }}"
+                   class="flex items-center justify-between bg-gradient-to-r from-fuchsia-500 to-purple-600 hover:from-fuchsia-600 hover:to-purple-700 text-white px-6 py-4 rounded-xl font-bold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all group">
+                    <span class="flex items-center">
+                        <svg class="mr-2 h-5 w-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                        </svg>
+                        Add Offline Application
+                    </span>
+                    <svg class="h-5 w-5 shrink-0 transform transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                    </svg>
+                </a>
+
                 <a href="{{ route('admin.admission-form-payments.index') }}"
                    class="flex items-center justify-between bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white px-6 py-4 rounded-xl font-bold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all group">
                     <span class="flex items-center">
@@ -561,6 +574,53 @@
                     <svg class="w-5 h-5 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
                     </svg>
+                </a>
+
+                <a href="{{ route('admin.parent-feedback.index') }}"
+                   class="flex items-center justify-between rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 px-6 py-4 font-bold text-white shadow-lg transition-all hover:-translate-y-0.5 hover:shadow-xl group">
+                    <span class="flex items-center">
+                        <svg class="mr-2 h-5 w-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h8M8 14h5m-8 6l-2 1 1-4a8 8 0 111.7 1.7L5 20z"></path>
+                        </svg>
+                        Parent Feedback &amp; Suggestions
+                    </span>
+                    <span class="inline-flex items-center gap-2">
+                        @if(($newParentFeedbackCount ?? 0) > 0)<span class="rounded-full bg-white/20 px-2.5 py-1 text-xs font-black">{{ $newParentFeedbackCount }} new</span>@endif
+                        <svg class="h-5 w-5 shrink-0 transform transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                    </span>
+                </a>
+
+                <a href="{{ route('clinic.records.index') }}"
+                   class="flex items-center justify-between rounded-xl bg-gradient-to-r from-blue-700 to-cyan-700 px-6 py-4 font-bold text-white shadow-lg transition-all hover:-translate-y-0.5 hover:shadow-xl group">
+                    <span class="flex items-center">
+                        <svg class="mr-2 h-5 w-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5h6m-6 4h6m-6 4h6m-6 4h6M5 3h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2z"></path>
+                        </svg>
+                        Nurse &amp; Clinic Records
+                    </span>
+                    <svg class="h-5 w-5 shrink-0 transform transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                </a>
+
+                <a href="{{ route('clinic.dashboard') }}"
+                   class="flex items-center justify-between rounded-xl bg-gradient-to-r from-slate-700 to-slate-900 px-6 py-4 font-bold text-white shadow-lg transition-all hover:-translate-y-0.5 hover:shadow-xl group">
+                    <span class="flex items-center">
+                        <svg class="mr-2 h-5 w-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h4m8-11l2 2m-2-2v10a1 1 0 01-1 1h-4m-4 0v-5a1 1 0 011-1h2a1 1 0 011 1v5"></path>
+                        </svg>
+                        Clinic Oversight Dashboard
+                    </span>
+                    <svg class="h-5 w-5 shrink-0 transform transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                </a>
+
+                <a href="{{ route('clinic.health-checks.recent') }}"
+                   class="flex items-center justify-between rounded-xl bg-gradient-to-r from-teal-600 to-emerald-600 px-6 py-4 font-bold text-white shadow-lg transition-all hover:-translate-y-0.5 hover:shadow-xl group">
+                    <span class="flex items-center">
+                        <svg class="mr-2 h-5 w-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 12h4l2-6 4 12 2-6h4"></path>
+                        </svg>
+                        Recent Health Checks
+                    </span>
+                    <svg class="h-5 w-5 shrink-0 transform transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
                 </a>
 
                 @if(auth()->user()->canManageAttendance())

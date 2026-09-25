@@ -132,11 +132,6 @@ class ClinicController extends Controller
             ->orderBy('name')
             ->get();
 
-        $recentChecks = ClinicTermHealthCheck::with(['student.class', 'recorder'])
-            ->latest('checked_at')
-            ->take(15)
-            ->get();
-
         $studentOptionsJson = json_encode(
             $students->map(fn ($student) => [
                 'id' => $student->id,
@@ -151,7 +146,43 @@ class ClinicController extends Controller
             JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT
         );
 
-        return view('clinic.health-checks.index', compact('students', 'recentChecks', 'studentOptionsJson', 'initialRowsJson'));
+        return view('clinic.health-checks.index', compact('students', 'studentOptionsJson', 'initialRowsJson'));
+    }
+
+    public function recentHealthChecks(Request $request)
+    {
+        $this->authorizeClinic();
+
+        $period = $request->string('period')->value();
+        abort_unless($period === '' || in_array($period, ['today', 'week'], true), 404);
+        $search = trim((string) $request->input('search', ''));
+        $query = ClinicTermHealthCheck::with(['student.class', 'recorder']);
+        $this->scopeToCurrentClinicUser($query, 'recorded_by');
+        $this->applyPeriodFilter($query, $period, 'checked_at');
+        $query->when($search !== '', function ($checks) use ($search) {
+            $checks->where(function ($filter) use ($search) {
+                $filter->where('term_label', 'like', "%{$search}%")
+                    ->orWhere('check_type', 'like', "%{$search}%")
+                    ->orWhere('hostel_name', 'like', "%{$search}%")
+                    ->orWhereHas('student', fn ($student) => $student->where('name', 'like', "%{$search}%"))
+                    ->orWhereHas('recorder', fn ($recorder) => $recorder->where('name', 'like', "%{$search}%"));
+            });
+        });
+
+        $summaryQuery = ClinicTermHealthCheck::query();
+        $this->scopeToCurrentClinicUser($summaryQuery, 'recorded_by');
+        $summary = [
+            'total' => (clone $summaryQuery)->count(),
+            'today' => (clone $summaryQuery)->whereDate('checked_at', today())->count(),
+            'follow_up' => (clone $summaryQuery)->whereIn('clearance_status', ['needs_observation', 'referred'])->count(),
+        ];
+
+        return view('clinic.health-checks.recent', [
+            'checks' => $query->latest('checked_at')->paginate(25)->withQueryString(),
+            'period' => $period,
+            'search' => $search,
+            'summary' => $summary,
+        ]);
     }
 
     public function storeHealthCheck(Request $request)
@@ -311,7 +342,7 @@ class ClinicController extends Controller
             'patient_name' => ['nullable', 'string', 'max:255'],
             'patient_identifier' => ['nullable', 'string', 'max:100'],
             'patient_sex' => ['nullable', 'in:male,female,other,not_specified'],
-            'patient_date_of_birth' => ['nullable', 'date', 'before_or_equal:today'],
+            'patient_age' => ['nullable', 'integer', 'min:0', 'max:120'],
             'residence_type' => ['nullable', 'in:boarder,day_student'],
             'visited_at' => ['required', 'date'],
             'reason' => ['required', 'string', 'max:255'],
@@ -338,10 +369,13 @@ class ClinicController extends Controller
             abort_unless(filled($validated['patient_name'] ?? null), 422, 'Enter the name of the person not listed.');
         }
 
+        $patientAge = $person?->date_of_birth?->age ?? ($validated['patient_age'] ?? null);
         $visit = ClinicVisit::create([
             ...$validated,
             'student_id' => $validated['patient_type'] === 'student' ? $person->id : null,
             'person_id' => $person?->id,
+            'patient_age' => $patientAge,
+            'patient_date_of_birth' => $person?->date_of_birth,
             'recorded_by' => Auth::id(),
             'parent_contacted' => $request->boolean('parent_contacted'),
         ]);

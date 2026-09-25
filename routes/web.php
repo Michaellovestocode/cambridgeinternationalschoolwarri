@@ -11,7 +11,9 @@ use App\Http\Controllers\NigerianReportCardController;
 use App\Http\Controllers\FormTeacherController;
 use App\Http\Controllers\AdminAdmissionEnquiryController;
 use App\Http\Controllers\AdminAdmissionFormPaymentController;
+use App\Http\Controllers\AdminParentFeedbackController;
 use App\Http\Controllers\AdmissionEnquiryController;
+use App\Http\Controllers\ParentFeedbackController;
 use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\AdminParentController;
 use App\Http\Controllers\AnnouncementController;
@@ -86,6 +88,8 @@ Route::post('/apply/payment-request', [AdmissionEnquiryController::class, 'reque
 Route::post('/apply/verify-code', [AdmissionEnquiryController::class, 'verifyApplicationCode'])->name('apply.verify-code');
 Route::post('/apply', [AdmissionEnquiryController::class, 'submitApplication'])->name('apply.store');
 Route::post('/admission-enquiries', [AdmissionEnquiryController::class, 'store'])->name('admission-enquiries.store');
+Route::get('/feedback', [ParentFeedbackController::class, 'create'])->name('feedback.create');
+Route::post('/feedback', [ParentFeedbackController::class, 'store'])->middleware('throttle:5,1')->name('feedback.store');
 Route::post('/api/staff-attendance/f-g495', [AttendanceController::class, 'staffPush'])->withoutMiddleware('web')->name('staff-attendance.f-g495');
 Route::match(['get', 'post'], '/iclock/cdata', [AttendanceController::class, 'admsPush'])->withoutMiddleware('web')->name('staff-attendance.adms');
 Route::get('/announcements/{announcement}', [AnnouncementController::class, 'show'])->name('announcements.show');
@@ -113,6 +117,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/dashboard', [ClinicController::class, 'dashboard'])->name('dashboard');
         Route::get('/records', [ClinicController::class, 'records'])->name('records.index');
         Route::get('/term-health-checks', [ClinicController::class, 'healthChecks'])->name('health-checks.index');
+        Route::get('/term-health-checks/recent', [ClinicController::class, 'recentHealthChecks'])->name('health-checks.recent');
         Route::post('/term-health-checks', [ClinicController::class, 'storeHealthCheck'])->name('health-checks.store');
         Route::post('/term-health-checks/batch', [ClinicController::class, 'storeHealthChecks'])->name('health-checks.store-batch');
         Route::get('/students', [ClinicController::class, 'students'])->name('students.index');
@@ -350,6 +355,9 @@ Route::middleware('auth')->group(function () {
             Route::get('/enquiries/{enquiry}', [AdminAdmissionEnquiryController::class, 'show'])->name('enquiries.show');
             Route::put('/enquiries/{enquiry}', [AdminAdmissionEnquiryController::class, 'update'])->name('enquiries.update');
             Route::post('/enquiries/{enquiry}/enroll', [AdminAdmissionEnquiryController::class, 'enroll'])->name('enquiries.enroll');
+            Route::get('/parent-feedback', [AdminParentFeedbackController::class, 'index'])->name('parent-feedback.index');
+            Route::get('/parent-feedback/{parentFeedback}', [AdminParentFeedbackController::class, 'show'])->name('parent-feedback.show');
+            Route::put('/parent-feedback/{parentFeedback}', [AdminParentFeedbackController::class, 'update'])->name('parent-feedback.update');
             Route::get('/admission-form-payments', [AdminAdmissionFormPaymentController::class, 'index'])->name('admission-form-payments.index');
             Route::get('/admission-form-payments/{payment}', [AdminAdmissionFormPaymentController::class, 'show'])->name('admission-form-payments.show');
             Route::put('/admission-form-payments/{payment}', [AdminAdmissionFormPaymentController::class, 'update'])->name('admission-form-payments.update');

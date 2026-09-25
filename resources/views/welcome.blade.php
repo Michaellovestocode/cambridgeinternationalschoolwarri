@@ -534,13 +534,15 @@
                 <a href="#gallery" onclick="toggleMenu()" class="mobile-menu-link"><span>05</span><strong>Gallery</strong><em class="not-italic text-purple-500">View</em></a>
                 <a href="#faq" onclick="toggleMenu()" class="mobile-menu-link"><span>06</span><strong>FAQ</strong><em class="not-italic text-sky-500">Help</em></a>
                 <a href="#contact" onclick="toggleMenu()" class="mobile-menu-link"><span>07</span><strong>Contact</strong><em class="not-italic text-emerald-500">Reach us</em></a>
+                <a href="{{ route('feedback.create') }}" class="mobile-menu-link"><span>08</span><strong>Feedback</strong><em class="not-italic text-amber-500">Share</em></a>
             </div>
 
             <div class="mobile-menu-actions-wrap rounded-2xl bg-slate-950 p-2.5 shadow-xl">
-                <div class="grid grid-cols-3 gap-2">
+                <div class="grid grid-cols-2 gap-2">
                     <a href="{{ route('blog.index') }}" class="mobile-menu-action bg-white/10 text-white hover:bg-white/20">Blog</a>
                     <a href="{{ route('apply.create') }}" class="mobile-menu-action bg-amber-400 text-slate-950 hover:bg-amber-300">Apply</a>
                     <a href="/login" class="mobile-menu-action bg-blue-600 text-white hover:bg-blue-500">Login</a>
+                    <a href="{{ route('feedback.create') }}" class="mobile-menu-action bg-teal-500 text-white hover:bg-teal-400">Feedback</a>
                 </div>
             </div>
         </div>
@@ -565,7 +567,7 @@
             </div>
 
             <!-- Desktop nav links -->
-            <div class="hidden lg:flex space-x-6">
+            <div class="hidden lg:flex space-x-4">
                 <a href="#home"     class="nav-link text-gray-700 hover:text-blue-600 font-semibold transition text-sm">Home</a>
                 <a href="#programs" class="nav-link text-gray-700 hover:text-blue-600 font-semibold transition text-sm">Programs</a>
                 <a href="#about"    class="nav-link text-gray-700 hover:text-blue-600 font-semibold transition text-sm">About</a>
@@ -574,6 +576,7 @@
                 <a href="#gallery"  class="nav-link text-gray-700 hover:text-blue-600 font-semibold transition text-sm">Gallery</a>
                 <a href="#faq"      class="nav-link text-gray-700 hover:text-blue-600 font-semibold transition text-sm">FAQ</a>
                 <a href="#contact"  class="nav-link text-gray-700 hover:text-blue-600 font-semibold transition text-sm">Contact</a>
+                <a href="{{ route('feedback.create') }}" class="text-gray-700 hover:text-blue-600 font-semibold transition text-sm">Feedback</a>
             </div>
 
             <div class="flex items-center space-x-4">
@@ -1728,6 +1731,7 @@
                     <li><a href="#news"     class="hover:text-yellow-400 transition">News &amp; Events</a></li>
                     <li><a href="#gallery"  class="hover:text-yellow-400 transition">Gallery</a></li>
                     <li><a href="#faq"      class="hover:text-yellow-400 transition">FAQ</a></li>
+                    <li><a href="{{ route('feedback.create') }}" class="hover:text-yellow-400 transition">Feedback &amp; Suggestions</a></li>
                     <li><a href="/login"    class="hover:text-yellow-400 transition">Student Portal</a></li>
                 </ul>
             </div>

@@ -5,9 +5,14 @@
 @section('content')
 <div class="mx-auto max-w-7xl space-y-6">
     <div class="rounded-2xl bg-gradient-to-r from-emerald-700 to-teal-700 p-6 text-white shadow-xl sm:p-8">
-        <p class="text-xs font-bold uppercase tracking-[0.18em] text-emerald-100">School Clinic</p>
-        <h1 class="mt-2 text-3xl font-black">Hostel Vital Signs Check</h1>
-        <p class="mt-2 text-emerald-100">Record the termly check-out vital signs for hostel students.</p>
+        <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+                <p class="text-xs font-bold uppercase tracking-[0.18em] text-emerald-100">School Clinic</p>
+                <h1 class="mt-2 text-3xl font-black">Hostel Vital Signs Check</h1>
+                <p class="mt-2 text-emerald-100">Record the termly check-out vital signs for hostel students.</p>
+            </div>
+            <a href="{{ route('clinic.health-checks.recent') }}" class="rounded-xl bg-white px-5 py-3 text-center text-sm font-black text-emerald-800 shadow hover:bg-emerald-50">Recent Health Checks</a>
+        </div>
     </div>
 
     @if(session('success'))<div class="rounded-xl border border-emerald-200 bg-emerald-50 p-4 font-semibold text-emerald-800">{{ session('success') }}</div>@endif
@@ -58,7 +63,6 @@
         <div class="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-end"><a href="{{ route('clinic.dashboard') }}" class="rounded-xl bg-gray-100 px-5 py-3 text-center text-sm font-bold text-gray-700">Back to Dashboard</a><button class="rounded-xl bg-emerald-700 px-5 py-3 text-sm font-black text-white hover:bg-emerald-800">Save All Vital Signs</button></div>
     </form>
 
-    <section class="overflow-hidden rounded-2xl bg-white shadow-xl"><div class="border-b border-gray-100 p-5"><h2 class="text-xl font-black text-gray-900">Recent Health Checks</h2></div><div class="overflow-x-auto"><table class="min-w-full text-left text-sm"><thead class="bg-gray-50 text-xs uppercase text-gray-500"><tr><th class="px-5 py-3">Student</th><th class="px-5 py-3">Vital signs</th><th class="px-5 py-3">Remark</th><th class="px-5 py-3">Checked</th></tr></thead><tbody class="divide-y divide-gray-100">@forelse($recentChecks as $check)<tr><td class="px-5 py-4 font-bold text-gray-900">{{ $check->student?->name }}<span class="block text-xs font-normal text-gray-500">{{ $check->student?->class?->display_name }}</span></td><td class="px-5 py-4 text-gray-700">{{ $check->temperature ? $check->temperature . ' °C' : '—' }} · {{ $check->pulse ? $check->pulse . ' bpm' : '—' }} · {{ $check->weight_kg ? $check->weight_kg . ' kg' : '—' }}</td><td class="px-5 py-4 text-gray-700">{{ $check->remark ?: '—' }}</td><td class="px-5 py-4 text-gray-700">{{ $check->checked_at->format('d M Y, g:i A') }}</td></tr>@empty<tr><td colspan="4" class="px-5 py-8 text-center text-gray-500">No health checks have been recorded yet.</td></tr>@endforelse</tbody></table></div></section>
 </div>
 <script>
 document.addEventListener('DOMContentLoaded', () => {
