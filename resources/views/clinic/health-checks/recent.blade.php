@@ -4,6 +4,7 @@
 
 @section('content')
 <div class="mx-auto max-w-7xl space-y-6">
+    @if(session('success'))<div class="rounded-xl border border-emerald-200 bg-emerald-50 p-4 font-semibold text-emerald-800">{{ session('success') }}</div>@endif
     <header class="overflow-hidden rounded-3xl bg-gradient-to-br from-emerald-800 via-teal-700 to-cyan-800 text-white shadow-xl">
         <div class="flex flex-col gap-5 p-6 sm:p-8 lg:flex-row lg:items-end lg:justify-between">
             <div>
@@ -92,7 +93,18 @@
                         @if($check->health_notes)<p class="{{ $check->remark ? 'mt-1' : '' }} whitespace-pre-line"><span class="font-bold">Health notes:</span> {{ $check->health_notes }}</p>@endif
                     </div>
                 @endif
-                <p class="mt-3 text-xs font-semibold text-gray-400">Recorded by {{ $check->recorder?->name ?? 'Former staff member' }}</p>
+                <div class="mt-4 flex flex-wrap items-center justify-between gap-3">
+                    <p class="text-xs font-semibold text-gray-400">Recorded by {{ $check->recorder?->name ?? 'Former staff member' }}</p>
+                    @if(auth()->user()->isAdmin() || $check->recorded_by === auth()->id())
+                        <div class="flex gap-2">
+                            <a href="{{ route('clinic.health-checks.edit', $check) }}" class="rounded-lg bg-blue-50 px-3 py-2 text-sm font-bold text-blue-700">Edit</a>
+                            <form method="POST" action="{{ route('clinic.health-checks.delete', $check) }}" onsubmit="return confirm('Delete this vital-sign record?')">
+                                @csrf @method('DELETE')
+                                <button class="rounded-lg bg-red-50 px-3 py-2 text-sm font-bold text-red-700">Delete</button>
+                            </form>
+                        </div>
+                    @endif
+                </div>
             </article>
         @empty
             <div class="rounded-2xl border border-dashed border-gray-300 bg-white px-6 py-14 text-center shadow-sm">

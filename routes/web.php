@@ -118,6 +118,9 @@ Route::middleware('auth')->group(function () {
         Route::get('/records', [ClinicController::class, 'records'])->name('records.index');
         Route::get('/term-health-checks', [ClinicController::class, 'healthChecks'])->name('health-checks.index');
         Route::get('/term-health-checks/recent', [ClinicController::class, 'recentHealthChecks'])->name('health-checks.recent');
+        Route::get('/term-health-checks/{check}/edit', [ClinicController::class, 'editHealthCheck'])->name('health-checks.edit');
+        Route::put('/term-health-checks/{check}', [ClinicController::class, 'updateHealthCheck'])->name('health-checks.update');
+        Route::delete('/term-health-checks/{check}', [ClinicController::class, 'deleteHealthCheck'])->name('health-checks.delete');
         Route::post('/term-health-checks', [ClinicController::class, 'storeHealthCheck'])->name('health-checks.store');
         Route::post('/term-health-checks/batch', [ClinicController::class, 'storeHealthChecks'])->name('health-checks.store-batch');
         Route::get('/students', [ClinicController::class, 'students'])->name('students.index');

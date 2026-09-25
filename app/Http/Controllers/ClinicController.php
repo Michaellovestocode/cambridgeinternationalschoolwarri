@@ -185,6 +185,52 @@ class ClinicController extends Controller
         ]);
     }
 
+    public function editHealthCheck(ClinicTermHealthCheck $check)
+    {
+        $this->authorizeClinic();
+        $this->authorizeHealthCheckManagement($check);
+
+        $students = User::where('role', 'student')->with('class')->orderBy('name')->get();
+
+        return view('clinic.health-checks.edit', compact('check', 'students'));
+    }
+
+    public function updateHealthCheck(Request $request, ClinicTermHealthCheck $check)
+    {
+        $this->authorizeClinic();
+        $this->authorizeHealthCheckManagement($check);
+
+        $validated = $request->validate([
+            'student_id' => ['required', 'exists:users,id'],
+            'term_label' => ['required', 'string', 'max:100'],
+            'check_type' => ['required', 'string', 'max:100'],
+            'hostel_name' => ['nullable', 'string', 'max:255'],
+            'temperature' => ['nullable', 'numeric'],
+            'pulse' => ['nullable', 'integer', 'between:20,250'],
+            'weight_kg' => ['nullable', 'numeric', 'between:1,300'],
+            'respiration' => ['nullable', 'integer', 'between:1,100'],
+            'blood_pressure' => ['nullable', 'string', 'max:30'],
+            'health_notes' => ['nullable', 'string', 'max:2000'],
+            'remark' => ['nullable', 'string', 'max:255'],
+            'clearance_status' => ['required', 'in:normal,needs_observation,referred'],
+            'checked_at' => ['required', 'date'],
+        ]);
+
+        abort_unless(User::whereKey($validated['student_id'])->where('role', 'student')->exists(), 422, 'Select a valid student.');
+        $check->update($validated);
+
+        return redirect()->route('clinic.health-checks.recent')->with('success', 'Vital-sign record updated.');
+    }
+
+    public function deleteHealthCheck(ClinicTermHealthCheck $check)
+    {
+        $this->authorizeClinic();
+        $this->authorizeHealthCheckManagement($check);
+        $check->delete();
+
+        return back()->with('success', 'Vital-sign record deleted.');
+    }
+
     public function storeHealthCheck(Request $request)
     {
         $this->authorizeClinic();
@@ -486,6 +532,11 @@ class ClinicController extends Controller
     private function authorizeClinic(): void
     {
         abort_unless(Auth::user()?->isAdmin() || Auth::user()?->isNurse(), 403);
+    }
+
+    private function authorizeHealthCheckManagement(ClinicTermHealthCheck $check): void
+    {
+        abort_unless(Auth::user()?->isAdmin() || $check->recorded_by === Auth::id(), 403);
     }
 
     private function scopeToCurrentClinicUser($query, string $column): void
