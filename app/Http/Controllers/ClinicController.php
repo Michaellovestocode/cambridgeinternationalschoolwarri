@@ -125,7 +125,7 @@ class ClinicController extends Controller
 
     public function healthChecks()
     {
-        $this->authorizeClinic();
+        $this->authorizeNurse();
 
         $students = User::where('role', 'student')
             ->with('class')
@@ -187,7 +187,7 @@ class ClinicController extends Controller
 
     public function editHealthCheck(ClinicTermHealthCheck $check)
     {
-        $this->authorizeClinic();
+        $this->authorizeNurse();
         $this->authorizeHealthCheckManagement($check);
 
         $students = User::where('role', 'student')->with('class')->orderBy('name')->get();
@@ -197,7 +197,7 @@ class ClinicController extends Controller
 
     public function updateHealthCheck(Request $request, ClinicTermHealthCheck $check)
     {
-        $this->authorizeClinic();
+        $this->authorizeNurse();
         $this->authorizeHealthCheckManagement($check);
 
         $validated = $request->validate([
@@ -224,7 +224,7 @@ class ClinicController extends Controller
 
     public function deleteHealthCheck(ClinicTermHealthCheck $check)
     {
-        $this->authorizeClinic();
+        $this->authorizeNurse();
         $this->authorizeHealthCheckManagement($check);
         $check->delete();
 
@@ -233,7 +233,7 @@ class ClinicController extends Controller
 
     public function storeHealthCheck(Request $request)
     {
-        $this->authorizeClinic();
+        $this->authorizeNurse();
 
         $validated = $request->validate([
             'student_id' => ['required', 'exists:users,id'],
@@ -260,7 +260,7 @@ class ClinicController extends Controller
 
     public function storeHealthChecks(Request $request)
     {
-        $this->authorizeClinic();
+        $this->authorizeNurse();
 
         $validator = Validator::make($request->all(), [
             'term_label' => ['required', 'string', 'max:100'],
@@ -335,7 +335,7 @@ class ClinicController extends Controller
 
     public function createVisit(Request $request)
     {
-        $this->authorizeClinic();
+        $this->authorizeNurse();
         $student = $request->filled('student_id')
             ? User::with('class')->where('role', 'student')->findOrFail($request->student_id)
             : null;
@@ -379,7 +379,7 @@ class ClinicController extends Controller
 
     public function storeVisit(Request $request)
     {
-        $this->authorizeClinic();
+        $this->authorizeNurse();
 
         $validated = $request->validate([
             'patient_type' => ['required', 'in:student,staff,not_listed'],
@@ -447,14 +447,14 @@ class ClinicController extends Controller
 
     public function createIncident(Request $request)
     {
-        $this->authorizeClinic();
+        $this->authorizeNurse();
         $student = $request->filled('student_id') ? User::with('class')->where('role', 'student')->findOrFail($request->student_id) : null;
         return view('clinic.incidents.create', compact('student'));
     }
 
     public function storeIncident(Request $request)
     {
-        $this->authorizeClinic();
+        $this->authorizeNurse();
         $validated = $request->validate([
             'student_id' => ['required', 'exists:users,id'], 'incident_at' => ['required', 'date'],
             'incident_type' => ['required', 'string', 'max:100'], 'location' => ['nullable', 'string', 'max:255'],
@@ -477,7 +477,7 @@ class ClinicController extends Controller
 
     public function storeInventoryItem(Request $request)
     {
-        $this->authorizeClinic();
+        $this->authorizeNurse();
         $data = $request->validate(['name' => ['required', 'string', 'max:255'], 'category' => ['nullable', 'string', 'max:100'], 'quantity' => ['required', 'numeric', 'min:0'], 'minimum_quantity' => ['required', 'numeric', 'min:0'], 'unit' => ['required', 'string', 'max:50']]);
         ClinicInventoryItem::create($data);
         return back()->with('success', 'Inventory item added.');
@@ -485,7 +485,7 @@ class ClinicController extends Controller
 
     public function storeInventoryTransaction(Request $request, ClinicInventoryItem $item)
     {
-        $this->authorizeClinic();
+        $this->authorizeNurse();
         $data = $request->validate([
             'type' => ['required', 'in:received,used,adjusted'],
             'quantity' => ['required', 'numeric', 'gt:0'],
@@ -507,7 +507,7 @@ class ClinicController extends Controller
 
     public function storeSupplyRequest(Request $request)
     {
-        $this->authorizeClinic();
+        $this->authorizeNurse();
         $data = $request->validate([
             'item_name' => ['required', 'string', 'max:255'],
             'quantity_requested' => ['required', 'numeric', 'gt:0'],
@@ -534,9 +534,14 @@ class ClinicController extends Controller
         abort_unless(Auth::user()?->isAdmin() || Auth::user()?->isNurse(), 403);
     }
 
+    private function authorizeNurse(): void
+    {
+        abort_unless(Auth::user()?->isNurse(), 403);
+    }
+
     private function authorizeHealthCheckManagement(ClinicTermHealthCheck $check): void
     {
-        abort_unless(Auth::user()?->isAdmin() || $check->recorded_by === Auth::id(), 403);
+        abort_unless(Auth::user()?->isNurse() && $check->recorded_by === Auth::id(), 403);
     }
 
     private function scopeToCurrentClinicUser($query, string $column): void

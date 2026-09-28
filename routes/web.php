@@ -378,6 +378,8 @@ Route::middleware('auth')->group(function () {
 
             Route::get('/fee-clearances', [AdminFeeClearanceController::class, 'index'])->name('fee-clearances.index');
             Route::put('/fee-clearances/{student}', [AdminFeeClearanceController::class, 'update'])->name('fee-clearances.update');
+            Route::post('/fee-clearances/{student}/payments', [AdminFeeClearanceController::class, 'storePayment'])->name('fee-clearances.payments.store');
+            Route::put('/fee-schedules', [AdminFeeClearanceController::class, 'saveSchedule'])->name('fee-schedules.update');
         });
 
         // Exams (accessible by admin and teachers)

@@ -13,7 +13,7 @@
                 <p class="mt-2 max-w-2xl text-sm leading-6 text-emerald-50">Review submitted hostel and term health checks, vital signs, follow-up status, and the staff member who recorded each check.</p>
             </div>
             <div class="flex flex-col gap-2 sm:flex-row">
-                <a href="{{ route('clinic.health-checks.index') }}" class="rounded-xl bg-white px-4 py-3 text-center text-sm font-black text-emerald-900 shadow hover:bg-emerald-50">Record vital signs</a>
+                @if(auth()->user()->isNurse())<a href="{{ route('clinic.health-checks.index') }}" class="rounded-xl bg-white px-4 py-3 text-center text-sm font-black text-emerald-900 shadow hover:bg-emerald-50">Record vital signs</a>@endif
                 <a href="{{ route('clinic.dashboard') }}" class="rounded-xl border border-white/30 bg-white/10 px-4 py-3 text-center text-sm font-bold text-white hover:bg-white/20">Clinic dashboard</a>
             </div>
         </div>
@@ -95,7 +95,7 @@
                 @endif
                 <div class="mt-4 flex flex-wrap items-center justify-between gap-3">
                     <p class="text-xs font-semibold text-gray-400">Recorded by {{ $check->recorder?->name ?? 'Former staff member' }}</p>
-                    @if(auth()->user()->isAdmin() || $check->recorded_by === auth()->id())
+                    @if(auth()->user()->isNurse() && $check->recorded_by === auth()->id())
                         <div class="flex gap-2">
                             <a href="{{ route('clinic.health-checks.edit', $check) }}" class="rounded-lg bg-blue-50 px-3 py-2 text-sm font-bold text-blue-700">Edit</a>
                             <form method="POST" action="{{ route('clinic.health-checks.delete', $check) }}" onsubmit="return confirm('Delete this vital-sign record?')">
@@ -111,7 +111,7 @@
                 <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-50 text-2xl text-emerald-700">＋</div>
                 <h2 class="mt-4 text-lg font-black text-gray-900">No health checks found</h2>
                 <p class="mt-1 text-sm text-gray-500">Try another search or date range, or record the first check.</p>
-                <a href="{{ route('clinic.health-checks.index') }}" class="mt-4 inline-flex rounded-xl bg-emerald-700 px-4 py-3 text-sm font-bold text-white">Record vital signs</a>
+                @if(auth()->user()->isNurse())<a href="{{ route('clinic.health-checks.index') }}" class="mt-4 inline-flex rounded-xl bg-emerald-700 px-4 py-3 text-sm font-bold text-white">Record vital signs</a>@endif
             </div>
         @endforelse
     </section>

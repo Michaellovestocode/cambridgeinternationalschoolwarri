@@ -81,21 +81,53 @@ class AdminAdmissionEnquiryController extends Controller
 
     public function storeOffline(Request $request)
     {
+        $offlineFields = [
+            'parent_name', 'phone', 'alternate_phone', 'email', 'student_name', 'preferred_name',
+            'student_date_of_birth', 'student_gender', 'class_level', 'academic_year', 'home_address',
+            'nationality', 'state_of_origin', 'religious_affiliation', 'native_language', 'other_languages',
+            'passport_country_number', 'previous_school', 'parent_occupation', 'how_heard_about_us',
+            'father_name', 'father_home_address', 'father_phone', 'father_email', 'father_company_name',
+            'father_position_title', 'father_office_phone', 'father_office_email', 'mother_name',
+            'mother_home_address', 'mother_phone', 'mother_email', 'mother_company_name',
+            'mother_position_title', 'mother_office_phone', 'mother_office_email', 'applicant_lives_with',
+            'legal_guardian_name', 'siblings_details', 'siblings_applying_details', 'transfer_state_town',
+            'family_hospital_clinic', 'current_school_name', 'current_school_class', 'current_school_address',
+            'current_school_phone', 'previous_schools', 'extracurricular_activities',
+            'learning_physical_limitation', 'peculiar_illness', 'diagnostic_information', 'suspension_details',
+            'previously_applied_year', 'previously_attended_year', 'heard_about_cis_through',
+            'other_school_name', 'child_personality_notes', 'message', 'admin_notes',
+        ];
+        $rules = collect($offlineFields)->mapWithKeys(fn ($field) => [$field => ['nullable', 'string', 'max:255']])->all();
+        foreach ([
+            'home_address', 'father_home_address', 'mother_home_address', 'siblings_details', 'siblings_applying_details',
+            'current_school_address', 'previous_schools', 'extracurricular_activities', 'learning_physical_limitation',
+            'peculiar_illness', 'diagnostic_information', 'suspension_details', 'child_personality_notes', 'message', 'admin_notes',
+        ] as $field) {
+            $rules[$field] = ['nullable', 'string', 'max:4000'];
+        }
+        $rules['parent_name'] = ['required', 'string', 'max:255'];
+        $rules['phone'] = ['required', 'string', 'max:50'];
+        $rules['student_name'] = ['required', 'string', 'max:255'];
+        $rules['home_address'] = ['required', 'string', 'max:2000'];
+        $rules['email'] = ['nullable', 'email', 'max:255'];
+        $rules['father_email'] = ['nullable', 'email', 'max:255'];
+        $rules['father_office_email'] = ['nullable', 'email', 'max:255'];
+        $rules['mother_email'] = ['nullable', 'email', 'max:255'];
+        $rules['mother_office_email'] = ['nullable', 'email', 'max:255'];
+        $rules['student_date_of_birth'] = ['nullable', 'date'];
+        $rules['student_gender'] = ['nullable', 'in:male,female'];
+        $rules['class_level'] = ['required', 'string', 'max:100', Rule::exists('school_classes', 'name')];
+        foreach (['has_siblings_applying', 'has_been_suspended_or_dismissed', 'previously_applied_to_cis', 'previously_attended_cis', 'applying_to_other_schools', 'undertaking_accepted'] as $field) {
+            $rules[$field] = ['nullable', 'boolean'];
+        }
         $payload = $request->validate([
-            'parent_name' => ['required', 'string', 'max:255'],
-            'phone' => ['required', 'string', 'max:50'],
-            'alternate_phone' => ['nullable', 'string', 'max:50'],
-            'email' => ['nullable', 'email', 'max:255'],
-            'student_name' => ['required', 'string', 'max:255'],
-            'student_date_of_birth' => ['nullable', 'date'],
-            'student_gender' => ['nullable', 'in:male,female'],
-            'class_level' => ['required', 'string', 'max:100', Rule::exists('school_classes', 'name')],
-            'academic_year' => ['nullable', 'string', 'max:100'],
-            'home_address' => ['nullable', 'string', 'max:2000'],
-            'current_school_name' => ['nullable', 'string', 'max:255'],
-            'message' => ['nullable', 'string', 'max:2000'],
-            'admin_notes' => ['nullable', 'string', 'max:2000'],
+            ...$rules,
         ]);
+
+        foreach (['has_siblings_applying', 'has_been_suspended_or_dismissed', 'previously_applied_to_cis', 'previously_attended_cis', 'applying_to_other_schools', 'undertaking_accepted'] as $field) {
+            $payload[$field] = $request->boolean($field);
+        }
+        $payload['how_heard_about_us'] = $payload['heard_about_cis_through'] ?? null;
 
         $enquiry = AdmissionEnquiry::create([
             ...$payload,
@@ -103,7 +135,6 @@ class AdminAdmissionEnquiryController extends Controller
             'entry_source' => AdmissionEnquiry::SOURCE_OFFLINE,
             'created_by' => $request->user()->id,
             'status' => AdmissionEnquiry::STATUS_NEW,
-            'undertaking_accepted' => false,
         ]);
 
         return redirect()

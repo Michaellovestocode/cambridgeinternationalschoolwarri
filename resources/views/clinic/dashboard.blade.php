@@ -12,9 +12,14 @@
                 <p class="mt-2 text-blue-100">Secure student care records and daily clinic activity.</p>
             </div>
             <div class="flex flex-col gap-3 sm:flex-row">
+                @if(auth()->user()->isAdmin())
+                    <a href="{{ route('clinic.records.index') }}" class="rounded-xl bg-blue-900 px-5 py-3 text-center font-black text-white shadow hover:bg-blue-950">Review Clinic Records</a>
+                    <a href="{{ route('clinic.incidents.index') }}" class="rounded-xl bg-rose-500 px-5 py-3 text-center font-black text-white shadow hover:bg-rose-600">Review Incident Reports</a>
+                @else
                 <a href="{{ route('clinic.records.index') }}" class="rounded-xl bg-blue-900 px-5 py-3 text-center font-black text-white shadow hover:bg-blue-950">My Records</a>
                 <a href="{{ route('clinic.health-checks.index') }}" class="rounded-xl bg-white px-5 py-3 text-center font-black text-blue-800 shadow hover:bg-blue-50">Hostel Vital Signs</a>
                 <a href="{{ route('clinic.visits.create') }}" class="rounded-xl bg-amber-400 px-5 py-3 text-center font-black text-slate-900 shadow hover:bg-amber-300">Record New Visit</a>
+                @endif
             </div>
         </div>
     </div>
@@ -57,12 +62,19 @@
         <section class="rounded-2xl bg-white p-5 shadow-xl">
             <h2 class="text-xl font-black text-gray-900">Quick Actions</h2>
             <div class="mt-4 grid gap-3">
+                @if(auth()->user()->isAdmin())
+                <a href="{{ route('clinic.records.index') }}" class="rounded-xl bg-slate-100 px-4 py-4 font-bold text-slate-900">Review All Clinic Records</a>
+                <a href="{{ route('clinic.health-checks.recent') }}" class="rounded-xl bg-teal-100 px-4 py-4 font-bold text-teal-900">Review Vital-Sign Checks</a>
+                <a href="{{ route('clinic.incidents.index') }}" class="rounded-xl bg-rose-100 px-4 py-4 font-bold text-rose-900">Review Nurse Incident Reports</a>
+                <a href="{{ route('clinic.inventory.index') }}" class="rounded-xl bg-violet-100 px-4 py-4 font-bold text-violet-900">Review Supply Requests</a>
+                @else
                 <a href="{{ route('clinic.records.index') }}" class="rounded-xl bg-slate-100 px-4 py-4 font-bold text-slate-900">{{ auth()->user()->isAdmin() ? 'All Clinic Records' : 'My Entered Records' }}</a>
                 <a href="{{ route('clinic.health-checks.index') }}" class="rounded-xl bg-emerald-100 px-4 py-4 font-bold text-emerald-900">Hostel Vital Signs Check</a>
                 <a href="{{ route('clinic.health-checks.recent') }}" class="rounded-xl bg-teal-100 px-4 py-4 font-bold text-teal-900">Recent Health Checks</a>
                 <a href="{{ route('clinic.visits.create') }}" class="rounded-xl bg-amber-100 px-4 py-4 font-bold text-amber-900">Record New Visit</a>
                 <a href="{{ route('clinic.students.index') }}" class="rounded-xl bg-blue-100 px-4 py-4 font-bold text-blue-900">Search Students</a>
                 <a href="{{ route('clinic.incidents.index') }}" class="rounded-xl bg-rose-100 px-4 py-4 font-bold text-rose-900">Incident Reports</a>
+                @endif
                 <a href="{{ route('clinic.inventory.index') }}" class="rounded-xl bg-violet-100 px-4 py-4 font-bold text-violet-900">Clinic Inventory{{ $lowStockCount ? ' · ' . $lowStockCount . ' low' : '' }}</a>
                 <a href="{{ route('clinic.inventory.index') }}#supply-request" class="rounded-xl bg-amber-100 px-4 py-4 font-bold text-amber-900">Request Clinic Supplies</a>
             </div>

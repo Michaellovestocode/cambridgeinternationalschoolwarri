@@ -590,17 +590,6 @@
                     </span>
                 </a>
 
-                <a href="{{ route('clinic.records.index') }}"
-                   class="flex items-center justify-between rounded-xl bg-gradient-to-r from-blue-700 to-cyan-700 px-6 py-4 font-bold text-white shadow-lg transition-all hover:-translate-y-0.5 hover:shadow-xl group">
-                    <span class="flex items-center">
-                        <svg class="mr-2 h-5 w-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5h6m-6 4h6m-6 4h6m-6 4h6M5 3h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2z"></path>
-                        </svg>
-                        Nurse &amp; Clinic Records
-                    </span>
-                    <svg class="h-5 w-5 shrink-0 transform transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
-                </a>
-
                 <a href="{{ route('clinic.dashboard') }}"
                    class="flex items-center justify-between rounded-xl bg-gradient-to-r from-slate-700 to-slate-900 px-6 py-4 font-bold text-white shadow-lg transition-all hover:-translate-y-0.5 hover:shadow-xl group">
                     <span class="flex items-center">
