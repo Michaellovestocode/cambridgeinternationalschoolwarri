@@ -76,7 +76,49 @@ class AdminAdmissionEnquiryController extends Controller
         return view('admin.enquiries.create-offline', [
             'groupedClasses' => $groupedClasses,
             'sectionDefinitions' => SchoolClass::sectionDefinitions(),
+            'offlineSections' => $this->offlineFormSections(),
         ]);
+    }
+
+    private function offlineFormSections(): array
+    {
+        $sections = [
+            'Student and family' => [
+                ['preferred_name', 'Preferred name'], ['nationality', 'Nationality'], ['state_of_origin', 'State of origin'],
+                ['religious_affiliation', 'Religious affiliation'], ['native_language', 'Native language'], ['other_languages', 'Other languages'],
+                ['passport_country_number', 'Passport / country number'], ['parent_occupation', 'Parent occupation'],
+                ['applicant_lives_with', 'Applicant lives with'], ['legal_guardian_name', 'Legal guardian name'],
+                ['siblings_details', 'Siblings details', 'textarea'], ['siblings_applying_details', 'Siblings applying details', 'textarea'],
+                ['transfer_state_town', 'Transfer state / town'], ['family_hospital_clinic', 'Family hospital / clinic'],
+            ],
+            'Father / guardian details' => [
+                ['father_name', 'Father name'], ['father_home_address', 'Father home address', 'textarea'], ['father_phone', 'Father phone'],
+                ['father_email', 'Father email', 'email'], ['father_company_name', 'Father company'], ['father_position_title', 'Father position'],
+                ['father_office_phone', 'Father office phone'], ['father_office_email', 'Father office email', 'email'],
+            ],
+            'Mother / guardian details' => [
+                ['mother_name', 'Mother name'], ['mother_home_address', 'Mother home address', 'textarea'], ['mother_phone', 'Mother phone'],
+                ['mother_email', 'Mother email', 'email'], ['mother_company_name', 'Mother company'], ['mother_position_title', 'Mother position'],
+                ['mother_office_phone', 'Mother office phone'], ['mother_office_email', 'Mother office email', 'email'],
+            ],
+            'School history' => [
+                ['current_school_class', 'Current school class'], ['current_school_address', 'Current school address', 'textarea'],
+                ['current_school_phone', 'Current school phone'], ['previous_school', 'Most recent previous school'],
+                ['previous_schools', 'Previous schools attended', 'textarea'], ['extracurricular_activities', 'Extracurricular activities', 'textarea'],
+            ],
+            'Health, history, and additional information' => [
+                ['learning_physical_limitation', 'Learning / physical limitations', 'textarea'], ['peculiar_illness', 'Peculiar illness', 'textarea'],
+                ['diagnostic_information', 'Diagnostic / educational testing information', 'textarea'], ['suspension_details', 'Suspension / dismissal details', 'textarea'],
+                ['previously_applied_year', 'Year previously applied to CIS'], ['previously_attended_year', 'Year previously attended CIS'],
+                ['heard_about_cis_through', 'How they heard about CIS'], ['other_school_name', 'Other school applying to'],
+                ['child_personality_notes', 'Tell us about the child', 'textarea'],
+            ],
+        ];
+
+        return array_map(
+            fn (array $fields) => array_map(fn (array $field) => [$field[0], $field[1], $field[2] ?? 'text'], $fields),
+            $sections
+        );
     }
 
     public function storeOffline(Request $request)

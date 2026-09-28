@@ -65,7 +65,9 @@
     </div>
 
     @if($selectedClassId)
-        @php($scheduleClass = $classes->firstWhere('id', $selectedClassId))
+        @php
+            $scheduleClass = $classes->firstWhere('id', $selectedClassId);
+        @endphp
         <div class="rounded-2xl bg-indigo-50 p-6 shadow">
             <h2 class="text-lg font-bold text-indigo-950">Class fee schedule: {{ $scheduleClass?->display_name }}</h2>
             <p class="mt-1 text-sm text-indigo-800">Set standard charges for the selected class, session, and term. Saving fills zero amounts and keeps existing non-zero student-specific amounts.</p>
