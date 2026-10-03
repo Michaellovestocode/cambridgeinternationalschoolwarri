@@ -75,8 +75,21 @@ class StudentLearningSessionController extends Controller
 
         $practiceLocked = $latestAttempt?->is_published && ! $latestAttempt->allow_resubmission;
         $practicePendingReview = $latestAttempt && ! $latestAttempt->is_published && ! $latestAttempt->allow_resubmission;
+        $timerDeadline = null;
 
-        return view('student.learning-sessions.show', compact('learningSession', 'feedback', 'unreadTeacherReplies', 'latestAttempt', 'practiceLocked', 'practicePendingReview'));
+        if (! $practiceLocked && ! $practicePendingReview) {
+            $timerKey = 'learning_session_started_at_' . Auth::id() . '_' . $learningSession->id;
+            $startedAt = session()->get($timerKey);
+
+            if (! is_numeric($startedAt)) {
+                $startedAt = now()->timestamp;
+                session()->put($timerKey, $startedAt);
+            }
+
+            $timerDeadline = ((int) $startedAt + ((int) $learningSession->estimated_minutes * 60)) * 1000;
+        }
+
+        return view('student.learning-sessions.show', compact('learningSession', 'feedback', 'unreadTeacherReplies', 'latestAttempt', 'practiceLocked', 'practicePendingReview', 'timerDeadline'));
     }
 
     public function feedback(Request $request, LearningSession $learningSession)
@@ -222,6 +235,8 @@ class StudentLearningSessionController extends Controller
 
             return $attempt;
         });
+
+        session()->forget('learning_session_started_at_' . Auth::id() . '_' . $learningSession->id);
 
         return redirect()
             ->route('student.learning.result', $attempt)

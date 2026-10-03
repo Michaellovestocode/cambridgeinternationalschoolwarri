@@ -47,6 +47,12 @@
                 </div>
                 <a href="{{ route('student.learning.index') }}" class="bg-white/15 hover:bg-white/25 px-4 py-2 rounded-lg font-semibold">Back</a>
             </div>
+            @if(! $practicePendingReview && ! $practiceLocked)
+            <div data-assessment-timer data-deadline="{{ $timerDeadline }}" class="mt-5 flex items-center justify-between gap-4 rounded-2xl border border-white/30 bg-white/15 px-5 py-4 text-white shadow-sm" role="timer" aria-live="polite">
+                <div><p class="font-bold">Time remaining</p><p class="text-sm text-white/90">Your answers will be submitted automatically when time is up.</p></div>
+                <strong data-timer-display class="whitespace-nowrap text-2xl font-black tabular-nums">--:--</strong>
+            </div>
+            @endif
         </div>
 
         <div class="p-6 md:p-8 space-y-6">
@@ -72,7 +78,7 @@
                 <div class="prose max-w-none text-gray-700 leading-8 whitespace-pre-line">{{ $learningSession->lesson_content ?: 'No lesson content has been added yet.' }}</div>
             </div>
 
-            @if($unreadTeacherReplies > 0)
+            @if($learningSession->assessment_type !== 'test' && $unreadTeacherReplies > 0)
                 <div class="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-800">
                     You have {{ $unreadTeacherReplies }} new teacher {{ $unreadTeacherReplies === 1 ? 'reply' : 'replies' }} in the class discussion.
                 </div>
@@ -101,6 +107,7 @@
         </div>
     </div>
 
+    @if($learningSession->assessment_type !== 'test')
     <div class="grid gap-6 lg:grid-cols-[0.8fr_1.2fr]">
         <div class="rounded-2xl bg-white p-6 shadow-lg">
             <h2 class="text-xl font-bold text-gray-900">How are you feeling about this topic?</h2>
@@ -166,6 +173,7 @@
             </div>
         </div>
     </div>
+    @endif
 
 @if($practicePendingReview)
 <div class="rounded-2xl border border-amber-200 bg-amber-50 p-6 text-amber-900 shadow-lg">
@@ -197,7 +205,7 @@
     <a href="{{ route('student.learning.result', $latestAttempt) }}" class="mt-4 inline-block rounded-xl bg-emerald-700 px-5 py-3 text-sm font-bold text-white">View Published Result</a>
 </div>
 @else
-<form action="{{ route('student.learning.submit', $learningSession) }}" method="POST" class="space-y-6">
+<form action="{{ route('student.learning.submit', $learningSession) }}" method="POST" class="space-y-6" data-assessment-form>
     @csrf
     <div class="bg-white rounded-2xl shadow-lg p-6 md:p-8">
         <div class="flex flex-wrap justify-between items-center gap-4 mb-6">
@@ -265,6 +273,35 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
+        const timer = document.querySelector('[data-assessment-timer]');
+        if (timer) {
+            const form = document.querySelector('[data-assessment-form]');
+            const display = timer.querySelector('[data-timer-display]');
+            const deadline = Number(timer.dataset.deadline);
+            let isSubmitting = false;
+
+            function updateTimer() {
+                const secondsLeft = Math.max(0, Math.ceil((deadline - Date.now()) / 1000));
+                display.textContent = String(Math.floor(secondsLeft / 60)).padStart(2, '0') + ':' + String(secondsLeft % 60).padStart(2, '0');
+
+                if (secondsLeft === 0 && !isSubmitting) {
+                    isSubmitting = true;
+                    timer.querySelector('p').textContent = 'Time is up. Submitting your answers...';
+                    const submitButton = form.querySelector('button[type="submit"]');
+                    if (submitButton) {
+                        submitButton.disabled = true;
+                        submitButton.textContent = 'Submitting...';
+                    }
+                    form.requestSubmit();
+                    return;
+                }
+
+                if (!isSubmitting) window.setTimeout(updateTimer, 1000);
+            }
+
+            updateTimer();
+        }
+
         document.querySelectorAll('[data-notepad]').forEach(function (notepad) {
             const pages = notepad.querySelector('[data-pages]');
             const addPage = notepad.querySelector('[data-add-page]');
