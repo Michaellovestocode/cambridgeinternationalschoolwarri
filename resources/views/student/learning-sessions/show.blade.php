@@ -37,6 +37,12 @@
 
 @section('content')
 <div class="space-y-6">
+    @if(! $practicePendingReview && ! $practiceLocked)
+    <div data-assessment-timer data-deadline="{{ $timerDeadline }}" class="sticky top-0 z-40 flex items-center justify-between gap-4 rounded-2xl border border-white/30 bg-gradient-to-r from-cyan-600 to-emerald-600 px-5 py-4 text-white shadow-lg" role="timer" aria-live="polite">
+        <div><p class="font-bold">Time remaining</p><p class="text-sm text-white/90">Your answers will be submitted automatically when time is up.</p></div>
+        <strong data-timer-display class="whitespace-nowrap text-2xl font-black tabular-nums">--:--</strong>
+    </div>
+    @endif
     <div class="bg-white rounded-2xl shadow-lg overflow-hidden">
         <div class="student-session-hero bg-gradient-to-r from-cyan-600 to-emerald-600 text-white p-8">
             <div class="flex flex-wrap justify-between items-start gap-4">
@@ -47,12 +53,7 @@
                 </div>
                 <a href="{{ route('student.learning.index') }}" class="bg-white/15 hover:bg-white/25 px-4 py-2 rounded-lg font-semibold">Back</a>
             </div>
-            @if(! $practicePendingReview && ! $practiceLocked)
-            <div data-assessment-timer data-deadline="{{ $timerDeadline }}" class="mt-5 flex items-center justify-between gap-4 rounded-2xl border border-white/30 bg-white/15 px-5 py-4 text-white shadow-sm" role="timer" aria-live="polite">
-                <div><p class="font-bold">Time remaining</p><p class="text-sm text-white/90">Your answers will be submitted automatically when time is up.</p></div>
-                <strong data-timer-display class="whitespace-nowrap text-2xl font-black tabular-nums">--:--</strong>
-            </div>
-            @endif
+
         </div>
 
         <div class="p-6 md:p-8 space-y-6">
@@ -217,6 +218,12 @@
         </div>
 
         <div class="space-y-6">
+    @if(! $practicePendingReview && ! $practiceLocked)
+    <div data-assessment-timer data-deadline="{{ $timerDeadline }}" class="sticky top-0 z-40 flex items-center justify-between gap-4 rounded-2xl border border-white/30 bg-gradient-to-r from-cyan-600 to-emerald-600 px-5 py-4 text-white shadow-lg" role="timer" aria-live="polite">
+        <div><p class="font-bold">Time remaining</p><p class="text-sm text-white/90">Your answers will be submitted automatically when time is up.</p></div>
+        <strong data-timer-display class="whitespace-nowrap text-2xl font-black tabular-nums">--:--</strong>
+    </div>
+    @endif
             @forelse($learningSession->questions as $question)
             <div class="student-question-card border border-gray-200 rounded-xl p-5">
                 <p class="font-bold text-gray-900 mb-4">{{ $loop->iteration }}. {{ $question->question_text }}</p>
@@ -278,6 +285,12 @@
             const form = document.querySelector('[data-assessment-form]');
             const display = timer.querySelector('[data-timer-display]');
             const deadline = Number(timer.dataset.deadline);
+            const nav = document.querySelector('nav.sticky');
+            const updateStickyOffset = function () {
+                timer.style.top = nav ? nav.getBoundingClientRect().height + 'px' : '0px';
+            };
+            updateStickyOffset();
+            window.addEventListener('resize', updateStickyOffset);
             let isSubmitting = false;
 
             function updateTimer() {
