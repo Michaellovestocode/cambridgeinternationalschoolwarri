@@ -218,21 +218,16 @@
         </div>
 
         <div class="space-y-6">
-    @if(! $practicePendingReview && ! $practiceLocked)
-    <div data-assessment-timer data-deadline="{{ $timerDeadline }}" class="sticky top-0 z-40 flex items-center justify-between gap-4 rounded-2xl border border-white/30 bg-gradient-to-r from-cyan-600 to-emerald-600 px-5 py-4 text-white shadow-lg" role="timer" aria-live="polite">
-        <div><p class="font-bold">Time remaining</p><p class="text-sm text-white/90">Your answers will be submitted automatically when time is up.</p></div>
-        <strong data-timer-display class="whitespace-nowrap text-2xl font-black tabular-nums">--:--</strong>
-    </div>
-    @endif
+
             @forelse($learningSession->questions as $question)
             <div class="student-question-card border border-gray-200 rounded-xl p-5">
                 <p class="font-bold text-gray-900 mb-4">{{ $loop->iteration }}. {{ $question->question_text }}</p>
 
                 @if(!empty($question->options) && is_array($question->options))
-                    <div class="student-question-options grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div class="student-question-options grid grid-cols-1 lg:grid-cols-2 gap-3">
                         @foreach($question->options as $key => $option)
-                        <label class="flex items-start gap-3 border rounded-lg px-4 py-3 cursor-pointer hover:bg-cyan-50">
-                            <input type="radio" name="answers[{{ $question->id }}]" value="{{ $key }}" class="mt-1">
+                        <label class="flex min-h-14 items-center gap-3 rounded-xl border px-4 py-3 cursor-pointer transition hover:bg-cyan-50 focus-within:ring-2 focus-within:ring-cyan-500">
+                            <input type="radio" name="answers[{{ $question->id }}]" value="{{ $key }}" class="h-5 w-5 shrink-0 accent-cyan-700">
                             <span><strong>{{ $key }}.</strong> {{ $option }}</span>
                         </label>
                         @endforeach
@@ -280,6 +275,14 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
+        document.querySelectorAll('.student-question-options input[type="radio"]').forEach(function (radio) {
+            radio.addEventListener('click', function (event) {
+                if (event.detail > 0) {
+                    window.setTimeout(function () { radio.blur(); }, 0);
+                }
+            });
+        });
+
         const timer = document.querySelector('[data-assessment-timer]');
         if (timer) {
             const form = document.querySelector('[data-assessment-form]');

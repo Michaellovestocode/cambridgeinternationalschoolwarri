@@ -57,11 +57,17 @@
                 @if(!$answer->selected_option)
                     <p class="mt-3 text-sm text-red-700 font-semibold">You did not answer this question.</p>
                 @endif
+                @if(($attempt->is_published || $attempt->learningSession->show_answers_to_students) && $question->question_type === 'theory' && $answer->teacher_score !== null)
+                    <p class="mt-3 rounded-lg bg-violet-50 p-3 text-sm font-bold text-violet-900">Teacher score: {{ $answer->teacher_score }} / {{ $question->marks ?: 1 }}</p>
+                @endif
+                @if(($attempt->is_published || $attempt->learningSession->show_answers_to_students) && $answer->teacher_feedback)
+                    <p class="mt-3 rounded-lg bg-cyan-50 p-4 text-sm text-cyan-950"><strong>Teacher feedback:</strong> {{ $answer->teacher_feedback }}</p>
+                @endif
                 @if(($attempt->is_published || $attempt->learningSession->show_answers_to_students) && $question->explanation)
                     <p class="mt-4 text-sm text-gray-700"><strong>Explanation:</strong> {{ $question->explanation }}</p>
-                @elseif($attempt->is_published || $attempt->learningSession->show_answers_to_students)
+                @elseif(($attempt->is_published || $attempt->learningSession->show_answers_to_students) && $question->question_type !== 'theory')
                     <p class="mt-4 text-sm text-gray-700"><strong>Marking note:</strong> This answer has been marked automatically. The teacher has not added a written explanation yet.</p>
-                @else
+                @elseif(!($attempt->is_published || $attempt->learningSession->show_answers_to_students))
                     <p class="mt-4 text-sm text-gray-500"><strong>Answer script:</strong> Hidden until your teacher reveals the marking notes.</p>
                 @endif
             </div>

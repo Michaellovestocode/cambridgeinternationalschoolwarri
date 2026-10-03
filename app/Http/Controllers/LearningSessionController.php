@@ -259,7 +259,15 @@ class LearningSessionController extends Controller
         abort_unless($attempt->learningSession, 404);
         $this->authorizeSubmissionAccess();
 
-        return view('admin.learning-sessions.grade', compact('attempt'));
+        $objectiveAnswers = $attempt->answers->filter(fn ($answer) => $answer->question?->question_type === 'objective')->values();
+        $writtenAnswers = $attempt->answers->filter(fn ($answer) => $answer->question?->question_type === 'theory')->values();
+        $objectiveCorrectCount = $objectiveAnswers->where('is_correct', true)->count();
+        $objectivePercentage = $objectiveAnswers->isNotEmpty()
+            ? (int) round(($objectiveCorrectCount / $objectiveAnswers->count()) * 100)
+            : null;
+        $unmarkedWrittenCount = $writtenAnswers->filter(fn ($answer) => $answer->teacher_score === null)->count();
+
+        return view('admin.learning-sessions.grade', compact('attempt', 'objectiveAnswers', 'writtenAnswers', 'objectiveCorrectCount', 'objectivePercentage', 'unmarkedWrittenCount'));
     }
 
     public function updateAttempt(Request $request, LearningAttempt $attempt)
