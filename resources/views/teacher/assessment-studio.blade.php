@@ -73,12 +73,12 @@
         <div class="assessment-card group rounded-[1.75rem] border border-sky-100 bg-gradient-to-br from-sky-500 via-cyan-500 to-sky-700 p-5 text-white shadow-[0_18px_40px_-20px_rgba(14,116,144,0.7)] transition hover:-translate-y-1">
             <div class="mb-4 flex items-center justify-between">
                 <span class="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/15 text-2xl shadow-inner">✍️</span>
-                <span class="rounded-full bg-white/15 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-sky-50">Classwork</span>
+                <span class="rounded-full bg-white/15 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-sky-50">Classwork/Test</span>
             </div>
-            <h2 class="text-xl font-black">Classwork</h2>
+            <h2 class="text-xl font-black">Classwork/Test</h2>
             <p class="mt-2 text-sm text-sky-50/90">Short classroom exercises for quick checks, recap, and immediate reinforcement.</p>
             <a href="{{ route('admin.learning-sessions.create', ['assessment_type' => 'classwork']) }}" class="mt-5 block w-full rounded-2xl bg-white/15 px-4 py-3 text-center text-sm font-bold text-white transition hover:bg-white/20">
-                Create classwork
+                Create Classwork/Test
             </a>
         </div>
 
