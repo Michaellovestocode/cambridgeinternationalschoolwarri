@@ -105,7 +105,7 @@
                 <h3 class="text-xl font-bold text-gray-800 mb-2">Assessment Studio</h3>
                 <p class="text-gray-600 mb-4">Create classroom tasks, quizzes, assignments, and written exercises without disturbing formal school exams.</p>
                 <a href="{{ route('teacher.assessment-studio') }}" class="inline-block w-full text-center bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-lg font-semibold transition">
-                    Create Classwork / Quiz / Test
+                    Open Studio
                 </a>
             </div>
 
