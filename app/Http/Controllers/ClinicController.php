@@ -360,14 +360,14 @@ class ClinicController extends Controller
             })->all();
             $staffData = User::whereIn('role', ['teacher', 'non_teaching_staff', 'nurse', 'admin'])
                 ->orderBy('name')
-                ->get(['id', 'name', 'role', 'sex', 'date_of_birth'])
+                ->get(['id', 'name', 'role', 'sex'])
                 ->map(function ($person) {
                     return [
                         'id' => $person->id,
                         'name' => $person->name,
                         'role' => ucwords(str_replace('_', ' ', $person->role)),
                         'sex' => $person->sex,
-                        'date_of_birth' => $person->date_of_birth?->format('Y-m-d'),
+
                     ];
                 })->values()->all();
         } catch (Throwable $exception) {
@@ -389,6 +389,7 @@ class ClinicController extends Controller
             'patient_identifier' => ['nullable', 'string', 'max:100'],
             'patient_sex' => ['nullable', 'in:male,female,other,not_specified'],
             'patient_age' => ['nullable', 'integer', 'min:0', 'max:120'],
+            'patient_age_group' => ['nullable', 'required_if:patient_type,staff', 'in:adult,teenager,older_adult'],
             'residence_type' => ['nullable', 'in:boarder,day_student'],
             'visited_at' => ['required', 'date'],
             'reason' => ['required', 'string', 'max:255'],
@@ -415,13 +416,16 @@ class ClinicController extends Controller
             abort_unless(filled($validated['patient_name'] ?? null), 422, 'Enter the name of the person not listed.');
         }
 
-        $patientAge = $person?->date_of_birth?->age ?? ($validated['patient_age'] ?? null);
+        $patientAge = $validated['patient_type'] === 'staff'
+            ? null
+            : ($person?->date_of_birth?->age ?? ($validated['patient_age'] ?? null));
         $visit = ClinicVisit::create([
             ...$validated,
             'student_id' => $validated['patient_type'] === 'student' ? $person->id : null,
             'person_id' => $person?->id,
             'patient_age' => $patientAge,
-            'patient_date_of_birth' => $person?->date_of_birth,
+            'patient_age_group' => $validated['patient_type'] === 'staff' ? $validated['patient_age_group'] : null,
+            'patient_date_of_birth' => $validated['patient_type'] === 'staff' ? null : $person?->date_of_birth,
             'recorded_by' => Auth::id(),
             'parent_contacted' => $request->boolean('parent_contacted'),
         ]);

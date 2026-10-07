@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 
 class Score extends Model
 {
@@ -176,31 +177,53 @@ class Score extends Model
             ->avg('total');
     }
 
-    // Calculate and update positions for all students in a class
+    // Recalculate subject positions for scored, non-draft records only.
     public static function calculatePositions($subjectId, $classId, $sessionId, $termId)
     {
-        $scores = self::where('subject_id', $subjectId)
+        $scope = self::query()
+            ->where('subject_id', $subjectId)
             ->where('class_id', $classId)
             ->where('session_id', $sessionId)
-            ->where('term_id', $termId)
-            ->orderBy('total', 'desc')
-            ->get();
+            ->where('term_id', $termId);
+
+        $scores = (clone $scope)
+            ->where('status', '!=', 'draft')
+            ->where('total', '>', 0)
+            ->orderByDesc('total')
+            ->orderBy('student_id')
+            ->get(['id', 'student_id', 'total', 'position', 'total_students']);
 
         $totalStudents = $scores->count();
         $lastTotal = null;
         $currentPosition = 0;
 
         foreach ($scores as $index => $score) {
-            if ($lastTotal === null || $score->total < $lastTotal) {
+            if ($lastTotal === null || (float) $score->total < (float) $lastTotal) {
                 $currentPosition = $index + 1;
             }
 
-            $score->update([
-                'position' => $currentPosition,
-                'total_students' => $totalStudents,
-            ]);
+            if ((int) $score->position !== $currentPosition || (int) $score->total_students !== $totalStudents) {
+                DB::table('scores')->where('id', $score->id)->update([
+                    'position' => $currentPosition,
+                    'total_students' => $totalStudents,
+                ]);
+            }
 
             $lastTotal = $score->total;
         }
+
+        // Draft and zero-score rows are not part of a published subject ranking.
+        DB::table('scores')
+            ->where('subject_id', $subjectId)
+            ->where('class_id', $classId)
+            ->where('session_id', $sessionId)
+            ->where('term_id', $termId)
+            ->where(function ($query) {
+                $query->where('status', 'draft')->orWhere('total', '<=', 0);
+            })
+            ->where(function ($query) {
+                $query->whereNotNull('position')->orWhereNotNull('total_students');
+            })
+            ->update(['position' => null, 'total_students' => null]);
     }
 }

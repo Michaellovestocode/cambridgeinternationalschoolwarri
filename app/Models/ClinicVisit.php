@@ -19,6 +19,7 @@ class ClinicVisit extends Model
         'patient_sex',
         'patient_date_of_birth',
         'patient_age',
+        'patient_age_group',
         'residence_type',
         'recorded_by',
         'visited_at',
