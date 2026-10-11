@@ -195,12 +195,74 @@
                 @forelse($learningSession->questions as $question)
                 <div class="border rounded-lg p-4">
                     <div class="flex justify-between gap-4">
-                        <p class="font-semibold text-gray-900">{{ $loop->iteration }}. {{ $question->question_text }}</p>
-                        <form action="{{ route('admin.learning-sessions.questions.destroy', $question) }}" method="POST">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit" class="text-red-600 hover:underline text-sm" onclick="return confirm('Delete this question?')">Delete</button>
-                        </form>
+                        <div class="font-semibold text-gray-900">{{ $loop->iteration }}. {!! $question->safe_question_text !!}</div>
+                        <div class="flex shrink-0 items-start gap-3">
+                            <details class="text-sm">
+                                <summary class="cursor-pointer font-semibold text-cyan-700 hover:underline">Edit</summary>
+                                <form action="{{ route('admin.learning-sessions.questions.update', $question) }}" method="POST" enctype="multipart/form-data" class="mt-3 w-full min-w-[min(80vw,36rem)] space-y-4 rounded-xl border border-cyan-200 bg-cyan-50 p-4 sm:min-w-[32rem]">
+                                    @csrf
+                                    @method('PUT')
+                                    <div>
+                                        <label class="mb-1 block text-xs font-bold text-gray-700">Question text</label>
+                                        @include('admin.exams.partials.rich-question-editor', [
+                                            'name' => 'question_text',
+                                            'value' => $question->question_text,
+                                            'placeholder' => 'Enter your question here'
+                                        ])
+                                    </div>
+                                    <div class="grid gap-3 sm:grid-cols-2">
+                                        <div>
+                                            <label class="mb-1 block text-xs font-bold text-gray-700">Question type</label>
+                                            <select name="question_type" class="w-full rounded-lg border px-3 py-2 text-sm">
+                                                <option value="objective" @selected($question->question_type === 'objective')>Objective / MCQ</option>
+                                                <option value="theory" @selected($question->question_type === 'theory')>Theory / Written</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label class="mb-1 block text-xs font-bold text-gray-700">Marks</label>
+                                            <input type="number" name="marks" min="0.01" step="0.01" required value="{{ $question->marks }}" class="w-full rounded-lg border px-3 py-2 text-sm">
+                                        </div>
+                                    </div>
+                                    <div class="grid gap-3 sm:grid-cols-2">
+                                        @foreach(['A', 'B', 'C', 'D'] as $letter)
+                                            <div>
+                                                <label class="mb-1 block text-xs font-bold text-gray-700">Option {{ $letter }}</label>
+                                                <input type="text" name="options[{{ $letter }}]" value="{{ $question->options[$letter] ?? '' }}" class="w-full rounded-lg border px-3 py-2 text-sm">
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                    <div class="grid gap-3 sm:grid-cols-2">
+                                        <div>
+                                            <label class="mb-1 block text-xs font-bold text-gray-700">Correct answer</label>
+                                            <select name="correct_option" class="w-full rounded-lg border px-3 py-2 text-sm">
+                                                <option value="">Select answer</option>
+                                                @foreach(['A', 'B', 'C', 'D'] as $letter)
+                                                    <option value="{{ $letter }}" @selected($question->correct_option === $letter)>{{ $letter }}</option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label class="mb-1 block text-xs font-bold text-gray-700">Question order</label>
+                                            <input type="number" name="order" min="0" required value="{{ $question->order }}" class="w-full rounded-lg border px-3 py-2 text-sm">
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label class="mb-1 block text-xs font-bold text-gray-700">Explanation (optional)</label>
+                                        <textarea name="explanation" rows="2" class="w-full rounded-lg border px-3 py-2 text-sm">{{ $question->explanation }}</textarea>
+                                    </div>
+                                    <div>
+                                        <label class="mb-1 block text-xs font-bold text-gray-700">Replace reference image (optional)</label>
+                                        <input type="file" name="image" accept="image/jpeg,image/png,image/gif,image/webp" class="w-full rounded-lg border bg-white px-3 py-2 text-sm">
+                                    </div>
+                                    <button type="submit" class="rounded-lg bg-cyan-700 px-4 py-2 text-sm font-bold text-white hover:bg-cyan-800">Save question changes</button>
+                                </form>
+                            </details>
+                            <form action="{{ route('admin.learning-sessions.questions.destroy', $question) }}" method="POST">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="text-red-600 hover:underline text-sm" onclick="return confirm('Delete this question?')">Delete</button>
+                            </form>
+                        </div>
                     </div>
                     <div class="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
                         @foreach($question->options as $key => $option)

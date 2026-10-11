@@ -418,6 +418,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/learning-sessions/{learningSession}/attachments', [LearningSessionController::class, 'uploadAttachment'])->name('learning-sessions.attachments.store');
         Route::post('/learning-sessions/{learningSession}/comments', [LearningSessionController::class, 'comment'])->name('learning-sessions.comments.store');
         Route::post('/learning-sessions/{learningSession}/questions', [LearningSessionController::class, 'storeQuestion'])->name('learning-sessions.questions.store');
+        Route::put('/learning-questions/{question}', [LearningSessionController::class, 'updateQuestion'])->name('learning-sessions.questions.update');
         Route::delete('/learning-questions/{question}', [LearningSessionController::class, 'destroyQuestion'])->name('learning-sessions.questions.destroy');
         Route::post('/learning-comments/{comment}/moderate', [LearningSessionController::class, 'moderateComment'])->name('learning-comments.moderate');
         

@@ -79,6 +79,7 @@
         </div>
     </div>
 
+    @if(! $learningSession)
     <div class="rounded-2xl border border-cyan-200 bg-cyan-50 p-4">
         <div class="flex items-center justify-between gap-3 mb-4">
             <div>
@@ -156,6 +157,7 @@
             </div>
         </div>
     </div>
+    @endif
 
     @if($subjects->isEmpty() || $classes->isEmpty())
         <div class="bg-yellow-50 border border-yellow-200 text-yellow-800 rounded-lg p-4 text-sm">

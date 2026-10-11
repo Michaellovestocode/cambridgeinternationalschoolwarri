@@ -28,7 +28,7 @@
             @php($question = $answer->question)
             <div class="border rounded-xl p-5 {{ $answer->is_correct ? 'border-green-200 bg-green-50' : 'border-red-200 bg-red-50' }}">
                 <div class="flex flex-wrap justify-between gap-3 mb-4">
-                    <p class="font-bold text-gray-900">{{ $loop->iteration }}. {{ $question->question_text }}</p>
+                    <div class="font-bold text-gray-900">{{ $loop->iteration }}. {!! $question->safe_question_text !!}</div>
                     <span class="px-3 py-1 rounded-full text-xs font-bold {{ $answer->is_correct ? 'bg-green-600 text-white' : 'bg-red-600 text-white' }}">
                         {{ $answer->is_correct ? 'Correct' : 'Review' }}
                     </span>

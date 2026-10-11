@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\QuestionText;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -25,6 +26,11 @@ class LearningQuestion extends Model
         'options' => 'array',
         'marks' => 'decimal:2',
     ];
+
+    public function getSafeQuestionTextAttribute(): string
+    {
+        return QuestionText::sanitize($this->question_text);
+    }
 
     public function learningSession()
     {

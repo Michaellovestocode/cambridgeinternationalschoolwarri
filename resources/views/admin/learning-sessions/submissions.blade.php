@@ -27,6 +27,9 @@
             <tbody class="divide-y divide-gray-100">
                 @forelse($learners as $learner)
                     @php($attempt = $attemptsByLearner->get($learner->id))
+                    @php($objectiveAnswers = $attempt?->answers->filter(fn ($answer) => $answer->question?->question_type === 'objective') ?? collect())
+                    @php($objectiveScore = $objectiveAnswers->sum(fn ($answer) => $answer->teacher_score !== null ? (float) $answer->teacher_score : ($answer->is_correct ? 1 : 0)))
+                    @php($objectiveScoreDisplay = fmod($objectiveScore, 1) === 0.0 ? (int) $objectiveScore : rtrim(rtrim(number_format($objectiveScore, 2, '.', ''), '0'), '.'))
                     <tr>
                         <td class="px-4 py-4 font-bold text-gray-900">{{ $learner->name }}</td>
                         <td class="px-4 py-4 text-gray-600">{{ $attempt?->completed_at?->format('j M Y, g:i A') ?: '-' }}</td>
@@ -37,8 +40,19 @@
                                 <span class="rounded-full px-3 py-1 text-xs font-bold {{ $attempt->is_published ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800' }}">{{ $attempt->is_published ? 'Published' : 'Needs review' }}</span>
                             @endif
                         </td>
-                        <td class="px-4 py-4 font-bold text-cyan-700">{{ $attempt?->is_published ? $attempt->score . '/' . $attempt->total_questions : ($attempt ? 'Pending' : '-') }}</td>
-                        <td class="px-4 py-4">@if($attempt)<a href="{{ route('admin.learning-sessions.attempts.grade', $attempt) }}" class="rounded-lg bg-cyan-600 px-3 py-2 text-xs font-bold text-white">Review and Score</a>@else<span class="text-xs font-semibold text-gray-400">Awaiting learner</span>@endif</td>
+                        <td class="px-4 py-4 font-bold text-cyan-700">
+                            @if(! $attempt)
+                                -
+                            @elseif($attempt->is_published)
+                                {{ $attempt->score }}/{{ $attempt->total_questions }}
+                            @elseif($objectiveAnswers->isNotEmpty())
+                                {{ $objectiveScoreDisplay }}/{{ $objectiveAnswers->count() }}
+                                <span class="block text-xs font-medium text-gray-500">Objective · computer marked</span>
+                            @else
+                                Pending
+                            @endif
+                        </td>
+                        <td class="px-4 py-4">@if($attempt)<a href="{{ route('admin.learning-sessions.attempts.grade', $attempt) }}" class="rounded-lg bg-cyan-600 px-3 py-2 text-xs font-bold text-white">View Submission</a>@else<span class="text-xs font-semibold text-gray-400">Awaiting learner</span>@endif</td>
                     </tr>
                 @empty
                     <tr><td colspan="5" class="px-4 py-10 text-center text-gray-500">No learners are assigned to this activity.</td></tr>

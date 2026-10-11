@@ -193,7 +193,7 @@
         @foreach($learningSession->questions as $question)
             @php($answer = $latestAttempt->answers->firstWhere('learning_question_id', $question->id))
             <div class="rounded-xl border border-gray-200 bg-gray-50 p-5">
-                <p class="font-bold text-gray-900">{{ $loop->iteration }}. {{ $question->question_text }}</p>
+                <div class="font-bold text-gray-900">{{ $loop->iteration }}. {!! $question->safe_question_text !!}</div>
                 <div class="mt-3 whitespace-pre-line rounded-xl border border-gray-200 bg-white p-4 text-sm text-gray-700">{{ $answer?->selected_option ?: 'No answer submitted.' }}</div>
             </div>
         @endforeach
@@ -221,7 +221,7 @@
 
             @forelse($learningSession->questions as $question)
             <div class="student-question-card border border-gray-200 rounded-xl p-5">
-                <p class="font-bold text-gray-900 mb-4">{{ $loop->iteration }}. {{ $question->question_text }}</p>
+                <div class="font-bold text-gray-900 mb-4">{{ $loop->iteration }}. {!! $question->safe_question_text !!}</div>
 
                 @if(!empty($question->options) && is_array($question->options))
                     <div class="student-question-options grid grid-cols-1 lg:grid-cols-2 gap-3">

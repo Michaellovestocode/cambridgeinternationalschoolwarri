@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Support\QuestionText;
 use App\Models\LearningQuestion;
 use App\Models\LearningAttempt;
 use App\Models\LearningSession;
@@ -228,7 +229,7 @@ class LearningSessionController extends Controller
         $this->authorizeSubmissionAccess();
         $learningSession->load(['subject', 'schoolClass', 'targetClasses.students']);
         $attempts = $learningSession->attempts()
-            ->with('user')
+            ->with(['user', 'answers.question'])
             ->withCount('answers')
             ->latest('completed_at')
             ->get();
@@ -288,22 +289,30 @@ class LearningSessionController extends Controller
             if (! $answer->question) {
                 continue;
             }
-            if ($answer->question->question_type !== 'theory') {
-                continue;
-            }
-
             $input = $validated['answers'][$answer->id] ?? [];
-            $maxScore = max((float) ($answer->question->marks ?? 1), 0);
-            $score = array_key_exists('teacher_score', $input) && $input['teacher_score'] !== null
-                ? min((float) $input['teacher_score'], $maxScore)
-                : null;
+            if ($answer->question->question_type === 'theory') {
+                $maxScore = max((float) ($answer->question->marks ?? 1), 0);
+                $score = array_key_exists('teacher_score', $input) && $input['teacher_score'] !== null
+                    ? min((float) $input['teacher_score'], $maxScore)
+                    : null;
 
-            $answer->update([
-                'teacher_score' => $score,
-                'teacher_feedback' => $input['teacher_feedback'] ?? null,
-                'graded_by' => Auth::id(),
-                'graded_at' => now(),
-            ]);
+                $answer->update([
+                    'teacher_score' => $score,
+                    'teacher_feedback' => $input['teacher_feedback'] ?? null,
+                    'graded_by' => Auth::id(),
+                    'graded_at' => now(),
+                ]);
+            } elseif (array_key_exists('teacher_score', $input)) {
+                $score = $input['teacher_score'] !== null
+                    ? min((float) $input['teacher_score'], 1)
+                    : null;
+
+                $answer->update([
+                    'teacher_score' => $score,
+                    'graded_by' => Auth::id(),
+                    'graded_at' => now(),
+                ]);
+            }
         }
 
         $score = 0;
@@ -312,8 +321,10 @@ class LearningSessionController extends Controller
                 $score += $answer->teacher_score !== null
                     ? ((float) $answer->teacher_score / max((float) ($answer->question->marks ?? 1), 1))
                     : 0;
-            } elseif ($answer->is_correct) {
-                $score++;
+            } else {
+                $score += $answer->teacher_score !== null
+                    ? (float) $answer->teacher_score
+                    : ($answer->is_correct ? 1 : 0);
             }
         }
 
@@ -478,7 +489,7 @@ class LearningSessionController extends Controller
         }
 
         $learningSession->questions()->create([
-            'question_text' => $data['question_text'],
+            'question_text' => QuestionText::sanitize($data['question_text']),
             'question_type' => $questionType,
             'options' => $options,
             'correct_option' => $questionType === 'objective' ? $data['correct_option'] : '',
@@ -503,6 +514,58 @@ class LearningSessionController extends Controller
         return redirect()
             ->route('admin.learning-sessions.edit', $session)
             ->with('success', 'Practice question deleted.');
+    }
+
+    public function updateQuestion(Request $request, LearningQuestion $question)
+    {
+        $session = $question->learningSession;
+        $this->authorizeSession($session);
+        $questionType = $request->input('question_type', $question->question_type ?: 'objective');
+
+        $data = $request->validate([
+            'question_text' => ['required', 'string'],
+            'question_type' => ['required', 'in:objective,theory'],
+            'marks' => ['required', 'numeric', 'min:0.01'],
+            'image' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif,webp', 'max:5120'],
+            'options' => ['nullable', 'array'],
+            'options.A' => ['nullable', 'string', 'max:1000'],
+            'options.B' => ['nullable', 'string', 'max:1000'],
+            'options.C' => ['nullable', 'string', 'max:1000'],
+            'options.D' => ['nullable', 'string', 'max:1000'],
+            'correct_option' => [$questionType === 'theory' ? 'nullable' : 'required', 'in:A,B,C,D'],
+            'explanation' => ['nullable', 'string'],
+            'order' => ['required', 'integer', 'min:0'],
+        ]);
+
+        $options = $questionType === 'objective'
+            ? array_filter($data['options'] ?? [], fn ($option) => filled($option))
+            : [];
+
+        if ($questionType === 'objective' && ! array_key_exists($data['correct_option'], $options)) {
+            return back()
+                ->withErrors(['correct_option' => 'The correct option must match an option with text.'])
+                ->withInput();
+        }
+
+        $imagePath = $question->image_path;
+        if ($request->hasFile('image')) {
+            $imagePath = $request->file('image')->store('learning-question-images', 'public');
+        }
+
+        $question->update([
+            'question_text' => QuestionText::sanitize($data['question_text']),
+            'question_type' => $questionType,
+            'options' => $options,
+            'correct_option' => $questionType === 'objective' ? $data['correct_option'] : '',
+            'explanation' => $data['explanation'] ?? null,
+            'order' => $data['order'],
+            'marks' => (float) $data['marks'],
+            'image_path' => $imagePath,
+        ]);
+
+        return redirect()
+            ->route('admin.learning-sessions.edit', $session)
+            ->with('success', 'Practice question updated.');
     }
 
     private function validatedSessionData(Request $request): array
@@ -561,7 +624,7 @@ class LearningSessionController extends Controller
             }
 
             $session->questions()->create([
-                'question_text' => $question['question_text'],
+                'question_text' => QuestionText::sanitize($question['question_text']),
                 'question_type' => $questionType,
                 'options' => $options,
                 'correct_option' => $questionType === 'objective' ? $question['correct_option'] : null,

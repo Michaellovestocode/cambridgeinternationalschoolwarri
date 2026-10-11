@@ -55,7 +55,7 @@
                     <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                         <div class="min-w-0">
                             <p class="text-xs font-bold uppercase tracking-wide text-gray-500">Question {{ $attempt->answers->search($answer) + 1 }} | Objective</p>
-                            <h3 class="mt-1 font-bold text-gray-900">{{ $question->question_text }}</h3>
+                            <div class="mt-1 font-bold text-gray-900">{!! $question->safe_question_text !!}</div>
                         </div>
                         <span class="shrink-0 rounded-full px-3 py-1 text-xs font-bold {{ $answer->is_correct ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800' }}">{{ $answer->is_correct ? 'Computer scored: Correct' : 'Computer scored: Incorrect' }}</span>
                     </div>
@@ -81,6 +81,11 @@
                     @if($question->explanation)
                         <p class="mt-4 rounded-xl bg-cyan-50 p-4 text-sm text-cyan-950"><strong>Explanation:</strong> {{ $question->explanation }}</p>
                     @endif
+                    <div class="mt-4 max-w-xs">
+                        <label for="objective-score-{{ $answer->id }}" class="mb-1 block text-xs font-bold text-gray-700">Score override (optional, max 1)</label>
+                        <input id="objective-score-{{ $answer->id }}" type="number" name="answers[{{ $answer->id }}][teacher_score]" value="{{ $answer->teacher_score }}" min="0" max="1" step="0.01" placeholder="Computer score: {{ $answer->is_correct ? '1' : '0' }}" class="w-full rounded-xl border border-gray-200 px-3 py-3">
+                        <p class="mt-1 text-xs text-gray-500">Leave blank to use the computer mark.</p>
+                    </div>
                 </article>
             @endforeach
         </section>
@@ -101,7 +106,7 @@
                     <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                         <div class="min-w-0">
                             <p class="text-xs font-bold uppercase tracking-wide text-violet-700">Question {{ $attempt->answers->search($answer) + 1 }} | Written | {{ $question->marks ?: 1 }} {{ (float) ($question->marks ?: 1) === 1.0 ? 'mark' : 'marks' }}</p>
-                            <h3 class="mt-1 font-bold text-gray-900">{{ $question->question_text }}</h3>
+                            <div class="mt-1 font-bold text-gray-900">{!! $question->safe_question_text !!}</div>
                         </div>
                         <span class="shrink-0 rounded-full px-3 py-1 text-xs font-bold {{ $answer->teacher_score !== null ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800' }}">{{ $answer->teacher_score !== null ? 'Marked | ' . $answer->teacher_score . ' / ' . ($question->marks ?: 1) : 'Needs marking' }}</span>
                     </div>
