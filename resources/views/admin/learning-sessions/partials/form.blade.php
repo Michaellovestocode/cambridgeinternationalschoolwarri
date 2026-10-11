@@ -101,7 +101,11 @@
                 <div class="space-y-4">
                     <div>
                         <label class="block text-sm font-semibold text-gray-700 mb-1">Question</label>
-                        <textarea name="questions[0][question_text]" rows="4" class="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-cyan-500" placeholder="Type the question here..."></textarea>
+                        @include('admin.exams.partials.rich-question-editor', [
+                            'name' => 'questions[0][question_text]',
+                            'value' => old('questions.0.question_text'),
+                            'placeholder' => 'Type the question here...'
+                        ])
                     </div>
 
                     <div>
@@ -269,7 +273,18 @@
                     <div class="space-y-4">
                         <div>
                             <label class="block text-sm font-semibold text-gray-700 mb-1">Question</label>
-                            <textarea name="questions[${index}][question_text]" rows="4" class="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-cyan-500" placeholder="Type the question here..."></textarea>
+                            <div x-data="richQuestionEditor('')" x-init="init()" class="space-y-2">
+                                <input type="hidden" name="questions[${index}][question_text]" x-ref="input" required>
+                                <div class="border border-gray-300 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-cyan-500">
+                                    <div class="bg-gray-50 border-b px-3 py-2 flex items-center gap-2">
+                                        <button type="button" @click="format('bold')" class="px-3 py-1 rounded text-sm font-bold text-gray-700 hover:bg-gray-200" title="Bold selected text">B</button>
+                                        <button type="button" @click="format('italic')" class="px-3 py-1 rounded text-sm italic text-gray-700 hover:bg-gray-200" title="Italic selected text">I</button>
+                                        <button type="button" @click="format('underline')" class="px-3 py-1 rounded text-sm font-semibold underline text-gray-700 hover:bg-gray-200" title="Underline selected text">U</button>
+                                    </div>
+                                    <div x-ref="editor" contenteditable="true" @input="sync()" @blur="sync()" @paste.prevent="paste($event)" class="w-full min-h-[7rem] px-4 py-3 bg-white text-gray-900 focus:outline-none" data-placeholder="Type the question here..."></div>
+                                </div>
+                                <p class="text-xs text-gray-500">Format selected text or paste formatted text from Word.</p>
+                            </div>
                         </div>
                         <div>
                             <label class="block text-sm font-semibold text-gray-700 mb-1">Marks</label>
@@ -367,11 +382,53 @@
             syncAssessmentFormat();
             syncAssessmentLabels();
 
+            const restoredQuestions = @json(old('questions', []));
+            if (Array.isArray(restoredQuestions) && restoredQuestions.length) {
+                const firstBlock = list.querySelector('.question-block');
+                restoredQuestions.forEach((question, index) => {
+                    const block = index === 0 ? firstBlock : makeQuestionBlock(index);
+                    if (!block) return;
+                    if (index > 0) {
+                        list.appendChild(block);
+                        window.Alpine?.initTree(block);
+                    }
+
+                    const questionText = block.querySelector('input[type="hidden"][name$="[question_text]"]');
+                    const marks = block.querySelector('input[name$="[marks]"]');
+                    const type = block.querySelector('select[name$="[question_type]"]');
+                    const correct = block.querySelector('select[name$="[correct_option]"]');
+
+                    if (questionText) {
+                        const editor = block.querySelector('[contenteditable="true"]');
+                        const editorApi = window.richQuestionEditor ? richQuestionEditor('') : null;
+                        const plainText = document.createElement('div');
+                        plainText.textContent = question.question_text || '';
+                        const safeText = editorApi ? editorApi.sanitizeHtml(question.question_text || '') : plainText.innerHTML;
+                        if (editor) editor.innerHTML = safeText;
+                        questionText.value = safeText;
+                    }
+                    if (marks && question.marks !== undefined) marks.value = question.marks;
+                    if (type && question.question_type) type.value = question.question_type;
+                    if (correct) correct.value = question.correct_option || '';
+
+                    ['A', 'B', 'C', 'D'].forEach((letter) => {
+                        const option = block.querySelector(`[name="questions[${index}][options][${letter}]"]`);
+                        if (option) option.value = question.options?.[letter] || '';
+                    });
+                });
+
+                if (restoredQuestions.length > 1) {
+                    list.querySelectorAll('.remove-question').forEach((button) => button.classList.remove('hidden'));
+                }
+                syncAssessmentFormat();
+            }
+
             addButton.addEventListener('click', () => {
                 const blocks = list.querySelectorAll('.question-block');
                 const nextIndex = blocks.length;
                 const block = makeQuestionBlock(nextIndex);
                 list.appendChild(block);
+                window.Alpine?.initTree(block);
                 syncAssessmentFormat();
                 if (blocks.length >= 1) {
                     list.querySelectorAll('.remove-question').forEach((btn) => btn.classList.remove('hidden'));

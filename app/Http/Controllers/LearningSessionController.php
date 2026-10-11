@@ -201,6 +201,12 @@ class LearningSessionController extends Controller
             $this->storeIllustration($session, $illustration);
         }
 
+        if ($session->questions()->where('question_type', 'objective')->whereNull('correct_option')->exists()) {
+            return redirect()
+                ->route('admin.learning-sessions.edit', $session)
+                ->with('success', 'Draft saved. Complete the highlighted correct answer before publishing.');
+        }
+
         $destination = 'admin.classroom-activities';
 
         return redirect()
@@ -248,6 +254,10 @@ class LearningSessionController extends Controller
         $this->authorizeSession($learningSession);
 
         abort_if($learningSession->questions()->count() === 0, 422, 'Add at least one question before publishing this activity.');
+
+        if (! $this->objectiveQuestionsHaveAnswerKeys($learningSession->questions()->get())) {
+            return back()->withErrors(['questions' => 'Choose a valid correct option for every objective question before publishing.']);
+        }
 
         $learningSession->update(['is_published' => true]);
 
@@ -405,6 +415,11 @@ class LearningSessionController extends Controller
     {
         $data = $this->validatedSessionData($request);
         $this->authorizeSession($learningSession);
+        if ($request->boolean('publish') && ! $this->objectiveQuestionsHaveAnswerKeys($learningSession->questions()->get())) {
+            return back()
+                ->withErrors(['questions' => 'Choose a valid correct option for every objective question before publishing.'])
+                ->withInput();
+        }
         $illustration = $request->file('illustration');
         $classIds = collect($data['school_class_ids'])->map(fn ($id) => (int) $id)->unique()->values();
         $this->ensureAllowedAssignments((int) $data['subject_id'], $classIds->all());
@@ -617,7 +632,10 @@ class LearningSessionController extends Controller
                 ? array_filter($question['options'] ?? [], fn ($option) => filled($option))
                 : [];
 
-            if ($questionType === 'objective' && (! filled($question['correct_option'] ?? null) || ! array_key_exists($question['correct_option'], $options))) {
+            $correctOption = $question['correct_option'] ?? null;
+            $hasValidAnswerKey = filled($correctOption) && array_key_exists($correctOption, $options);
+
+            if ($questionType === 'objective' && ! $hasValidAnswerKey && $request->boolean('publish')) {
                 throw \Illuminate\Validation\ValidationException::withMessages([
                     "questions.{$index}.correct_option" => 'The correct option must match an option with text.',
                 ]);
@@ -627,11 +645,26 @@ class LearningSessionController extends Controller
                 'question_text' => QuestionText::sanitize($question['question_text']),
                 'question_type' => $questionType,
                 'options' => $options,
-                'correct_option' => $questionType === 'objective' ? $question['correct_option'] : null,
+                'correct_option' => $questionType === 'objective' && $hasValidAnswerKey ? $correctOption : null,
                 'order' => $index + 1,
                 'marks' => (float) ($question['marks'] ?? 1),
             ]);
         }
+    }
+
+    private function objectiveQuestionsHaveAnswerKeys($questions): bool
+    {
+        return $questions->every(function (LearningQuestion $question): bool {
+            if ($question->question_type !== 'objective') {
+                return true;
+            }
+
+            $options = is_array($question->options) ? $question->options : [];
+
+            return filled($question->correct_option)
+                && array_key_exists($question->correct_option, $options)
+                && filled($options[$question->correct_option]);
+        });
     }
 
     private function availableSubjects(?LearningSession $currentSession = null)
