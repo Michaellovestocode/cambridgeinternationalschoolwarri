@@ -208,6 +208,12 @@
 @else
 <form action="{{ route('student.learning.submit', $learningSession) }}" method="POST" class="space-y-6" data-assessment-form>
     @csrf
+    @if($latestAttempt?->allow_resubmission)
+        <div class="rounded-2xl border border-cyan-200 bg-cyan-50 p-5 text-cyan-950">
+            <h2 class="font-bold">Rewrite your previous work</h2>
+            <p class="mt-1 text-sm">Your previous answers are filled in below. Edit them using the feedback, then submit your revised work.</p>
+        </div>
+    @endif
     <div class="bg-white rounded-2xl shadow-lg p-6 md:p-8">
         <div class="flex flex-wrap justify-between items-center gap-4 mb-6">
             <div>
@@ -220,20 +226,34 @@
         <div class="space-y-6">
 
             @forelse($learningSession->questions as $question)
+            @php($previousAnswer = $latestAttempt?->answers->firstWhere('learning_question_id', $question->id))
             <div class="student-question-card border border-gray-200 rounded-xl p-5">
                 <div class="font-bold text-gray-900 mb-4">{{ $loop->iteration }}. {!! $question->safe_question_text !!}</div>
+
+                @if(!empty($previousAnswer?->handwriting_pages))
+                    <div class="mb-4 rounded-xl border border-violet-200 bg-violet-50 p-4">
+                        <p class="mb-3 text-xs font-bold uppercase tracking-wide text-violet-800">Your previous handwritten work</p>
+                        <div class="grid gap-3 sm:grid-cols-2">
+                            @foreach($previousAnswer->handwriting_pages as $page)
+                                <a href="{{ asset('storage/' . $page) }}" target="_blank" rel="noopener" class="block rounded-lg bg-white p-2">
+                                    <img src="{{ asset('storage/' . $page) }}" alt="Previous handwritten answer" class="max-h-72 w-full rounded object-contain">
+                                </a>
+                            @endforeach
+                        </div>
+                    </div>
+                @endif
 
                 @if(!empty($question->options) && is_array($question->options))
                     <div class="student-question-options grid grid-cols-1 lg:grid-cols-2 gap-3">
                         @foreach($question->options as $key => $option)
                         <label class="flex min-h-14 items-center gap-3 rounded-xl border px-4 py-3 cursor-pointer transition hover:bg-cyan-50 focus-within:ring-2 focus-within:ring-cyan-500">
-                            <input type="radio" name="answers[{{ $question->id }}]" value="{{ $key }}" class="h-5 w-5 shrink-0 accent-cyan-700">
+                            <input type="radio" name="answers[{{ $question->id }}]" value="{{ $key }}" @checked((string) $previousAnswer?->selected_option === (string) $key) class="h-5 w-5 shrink-0 accent-cyan-700">
                             <span><strong>{{ $key }}.</strong> {{ $option }}</span>
                         </label>
                         @endforeach
                     </div>
                 @else
-                    <textarea name="answers[{{ $question->id }}]" rows="5" class="w-full border rounded-xl px-4 py-3 focus:ring-2 focus:ring-cyan-500" placeholder="Write your answer here..."></textarea>
+                    <textarea name="answers[{{ $question->id }}]" rows="5" class="w-full border rounded-xl px-4 py-3 focus:ring-2 focus:ring-cyan-500" placeholder="Write your answer here...">{{ old('answers.' . $question->id, $previousAnswer?->selected_option) }}</textarea>
                     <div class="mt-4 rounded-2xl border border-violet-200 bg-violet-50 p-4" data-notepad>
                         <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                             <div>
