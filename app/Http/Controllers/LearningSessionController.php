@@ -578,9 +578,54 @@ class LearningSessionController extends Controller
             'image_path' => $imagePath,
         ]);
 
+        $this->regradeAttemptsForUpdatedLearningQuestion($question->fresh());
+
         return redirect()
             ->route('admin.learning-sessions.edit', $session)
             ->with('success', 'Practice question updated.');
+    }
+
+    private function regradeAttemptsForUpdatedLearningQuestion(LearningQuestion $question): void
+    {
+        $attempts = LearningAttempt::whereHas('answers', fn ($query) => $query->where('learning_question_id', $question->id))
+            ->with('answers.question')
+            ->get();
+
+        foreach ($attempts as $attempt) {
+            foreach ($attempt->answers as $answer) {
+                $answeredQuestion = $answer->question;
+                if (! $answeredQuestion || (int) $answeredQuestion->id !== (int) $question->id) {
+                    continue;
+                }
+
+                $selected = trim((string) $answer->selected_option);
+                $isCorrect = $answeredQuestion->question_type === 'theory'
+                    ? ($selected !== '' && strtolower($selected) === strtolower(trim((string) $answeredQuestion->explanation)))
+                    : ($selected !== '' && strtoupper($selected) === strtoupper((string) $answeredQuestion->correct_option));
+
+                $answer->update(['is_correct' => $isCorrect]);
+            }
+
+            $score = 0;
+            foreach ($attempt->answers as $answer) {
+                $answeredQuestion = $answer->question;
+                if (! $answeredQuestion) {
+                    continue;
+                }
+
+                if ($answeredQuestion->question_type === 'theory') {
+                    $score += $answer->teacher_score !== null
+                        ? ((float) $answer->teacher_score / max((float) ($answeredQuestion->marks ?? 1), 1))
+                        : 0;
+                } else {
+                    $score += $answer->teacher_score !== null
+                        ? (float) $answer->teacher_score
+                        : ($answer->is_correct ? 1 : 0);
+                }
+            }
+
+            $attempt->update(['score' => round($score, 2)]);
+        }
     }
 
     private function validatedSessionData(Request $request): array
