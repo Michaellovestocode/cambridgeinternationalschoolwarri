@@ -6,6 +6,7 @@ use App\Models\AttendanceRecord;
 use App\Models\SchoolClass;
 use App\Models\User;
 use App\Models\StaffAttendanceEvent;
+use App\Models\StudentAttendanceMachineEvent;
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
 use Illuminate\Http\JsonResponse;
@@ -141,6 +142,120 @@ class AttendanceController extends Controller
         ]);
 
         return response()->json(['ok' => true, 'user' => $user->name, 'event_id' => $eventId]);
+    }
+
+    public function studentF495Test()
+    {
+        $this->authorizeAttendanceManager();
+
+        $events = StudentAttendanceMachineEvent::with(['user.class', 'attendanceRecord'])
+            ->latest('punched_at')
+            ->take(100)
+            ->get();
+
+        return view('admin.attendance.f-g495-student-test', compact('events'));
+    }
+
+    /** Student-only ADMS receiver for the F-G495 replacement test. */
+    public function studentAdmsPush(Request $request)
+    {
+        $deviceId = (string) ($request->query('SN') ?: $request->input('SN', ''));
+        $allowedDeviceId = (string) config('services.student_attendance.device_id');
+        abort_unless($allowedDeviceId !== '' && hash_equals($allowedDeviceId, $deviceId), 401);
+
+        if ($request->isMethod('get')) {
+            return response('GET OPTION FROM: ' . $deviceId . "\nStamp=0\n", 200)
+                ->header('Content-Type', 'text/plain');
+        }
+
+        $lines = preg_split('/\r\n|\r|\n/', trim((string) $request->getContent()));
+        foreach ($lines as $line) {
+            $fields = preg_split('/[\t,]+/', trim($line));
+            if (count($fields) < 2 || ! preg_match('/^[\w.-]{1,100}$/', $fields[0])) {
+                continue;
+            }
+
+            try {
+                $punchedAt = Carbon::parse($fields[1]);
+            } catch (\Throwable $exception) {
+                Log::warning('Student F-G495 sent an invalid punch timestamp.', ['device_id' => $deviceId, 'line' => $line]);
+                continue;
+            }
+
+            $enrollId = (string) $fields[0];
+            // ADMS status 0/1 commonly means check-in/check-out; other values
+            // are left blank and resolved in chronological punch order.
+            $status = (string) ($fields[2] ?? '');
+            $direction = in_array($status, ['0', 'in', 'IN'], true) ? 'in'
+                : (in_array($status, ['1', 'out', 'OUT'], true) ? 'out' : '');
+            $eventId = hash('sha256', implode('|', [$deviceId, $enrollId, $punchedAt->toIso8601String(), $direction]));
+
+            if (StudentAttendanceMachineEvent::where('event_id', $eventId)->exists()) {
+                continue;
+            }
+
+            $student = User::where('role', 'student')
+                ->where(function ($query) use ($enrollId) {
+                    $query->where('attendance_machine_user_id', $enrollId)
+                        ->orWhere('attendance_card_uid', $enrollId)
+                        ->orWhere('registration_number', $enrollId);
+                })
+                ->first();
+
+            if (! $student) {
+                StudentAttendanceMachineEvent::create([
+                    'device_id' => $deviceId,
+                    'enroll_id' => $enrollId,
+                    'event_id' => $eventId,
+                    'punched_at' => $punchedAt,
+                    'direction' => $direction ?: null,
+                    'raw_payload' => $line,
+                ]);
+                Log::warning('Student F-G495 Enroll ID did not match a student.', compact('deviceId', 'enrollId'));
+                continue;
+            }
+
+            $record = AttendanceRecord::firstOrNew([
+                'user_id' => $student->id,
+                'attendance_date' => $punchedAt->toDateString(),
+            ]);
+            $isOut = $direction === 'out'
+                ? ! $record->check_out_at
+                : ($direction === 'in' ? false : (bool) ($record->check_in_at && ! $record->check_out_at));
+            $eventType = $isOut ? 'checkout' : 'checkin';
+            $isNewPunch = $isOut ? ! $record->check_out_at : ! $record->check_in_at;
+
+            if ($record->source !== 'manual') {
+                if ($isOut && $isNewPunch) {
+                    $record->fill([
+                        'check_out_at' => $record->check_out_at ?: $punchedAt,
+                        'departure_status' => $this->departureStatusFor($student, $punchedAt),
+                    ]);
+                } elseif (! $isOut && $isNewPunch) {
+                    $record->fill([
+                        'check_in_at' => $record->check_in_at ?: $punchedAt,
+                        'arrival_status' => $this->arrivalStatusFor($student, $punchedAt),
+                    ]);
+                }
+                if ($isNewPunch) {
+                    $record->fill(['source' => 'f-g495-student', 'machine_id' => $deviceId])->save();
+                    SendParentAttendanceSms::dispatch($student->id, $record->id, $eventType);
+                }
+            }
+
+            StudentAttendanceMachineEvent::create([
+                'user_id' => $student->id,
+                'device_id' => $deviceId,
+                'enroll_id' => $enrollId,
+                'event_id' => $eventId,
+                'punched_at' => $punchedAt,
+                'direction' => $direction ?: null,
+                'raw_payload' => $line,
+                'attendance_record_id' => $record->id,
+            ]);
+        }
+
+        return response('OK', 200)->header('Content-Type', 'text/plain');
     }
 
     public function admsPush(Request $request)

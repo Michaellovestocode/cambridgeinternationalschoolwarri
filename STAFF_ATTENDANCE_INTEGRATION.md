@@ -49,6 +49,10 @@ The screenshots show the desktop software polling the machine with `Get New Log`
 
 The starter connector is in the `connector` folder. Copy that folder to the Windows laptop, rename `.env.example` to `.env`, fill in `STAFF_ATTENDANCE_KEY`, and update `F495_IP` if DHCP changes the machine address. Run `start-connector.bat`; it uses the installed `RealandAPI.dll` every five seconds, remembers sent event IDs, and retries failed uploads. Add its shortcut to the Windows Startup folder after testing.
 
+## Separate student F-G495 test
+
+The student reader has a separate receiver at `/student/iclock/cdata` and a protected admin test page at `/admin/attendance/f-g495-student-test`. It does not use or change the staff connector or staff receiver. Configure `STUDENT_F_G495_DEVICE_ID` to the exact `SN` value sent by the student reader, run migrations, and assign each learner's Enroll ID in Admin -> Attendance -> Cards. Matched punches use the student attendance records and queue the existing parent SMS. Test with one student first; verify the reader can target the custom endpoint path before enabling Real Time Push.
+
 The connector uses the F-G495 local IP and configured port (your current settings show `192.168.43.184` and `5500`) and the installed Realand SDK's LAN mode (`Communication=1`). Do not expose the F-G495 local IP to the public internet.
 
 The machine's fingerprint and face templates stay on the F-G495. Only the Enroll ID, timestamp, direction, and device ID are sent to the website.

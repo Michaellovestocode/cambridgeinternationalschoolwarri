@@ -10,7 +10,10 @@
                 <h1 class="text-2xl font-black text-gray-900">Cards and Access</h1>
                 <p class="text-sm text-gray-500">Assign scanner card IDs and allow selected staff to manage attendance.</p>
             </div>
-            <a href="{{ route('admin.attendance.non-teaching-staff.create') }}" class="rounded-xl bg-slate-900 px-4 py-3 text-center text-sm font-bold text-white">Add Non-teaching Staff</a>
+            <div class="flex flex-wrap gap-2">
+                <a href="{{ route('admin.attendance.f-g495-student-test') }}" class="rounded-xl bg-emerald-600 px-4 py-3 text-center text-sm font-bold text-white">F-G495 Student Test</a>
+                <a href="{{ route('admin.attendance.non-teaching-staff.create') }}" class="rounded-xl bg-slate-900 px-4 py-3 text-center text-sm font-bold text-white">Add Non-teaching Staff</a>
+            </div>
         </div>
     </div>
 
@@ -100,9 +103,7 @@
                             </select>
                         @endif
                         <input name="attendance_card_uid" value="{{ old('attendance_card_uid', $person->attendance_card_uid) }}" placeholder="Card / barcode / QR value" class="rounded-xl border border-gray-200 px-3 py-3 text-sm">
-                        @if(!$person->isStudent())
-                            <input name="attendance_machine_user_id" value="{{ old('attendance_machine_user_id', $person->attendance_machine_user_id) }}" placeholder="F-G495 Enroll ID" class="rounded-xl border border-gray-200 px-3 py-3 text-sm">
-                        @endif
+                        <input name="attendance_machine_user_id" value="{{ old('attendance_machine_user_id', $person->attendance_machine_user_id) }}" placeholder="F-G495 Enroll ID" class="rounded-xl border border-gray-200 px-3 py-3 text-sm">
                         <label class="flex items-center gap-2 rounded-xl bg-amber-50 px-3 py-3 text-sm font-semibold text-amber-800">
                             <input type="checkbox" name="can_manage_attendance" value="1" @checked(old('can_manage_attendance', $person->can_manage_attendance)) class="rounded border-amber-300 text-amber-600">
                             Can manage

@@ -92,6 +92,7 @@ Route::get('/feedback', [ParentFeedbackController::class, 'create'])->name('feed
 Route::post('/feedback', [ParentFeedbackController::class, 'store'])->middleware('throttle:5,1')->name('feedback.store');
 Route::post('/api/staff-attendance/f-g495', [AttendanceController::class, 'staffPush'])->withoutMiddleware('web')->name('staff-attendance.f-g495');
 Route::match(['get', 'post'], '/iclock/cdata', [AttendanceController::class, 'admsPush'])->withoutMiddleware('web')->name('staff-attendance.adms');
+Route::match(['get', 'post'], '/student/iclock/cdata', [AttendanceController::class, 'studentAdmsPush'])->withoutMiddleware('web')->name('student-attendance.f-g495');
 Route::get('/announcements/{announcement}', [AnnouncementController::class, 'show'])->name('announcements.show');
 Route::get('/blog', [BlogPostController::class, 'publicIndex'])->name('blog.index');
 Route::get('/blog/{post}', [BlogPostController::class, 'publicShow'])->name('blog.show');
@@ -139,6 +140,7 @@ Route::middleware('auth')->group(function () {
     });
 
     Route::prefix('admin/attendance')->name('admin.attendance.')->group(function () {
+        Route::get('/f-g495-student-test', [AttendanceController::class, 'studentF495Test'])->name('f-g495-student-test');
         Route::get('/scanner', [AttendanceController::class, 'scanner'])->name('scanner');
         Route::post('/scan', [AttendanceController::class, 'scan'])->name('scan');
         Route::get('/today', [AttendanceController::class, 'today'])->name('today');

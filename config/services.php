@@ -20,4 +20,8 @@ return [
         'start_date' => env('ATTENDANCE_START_DATE', '2026-09-14'),
     ],
 
+    'student_attendance' => [
+        'device_id' => env('STUDENT_F_G495_DEVICE_ID'),
+    ],
+
 ];
