@@ -51,7 +51,7 @@ The starter connector is in the `connector` folder. Copy that folder to the Wind
 
 ## Separate student F-G495 test
 
-The student reader has a separate receiver at `/student/iclock/cdata` and a protected admin test page at `/admin/attendance/f-g495-student-test`. It does not use or change the staff connector or staff receiver. Configure `STUDENT_F_G495_DEVICE_ID` to the exact `SN` value sent by the student reader, run migrations, and assign each learner's Enroll ID in Admin -> Attendance -> Cards. Matched punches use the student attendance records and queue the existing parent SMS. Test with one student first; verify the reader can target the custom endpoint path before enabling Real Time Push.
+The student reader has its own receiver at `/iclock/cdata` on `STUDENT_F_G495_HOST` (default `student-clock.cambridgeinternationalschoolwarri.com`), plus a protected admin test page at `/admin/attendance/f-g495-student-test`. Point that subdomain to this app and enable HTTPS for it. Its host-specific receiver is separate from the staff hostname and route. Configure `STUDENT_F_G495_DEVICE_ID` to the exact `SN` value sent by the student reader, run migrations, and assign each learner's Enroll ID in Admin -> Attendance -> Cards. Matched punches use the student attendance records and queue the existing parent SMS. Confirm with the reader supplier that the machine posts ADMS data to `/iclock/cdata`, then test with one student before enabling regular use.
 
 The connector uses the F-G495 local IP and configured port (your current settings show `192.168.43.184` and `5500`) and the installed Realand SDK's LAN mode (`Communication=1`). Do not expose the F-G495 local IP to the public internet.
 

@@ -13,11 +13,11 @@
     <section class="rounded-2xl border border-amber-200 bg-amber-50 p-5 text-sm text-amber-950 shadow">
         <h2 class="font-black">Before turning on Real Time Push</h2>
         <ol class="mt-2 list-decimal space-y-1 pl-5">
-            <li>Set <code>STUDENT_F_G495_DEVICE_ID</code> on the server to the exact device ID / serial value sent as <code>SN</code> by the reader. The photo shows Device ID <code>00001</code>; confirm the value in the request if it differs.</li>
+            <li>The server is currently configured to accept device ID <code>{{ config('services.student_attendance.device_id') ?: 'not set' }}</code> as the reader's <code>SN</code>.</li>
             <li>Assign each learner's F-G495 Enroll ID in Admin → Attendance → Cards.</li>
-            <li>Point the reader to <code>{{ url('/student/iclock/cdata') }}</code>, using its ADMS/HTTP push settings if available, then enable Real Time Push.</li>
+            <li>For a hostname-only Server field, use <code>{{ config('services.student_attendance.host') }}</code>. That hostname must be pointed to this server and served by this Laravel app.</li>
         </ol>
-        <p class="mt-3">If the machine only accepts a hostname and has no way to set the <code>/student/iclock/cdata</code> path, direct push may not work. Leave the staff machine settings alone while checking compatibility.</p>
+        <p class="mt-3">The student hostname has its own <code>/iclock/cdata</code> receiver, so the staff hostname and receiver stay separate. Set up DNS and HTTPS for the student hostname before changing the reader. If the reader uses a different push path or protocol, its supplier will need to confirm that.</p>
         <p class="mt-2 font-semibold">Matched student punches create attendance and queue the existing parent SMS. Unmatched IDs appear below and do not create attendance.</p>
     </section>
 

@@ -93,6 +93,10 @@ Route::post('/feedback', [ParentFeedbackController::class, 'store'])->middleware
 Route::post('/api/staff-attendance/f-g495', [AttendanceController::class, 'staffPush'])->withoutMiddleware('web')->name('staff-attendance.f-g495');
 Route::match(['get', 'post'], '/iclock/cdata', [AttendanceController::class, 'admsPush'])->withoutMiddleware('web')->name('staff-attendance.adms');
 Route::match(['get', 'post'], '/student/iclock/cdata', [AttendanceController::class, 'studentAdmsPush'])->withoutMiddleware('web')->name('student-attendance.f-g495');
+Route::domain(config('services.student_attendance.host'))
+    ->match(['get', 'post'], '/iclock/cdata', [AttendanceController::class, 'studentAdmsPush'])
+    ->withoutMiddleware('web')
+    ->name('student-attendance.f-g495-host');
 Route::get('/announcements/{announcement}', [AnnouncementController::class, 'show'])->name('announcements.show');
 Route::get('/blog', [BlogPostController::class, 'publicIndex'])->name('blog.index');
 Route::get('/blog/{post}', [BlogPostController::class, 'publicShow'])->name('blog.show');

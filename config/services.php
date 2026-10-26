@@ -22,6 +22,7 @@ return [
 
     'student_attendance' => [
         'device_id' => env('STUDENT_F_G495_DEVICE_ID'),
+        'host' => env('STUDENT_F_G495_HOST', 'student-clock.cambridgeinternationalschoolwarri.com'),
     ],
 
 ];
