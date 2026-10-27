@@ -23,6 +23,8 @@ return [
     'student_attendance' => [
         'device_id' => env('STUDENT_F_G495_DEVICE_ID'),
         'host' => env('STUDENT_F_G495_HOST', 'student-clock.cambridgeinternationalschoolwarri.com'),
+        'tcp_port' => (int) env('CLOCK_TCP_PORT', 5055),
+        'tcp_allowed_serials' => env('CLOCK_ALLOWED_SERIALS', ''),
     ],
 
 ];
