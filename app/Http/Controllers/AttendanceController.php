@@ -160,8 +160,12 @@ class AttendanceController extends Controller
     public function studentAdmsPush(Request $request)
     {
         $deviceId = (string) ($request->query('SN') ?: $request->input('SN', ''));
-        $allowedDeviceId = (string) config('services.student_attendance.device_id');
-        abort_unless($allowedDeviceId !== '' && hash_equals($allowedDeviceId, $deviceId), 401);
+        $allowedDeviceIds = config('services.student_attendance.device_ids', []);
+        if (! is_array($allowedDeviceIds) || $allowedDeviceIds === []) {
+            $legacyDeviceId = (string) config('services.student_attendance.device_id');
+            $allowedDeviceIds = $legacyDeviceId !== '' ? [$legacyDeviceId] : [];
+        }
+        abort_unless($deviceId !== '' && in_array($deviceId, $allowedDeviceIds, true), 401);
 
         if ($request->isMethod('get')) {
             return response('GET OPTION FROM: ' . $deviceId . "\nStamp=0\n", 200)

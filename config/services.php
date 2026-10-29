@@ -1,13 +1,6 @@
 <?php
 
 return [
-    // Twilio configuration (optional)
-    'twilio' => [
-        'sid' => env('TWILIO_SID'),
-        'token' => env('TWILIO_TOKEN'),
-        'from' => env('TWILIO_FROM'),
-    ],
-
     // Robase configuration (optional)
     'robase' => [
         'api_key' => env('ROBASE_API_KEY'),
@@ -22,6 +15,7 @@ return [
 
     'student_attendance' => [
         'device_id' => env('STUDENT_F_G495_DEVICE_ID'),
+        'device_ids' => array_values(array_filter(array_map('trim', explode(',', (string) env('STUDENT_F_G495_DEVICE_IDS', env('STUDENT_F_G495_DEVICE_ID', '')))))),
         'host' => env('STUDENT_F_G495_HOST', 'student-clock.cambridgeinternationalschoolwarri.com'),
         'tcp_port' => (int) env('CLOCK_TCP_PORT', 5055),
         'tcp_allowed_serials' => env('CLOCK_ALLOWED_SERIALS', ''),

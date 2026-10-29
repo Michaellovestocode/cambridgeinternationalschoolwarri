@@ -46,3 +46,7 @@ Homestead.json
 Homestead.yaml
 npm-debug.log
 yarn-error.log
+
+# Local student clock IPs and connector retry queues
+/connector/student-devices.csv
+/connector/student-connector-state*.json
