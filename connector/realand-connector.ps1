@@ -17,24 +17,18 @@ function Save-State($path, $state) {
 }
 
 function Send-Record($settings, $record) {
-    $timestamp = $record.Clock.ToString('yyyy-MM-dd HH:mm:ss')
-    # On the F-G495, Action identifies the verification event, not reliably an
-    # in/out direction. Sending "out" for fingerprint events puts first punches
-    # into the clock-out column, so let the website assign punch order instead.
-    $direction = ''
-    $machineUserId = [string]$record.DIN
-    $eventId = "{0}:{1}:{2}:{3}" -f $settings.F495_DEVICE_ID, $machineUserId, $timestamp, $record.Action
+    # The record was persisted to the outbox before this request. Keep the same
+    # staff endpoint, authentication header, payload, and event ID semantics.
     $payload = @{
-        device_id = $settings.F495_DEVICE_ID
-        enroll_id = $machineUserId
-        timestamp = $timestamp
-        direction = $direction
-        event_id = $eventId
+        device_id = $record.device_id
+        enroll_id = $record.enroll_id
+        timestamp = $record.timestamp
+        direction = $record.direction
+        event_id = $record.event_id
     } | ConvertTo-Json
 
     Invoke-RestMethod -Uri $settings.WEBSITE_URL -Method Post -ContentType 'application/json' `
         -Headers @{ 'X-Staff-Attendance-Key' = $settings.STAFF_ATTENDANCE_KEY } -Body $payload | Out-Null
-    return $eventId
 }
 
 $settings = Read-Settings
@@ -49,9 +43,14 @@ $apiPath = Join-Path $settings.F495_SDK_PATH 'RealandAPI.dll'
 $stateFile = if ($settings.STATE_FILE) { $settings.STATE_FILE } else { 'connector-state.json' }
 $statePath = Join-Path $PSScriptRoot $stateFile
 $state = if (Test-Path $statePath) { Get-Content $statePath -Raw | ConvertFrom-Json } else { [pscustomobject]@{ sent = @() } }
+if (-not ($state.PSObject.Properties.Name -contains 'pending')) {
+    $state | Add-Member -NotePropertyName pending -NotePropertyValue @()
+}
 $sent = [Collections.Generic.HashSet[string]]::new([string[]]@($state.sent))
+$pendingIds = [Collections.Generic.HashSet[string]]::new([string[]]@(@($state.pending | ForEach-Object { [string]$_.event_id })))
 $minimumDate = if ($settings.MIN_EVENT_DATE) { [DateTime]::ParseExact($settings.MIN_EVENT_DATE, 'yyyy-MM-dd', $null).Date } else { $null }
-Write-Host "F-G495 connector started for $($settings.F495_IP):$($settings.F495_PORT)"
+$pollSeconds = if ($settings.POLL_SECONDS) { [int]$settings.POLL_SECONDS } else { 5 }
+Write-Host "F-G495 staff connector started for $($settings.F495_IP):$($settings.F495_PORT). Pending uploads are saved locally and retried. Press Ctrl+C to stop."
 
 while ($true) {
     $device = New-Object RealandAPI.ZDC2911Finger
@@ -71,22 +70,37 @@ while ($true) {
             if ($minimumDate -and $record.Clock.Date -lt $minimumDate) { continue }
             $machineUserId = [string]$record.DIN
             $eventId = "{0}:{1}:{2}:{3}" -f $settings.F495_DEVICE_ID, $machineUserId, $timestamp, $record.Action
-            if ($sent.Contains($eventId)) { continue }
-            try {
-                $eventId = Send-Record $settings $record
-                $sent.Add($eventId) | Out-Null
-                $state.sent = @($sent | Select-Object -Last 5000)
-                Save-State $statePath $state
-                Write-Host "Sent Enroll ID $machineUserId at $timestamp"
-            } catch {
-                Write-Warning "Website upload failed for $eventId`: $($_.Exception.Message)"
+            if ($sent.Contains($eventId) -or $pendingIds.Contains($eventId)) { continue }
+            # GetNewlyRecords may advance the device's cursor. Persist each
+            # punch locally first so a weak internet connection cannot lose it.
+            $state.pending += [pscustomobject]@{
+                event_id = $eventId
+                device_id = [string]$settings.F495_DEVICE_ID
+                enroll_id = $machineUserId
+                timestamp = $timestamp
+                direction = ''
             }
+            $pendingIds.Add($eventId) | Out-Null
         }
+        if (@($state.pending).Count -gt 0) { Save-State $statePath $state }
     } catch {
         Write-Warning "Machine sync failed: $($_.Exception.Message)"
     } finally {
         if ($connected) { $device.CloseCommunication() }
     }
-    $pollSeconds = if ($settings.POLL_SECONDS) { [int]$settings.POLL_SECONDS } else { 5 }
+    # Drain the durable outbox every cycle, even if reading the machine failed.
+    foreach ($queuedRecord in @($state.pending)) {
+        try {
+            Send-Record $settings $queuedRecord
+            $sent.Add([string]$queuedRecord.event_id) | Out-Null
+            $state.sent = @($sent | Select-Object -Last 5000)
+            $state.pending = @($state.pending | Where-Object { $_.event_id -ne $queuedRecord.event_id })
+            $pendingIds.Remove([string]$queuedRecord.event_id) | Out-Null
+            Save-State $statePath $state
+            Write-Host "Sent staff Enroll ID $($queuedRecord.enroll_id) at $($queuedRecord.timestamp)"
+        } catch {
+            Write-Warning "Staff upload pending for Enroll ID $($queuedRecord.enroll_id) at $($queuedRecord.timestamp): $($_.Exception.Message)"
+        }
+    }
     Start-Sleep -Seconds $pollSeconds
 }

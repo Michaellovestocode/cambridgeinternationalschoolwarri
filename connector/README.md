@@ -10,9 +10,9 @@ This connector reads staff attendance from the Realand F-G495 through the instal
 4. Set `F495_IP` to the machine's current local IP and keep `F495_PORT=5500`.
 5. Set `F495_PASSWORD=0`, `F495_DEVICE_ID=1`, and the same `STAFF_ATTENDANCE_KEY` configured on the VPS.
 6. Keep `WEBSITE_URL` unchanged.
-7. Double-click `start-connector.bat` and confirm it reports `Sent Enroll ID ...` after a test punch.
+7. Double-click `start-connector.bat` and confirm it reports `Sent staff Enroll ID ...` after a test punch.
 8. Run `install-startup.bat` once to start the connector automatically at Windows login.
 
-The F-G495 and this laptop must be connected to the same router, Ethernet network, or phone hotspot. The laptop also needs internet access to upload records. If the laptop is offline, the machine retains punches until the connector can read and upload them.
+The F-G495 and this laptop must be connected to the same router, Ethernet network, or phone hotspot. The laptop also needs internet access to upload records. If the website/network connection drops, punches already read from the device are saved in `connector-state.json` and retried automatically. Keep that file with the connector and do not delete it; it tracks sent and pending punches and prevents duplicate uploads.
 
 Do not copy the laptop's `.env` into GitHub or share it. The website key is private.
