@@ -20,6 +20,14 @@
     @if(session('success'))
         <div class="rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-4 text-sm font-semibold text-emerald-800">{{ session('success') }}</div>
     @endif
+    @if($errors->any())
+        <div class="rounded-2xl border border-red-200 bg-red-50 px-5 py-4 text-sm text-red-800">
+            <p class="font-bold">Nothing was saved. Please correct the highlighted Enroll ID fields.</p>
+            <ul class="mt-2 list-inside list-disc">
+                @foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach
+            </ul>
+        </div>
+    @endif
 
     <form method="GET" class="grid gap-3 rounded-2xl bg-white p-4 shadow md:grid-cols-5">
         <input name="search" value="{{ $filters['search'] }}" placeholder="Name, ID, card" class="rounded-xl border border-gray-200 px-3 py-3 text-sm">
@@ -85,6 +93,39 @@
         </div>
     </section>
 
+    @if($bulkStudentIdsMode)
+        <form method="POST" action="{{ route('admin.attendance.people.bulk-student-ids') }}" class="space-y-3">
+            @csrf
+            @method('PUT')
+            <input type="hidden" name="class_id" value="{{ $filters['class_id'] }}">
+            <div class="rounded-2xl border border-blue-200 bg-blue-50 px-5 py-4 text-sm text-blue-900">
+                Enter or update the learners’ machine Enroll IDs below, then save the class once. Existing IDs stay as shown unless you edit them. The save is all-or-nothing if an ID is invalid or duplicated.
+            </div>
+            <div class="space-y-3">
+                @foreach($people as $person)
+                    <div class="rounded-2xl bg-white p-4 shadow">
+                        <div class="grid items-center gap-3 sm:grid-cols-[1fr,minmax(180px,280px)]">
+                            <div>
+                                <p class="font-bold text-gray-900">{{ $person->name }}</p>
+                                <p class="text-xs text-gray-500">{{ $person->registration_number }} · {{ $person->class?->display_name }}</p>
+                            </div>
+                            <div>
+                                <label for="enroll-id-{{ $person->id }}" class="sr-only">{{ $person->name }} F-G495 Enroll ID</label>
+                                <input id="enroll-id-{{ $person->id }}" name="enroll_ids[{{ $person->id }}]" value="{{ old('enroll_ids.' . $person->id, $person->attendance_machine_user_id) }}" placeholder="F-G495 Enroll ID" class="w-full rounded-xl border {{ $errors->has('enroll_ids.' . $person->id) ? 'border-red-500 bg-red-50' : 'border-gray-200' }} px-3 py-3 text-sm" aria-invalid="{{ $errors->has('enroll_ids.' . $person->id) ? 'true' : 'false' }}">
+                                @error('enroll_ids.' . $person->id)<p class="mt-1 text-xs font-semibold text-red-700">{{ $message }}</p>@enderror
+                            </div>
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+            @if($people->isNotEmpty())
+                <div class="sticky bottom-3 flex flex-col gap-3 rounded-2xl border border-gray-200 bg-white/95 p-4 shadow-lg sm:flex-row sm:items-center sm:justify-between">
+                    <p class="text-sm text-gray-600">{{ $people->count() }} learners in this class</p>
+                    <button class="rounded-xl bg-emerald-600 px-6 py-3 text-sm font-bold text-white hover:bg-emerald-700">Save all Enroll IDs</button>
+                </div>
+            @endif
+        </form>
+    @else
     <div class="space-y-3">
         @foreach($people as $person)
             <form method="POST" action="{{ route('admin.attendance.people.update', $person) }}" class="rounded-2xl bg-white p-4 shadow">
@@ -122,6 +163,7 @@
             </form>
         @endforeach
     </div>
+    @endif
 
     <div class="rounded-2xl bg-white px-4 py-3 shadow">{{ $people->links() }}</div>
 </div>

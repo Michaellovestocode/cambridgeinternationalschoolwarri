@@ -14,6 +14,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 use App\Jobs\SendParentAttendanceSms;
 
 class AttendanceController extends Controller
@@ -733,12 +734,21 @@ class AttendanceController extends Controller
     {
         $this->authorizeAttendanceManager();
 
-        $people = $this->attendancePeopleQuery($request)
+        $bulkStudentIdsMode = $request->filled('class_id')
+            && (!$request->filled('role') || $request->input('role') === 'student')
+            && !$request->filled('search');
+
+        $peopleQuery = $this->attendancePeopleQuery($request)
             ->with('class')
+            ->when($bulkStudentIdsMode, fn ($query) => $query->where('role', 'student'))
             ->orderBy('role')
-            ->orderBy('name')
-            ->paginate(30)
-            ->withQueryString();
+            ->orderBy('name');
+
+        // The class bulk form must contain every learner, otherwise a partial
+        // page could accidentally clear or omit IDs. Typical classes are far
+        // below this cap; larger classes fall back to individual editing.
+        $bulkStudentIdsMode = $bulkStudentIdsMode && $peopleQuery->count() <= 500;
+        $people = $peopleQuery->paginate($bulkStudentIdsMode ? 500 : 30)->withQueryString();
 
         return view('admin.attendance.people', [
             'people' => $people,
@@ -750,7 +760,89 @@ class AttendanceController extends Controller
                 'class_id' => $request->string('class_id')->value(''),
                 'section' => $request->string('section')->value(''),
             ],
+            'bulkStudentIdsMode' => $bulkStudentIdsMode,
         ]);
+    }
+
+    public function bulkUpdateStudentEnrollIds(Request $request)
+    {
+        $this->authorizeAttendanceManager();
+
+        $validated = $request->validate([
+            'class_id' => ['required', 'integer', 'exists:school_classes,id'],
+            'enroll_ids' => ['required', 'array', 'min:1', 'max:500'],
+            'enroll_ids.*' => ['nullable', 'string', 'max:100'],
+        ]);
+
+        $students = User::query()
+            ->where('role', 'student')
+            ->where('class_id', $validated['class_id'])
+            ->orderBy('id')
+            ->get(['id', 'attendance_machine_user_id']);
+
+        abort_if($students->isEmpty() || $students->count() > 500, 422);
+
+        $submittedIds = collect($validated['enroll_ids'])
+            ->mapWithKeys(fn ($value, $id) => [(string) $id => trim((string) ($value ?? ''))]);
+        $expectedIds = $students->pluck('id')->map(fn ($id) => (string) $id)->sort()->values();
+        $receivedIds = $submittedIds->keys()->map(fn ($id) => (string) $id)->sort()->values();
+
+        if ($expectedIds->all() !== $receivedIds->all()) {
+            return back()->withErrors(['enroll_ids' => 'The class list changed or was incomplete. Reload the page and try again.'])->withInput();
+        }
+
+        $nonEmptyIds = $submittedIds->filter(fn ($value) => $value !== '');
+        foreach ($nonEmptyIds as $studentId => $enrollId) {
+            if (!preg_match('/^[A-Za-z0-9._-]{1,100}$/D', $enrollId)) {
+                return back()->withErrors(['enroll_ids.' . $studentId => 'Use letters, numbers, dots, underscores, or hyphens only.'])->withInput();
+            }
+        }
+
+        $duplicateIds = $nonEmptyIds->map(fn ($value) => mb_strtolower($value))
+            ->duplicates();
+        if ($duplicateIds->isNotEmpty()) {
+            $firstByValue = [];
+            foreach ($nonEmptyIds as $studentId => $enrollId) {
+                $normalized = mb_strtolower($enrollId);
+                if (isset($firstByValue[$normalized])) {
+                    return back()->withErrors([
+                        'enroll_ids.' . $studentId => 'This Enroll ID is entered more than once in this class.',
+                        'enroll_ids.' . $firstByValue[$normalized] => 'This Enroll ID is entered more than once in this class.',
+                    ])->withInput();
+                }
+                $firstByValue[$normalized] = $studentId;
+            }
+        }
+
+        $classStudentIds = $students->pluck('id');
+        foreach ($nonEmptyIds as $studentId => $enrollId) {
+            $alreadyUsed = User::query()
+                ->where('attendance_machine_user_id', $enrollId)
+                ->whereNotIn('id', $classStudentIds)
+                ->exists();
+
+            if ($alreadyUsed) {
+                return back()->withErrors(['enroll_ids.' . $studentId => 'This Enroll ID is already assigned to another person.'])->withInput();
+            }
+        }
+
+        DB::transaction(function () use ($submittedIds, $classStudentIds, $validated) {
+            User::query()
+                ->where('role', 'student')
+                ->where('class_id', $validated['class_id'])
+                ->whereIn('id', $classStudentIds)
+                ->get()
+                ->each(function (User $student) use ($submittedIds) {
+                    $value = $submittedIds->get((string) $student->id, '');
+                    $student->attendance_machine_user_id = $value !== '' ? $value : null;
+                    $student->save();
+                });
+        });
+
+        return redirect()->route('admin.attendance.people', [
+            'class_id' => $validated['class_id'],
+            'role' => 'student',
+        ])->with('success', 'All student Enroll IDs for this class were saved.');
     }
 
     public function updatePerson(Request $request, User $user)

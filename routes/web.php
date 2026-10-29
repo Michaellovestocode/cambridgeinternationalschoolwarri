@@ -155,6 +155,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/staff/{user}/manual', [AttendanceController::class, 'updateManualStaffAttendance'])->name('staff.manual');
         Route::get('/people', [AttendanceController::class, 'people'])->name('people');
         Route::put('/people/{user}', [AttendanceController::class, 'updatePerson'])->name('people.update');
+        Route::put('/people/bulk-student-ids', [AttendanceController::class, 'bulkUpdateStudentEnrollIds'])->name('people.bulk-student-ids');
         Route::get('/non-teaching-staff/create', [AttendanceController::class, 'createNonTeachingStaff'])->name('non-teaching-staff.create');
         Route::post('/non-teaching-staff', [AttendanceController::class, 'storeNonTeachingStaff'])->name('non-teaching-staff.store');
     });
