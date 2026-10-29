@@ -22,7 +22,7 @@
     @endif
     @if($errors->any())
         <div class="rounded-2xl border border-red-200 bg-red-50 px-5 py-4 text-sm text-red-800">
-            <p class="font-bold">Nothing was saved. Please correct the highlighted Enroll ID fields.</p>
+            <p class="font-bold">Nothing was saved. Please correct the highlighted fields.</p>
             <ul class="mt-2 list-inside list-disc">
                 @foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach
             </ul>
@@ -99,12 +99,12 @@
             @method('PUT')
             <input type="hidden" name="class_id" value="{{ $filters['class_id'] }}">
             <div class="rounded-2xl border border-blue-200 bg-blue-50 px-5 py-4 text-sm text-blue-900">
-                Enter or update the learners’ machine Enroll IDs below, then save the class once. Existing IDs stay as shown unless you edit them. The save is all-or-nothing if an ID is invalid or duplicated.
+                Enter or update each learner’s machine Enroll ID and Parent/Guardian phone below, then save the class once. Enter the phone in +234 format where possible; local Nigerian formats such as 080… are also accepted and normalized for SMS. The number is shown on the learner dashboard and used for attendance SMS. The save is all-or-nothing if an ID or phone number is invalid, or if an Enroll ID is duplicated.
             </div>
             <div class="space-y-3">
                 @foreach($people as $person)
                     <div class="rounded-2xl bg-white p-4 shadow">
-                        <div class="grid items-center gap-3 sm:grid-cols-[1fr,minmax(180px,280px)]">
+                        <div class="grid items-center gap-3 sm:grid-cols-[1fr,minmax(180px,280px)_minmax(220px,320px)]">
                             <div>
                                 <p class="font-bold text-gray-900">{{ $person->name }}</p>
                                 <p class="text-xs text-gray-500">{{ $person->registration_number }} · {{ $person->class?->display_name }}</p>
@@ -113,6 +113,11 @@
                                 <label for="enroll-id-{{ $person->id }}" class="sr-only">{{ $person->name }} F-G495 Enroll ID</label>
                                 <input id="enroll-id-{{ $person->id }}" name="enroll_ids[{{ $person->id }}]" value="{{ old('enroll_ids.' . $person->id, $person->attendance_machine_user_id) }}" placeholder="F-G495 Enroll ID" class="w-full rounded-xl border {{ $errors->has('enroll_ids.' . $person->id) ? 'border-red-500 bg-red-50' : 'border-gray-200' }} px-3 py-3 text-sm" aria-invalid="{{ $errors->has('enroll_ids.' . $person->id) ? 'true' : 'false' }}">
                                 @error('enroll_ids.' . $person->id)<p class="mt-1 text-xs font-semibold text-red-700">{{ $message }}</p>@enderror
+                            </div>
+                            <div>
+                                <label for="guardian-phone-{{ $person->id }}" class="sr-only">{{ $person->name }} Parent/Guardian phone</label>
+                                <input id="guardian-phone-{{ $person->id }}" name="guardian_phones[{{ $person->id }}]" type="tel" inputmode="tel" autocomplete="tel" value="{{ old('guardian_phones.' . $person->id, $person->parent_phone_number) }}" placeholder="+2348012345678" class="w-full rounded-xl border {{ $errors->has('guardian_phones.' . $person->id) ? 'border-red-500 bg-red-50' : 'border-gray-200' }} px-3 py-3 text-sm" aria-invalid="{{ $errors->has('guardian_phones.' . $person->id) ? 'true' : 'false' }}">
+                                @error('guardian_phones.' . $person->id)<p class="mt-1 text-xs font-semibold text-red-700">{{ $message }}</p>@enderror
                             </div>
                         </div>
                     </div>

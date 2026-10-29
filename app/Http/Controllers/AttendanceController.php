@@ -772,6 +772,8 @@ class AttendanceController extends Controller
             'class_id' => ['required', 'integer', 'exists:school_classes,id'],
             'enroll_ids' => ['required', 'array', 'min:1', 'max:500'],
             'enroll_ids.*' => ['nullable', 'string', 'max:100'],
+            'guardian_phones' => ['required', 'array', 'min:1', 'max:500'],
+            'guardian_phones.*' => ['nullable', 'string', 'max:30', 'regex:/^[0-9+().\s-]*$/'],
         ]);
 
         $students = User::query()
@@ -784,10 +786,13 @@ class AttendanceController extends Controller
 
         $submittedIds = collect($validated['enroll_ids'])
             ->mapWithKeys(fn ($value, $id) => [(string) $id => trim((string) ($value ?? ''))]);
+        $submittedPhones = collect($validated['guardian_phones'])
+            ->mapWithKeys(fn ($value, $id) => [(string) $id => trim((string) ($value ?? ''))]);
         $expectedIds = $students->pluck('id')->map(fn ($id) => (string) $id)->sort()->values();
         $receivedIds = $submittedIds->keys()->map(fn ($id) => (string) $id)->sort()->values();
+        $receivedPhoneIds = $submittedPhones->keys()->map(fn ($id) => (string) $id)->sort()->values();
 
-        if ($expectedIds->all() !== $receivedIds->all()) {
+        if ($expectedIds->all() !== $receivedIds->all() || $expectedIds->all() !== $receivedPhoneIds->all()) {
             return back()->withErrors(['enroll_ids' => 'The class list changed or was incomplete. Reload the page and try again.'])->withInput();
         }
 
@@ -826,15 +831,17 @@ class AttendanceController extends Controller
             }
         }
 
-        DB::transaction(function () use ($submittedIds, $classStudentIds, $validated) {
+        DB::transaction(function () use ($submittedIds, $submittedPhones, $classStudentIds, $validated) {
             User::query()
                 ->where('role', 'student')
                 ->where('class_id', $validated['class_id'])
                 ->whereIn('id', $classStudentIds)
                 ->get()
-                ->each(function (User $student) use ($submittedIds) {
-                    $value = $submittedIds->get((string) $student->id, '');
-                    $student->attendance_machine_user_id = $value !== '' ? $value : null;
+                ->each(function (User $student) use ($submittedIds, $submittedPhones) {
+                    $enrollId = $submittedIds->get((string) $student->id, '');
+                    $phone = $submittedPhones->get((string) $student->id, '');
+                    $student->attendance_machine_user_id = $enrollId !== '' ? $enrollId : null;
+                    $student->parent_phone_number = $phone !== '' ? $phone : null;
                     $student->save();
                 });
         });
@@ -842,7 +849,7 @@ class AttendanceController extends Controller
         return redirect()->route('admin.attendance.people', [
             'class_id' => $validated['class_id'],
             'role' => 'student',
-        ])->with('success', 'All student Enroll IDs for this class were saved.');
+        ])->with('success', 'All student Enroll IDs and guardian phone numbers for this class were saved.');
     }
 
     public function updatePerson(Request $request, User $user)
