@@ -159,7 +159,9 @@
                 @if($question->question_type === 'multiple_choice' && $question->options)
                     <div class="mb-3 bg-gray-50 p-3 rounded">
                         <p class="text-sm font-semibold text-gray-700 mb-2">Options:</p>
-                        @php($studentAnswer = optional($answer)->answer_text)
+                        @php
+                            $studentAnswer = optional($answer)->answer_text;
+                        @endphp
                         <div class="space-y-1">
                             @foreach($question->options as $key => $option)
                             <p class="text-sm p-2 rounded {{ $key === $question->correct_answer ? 'bg-green-100 text-green-800 font-semibold' : ($key === $studentAnswer ? 'bg-red-100 text-red-800' : 'text-gray-600') }}">
