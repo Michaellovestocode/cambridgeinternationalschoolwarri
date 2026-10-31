@@ -5,6 +5,12 @@
 @section('content')
 <div class="space-y-6">
     <div class="bg-white rounded-lg shadow p-6">
+        @if(session('success'))
+            <div class="mb-4 rounded-lg border border-green-300 bg-green-50 px-4 py-3 text-sm font-semibold text-green-800">{{ session('success') }}</div>
+        @endif
+        @if(session('error'))
+            <div class="mb-4 rounded-lg border border-red-300 bg-red-50 px-4 py-3 text-sm font-semibold text-red-800">{{ session('error') }}</div>
+        @endif
         <div class="flex justify-between items-start mb-4">
             <div>
                 <h2 class="text-2xl font-bold text-gray-800">{{ $exam->title }}</h2>
@@ -108,6 +114,250 @@
         @endif
         </div>
     </div>
+
+    @if($exam->questions->sum('marks') < $exam->total_marks)
+    <section class="bg-white rounded-lg shadow p-6" id="bulk-objective-import">
+        <div class="mb-4">
+            <h3 class="text-xl font-bold text-gray-800">Paste objective questions in bulk</h3>
+            <p class="mt-1 text-sm text-gray-600">Paste the numbered questions as they are, including A–D choices and “Answer A”. The importer arranges them into editable questions before saving.</p>
+        </div>
+
+        @if($errors->has('questions'))
+            <div class="mb-4 rounded-lg border border-red-300 bg-red-50 p-4 text-sm text-red-800">
+                <p class="font-bold">The questions were not saved.</p>
+                @foreach($errors->get('questions') as $error)<p class="mt-1">{{ $error }}</p>@endforeach
+            </div>
+        @endif
+
+        <form id="bulk-objective-form" action="{{ route('admin.exam.questions.bulk-import', $exam->id) }}" method="POST" class="space-y-4">
+            @csrf
+            <div>
+                <label for="objective-source" class="mb-2 block text-sm font-semibold text-gray-700">Paste the full question set</label>
+                <textarea id="objective-source" name="source_text" rows="10" maxlength="200000" required
+                    class="w-full rounded-lg border border-gray-300 px-4 py-3 font-mono text-sm focus:border-green-500 focus:ring-green-500"
+                    placeholder="1. Question text? A. First choice B. Second choice C. Third choice D. Fourth choice. Answer B&#10;2. Next question? (A) First (B) Second (C) Third (D) Fourth. Answer A">{{ old('source_text') }}</textarea>
+            </div>
+
+            <div class="flex flex-col gap-3 sm:flex-row sm:items-end">
+                <div class="w-full sm:w-48">
+                    <label for="bulk-default-marks" class="mb-1 block text-sm font-semibold text-gray-700">Default marks per question</label>
+                    <input id="bulk-default-marks" type="number" min="0.01" max="1000" step="0.01" value="1" class="w-full rounded-lg border border-gray-300 px-3 py-2">
+                </div>
+                <button id="parse-objective-questions" type="button" class="rounded-lg bg-blue-600 px-5 py-3 font-semibold text-white hover:bg-blue-700">Arrange questions</button>
+                <p class="text-xs text-gray-500">Exam marks remaining: {{ rtrim(rtrim(number_format((float) $exam->total_marks - (float) $exam->questions->sum('marks'), 2, '.', ''), '0'), '.') }}</p>
+            </div>
+
+            <div id="objective-parse-status" aria-live="polite" class="hidden rounded-lg p-4 text-sm"></div>
+            <div id="objective-question-preview" class="space-y-3"></div>
+
+            <button id="save-bulk-objective-questions" type="submit" disabled class="hidden rounded-lg bg-green-600 px-6 py-3 font-bold text-white enabled:hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-50">
+                Save all objective questions
+            </button>
+        </form>
+    </section>
+
+    <script>
+    (() => {
+        const form = document.getElementById('bulk-objective-form');
+        if (!form) return;
+
+        const source = document.getElementById('objective-source');
+        const parseButton = document.getElementById('parse-objective-questions');
+        const defaultMarks = document.getElementById('bulk-default-marks');
+        const preview = document.getElementById('objective-question-preview');
+        const status = document.getElementById('objective-parse-status');
+        const saveButton = document.getElementById('save-bulk-objective-questions');
+        const restoredQuestions = @json(old('questions', []));
+        let readyToSave = false;
+
+        const setStatus = (message, isError = false) => {
+            status.textContent = message;
+            status.className = `rounded-lg p-4 text-sm ${isError ? 'border border-red-300 bg-red-50 text-red-800' : 'border border-emerald-300 bg-emerald-50 text-emerald-800'}`;
+        };
+
+        const makeInput = (label, name, value, type = 'text') => {
+            const wrap = document.createElement('label');
+            wrap.className = 'block min-w-0';
+            const caption = document.createElement('span');
+            caption.className = 'mb-1 block text-xs font-bold text-gray-600';
+            caption.textContent = label;
+            const input = document.createElement(type === 'textarea' ? 'textarea' : 'input');
+            input.name = name;
+            input.value = value ?? '';
+            input.required = true;
+            input.className = 'w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-green-500 focus:ring-green-500';
+            if (type === 'number') {
+                input.type = 'number';
+                input.min = '0.01';
+                input.max = '1000';
+                input.step = '0.01';
+            }
+            if (type === 'textarea') {
+                input.rows = 2;
+            }
+            wrap.append(caption, input);
+            return wrap;
+        };
+
+        const renderQuestions = (questions, issues = []) => {
+            preview.replaceChildren();
+            saveButton.disabled = true;
+            saveButton.classList.add('hidden');
+            readyToSave = false;
+
+            questions.forEach((question, index) => {
+                const card = document.createElement('fieldset');
+                card.className = 'rounded-xl border border-gray-200 bg-gray-50 p-4';
+                const legend = document.createElement('legend');
+                legend.className = 'px-2 font-bold text-gray-800';
+                legend.textContent = `Question ${index + 1}`;
+                card.appendChild(legend);
+
+                const questionInput = makeInput('Question', `questions[${index}][question_text]`, question.question_text, 'textarea');
+                card.appendChild(questionInput);
+
+                const options = document.createElement('div');
+                options.className = 'mt-3 grid gap-3 md:grid-cols-2';
+                ['A', 'B', 'C', 'D'].forEach((letter) => {
+                    options.appendChild(makeInput(`Option ${letter}`, `questions[${index}][options][${letter}]`, question.options?.[letter]));
+                });
+                card.appendChild(options);
+
+                const controls = document.createElement('div');
+                controls.className = 'mt-3 grid gap-3 sm:grid-cols-[1fr,180px]';
+                const answerLabel = document.createElement('label');
+                answerLabel.className = 'block';
+                const answerCaption = document.createElement('span');
+                answerCaption.className = 'mb-1 block text-xs font-bold text-gray-600';
+                answerCaption.textContent = 'Supplied correct answer — please verify';
+                const answer = document.createElement('select');
+                answer.name = `questions[${index}][correct_answer]`;
+                answer.required = true;
+                answer.className = 'w-full rounded-lg border border-gray-300 px-3 py-2 text-sm';
+                ['A', 'B', 'C', 'D'].forEach((letter) => {
+                    const option = document.createElement('option');
+                    option.value = letter;
+                    option.textContent = letter;
+                    option.selected = letter === question.correct_answer;
+                    answer.appendChild(option);
+                });
+                answerLabel.append(answerCaption, answer);
+                controls.append(answerLabel, makeInput('Marks', `questions[${index}][marks]`, question.marks ?? defaultMarks.value, 'number'));
+                card.appendChild(controls);
+                preview.appendChild(card);
+            });
+
+            if (issues.length) {
+                const list = document.createElement('ul');
+                list.className = 'mt-2 list-inside list-disc';
+                issues.forEach((issue) => {
+                    const item = document.createElement('li');
+                    item.textContent = issue;
+                    list.appendChild(item);
+                });
+                status.replaceChildren();
+                const heading = document.createElement('p');
+                heading.textContent = `Parsed ${questions.length} question(s), but ${issues.length} source line(s) need attention. Nothing can be saved until all lines are arranged.`;
+                status.append(heading, list);
+                status.className = 'rounded-lg border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900';
+                return;
+            }
+
+            if (!questions.length) {
+                setStatus('No numbered questions were found. Start each question with a number such as “1.”.', true);
+                return;
+            }
+
+            readyToSave = true;
+            saveButton.disabled = false;
+            saveButton.classList.remove('hidden');
+            setStatus(`${questions.length} question(s) arranged. Review every question and supplied answer before saving.`);
+        };
+
+        const parseSource = () => {
+            const text = source.value.replace(/\u00a0/g, ' ');
+            const starts = [...text.matchAll(/^[ \t]*(\d+)[.)][ \t]*/gm)];
+            const issues = [];
+            const questions = [];
+
+            if (!starts.length) {
+                renderQuestions([], ['No numbered questions found.']);
+                return;
+            }
+
+            const preamble = text.slice(0, starts[0].index).trim();
+            if (preamble) issues.push('Text before question 1 could not be assigned to a question.');
+
+            starts.forEach((start, index) => {
+                const end = index + 1 < starts.length ? starts[index + 1].index : text.length;
+                const number = start[1];
+                let body = text.slice(start.index + start[0].length, end).replace(/\s+/g, ' ').trim();
+                const answerMatch = body.match(/\bAnswer\s*[:\-]?\s*\(?\s*([A-D])\s*\)?[.!]?\s*$/i);
+                if (!answerMatch) {
+                    issues.push(`Question ${number}: could not find an ending “Answer A”, “Answer B”, “Answer C”, or “Answer D”.`);
+                    return;
+                }
+
+                const answer = answerMatch[1].toUpperCase();
+                body = body.slice(0, answerMatch.index).trim();
+                const markerPattern = /\(\s*([A-D])\s*\)|\s+([A-D])(?:\s*\.)?(?=\s)/g;
+                const markers = [...body.matchAll(markerPattern)].map((match) => ({
+                    letter: (match[1] || match[2]).toUpperCase(),
+                    index: match.index,
+                    end: match.index + match[0].length,
+                }));
+
+                let optionStart = -1;
+                for (let candidate = 0; candidate <= markers.length - 4; candidate++) {
+                    if (markers.slice(candidate, candidate + 4).map((marker) => marker.letter).join('') === 'ABCD') {
+                        optionStart = candidate;
+                        break;
+                    }
+                }
+                if (optionStart < 0) {
+                    issues.push(`Question ${number}: expected four choices labelled A, B, C, and D.`);
+                    return;
+                }
+
+                const choices = markers.slice(optionStart, optionStart + 4);
+                const questionText = body.slice(0, choices[0].index).replace(/^\s*[.\s]+/, '').trim();
+                const options = {};
+                choices.forEach((choice, choiceIndex) => {
+                    const nextIndex = choiceIndex < 3 ? choices[choiceIndex + 1].index : body.length;
+                    const value = body.slice(choice.end, nextIndex).replace(/^[\s.]+|[\s.]+$/g, '').trim();
+                    options[choice.letter] = value;
+                });
+
+                if (!questionText || ['A', 'B', 'C', 'D'].some((letter) => !options[letter])) {
+                    issues.push(`Question ${number}: the question text or one of its four choices is empty.`);
+                    return;
+                }
+
+                questions.push({
+                    question_text: questionText,
+                    options,
+                    correct_answer: answer,
+                    marks: defaultMarks.value || 1,
+                });
+            });
+
+            renderQuestions(questions, issues);
+        };
+
+        parseButton.addEventListener('click', parseSource);
+        form.addEventListener('submit', (event) => {
+            if (!readyToSave) {
+                event.preventDefault();
+                setStatus('Arrange and review the questions before saving.', true);
+            }
+        });
+
+        if (Array.isArray(restoredQuestions) && restoredQuestions.length) {
+            renderQuestions(restoredQuestions);
+        }
+    })();
+    </script>
+    @endif
 
     <!-- Add Question Form -->
     @if($exam->questions->sum('marks') < $exam->total_marks)

@@ -20,6 +20,7 @@ use App\Models\FormTeacher;
 use App\Models\Message;
 use App\Services\CbtReportCardSyncService;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -660,6 +661,79 @@ public function storeManualExamScores(Request $request, $examId)
 
     return redirect()->route('admin.exam.questions', $exam->id)
         ->with('success', 'Question added successfully!');
+}
+
+public function bulkImportObjectiveQuestions(Request $request, $examId)
+{
+    $exam = Exam::with('questions')->findOrFail($examId);
+
+    if (!Auth::user()->isAdmin() && $exam->created_by != Auth::id()) {
+        abort(403);
+    }
+
+    if ($exam->isManual()) {
+        return redirect()->route('admin.exam.manual-scores', $exam->id)
+            ->with('error', 'This is a manual-entry exam and does not accept questions.');
+    }
+
+    $remainingMarks = (float) $exam->total_marks - (float) $exam->questions->sum('marks');
+    if ($remainingMarks <= 0) {
+        return redirect()->route('admin.exam.questions', $exam->id)
+            ->with('error', 'Cannot add questions to a completed exam.');
+    }
+
+    $validated = $request->validate([
+        'source_text' => ['required', 'string', 'max:200000'],
+        'questions' => ['required', 'array', 'min:1', 'max:200'],
+        'questions.*.question_text' => ['required', 'string', 'max:10000'],
+        'questions.*.options' => ['required', 'array'],
+        'questions.*.options.A' => ['required', 'string', 'max:2000'],
+        'questions.*.options.B' => ['required', 'string', 'max:2000'],
+        'questions.*.options.C' => ['required', 'string', 'max:2000'],
+        'questions.*.options.D' => ['required', 'string', 'max:2000'],
+        'questions.*.correct_answer' => ['required', 'in:A,B,C,D'],
+        'questions.*.marks' => ['required', 'numeric', 'min:0.01', 'max:1000'],
+    ]);
+
+    $marksToAdd = collect($validated['questions'])->sum(fn ($question) => (float) $question['marks']);
+    if ($marksToAdd > $remainingMarks + 0.00001) {
+        return back()
+            ->withErrors(['questions' => 'The marks for these questions total ' . rtrim(rtrim(number_format($marksToAdd, 2, '.', ''), '0'), '.') . ', but only ' . rtrim(rtrim(number_format($remainingMarks, 2, '.', ''), '0'), '.') . ' marks remain in this exam.'])
+            ->withInput();
+    }
+
+    DB::transaction(function () use ($exam, $validated, $marksToAdd) {
+        $lockedExam = Exam::whereKey($exam->id)->lockForUpdate()->firstOrFail();
+        $currentMarks = (float) $lockedExam->questions()->sum('marks');
+        if ($currentMarks + $marksToAdd > (float) $lockedExam->total_marks + 0.00001) {
+            throw ValidationException::withMessages([
+                'questions' => 'The exam’s remaining marks changed while you were importing. Review the current total and try again.',
+            ]);
+        }
+
+        $order = $lockedExam->questions()->count();
+
+        foreach ($validated['questions'] as $question) {
+            $order++;
+            Question::create([
+                'exam_id' => $lockedExam->id,
+                'question_text' => $this->cleanQuestionText($question['question_text']),
+                'question_type' => 'multiple_choice',
+                'options' => [
+                    'A' => trim($question['options']['A']),
+                    'B' => trim($question['options']['B']),
+                    'C' => trim($question['options']['C']),
+                    'D' => trim($question['options']['D']),
+                ],
+                'correct_answer' => $question['correct_answer'],
+                'marks' => $question['marks'],
+                'order' => $order,
+            ]);
+        }
+    });
+
+    return redirect()->route('admin.exam.questions', $exam->id)
+        ->with('success', count($validated['questions']) . ' objective questions imported successfully. Please review the saved answer keys.');
 }
 
    public function storeQuestionPassage(Request $request, $examId)

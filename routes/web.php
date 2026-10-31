@@ -400,6 +400,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/exams/{exam}/manual-scores', [AdminController::class, 'storeManualExamScores'])->name('exam.manual-scores.store');
         Route::get('/exams/{exam}/questions', [AdminController::class, 'examQuestions'])->name('exam.questions');
         Route::post('/exams/{exam}/questions', [AdminController::class, 'storeQuestion'])->name('exam.question.store');
+        Route::post('/exams/{exam}/questions/bulk-import', [AdminController::class, 'bulkImportObjectiveQuestions'])->name('exam.questions.bulk-import');
         Route::post('/exams/{exam}/passages', [AdminController::class, 'storeQuestionPassage'])->name('exam.passage.store');
         Route::put('/passages/{passage}', [AdminController::class, 'updateQuestionPassage'])->name('exam.passage.update');
         Route::delete('/passages/{passage}', [AdminController::class, 'deleteQuestionPassage'])->name('exam.passage.delete');
