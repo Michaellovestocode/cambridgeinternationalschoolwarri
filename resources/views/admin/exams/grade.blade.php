@@ -352,5 +352,4 @@
     });
 </script>
 @endpush
-</body>
 @endsection
