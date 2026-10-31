@@ -300,19 +300,30 @@
 
                 const answer = answerMatch[1].toUpperCase();
                 body = body.slice(0, answerMatch.index).trim();
-                const markerPattern = /\(\s*([A-D])\s*\)|\s+([A-D])(?:\s*\.)?(?=\s)/g;
-                const markers = [...body.matchAll(markerPattern)].map((match) => ({
+                const collectMarkers = (pattern) => [...body.matchAll(pattern)].map((match) => ({
                     letter: (match[1] || match[2]).toUpperCase(),
                     index: match.index,
                     end: match.index + match[0].length,
                 }));
-
-                let optionStart = -1;
-                for (let candidate = 0; candidate <= markers.length - 4; candidate++) {
-                    if (markers.slice(candidate, candidate + 4).map((marker) => marker.letter).join('') === 'ABCD') {
-                        optionStart = candidate;
-                        break;
+                const findOptionStart = (markers) => {
+                    for (let candidate = 0; candidate <= markers.length - 4; candidate++) {
+                        if (markers.slice(candidate, candidate + 4).map((marker) => marker.letter).join('') === 'ABCD') {
+                            return candidate;
+                        }
                     }
+                    return -1;
+                };
+
+                // Prefer explicit labels so capital letters inside option text
+                // (for example, “A disagreement”) are never treated as labels.
+                let markers = collectMarkers(/\(\s*([A-D])\s*\)|\s+([A-D])\s*\.(?=\s)/g);
+                let optionStart = findOptionStart(markers);
+
+                // A few source sheets omit the period after a label, e.g.
+                // “A Working honestly.” Use that loose form only as a fallback.
+                if (optionStart < 0) {
+                    markers = collectMarkers(/\(\s*([A-D])\s*\)|\s+([A-D])(?:\s*\.)?(?=\s)/g);
+                    optionStart = findOptionStart(markers);
                 }
                 if (optionStart < 0) {
                     issues.push(`Question ${number}: expected four choices labelled A, B, C, and D.`);
