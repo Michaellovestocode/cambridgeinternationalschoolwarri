@@ -167,7 +167,7 @@
                                 @if($key === $question->correct_answer)
                                     <span class="text-xs ml-2">✓ Correct</span>
                                 @endif
-                                @if($key === $answer->answer_text && $key !== $question->correct_answer)
+                                @if($key === $studentAnswer && $key !== $question->correct_answer)
                                     <span class="text-xs ml-2">✗ Student's Answer</span>
                                 @endif
                             </p>
