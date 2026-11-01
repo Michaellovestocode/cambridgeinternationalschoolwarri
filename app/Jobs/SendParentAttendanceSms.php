@@ -85,11 +85,17 @@ class SendParentAttendanceSms implements ShouldQueue
         }
 
         $url = rtrim((string) config('services.robase.base_url', 'https://api.robase.dev'), '/') . '/v1/sms/send';
+        $sender = config('services.robase.sender');
         foreach ($recipients as $to) {
-            $response = Http::withToken($apiKey)->acceptJson()->asJson()->timeout(15)->post($url, [
+            $payload = [
                 'phone_number' => $to,
                 'message' => $body,
-            ]);
+            ];
+            if (filled($sender)) {
+                $payload['sender'] = $sender;
+            }
+
+            $response = Http::withToken($apiKey)->acceptJson()->asJson()->timeout(15)->post($url, $payload);
             if (! $response->successful()) {
                 Log::warning('Robase attendance SMS failed; queue will retry.', [
                     'student_id' => $student->id,

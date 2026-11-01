@@ -44,7 +44,7 @@ class SendRobaseTestSms extends Command
                 'phone_number' => $phone,
                 'message' => $message,
             ];
-            if ($sender = env('ROBASE_SENDER')) {
+            if ($sender = config('services.robase.sender')) {
                 $payload['sender'] = $sender;
             }
 

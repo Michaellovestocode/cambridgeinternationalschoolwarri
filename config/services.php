@@ -5,6 +5,7 @@ return [
     'robase' => [
         'api_key' => env('ROBASE_API_KEY'),
         'base_url' => env('ROBASE_BASE_URL', 'https://api.robase.dev'),
+        'sender' => env('ROBASE_SENDER'),
     ],
 
     'staff_attendance' => [

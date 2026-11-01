@@ -384,6 +384,7 @@ Configure credentials in your `.env`:
 # For Robase (preferred)
 ROBASE_API_KEY=robe_xxx
 ROBASE_BASE_URL=https://api.robase.dev
+ROBASE_SENDER=CAMBRIDGE
 
 # Optional: Twilio (falls back to Twilio when configured)
 TWILIO_SID=your_twilio_sid
@@ -396,6 +397,7 @@ QUEUE_CONNECTION=sync
 
 Notes:
 - Use `QUEUE_CONNECTION=database` and run `php artisan queue:work` in production for reliable delivery.
+- Set `ROBASE_SENDER` to the sender ID approved for your account. Until it is approved, leave it unset and Robase will use its default sender.
 - Robase offers prepaid credits starting around ₦6 per message in Nigeria; see https://robase.dev/pricing for up-to-date rates.
 - Ensure parent phone numbers are stored in E.164 format (e.g., `+2348012345678`).
 

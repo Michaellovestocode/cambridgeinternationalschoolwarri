@@ -769,6 +769,7 @@ public function readObjectiveQuestionsDocument(Request $request, $examId)
             ->implode("\n");
     }
 
+    $text = html_entity_decode($text, ENT_QUOTES | ENT_HTML5, 'UTF-8');
     $text = str_replace(["\r\n", "\r", "\0"], ["\n", "\n", ''], $text);
 
     if (trim($text) === '') {
