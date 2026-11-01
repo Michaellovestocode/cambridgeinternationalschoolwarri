@@ -293,23 +293,39 @@
         };
 
         const parseSource = () => {
-            const text = source.value.replace(/\u00a0/g, ' ');
+            let text = source.value.replace(/\u00a0/g, ' ').replace(/\r\n?/g, '\n');
+            const theoryStart = text.search(/^[ \t]*SECTION[ \t]+B\b.*$/im);
+            if (theoryStart >= 0) {
+                text = text.slice(0, theoryStart);
+            }
+
             const starts = [...text.matchAll(/^[ \t]*(\d+)[.)][ \t]*/gm)];
             const issues = [];
             const questions = [];
+            let questionParts;
 
-            if (!starts.length) {
-                renderQuestions([], ['No numbered questions found.']);
+            if (starts.length) {
+                const preamble = text.slice(0, starts[0].index).trim();
+                if (preamble) issues.push('Text before question 1 could not be assigned to a question.');
+                questionParts = starts.map((start, index) => {
+                    const end = index + 1 < starts.length ? starts[index + 1].index : text.length;
+                    return {
+                        number: start[1],
+                        body: text.slice(start.index + start[0].length, end).replace(/\s+/g, ' ').trim(),
+                    };
+                });
+            } else {
+                questionParts = text.split('\n')
+                    .map((line, index) => ({ number: String(index + 1), body: line.trim() }))
+                    .filter(({ body }) => /\bAnswer\s*[:\-]?\s*\(?\s*[A-D]\s*\)?[.!]?\s*$/i.test(body));
+            }
+
+            if (!questionParts.length) {
+                renderQuestions([], ['No objective questions ending with an answer such as “Answer A” were found.']);
                 return;
             }
 
-            const preamble = text.slice(0, starts[0].index).trim();
-            if (preamble) issues.push('Text before question 1 could not be assigned to a question.');
-
-            starts.forEach((start, index) => {
-                const end = index + 1 < starts.length ? starts[index + 1].index : text.length;
-                const number = start[1];
-                let body = text.slice(start.index + start[0].length, end).replace(/\s+/g, ' ').trim();
+            questionParts.forEach(({ number, body }) => {
                 const answerMatch = body.match(/\bAnswer\s*[:\-]?\s*\(?\s*([A-D])\s*\)?[.!]?\s*$/i);
                 if (!answerMatch) {
                     issues.push(`Question ${number}: could not find an ending “Answer A”, “Answer B”, “Answer C”, or “Answer D”.`);
