@@ -736,6 +736,128 @@ public function bulkImportObjectiveQuestions(Request $request, $examId)
         ->with('success', count($validated['questions']) . ' objective questions imported successfully. Please review the saved answer keys.');
 }
 
+public function readObjectiveQuestionsDocument(Request $request, $examId)
+{
+    $exam = Exam::findOrFail($examId);
+
+    if (!Auth::user()->isAdmin() && $exam->created_by != Auth::id()) {
+        abort(403);
+    }
+
+    if ($exam->isManual()) {
+        return response()->json(['message' => 'Manual-entry exams do not accept questions.'], 422);
+    }
+
+    $validated = $request->validate([
+        'document' => ['required', 'file', 'max:10240', 'mimes:docx,txt'],
+    ]);
+
+    $file = $validated['document'];
+    if (strtolower($file->getClientOriginalExtension()) === 'txt') {
+        $text = $file->get();
+    } else {
+        try {
+            $wordDocument = IOFactory::load($file->getRealPath(), 'Word2007');
+        } catch (\PhpOffice\PhpWord\Exception\Exception $exception) {
+            throw ValidationException::withMessages([
+                'document' => 'The Word document could not be read. Please upload a valid .docx file.',
+            ]);
+        }
+
+        $text = collect($wordDocument->getSections())
+            ->map(fn ($section) => $this->extractWordContainerText($section->getElements()))
+            ->implode("\n");
+    }
+
+    $text = str_replace(["\r\n", "\r", "\0"], ["\n", "\n", ''], $text);
+
+    if (trim($text) === '') {
+        throw ValidationException::withMessages([
+            'document' => 'No readable text was found in the document.',
+        ]);
+    }
+
+    if (preg_match('//u', $text) !== 1) {
+        throw ValidationException::withMessages([
+            'document' => 'The document must contain UTF-8 text. Save it as UTF-8 and upload it again.',
+        ]);
+    }
+
+    if (mb_strlen($text, 'UTF-8') > 200000) {
+        throw ValidationException::withMessages([
+            'document' => 'The extracted text is too long. Upload a shorter document or split it into smaller parts.',
+        ]);
+    }
+
+    return response()->json(['text' => $text]);
+}
+
+private function extractWordContainerText(array $elements): string
+{
+    return collect($elements)
+        ->map(function ($element) {
+            if ($element instanceof \PhpOffice\PhpWord\Element\Text) {
+                return $element->getText();
+            }
+
+            if ($element instanceof \PhpOffice\PhpWord\Element\TextBreak) {
+                return "\n";
+            }
+
+            if ($element instanceof \PhpOffice\PhpWord\Element\TextRun) {
+                return collect($element->getElements())
+                    ->map(fn ($child) => $this->extractWordElementText($child))
+                    ->implode('');
+            }
+
+            if ($element instanceof \PhpOffice\PhpWord\Element\Table) {
+                return collect($element->getRows())
+                    ->map(fn ($row) => collect($row->getCells())
+                        ->map(fn ($cell) => $this->extractWordContainerText($cell->getElements()))
+                        ->implode("\t"))
+                    ->implode("\n");
+            }
+
+            if (method_exists($element, 'getText')) {
+                return (string) $element->getText();
+            }
+
+            if (method_exists($element, 'getElements')) {
+                return $this->extractWordContainerText($element->getElements());
+            }
+
+            return '';
+        })
+        ->implode("\n");
+}
+
+private function extractWordElementText($element): string
+{
+    if ($element instanceof \PhpOffice\PhpWord\Element\Text) {
+        return $element->getText();
+    }
+
+    if ($element instanceof \PhpOffice\PhpWord\Element\TextBreak) {
+        return "\n";
+    }
+
+    if ($element instanceof \PhpOffice\PhpWord\Element\TextRun) {
+        return collect($element->getElements())
+            ->map(fn ($child) => $this->extractWordElementText($child))
+            ->implode('');
+    }
+
+    if (method_exists($element, 'getText')) {
+        return (string) $element->getText();
+    }
+
+    if (method_exists($element, 'getElements')) {
+        return $this->extractWordContainerText($element->getElements());
+    }
+
+    return '';
+}
+
    public function storeQuestionPassage(Request $request, $examId)
 {
     $exam = Exam::findOrFail($examId);

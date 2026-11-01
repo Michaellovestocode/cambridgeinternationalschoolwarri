@@ -131,6 +131,21 @@
 
         <form id="bulk-objective-form" action="{{ route('admin.exam.questions.bulk-import', $exam->id) }}" method="POST" class="space-y-4">
             @csrf
+            <div class="rounded-lg border border-blue-200 bg-blue-50 p-4">
+                <label for="objective-document" class="mb-2 block text-sm font-semibold text-gray-800">Or upload a question document</label>
+                <div class="flex flex-col gap-3 sm:flex-row">
+                    <input id="objective-document" type="file" accept=".docx,.txt"
+                        class="w-full rounded-lg border border-blue-200 bg-white px-3 py-2 text-sm">
+                    <button id="upload-objective-document" type="button"
+                        data-url="{{ route('admin.exam.questions.read-document', $exam->id) }}"
+                        class="shrink-0 rounded-lg bg-blue-600 px-5 py-2 font-semibold text-white hover:bg-blue-700 disabled:cursor-wait disabled:opacity-60">
+                        Upload and arrange
+                    </button>
+                </div>
+                <p class="mt-2 text-xs text-gray-600">Word (.docx) or UTF-8 text (.txt), up to 10 MB. Questions should be numbered, include A–D choices, and end with “Answer A” (or B, C, D). Check the arranged questions before saving.</p>
+                <p id="objective-document-status" role="status" aria-live="polite" class="mt-2 hidden text-sm"></p>
+            </div>
+
             <div>
                 <label for="objective-source" class="mb-2 block text-sm font-semibold text-gray-700">Paste the full question set</label>
                 <textarea id="objective-source" name="source_text" rows="10" maxlength="200000" required
@@ -167,6 +182,9 @@
         const preview = document.getElementById('objective-question-preview');
         const status = document.getElementById('objective-parse-status');
         const saveButton = document.getElementById('save-bulk-objective-questions');
+        const documentInput = document.getElementById('objective-document');
+        const uploadButton = document.getElementById('upload-objective-document');
+        const documentStatus = document.getElementById('objective-document-status');
         const restoredQuestions = @json(old('questions', []));
         let readyToSave = false;
 
@@ -356,6 +374,47 @@
         };
 
         parseButton.addEventListener('click', parseSource);
+        uploadButton.addEventListener('click', async () => {
+            if (!documentInput.files.length) {
+                documentStatus.textContent = 'Choose a .docx or .txt file first.';
+                documentStatus.className = 'mt-2 text-sm text-red-700';
+                return;
+            }
+
+            const upload = new FormData();
+            upload.append('document', documentInput.files[0]);
+            upload.append('_token', form.querySelector('input[name="_token"]').value);
+            uploadButton.disabled = true;
+            uploadButton.textContent = 'Reading document...';
+            documentStatus.textContent = '';
+            documentStatus.className = 'mt-2 hidden text-sm';
+
+            try {
+                const response = await fetch(uploadButton.dataset.url, {
+                    method: 'POST',
+                    headers: { Accept: 'application/json' },
+                    body: upload,
+                });
+                const result = await response.json();
+
+                if (!response.ok) {
+                    const validationErrors = Object.values(result.errors || {}).flat();
+                    throw new Error(validationErrors.join(' ') || result.message || 'The document could not be read.');
+                }
+
+                source.value = result.text;
+                parseSource();
+                documentStatus.textContent = 'Document text loaded below. Review and arrange the questions before saving.';
+                documentStatus.className = 'mt-2 text-sm text-green-700';
+            } catch (error) {
+                documentStatus.textContent = error.message || 'The document could not be read. Please try again.';
+                documentStatus.className = 'mt-2 text-sm text-red-700';
+            } finally {
+                uploadButton.disabled = false;
+                uploadButton.textContent = 'Upload and arrange';
+            }
+        });
+
         form.addEventListener('submit', (event) => {
             if (!readyToSave) {
                 event.preventDefault();
