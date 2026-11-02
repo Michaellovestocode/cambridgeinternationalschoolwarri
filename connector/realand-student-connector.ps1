@@ -84,6 +84,32 @@ foreach ($reader in $devices) {
     if ([string]$reader.SdkDeviceId -notmatch '^\d+$') { throw "SdkDeviceId must be numeric: $($reader.SdkDeviceId)" }
 }
 
+$minimumDates = @{}
+foreach ($reader in $devices) {
+    $minimumText = [string]$reader.MinEventDate
+    if ([string]::IsNullOrWhiteSpace($minimumText)) {
+        $minimumText = [string]$settings.MIN_EVENT_DATE
+    }
+
+    $minimumText = $minimumText.Trim()
+    $minimumDate = $null
+    if ($minimumText) {
+        $parsedDate = [DateTime]::MinValue
+        $culture = [Globalization.CultureInfo]::InvariantCulture
+        if (-not [DateTime]::TryParseExact(
+                $minimumText,
+                'yyyy-MM-dd',
+                $culture,
+                [Globalization.DateTimeStyles]::None,
+                [ref]$parsedDate
+            )) {
+            throw "Invalid minimum event date '$minimumText' for $($reader.Name). Use yyyy-MM-dd or leave it blank."
+        }
+        $minimumDate = $parsedDate.Date
+    }
+    $minimumDates[[string]$reader.ReceiverSN] = $minimumDate
+}
+
 $apiPath = Join-Path $settings.F495_SDK_PATH 'RealandAPI.dll'
 $devicesPath = Join-Path $settings.F495_SDK_PATH 'Riss.Devices.dll'
 if (-not (Test-Path -LiteralPath $apiPath) -or -not (Test-Path -LiteralPath $devicesPath)) {
@@ -130,8 +156,7 @@ while ($true) {
                 if (-not $connected) { throw "SDK could not open $($reader.Name)." }
                 $dates = [Collections.Generic.List[DateTime]]::new()
                 $records = $device.GetNewlyRecords($dates)
-                $minimumText = if ($reader.MinEventDate) { [string]$reader.MinEventDate } else { [string]$settings.MIN_EVENT_DATE }
-                $minimumDate = if ($minimumText) { [DateTime]::ParseExact($minimumText, 'yyyy-MM-dd', $null).Date } else { $null }
+                $minimumDate = $minimumDates[$receiverSn]
                 foreach ($record in @($records)) {
                     if ($minimumDate -and $record.Clock.Date -lt $minimumDate) { continue }
                     $enrollId = [string]$record.DIN

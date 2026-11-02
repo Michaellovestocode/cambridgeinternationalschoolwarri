@@ -10,6 +10,8 @@ One student connector process polls each configured Realand clock in turn. The l
 4. Keep the existing `.env.student` settings for `F495_SDK_PATH`, `STUDENT_WEBSITE_URL`, and `POLL_SECONDS`.
 5. The website deployment must allow all three receiver IDs with `STUDENT_F_G495_DEVICE_IDS=00002,00003,00004` in the VPS `.env`. Source changes alone do not change production.
 
+`MinEventDate` in `student-devices.csv` (or `MIN_EVENT_DATE` in `.env.student` when the CSV value is blank) is optional. Leave it blank to process all stored punches, or use exactly `yyyy-MM-dd` (for example, `2026-09-01`). An invalid value stops the connector before it reads punches.
+
 The connector saves each clock's retry queue separately. It keeps the old `student-connector-state.json` for receiver 00002 so existing deduplication history and pending punches stay intact. Keep all state files beside the connector; do not delete them during normal operation.
 
 If `student-devices.csv` is absent, the connector falls back to the existing one-reader `.env.student` configuration and receiver 00002.
