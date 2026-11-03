@@ -121,96 +121,101 @@
 @section('content')
 <div class="admin-dashboard-shell space-y-6">
     @if(($birthdayLearners ?? collect())->isNotEmpty())
-        <div class="rounded-2xl border border-amber-100 bg-gradient-to-r from-amber-50 via-pink-50 to-blue-50 p-5 shadow-lg">
-            <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+        <section class="overflow-hidden rounded-2xl border border-amber-200 bg-white shadow-sm">
+            <div class="flex flex-wrap items-center justify-between gap-3 bg-gradient-to-r from-amber-50 to-pink-50 px-5 py-4">
                 <div>
-                    <p class="text-sm font-black uppercase text-amber-700" style="letter-spacing:.14em;">
-                        {{ $birthdayLearners->count() > 1 ? 'Birthdays Today' : 'Birthday Today' }}
-                    </p>
-                    <h2 class="mt-1 text-2xl font-black text-gray-900">
-                        Celebrate {{ $birthdayLearners->count() > 1 ? 'our learners' : $birthdayLearners->first()->name }} today
+                    <p class="text-xs font-black uppercase tracking-[.14em] text-amber-700">Birthdays today</p>
+                    <h2 class="mt-1 text-xl font-black text-gray-900">
+                        {{ $birthdayLearners->count() }} {{ \Illuminate\Support\Str::plural('learner', $birthdayLearners->count()) }} celebrating today
                     </h2>
-                    <p class="mt-1 text-sm font-semibold text-gray-600">
-                        This reminder appears only on the learner's birthday.
-                    </p>
                 </div>
-                <div class="flex flex-wrap gap-3">
-                    @foreach($birthdayLearners as $learner)
-                        <div class="flex min-w-0 flex-col gap-3 rounded-2xl bg-white/85 px-4 py-3 shadow-sm ring-1 ring-white">
-                            <div class="flex min-w-0 items-center gap-3">
-                                @if($learner->photo)
-                                    <img src="{{ asset('storage/' . $learner->photo) }}" alt="{{ $learner->name }}" class="h-12 w-12 rounded-2xl object-cover">
-                                @else
-                                    <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-amber-100 text-lg font-black text-amber-700">
-                                        {{ strtoupper(substr($learner->name, 0, 1)) }}
-                                    </div>
-                                @endif
-                                <div class="min-w-0">
-                                    <p class="break-words text-sm font-black text-gray-900">{{ $learner->name }}</p>
-                                    <p class="text-xs font-semibold text-gray-500">
-                                        {{ $learner->class?->display_name ?? 'No class' }}
-                                        @if($learner->age)
-                                            <span class="text-amber-700">| {{ $learner->age }} today</span>
-                                        @endif
-                                    </p>
+                <span class="rounded-full bg-white px-3 py-1 text-sm font-bold text-amber-800 shadow-sm">
+                    {{ now()->format('M j') }}
+                </span>
+            </div>
+
+            <div class="divide-y divide-gray-100">
+                @foreach($birthdayLearners as $learner)
+                    @php($existingGreeting = auth()->user()->isAdmin() ? $birthdayGreetings->get($learner->id) : null)
+                    <div class="flex flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-5">
+                        <div class="flex min-w-0 items-center gap-3">
+                            @if($learner->photo)
+                                <img src="{{ asset('storage/' . $learner->photo) }}" alt="" class="h-11 w-11 shrink-0 rounded-full object-cover ring-2 ring-amber-100">
+                            @else
+                                <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-amber-100 text-lg font-black text-amber-800">
+                                    {{ strtoupper(substr($learner->name, 0, 1)) }}
                                 </div>
+                            @endif
+                            <div class="min-w-0">
+                                <p class="truncate text-sm font-bold text-gray-900">{{ $learner->name }}</p>
+                                <p class="text-xs text-gray-500">
+                                    {{ $learner->class?->display_name ?? 'No class' }}
+                                    @if($learner->age)
+                                        <span class="font-semibold text-amber-700">· turning {{ $learner->age }}</span>
+                                    @endif
+                                </p>
                             </div>
-                            @if(auth()->user()->isAdmin())
-                                @php($existingGreeting = $birthdayGreetings->get($learner->id))
-                                @if($existingGreeting)
-                                    <div class="mt-3 rounded-xl bg-emerald-50 p-3 text-sm">
-                                        <p class="font-bold text-emerald-800">Greeting posted</p>
-                                        <p class="mt-1 text-gray-600">
-                                            SMS: {{ match($existingGreeting->sms_status) {
-                                                'sent' => 'accepted by Robase',
-                                                'failed' => 'rejected by Robase',
-                                                'unknown' => 'delivery unconfirmed',
-                                                'pending' => 'processing',
-                                                default => 'not requested',
-                                            } }}
-                                        </p>
-                                        <a href="{{ route('admin.birthday-greetings.show', $existingGreeting) }}" class="mt-2 inline-block font-bold text-blue-700 hover:underline">
-                                            View greeting and delivery details
-                                        </a>
-                                    </div>
-                                @else
-                                    <form method="POST" action="{{ route('admin.birthday-greetings.store', $learner) }}" class="mt-3 w-full space-y-3 border-t border-gray-100 pt-3">
+                        </div>
+
+                        @if(auth()->user()->isAdmin())
+                            @if($existingGreeting)
+                                <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
+                                    <span class="font-bold text-emerald-700">Greeting posted</span>
+                                    <span class="text-gray-500">
+                                        SMS: {{ match($existingGreeting->sms_status) {
+                                            'sent' => 'accepted by Robase',
+                                            'failed' => 'rejected by Robase',
+                                            'unknown' => 'delivery unconfirmed',
+                                            'pending' => 'processing',
+                                            default => 'not requested',
+                                        } }}
+                                    </span>
+                                    <a href="{{ route('admin.birthday-greetings.show', $existingGreeting) }}" class="font-bold text-blue-700 hover:underline">
+                                        View details
+                                    </a>
+                                </div>
+                            @else
+                                <details class="relative w-full sm:w-auto" @if($errors->has('message.' . $learner->id) || $errors->has('channels.' . $learner->id)) open @endif>
+                                    <summary class="cursor-pointer list-none rounded-lg border border-amber-200 px-3 py-2 text-center text-sm font-bold text-amber-800 transition hover:bg-amber-50 sm:min-w-36">
+                                        Prepare greeting
+                                    </summary>
+                                    <form method="POST" action="{{ route('admin.birthday-greetings.store', $learner) }}" class="mt-3 w-full max-w-[calc(100vw-2rem)] space-y-3 rounded-xl border border-gray-200 bg-gray-50 p-4 sm:absolute sm:right-0 sm:top-full sm:z-20 sm:w-96 sm:shadow-xl">
                                         @csrf
                                         <label class="block text-xs font-bold text-gray-700">
-                                            Birthday message
-                                            <textarea name="message[{{ $learner->id }}]" rows="3" maxlength="1000" required class="mt-1 w-full rounded-lg border-gray-300 text-sm shadow-sm focus:border-amber-500 focus:ring-amber-500">{{ old('message.' . $learner->id, 'Happy Birthday, ' . $learner->name . '! Wishing you a joyful day and a wonderful year ahead.') }}</textarea>
+                                            Message preview
+                                            <textarea name="message[{{ $learner->id }}]" rows="3" maxlength="1000" required class="mt-1 w-full rounded-lg border-gray-300 bg-white text-sm shadow-sm focus:border-amber-500 focus:ring-amber-500">{{ old('message.' . $learner->id, 'Happy Birthday, ' . $learner->name . '! Wishing you a joyful day and a wonderful year ahead.') }}</textarea>
                                         </label>
                                         @if($errors->has('message.' . $learner->id))
                                             <p class="text-xs font-semibold text-red-600">{{ $errors->first('message.' . $learner->id) }}</p>
                                         @endif
                                         @if($learner->birthday_guardian_phone)
-                                            <p class="text-xs text-gray-500">Guardian: {{ $learner->birthday_guardian_phone }}</p>
-                                            <label class="flex items-start gap-2 text-xs text-gray-700">
-                                                <input type="checkbox" name="send_sms[{{ $learner->id }}]" value="1" @checked(old('send_sms.' . $learner->id)) class="mt-0.5 rounded border-gray-300 text-amber-600">
+                                            <p class="text-xs text-gray-600">Guardian: {{ $learner->birthday_guardian_phone }}</p>
+                                            <label class="flex items-center gap-2 text-sm text-gray-700">
+                                                <input type="checkbox" name="send_sms[{{ $learner->id }}]" value="1" @checked(old('send_sms.' . $learner->id)) class="rounded border-gray-300 text-amber-600">
                                                 <span>Send SMS through Robase</span>
                                             </label>
-                                            <label class="flex items-start gap-2 text-xs text-gray-700">
-                                                <input type="checkbox" name="open_whatsapp[{{ $learner->id }}]" value="1" @checked(old('open_whatsapp.' . $learner->id)) class="mt-0.5 rounded border-gray-300 text-green-600">
-                                                <span>Prepare WhatsApp draft for the guardian</span>
+                                            <label class="flex items-center gap-2 text-sm text-gray-700">
+                                                <input type="checkbox" name="open_whatsapp[{{ $learner->id }}]" value="1" @checked(old('open_whatsapp.' . $learner->id)) class="rounded border-gray-300 text-green-600">
+                                                <span>Prepare WhatsApp draft</span>
                                             </label>
                                             @if($errors->has('channels.' . $learner->id))
                                                 <p class="text-xs font-semibold text-red-600">{{ $errors->first('channels.' . $learner->id) }}</p>
                                             @endif
                                         @else
-                                            <p class="text-xs text-amber-700">No guardian phone is saved. You can still post the dashboard greeting.</p>
+                                            <p class="text-xs text-amber-700">No guardian phone is saved. The dashboard greeting can still be posted.</p>
                                         @endif
-                                        <p class="text-xs text-gray-500">The dashboard greeting expires in seven days and ends with “— Cambridge International School”.</p>
-                                        <button type="submit" class="rounded-lg bg-amber-600 px-4 py-2 text-xs font-black text-white hover:bg-amber-700">
+                                        <p class="text-xs text-gray-500">Shown to the learner for seven days. The message will end with “— Cambridge International School”.</p>
+                                        <button type="submit" class="w-full rounded-lg bg-amber-600 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-amber-700">
                                             Post birthday greeting
                                         </button>
                                     </form>
-                                @endif
+                                </details>
                             @endif
-                        </div>
-                    @endforeach
-                </div>
+                        @endif
+                    </div>
+                @endforeach
             </div>
-        </div>
+        </section>
     @endif
 
     <!-- Form Teacher Banner -->
