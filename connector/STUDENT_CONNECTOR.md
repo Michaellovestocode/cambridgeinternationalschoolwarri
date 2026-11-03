@@ -12,6 +12,8 @@ One student connector process polls each configured Realand clock in turn. The l
 
 `MinEventDate` in `student-devices.csv` (or `MIN_EVENT_DATE` in `.env.student` when the CSV value is blank) is optional. Leave it blank to process all stored punches, or use exactly `yyyy-MM-dd` (for example, `2026-09-01`). An invalid value stops the connector before it reads punches.
 
+To backfill punches already on the clocks, set `RECOVER_ALL_RECORDS_ONCE=true` in `.env.student` and start the connector. It reads each clock's full stored history once, falls back to unread punches if the SDK returns no full-history records, applies the same minimum-date filter, queues eligible punches durably, and then uploads/retries them. A read returning no records is retried rather than marked complete. Each reader is marked complete only after records are retrieved and the queue is saved. Leave the setting enabled for normal restarts; the persisted marker prevents rescanning. Set `EXIT_AFTER_RECOVERY=true` to have the connector stop after all queued punches are uploaded. Do not delete the state files during recovery.
+
 The connector saves each clock's retry queue separately. It keeps the old `student-connector-state.json` for receiver 00002 so existing deduplication history and pending punches stay intact. Keep all state files beside the connector; do not delete them during normal operation.
 
 If `student-devices.csv` is absent, the connector falls back to the existing one-reader `.env.student` configuration and receiver 00002.

@@ -30,6 +30,7 @@ use App\Http\Controllers\GalleryAccessController;
 use App\Http\Controllers\HomepageNoticeController;
 use App\Http\Controllers\TeacherLearnerController;
 use App\Http\Controllers\DevelopmentalReportController;
+use App\Http\Controllers\BirthdayGreetingController;
 use App\Http\Controllers\ClinicController;
 use App\Models\Announcement;
 use App\Models\GalleryAlbum;
@@ -300,6 +301,13 @@ Route::middleware('auth')->group(function () {
             
             // Admin-only routes
             Route::middleware('role:admin')->group(function () {
+                Route::post('/birthday-greetings/{student}', [BirthdayGreetingController::class, 'store'])
+                    ->name('birthday-greetings.store');
+                Route::post('/birthday-greetings/{birthdayGreeting}/retry-sms', [BirthdayGreetingController::class, 'retrySms'])
+                    ->name('birthday-greetings.retry-sms');
+                Route::get('/birthday-greetings/{birthdayGreeting}', [BirthdayGreetingController::class, 'show'])
+                    ->name('birthday-greetings.show');
+
                 // Academic Sessions & Terms Management
                 Route::get('/academic-sessions', [AdminController::class, 'academicSessions'])->name('academic-sessions.index');
                 Route::post('/academic-sessions', [AdminController::class, 'storeAcademicSession'])->name('academic-sessions.store');

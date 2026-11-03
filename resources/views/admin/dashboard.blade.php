@@ -136,23 +136,76 @@
                 </div>
                 <div class="flex flex-wrap gap-3">
                     @foreach($birthdayLearners as $learner)
-                        <div class="flex min-w-0 items-center gap-3 rounded-2xl bg-white/85 px-4 py-3 shadow-sm ring-1 ring-white">
-                            @if($learner->photo)
-                                <img src="{{ asset('storage/' . $learner->photo) }}" alt="{{ $learner->name }}" class="h-12 w-12 rounded-2xl object-cover">
-                            @else
-                                <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-amber-100 text-lg font-black text-amber-700">
-                                    {{ strtoupper(substr($learner->name, 0, 1)) }}
+                        <div class="flex min-w-0 flex-col gap-3 rounded-2xl bg-white/85 px-4 py-3 shadow-sm ring-1 ring-white">
+                            <div class="flex min-w-0 items-center gap-3">
+                                @if($learner->photo)
+                                    <img src="{{ asset('storage/' . $learner->photo) }}" alt="{{ $learner->name }}" class="h-12 w-12 rounded-2xl object-cover">
+                                @else
+                                    <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-amber-100 text-lg font-black text-amber-700">
+                                        {{ strtoupper(substr($learner->name, 0, 1)) }}
+                                    </div>
+                                @endif
+                                <div class="min-w-0">
+                                    <p class="break-words text-sm font-black text-gray-900">{{ $learner->name }}</p>
+                                    <p class="text-xs font-semibold text-gray-500">
+                                        {{ $learner->class?->display_name ?? 'No class' }}
+                                        @if($learner->age)
+                                            <span class="text-amber-700">| {{ $learner->age }} today</span>
+                                        @endif
+                                    </p>
                                 </div>
-                            @endif
-                            <div class="min-w-0">
-                                <p class="break-words text-sm font-black text-gray-900">{{ $learner->name }}</p>
-                                <p class="text-xs font-semibold text-gray-500">
-                                    {{ $learner->class?->display_name ?? 'No class' }}
-                                    @if($learner->age)
-                                        <span class="text-amber-700">| {{ $learner->age }} today</span>
-                                    @endif
-                                </p>
                             </div>
+                            @if(auth()->user()->isAdmin())
+                                @php($existingGreeting = $birthdayGreetings->get($learner->id))
+                                @if($existingGreeting)
+                                    <div class="mt-3 rounded-xl bg-emerald-50 p-3 text-sm">
+                                        <p class="font-bold text-emerald-800">Greeting posted</p>
+                                        <p class="mt-1 text-gray-600">
+                                            SMS: {{ match($existingGreeting->sms_status) {
+                                                'sent' => 'accepted by Robase',
+                                                'failed' => 'rejected by Robase',
+                                                'unknown' => 'delivery unconfirmed',
+                                                'pending' => 'processing',
+                                                default => 'not requested',
+                                            } }}
+                                        </p>
+                                        <a href="{{ route('admin.birthday-greetings.show', $existingGreeting) }}" class="mt-2 inline-block font-bold text-blue-700 hover:underline">
+                                            View greeting and delivery details
+                                        </a>
+                                    </div>
+                                @else
+                                    <form method="POST" action="{{ route('admin.birthday-greetings.store', $learner) }}" class="mt-3 w-full space-y-3 border-t border-gray-100 pt-3">
+                                        @csrf
+                                        <label class="block text-xs font-bold text-gray-700">
+                                            Birthday message
+                                            <textarea name="message[{{ $learner->id }}]" rows="3" maxlength="1000" required class="mt-1 w-full rounded-lg border-gray-300 text-sm shadow-sm focus:border-amber-500 focus:ring-amber-500">{{ old('message.' . $learner->id, 'Happy Birthday, ' . $learner->name . '! Wishing you a joyful day and a wonderful year ahead.') }}</textarea>
+                                        </label>
+                                        @if($errors->has('message.' . $learner->id))
+                                            <p class="text-xs font-semibold text-red-600">{{ $errors->first('message.' . $learner->id) }}</p>
+                                        @endif
+                                        @if($learner->birthday_guardian_phone)
+                                            <p class="text-xs text-gray-500">Guardian: {{ $learner->birthday_guardian_phone }}</p>
+                                            <label class="flex items-start gap-2 text-xs text-gray-700">
+                                                <input type="checkbox" name="send_sms[{{ $learner->id }}]" value="1" @checked(old('send_sms.' . $learner->id)) class="mt-0.5 rounded border-gray-300 text-amber-600">
+                                                <span>Send SMS through Robase</span>
+                                            </label>
+                                            <label class="flex items-start gap-2 text-xs text-gray-700">
+                                                <input type="checkbox" name="open_whatsapp[{{ $learner->id }}]" value="1" @checked(old('open_whatsapp.' . $learner->id)) class="mt-0.5 rounded border-gray-300 text-green-600">
+                                                <span>Prepare WhatsApp draft for the guardian</span>
+                                            </label>
+                                            @if($errors->has('channels.' . $learner->id))
+                                                <p class="text-xs font-semibold text-red-600">{{ $errors->first('channels.' . $learner->id) }}</p>
+                                            @endif
+                                        @else
+                                            <p class="text-xs text-amber-700">No guardian phone is saved. You can still post the dashboard greeting.</p>
+                                        @endif
+                                        <p class="text-xs text-gray-500">The dashboard greeting expires in seven days and ends with “— Cambridge International School”.</p>
+                                        <button type="submit" class="rounded-lg bg-amber-600 px-4 py-2 text-xs font-black text-white hover:bg-amber-700">
+                                            Post birthday greeting
+                                        </button>
+                                    </form>
+                                @endif
+                            @endif
                         </div>
                     @endforeach
                 </div>

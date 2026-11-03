@@ -24,9 +24,10 @@ function Load-State($path) {
         return @{
             sent = @($loaded.sent | ForEach-Object { [string]$_ })
             pending = @($loaded.pending | ForEach-Object { $_ })
+            recoveryCompleted = [bool]$loaded.recoveryCompleted
         }
     }
-    return @{ sent = @(); pending = @() }
+    return @{ sent = @(); pending = @(); recoveryCompleted = $false }
 }
 
 function Get-ReceiverUrl($baseUrl, $receiverSn) {
@@ -119,6 +120,8 @@ if (-not (Test-Path -LiteralPath $apiPath) -or -not (Test-Path -LiteralPath $dev
 [Reflection.Assembly]::LoadFrom($devicesPath) | Out-Null
 
 $pollSeconds = if ($settings.POLL_SECONDS) { [Math]::Max(1, [int]$settings.POLL_SECONDS) } else { 5 }
+$recoverAllRecords = [string]$settings.RECOVER_ALL_RECORDS_ONCE -match '^(true|1|yes)$'
+$exitAfterRecovery = [string]$settings.EXIT_AFTER_RECOVERY -match '^(true|1|yes)$'
 $readerStates = @{}
 foreach ($reader in $devices) {
     $receiverSn = [string]$reader.ReceiverSN
@@ -143,6 +146,7 @@ while ($true) {
         $receiverSn = [string]$reader.ReceiverSN
         $readerState = $readerStates[$receiverSn]
         $state = $readerState.state
+        $recovering = $recoverAllRecords -and -not $state.recoveryCompleted
         try {
             $device = New-Object RealandAPI.ZDC2911Finger
             $device.Communication = 1
@@ -155,8 +159,27 @@ while ($true) {
                 $connected = $device.OpenCommunication()
                 if (-not $connected) { throw "SDK could not open $($reader.Name)." }
                 $dates = [Collections.Generic.List[DateTime]]::new()
-                $records = $device.GetNewlyRecords($dates)
+                $recoverySource = 'full history'
+                if ($recovering) {
+                    try {
+                        $records = @($device.GetAllRecords($dates))
+                    } catch {
+                        Write-Warning "$($reader.Name) full-history read failed; trying unread punches: $($_.Exception.Message)"
+                        $records = @()
+                    }
+                    if ($records.Count -eq 0) {
+                        $recoverySource = 'unread punches'
+                        $dates = [Collections.Generic.List[DateTime]]::new()
+                        $records = @($device.GetNewlyRecords($dates))
+                    }
+                    if ($records.Count -eq 0) {
+                        throw "Both full-history and unread-punch reads returned no records for $($reader.Name); recovery will retry on the next poll."
+                    }
+                } else {
+                    $records = @($device.GetNewlyRecords($dates))
+                }
                 $minimumDate = $minimumDates[$receiverSn]
+                $queuedCount = 0
                 foreach ($record in @($records)) {
                     if ($minimumDate -and $record.Clock.Date -lt $minimumDate) { continue }
                     $enrollId = [string]$record.DIN
@@ -172,8 +195,13 @@ while ($true) {
                         action = $action
                     }
                     $readerState.pendingIds.Add($eventId) | Out-Null
+                    $queuedCount++
                 }
-                if (@($state.pending).Count -gt 0) { Save-State $readerState.path $state }
+                if ($recovering) {
+                    $state.recoveryCompleted = $true
+                    Write-Host "Recovery read $(@($records).Count) records from $($reader.Name) via $recoverySource; queued $queuedCount eligible punches."
+                }
+                if (@($state.pending).Count -gt 0 -or $recovering) { Save-State $readerState.path $state }
             } finally {
                 if ($connected) { $device.CloseCommunication() }
             }
@@ -196,6 +224,19 @@ while ($true) {
             }
         }
         $readerState.state = $state
+    }
+    if ($recoverAllRecords -and $exitAfterRecovery) {
+        $allRecoveryComplete = $true
+        $hasPendingRecords = $false
+        foreach ($configuredReader in $devices) {
+            $configuredState = $readerStates[[string]$configuredReader.ReceiverSN].state
+            if (-not $configuredState.recoveryCompleted) { $allRecoveryComplete = $false }
+            if (@($configuredState.pending).Count -gt 0) { $hasPendingRecords = $true }
+        }
+        if ($allRecoveryComplete -and -not $hasPendingRecords) {
+            Write-Host 'One-time full-history recovery completed and all queued punches were uploaded.'
+            break
+        }
     }
     Start-Sleep -Seconds $pollSeconds
 }

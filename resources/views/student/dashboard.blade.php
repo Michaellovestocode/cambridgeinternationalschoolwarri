@@ -68,6 +68,18 @@
         </div>
     </div>
 
+    @if(($birthdayGreetings ?? collect())->isNotEmpty())
+        @foreach($birthdayGreetings as $birthdayGreeting)
+            <section class="rounded-2xl border border-amber-200 bg-gradient-to-r from-amber-50 via-pink-50 to-white p-5 shadow-sm" aria-label="Birthday greeting">
+                <p class="text-xs font-black uppercase tracking-widest text-amber-700">A message from Cambridge</p>
+                <p class="mt-2 whitespace-pre-line text-lg font-semibold text-gray-800">{{ $birthdayGreeting->message }}</p>
+                <p class="mt-3 text-xs text-gray-500">
+                    This greeting will be shown until {{ $birthdayGreeting->expires_at->format('M j') }}.
+                </p>
+            </section>
+        @endforeach
+    @endif
+
     <!-- Learner Quick Access -->
     <div class="bg-white rounded-2xl shadow-lg p-4 md:p-6">
         <div class="flex items-center justify-between mb-4 md:mb-5">

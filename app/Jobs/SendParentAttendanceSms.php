@@ -10,9 +10,7 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Http;
-use libphonenumber\PhoneNumberUtil;
-use libphonenumber\PhoneNumberFormat;
+use App\Services\RobaseSmsService;
 
 class SendParentAttendanceSms implements ShouldQueue
 {
@@ -66,8 +64,9 @@ class SendParentAttendanceSms implements ShouldQueue
         }
 
         $recipients = [];
+        $sms = app(RobaseSmsService::class);
         foreach ($rawNumbers as $raw) {
-            $to = $this->formatToE164((string) $raw);
+            $to = $sms->normalizeNigerianPhone((string) $raw);
             if (! $to) {
                 Log::warning('Attendance SMS skipped: guardian phone is invalid.', ['student_id' => $student->id, 'record_id' => $record->id]);
                 continue;
@@ -84,18 +83,8 @@ class SendParentAttendanceSms implements ShouldQueue
             return;
         }
 
-        $url = rtrim((string) config('services.robase.base_url', 'https://api.robase.dev'), '/') . '/v1/sms/send';
-        $sender = config('services.robase.sender');
         foreach ($recipients as $to) {
-            $payload = [
-                'phone_number' => $to,
-                'message' => $body,
-            ];
-            if (filled($sender)) {
-                $payload['sender'] = $sender;
-            }
-
-            $response = Http::withToken($apiKey)->acceptJson()->asJson()->timeout(15)->post($url, $payload);
+            $response = $sms->send($to, $body);
             if (! $response->successful()) {
                 Log::warning('Robase attendance SMS failed; queue will retry.', [
                     'student_id' => $student->id,
@@ -112,36 +101,6 @@ class SendParentAttendanceSms implements ShouldQueue
             ]);
         }
     }
-    private function formatToE164(string $raw): ?string
-    {
-        $raw = trim($raw);
-        if ($raw === '') {
-            return null;
-        }
-        if (class_exists('\\libphonenumber\\PhoneNumberUtil')) {
-            try {
-                $util = \libphonenumber\PhoneNumberUtil::getInstance();
-                $parsed = $util->parse($raw, 'NG');
-                if ($util->isValidNumber($parsed)) {
-                    return $util->format($parsed, \libphonenumber\PhoneNumberFormat::E164);
-                }
-            } catch (\Throwable) {
-                // Apply strict Nigerian-format fallback below.
-            }
-        }
-        $digits = preg_replace('/\\D+/', '', $raw);
-        if (preg_match('/^0[789]\\d{9}$/', $digits)) {
-            return '+234' . substr($digits, 1);
-        }
-        if (preg_match('/^234[789]\\d{9}$/', $digits)) {
-            return '+' . $digits;
-        }
-        if (preg_match('/^[789]\\d{9}$/', $digits)) {
-            return '+234' . $digits;
-        }
-        return null;
-    }
-
     public function failed(\Throwable $exception): void
     {
         Log::error('Attendance SMS failed after queue retries.', [

@@ -9,6 +9,7 @@ use App\Models\LearningAttempt;
 use App\Models\LearningSession;
 use App\Models\ReportCard;
 use App\Models\DevelopmentalReport;
+use App\Models\BirthdayGreeting;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Log;
 use App\Services\CbtReportCardSyncService;
@@ -97,6 +98,11 @@ class StudentController extends Controller
             ->take(6)
             ->get();
 
+        $birthdayGreetings = BirthdayGreeting::where('student_id', $student->id)
+            ->where('expires_at', '>', now())
+            ->latest()
+            ->get();
+
         return view('student.dashboard', compact(
             'availableExams',
             'completedAttempts',
@@ -104,7 +110,8 @@ class StudentController extends Controller
             'availableLearningSessions',
             'completedLearningAttempts',
             'reportCards',
-            'developmentalReports'
+            'developmentalReports',
+            'birthdayGreetings'
         ));
     }
 

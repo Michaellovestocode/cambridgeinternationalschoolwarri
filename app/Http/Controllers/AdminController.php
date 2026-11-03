@@ -17,6 +17,7 @@ use App\Models\Term;
 use App\Models\AdmissionEnquiry;
 use App\Models\ParentFeedback;
 use App\Models\FormTeacher;
+use App\Models\BirthdayGreeting;
 use App\Models\Message;
 use App\Services\CbtReportCardSyncService;
 use Illuminate\Http\Request;
@@ -117,10 +118,11 @@ class AdminController extends Controller
             : 0;
 
         $birthdayLearners = collect();
+        $birthdayGreetings = collect();
         $today = now();
 
         if ($user->isAdmin() || $isFormTeacher) {
-            $birthdayLearners = User::with('class')
+            $birthdayLearners = User::with(['class', 'parents'])
                 ->where('role', 'student')
                 ->whereNotNull('date_of_birth')
                 ->whereMonth('date_of_birth', $today->month)
@@ -130,6 +132,21 @@ class AdminController extends Controller
                 })
                 ->orderBy('name')
                 ->get();
+            $birthdayLearners->each(function (User $learner) {
+                $linkedGuardianPhone = $learner->parents
+                    ->map(fn (User $parent) => $parent->parent_phone_number ?: $parent->whatsapp_number)
+                    ->filter()
+                    ->first();
+
+                $learner->birthday_guardian_phone = $learner->parent_phone_number
+                    ?: ($learner->whatsapp_number ?: $linkedGuardianPhone);
+            });
+        }
+        if ($user->isAdmin() && $birthdayLearners->isNotEmpty()) {
+            $birthdayGreetings = BirthdayGreeting::whereIn('student_id', $birthdayLearners->pluck('id'))
+                ->whereDate('greeting_date', $today->toDateString())
+                ->get()
+                ->keyBy('student_id');
         }
 
         $newEnquiriesCount = AdmissionEnquiry::where('status', AdmissionEnquiry::STATUS_NEW)->count();
@@ -157,7 +174,8 @@ class AdminController extends Controller
             'teachingClasses',
             'assignedSubjectCount',
             'canUsePaperScores',
-            'birthdayLearners'
+            'birthdayLearners',
+            'birthdayGreetings'
         ));
     }
 
