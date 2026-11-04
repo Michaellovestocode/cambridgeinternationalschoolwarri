@@ -44,7 +44,7 @@ class SendParentAttendanceSms implements ShouldQueue
             : ($record->check_out_at?->format('g:i A') ?? now()->format('g:i A'));
         $date = $record->attendance_date?->format('M j, Y') ?? now()->format('M j, Y');
         $action = $this->eventType === 'checkin' ? 'checked in' : 'checked out';
-        $body = "{$student->name} {$action} at {$time} on {$date}.";
+        $body = "Cambridge: {$student->name} {$action} at {$time} on {$date}.";
 
         // Learner guardian number first; linked parent accounts are fallback.
         $rawNumbers = [];
