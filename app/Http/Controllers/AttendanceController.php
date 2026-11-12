@@ -82,7 +82,29 @@ class AttendanceController extends Controller
         ]);
         $direction = strtolower((string) ($validated['direction'] ?? ''));
 
+        // Honor an explicit machine direction; otherwise infer checkout when a
+        // clock-in exists without a clock-out for this attendance date.
+        $isOut = $direction === 'out'
+            ? ! $record->check_out_at
+            : ($direction === 'in' ? false : $record->check_in_at && ! $record->check_out_at);
+
         if ($record->exists && $record->source === 'manual') {
+            $updatedManualRecord = false;
+            $shouldFillClockOut = $direction === 'out' || ($direction === '' && $isOut);
+            if ($shouldFillClockOut && ! $record->check_out_at) {
+                $record->fill([
+                    'check_out_at' => $punchedAt,
+                    'departure_status' => $this->departureStatusFor($user, $punchedAt),
+                ])->save();
+                $updatedManualRecord = true;
+            } elseif (! $shouldFillClockOut && $direction !== 'out' && ! $record->check_in_at) {
+                $record->fill([
+                    'check_in_at' => $punchedAt,
+                    'arrival_status' => $this->arrivalStatusFor($user, $punchedAt),
+                ])->save();
+                $updatedManualRecord = true;
+            }
+
             StaffAttendanceEvent::create([
                 'user_id' => $user->id,
                 'machine_id' => $validated['device_id'],
@@ -94,7 +116,13 @@ class AttendanceController extends Controller
                 'attendance_record_id' => $record->id,
             ]);
 
-            return response()->json(['ok' => true, 'manual_record_preserved' => true, 'user' => $user->name, 'event_id' => $eventId]);
+            return response()->json([
+                'ok' => true,
+                'manual_record_preserved' => true,
+                'attendance_updated' => $updatedManualRecord,
+                'user' => $user->name,
+                'event_id' => $eventId,
+            ]);
         }
 
         if ($record->check_in_at && ! $record->check_out_at && abs($punchedAt->diffInSeconds($record->check_in_at)) < 1200) {
@@ -106,13 +134,6 @@ class AttendanceController extends Controller
                 'event_id' => $eventId,
             ]);
         }
-
-        // The connector supplies a direction when the machine knows it.  Honor it
-        // instead of relying solely on punch order, since queued machine events can
-        // be delivered after the day they occurred.
-        $isOut = $direction === 'out'
-            ? ! $record->check_out_at
-            : ($direction === 'in' ? false : $record->check_in_at && ! $record->check_out_at);
 
         if ($isOut) {
             $record->fill([
