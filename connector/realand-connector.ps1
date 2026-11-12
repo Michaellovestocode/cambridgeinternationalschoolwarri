@@ -46,10 +46,14 @@ $state = if (Test-Path $statePath) { Get-Content $statePath -Raw | ConvertFrom-J
 if (-not ($state.PSObject.Properties.Name -contains 'pending')) {
     $state | Add-Member -NotePropertyName pending -NotePropertyValue @()
 }
+if (-not ($state.PSObject.Properties.Name -contains 'recoveryCompleted')) {
+    $state | Add-Member -NotePropertyName recoveryCompleted -NotePropertyValue $false
+}
 $sent = [Collections.Generic.HashSet[string]]::new([string[]]@($state.sent))
 $pendingIds = [Collections.Generic.HashSet[string]]::new([string[]]@(@($state.pending | ForEach-Object { [string]$_.event_id })))
 $minimumDate = if ($settings.MIN_EVENT_DATE) { [DateTime]::ParseExact($settings.MIN_EVENT_DATE, 'yyyy-MM-dd', $null).Date } else { $null }
 $pollSeconds = if ($settings.POLL_SECONDS) { [int]$settings.POLL_SECONDS } else { 5 }
+$recoverAllRecords = [string]$settings.RECOVER_ALL_RECORDS_ONCE -match '^(true|1|yes)$'
 Write-Host "F-G495 staff connector started for $($settings.F495_IP):$($settings.F495_PORT). Pending uploads are saved locally and retried. Press Ctrl+C to stop."
 
 while ($true) {
@@ -64,7 +68,44 @@ while ($true) {
         $connected = $device.OpenCommunication()
         if (-not $connected) { throw 'Realand SDK could not open the F-G495 connection.' }
         $dates = [Collections.Generic.List[DateTime]]::new()
-        $records = $device.GetNewlyRecords($dates)
+        $recovering = $recoverAllRecords -and -not $state.recoveryCompleted
+        if ($recovering) {
+            try {
+                $records = @($device.GetAllRecords($dates))
+            } catch {
+                Write-Warning "Full-history read failed; trying the SDK general-log reader: $($_.Exception.Message)"
+                $records = @()
+            }
+            if ($records.Count -eq 0) {
+                try {
+                    $dates = [Collections.Generic.List[DateTime]]::new()
+                    if (-not $device.ReadAllGLogData($dates)) {
+                        throw 'SDK general-log read returned false.'
+                    }
+                    $records = [Collections.Generic.List[object]]::new()
+                    $sdkRecord = New-Object RealandAPI.Record
+                    while ($device.GetAllGLogDataO($sdkRecord)) {
+                        $records.Add([pscustomobject]@{
+                            DIN = $sdkRecord.DIN
+                            Clock = $sdkRecord.Clock
+                            Action = $sdkRecord.Action
+                        })
+                    }
+                } catch {
+                    Write-Warning "SDK general-log read failed; trying unread punches: $($_.Exception.Message)"
+                    $records = @()
+                }
+            }
+            if ($records.Count -eq 0) {
+                $dates = [Collections.Generic.List[DateTime]]::new()
+                $records = @($device.GetNewlyRecords($dates))
+            }
+            if ($records.Count -eq 0) {
+                throw 'All-history, SDK general-log, and unread-punch reads returned no records; recovery will retry on the next poll.'
+            }
+        } else {
+            $records = @($device.GetNewlyRecords($dates))
+        }
         foreach ($record in @($records)) {
             $timestamp = $record.Clock.ToString('yyyy-MM-dd HH:mm:ss')
             if ($minimumDate -and $record.Clock.Date -lt $minimumDate) { continue }
@@ -82,7 +123,11 @@ while ($true) {
             }
             $pendingIds.Add($eventId) | Out-Null
         }
-        if (@($state.pending).Count -gt 0) { Save-State $statePath $state }
+        if ($recovering) {
+            $state.recoveryCompleted = $true
+            Write-Host "Recovery read $($records.Count) records; queued eligible punches."
+        }
+        if (@($state.pending).Count -gt 0 -or $recovering) { Save-State $statePath $state }
     } catch {
         Write-Warning "Machine sync failed: $($_.Exception.Message)"
     } finally {

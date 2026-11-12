@@ -15,4 +15,6 @@ This connector reads staff attendance from the Realand F-G495 through the instal
 
 The F-G495 and this laptop must be connected to the same router, Ethernet network, or phone hotspot. The laptop also needs internet access to upload records. If the website/network connection drops, punches already read from the device are saved in `connector-state.json` and retried automatically. Keep that file with the connector and do not delete it; it tracks sent and pending punches and prevents duplicate uploads.
 
+The normal staff connector reads newly available punches only. To backfill punches still stored on the clock, stop the connector, set `RECOVER_ALL_RECORDS_ONCE=true` in `.env`, and start it again. It reads the clock's full history once, applies `MIN_EVENT_DATE` if configured, saves eligible punches to the local queue, and uploads/retries them. If the SDK's full-history method fails or returns no records, it tries the SDK general-log reader, then unread punches. The completion marker is saved in `connector-state.json`; leave the setting enabled for normal restarts and do not delete the state file. A recovery read returning no records is retried on the next poll.
+
 Do not copy the laptop's `.env` into GitHub or share it. The website key is private.
