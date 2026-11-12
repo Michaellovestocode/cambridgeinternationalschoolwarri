@@ -18,7 +18,7 @@
     </div>
     <div class="overflow-x-auto rounded-2xl bg-white shadow-xl">
         <table class="min-w-full text-left text-sm">
-            <thead class="bg-slate-950 text-xs uppercase text-white"><tr><th class="px-4 py-3">Staff</th><th class="px-4 py-3">Machine ID</th><th class="px-4 py-3">Clock in</th><th class="px-4 py-3">Arrival</th><th class="px-4 py-3">Clock out</th><th class="px-4 py-3">Departure</th>{{-- <th class="px-4 py-3">Action</th> --}}</tr></thead>
+            <thead class="bg-slate-950 text-xs uppercase text-white"><tr><th class="px-4 py-3">Staff</th><th class="px-4 py-3">Machine ID</th><th class="px-4 py-3">Clock in</th><th class="px-4 py-3">Arrival</th><th class="px-4 py-3">Clock out</th><th class="px-4 py-3">Departure</th> <th class="px-4 py-3">Action</th> </tr></thead>
             <tbody class="divide-y divide-gray-100">
             @foreach($staff as $person)
                 @php($record = $person->attendanceRecords->first())
