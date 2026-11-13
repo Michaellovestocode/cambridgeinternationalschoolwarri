@@ -118,8 +118,8 @@
     @if($exam->questions->sum('marks') < $exam->total_marks)
     <section class="bg-white rounded-lg shadow p-6" id="bulk-objective-import">
         <div class="mb-4">
-            <h3 class="text-xl font-bold text-gray-800">Paste objective questions in bulk</h3>
-            <p class="mt-1 text-sm text-gray-600">Paste the numbered questions as they are, including A–D choices and “Answer A”. The importer arranges them into editable questions before saving.</p>
+            <h3 class="text-xl font-bold text-gray-800">Upload or paste a complete exam</h3>
+            <p class="mt-1 text-sm text-gray-600">The importer arranges objective questions with answer keys and theory questions with their subparts. Review every question and its marks before saving.</p>
         </div>
 
         @if($errors->has('questions'))
@@ -142,7 +142,7 @@
                         Upload and arrange
                     </button>
                 </div>
-                <p class="mt-2 text-xs text-gray-600">Word (.docx) or UTF-8 text (.txt), up to 10 MB. Questions should be numbered, include A–D choices, and end with “Answer A” (or B, C, D). Check the arranged questions before saving.</p>
+                <p class="mt-2 text-xs text-gray-600">Word (.docx) or UTF-8 text (.txt), up to 10 MB. Use SECTION A for objective questions with A–D choices and answer keys, then SECTION B for theory questions. Questions are reviewed before saving.</p>
                 <p id="objective-document-status" role="status" aria-live="polite" class="mt-2 hidden text-sm"></p>
             </div>
 
@@ -166,7 +166,7 @@
             <div id="objective-question-preview" class="space-y-3"></div>
 
             <button id="save-bulk-objective-questions" type="submit" disabled class="hidden rounded-lg bg-green-600 px-6 py-3 font-bold text-white enabled:hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-50">
-                Save all objective questions
+                Save all arranged questions
             </button>
         </form>
     </section>
@@ -228,40 +228,53 @@
                 card.className = 'rounded-xl border border-gray-200 bg-gray-50 p-4';
                 const legend = document.createElement('legend');
                 legend.className = 'px-2 font-bold text-gray-800';
-                legend.textContent = `Question ${index + 1}`;
+                legend.textContent = `${question.question_type === 'theory' ? 'Theory' : 'Objective'} question ${index + 1}`;
                 card.appendChild(legend);
 
+                const type = document.createElement('input');
+                type.type = 'hidden';
+                type.name = `questions[${index}][question_type]`;
+                type.value = question.question_type || 'multiple_choice';
+                card.appendChild(type);
                 const questionInput = makeInput('Question', `questions[${index}][question_text]`, question.question_text, 'textarea');
                 card.appendChild(questionInput);
 
-                const options = document.createElement('div');
-                options.className = 'mt-3 grid gap-3 md:grid-cols-2';
-                ['A', 'B', 'C', 'D'].forEach((letter) => {
-                    options.appendChild(makeInput(`Option ${letter}`, `questions[${index}][options][${letter}]`, question.options?.[letter]));
-                });
-                card.appendChild(options);
+                if (type.value === 'multiple_choice') {
+                    const options = document.createElement('div');
+                    options.className = 'mt-3 grid gap-3 md:grid-cols-2';
+                    ['A', 'B', 'C', 'D'].forEach((letter) => {
+                        options.appendChild(makeInput(`Option ${letter}`, `questions[${index}][options][${letter}]`, question.options?.[letter]));
+                    });
+                    card.appendChild(options);
 
-                const controls = document.createElement('div');
-                controls.className = 'mt-3 grid gap-3 sm:grid-cols-[1fr,180px]';
-                const answerLabel = document.createElement('label');
-                answerLabel.className = 'block';
-                const answerCaption = document.createElement('span');
-                answerCaption.className = 'mb-1 block text-xs font-bold text-gray-600';
-                answerCaption.textContent = 'Supplied correct answer — please verify';
-                const answer = document.createElement('select');
-                answer.name = `questions[${index}][correct_answer]`;
-                answer.required = true;
-                answer.className = 'w-full rounded-lg border border-gray-300 px-3 py-2 text-sm';
-                ['A', 'B', 'C', 'D'].forEach((letter) => {
-                    const option = document.createElement('option');
-                    option.value = letter;
-                    option.textContent = letter;
-                    option.selected = letter === question.correct_answer;
-                    answer.appendChild(option);
-                });
-                answerLabel.append(answerCaption, answer);
-                controls.append(answerLabel, makeInput('Marks', `questions[${index}][marks]`, question.marks ?? defaultMarks.value, 'number'));
-                card.appendChild(controls);
+                    const answerLabel = document.createElement('label');
+                    answerLabel.className = 'mt-3 block';
+                    const answerCaption = document.createElement('span');
+                    answerCaption.className = 'mb-1 block text-xs font-bold text-gray-600';
+                    answerCaption.textContent = 'Supplied correct answer — please verify';
+                    const answer = document.createElement('select');
+                    answer.name = `questions[${index}][correct_answer]`;
+                    answer.required = true;
+                    answer.className = 'w-full rounded-lg border border-gray-300 px-3 py-2 text-sm';
+                    ['A', 'B', 'C', 'D'].forEach((letter) => {
+                        const option = document.createElement('option');
+                        option.value = letter;
+                        option.textContent = letter;
+                        option.selected = letter === question.correct_answer;
+                        answer.appendChild(option);
+                    });
+                    answerLabel.append(answerCaption, answer);
+                    card.appendChild(answerLabel);
+                } else {
+                    const note = document.createElement('p');
+                    note.className = 'mt-2 text-sm font-semibold text-violet-800';
+                    note.textContent = 'Teacher-marked theory question. Check that section instructions and subparts are included.';
+                    card.appendChild(note);
+                }
+
+                const marks = makeInput('Marks', `questions[${index}][marks]`, question.marks ?? defaultMarks.value, 'number');
+                marks.classList.add('mt-3', 'max-w-[180px]');
+                card.appendChild(marks);
                 preview.appendChild(card);
             });
 
@@ -282,108 +295,111 @@
             }
 
             if (!questions.length) {
-                setStatus('No numbered questions were found. Start each question with a number such as “1.”.', true);
+                setStatus('No objective or theory questions were arranged. Check that the document has SECTION A and SECTION B headings.', true);
                 return;
             }
 
             readyToSave = true;
             saveButton.disabled = false;
             saveButton.classList.remove('hidden');
-            setStatus(`${questions.length} question(s) arranged. Review every question and supplied answer before saving.`);
+            const objectiveCount = questions.filter((question) => question.question_type === 'multiple_choice').length;
+            const theoryCount = questions.length - objectiveCount;
+            setStatus(`${objectiveCount} objective and ${theoryCount} theory question(s) arranged. Review question text, answer keys, subparts, and marks before saving.`);
         };
 
         const parseSource = () => {
-            let text = source.value.replace(/\u00a0/g, ' ').replace(/\r\n?/g, '\n');
-            const theoryStart = text.search(/^[ \t]*SECTION[ \t]+B\b.*$/im);
-            if (theoryStart >= 0) {
-                text = text.slice(0, theoryStart);
-            }
-
-            const starts = [...text.matchAll(/^[ \t]*(\d+)[.)][ \t]*/gm)];
+            const text = source.value.replace(/\u00a0/g, ' ').replace(/\r\n?/g, '\n');
             const issues = [];
             const questions = [];
-            let questionParts;
-
-            if (starts.length) {
-                const preamble = text.slice(0, starts[0].index).trim();
-                if (preamble) issues.push('Text before question 1 could not be assigned to a question.');
-                questionParts = starts.map((start, index) => {
-                    const end = index + 1 < starts.length ? starts[index + 1].index : text.length;
-                    return {
-                        number: start[1],
-                        body: text.slice(start.index + start[0].length, end).replace(/\s+/g, ' ').trim(),
-                    };
-                });
-            } else {
-                questionParts = text.split('\n')
-                    .map((line, index) => ({ number: String(index + 1), body: line.trim() }))
-                    .filter(({ body }) => /\bAnswer\s*[:\-]?\s*\(?\s*[A-D]\s*\)?[.!]?\s*$/i.test(body));
-            }
-
-            if (!questionParts.length) {
-                renderQuestions([], ['No objective questions ending with an answer such as “Answer A” were found.']);
+            const lines = text.split('\n');
+            const sectionA = lines.findIndex((line) => /^\s*SECTION\s+A\b/i.test(line));
+            const sectionB = lines.findIndex((line) => /^\s*SECTION\s+B\b/i.test(line));
+            if (sectionA < 0 || sectionB < 0 || sectionB <= sectionA) {
+                renderQuestions([], ['The document needs SECTION A (objective) followed by SECTION B (theory).']);
                 return;
             }
 
-            questionParts.forEach(({ number, body }) => {
-                const answerMatch = body.match(/\bAnswer\s*[:\-]?\s*\(?\s*([A-D])\s*\)?[.!]?\s*$/i);
-                if (!answerMatch) {
-                    issues.push(`Question ${number}: could not find an ending “Answer A”, “Answer B”, “Answer C”, or “Answer D”.`);
-                    return;
-                }
+            const objectiveLines = lines.slice(sectionA + 1, sectionB).map((line) => line.trim()).filter(Boolean);
+            const answerInstruction = lines[sectionB].replace(/^\s*SECTION\s+B\s*/i, '').trim();
+            const theoryLines = lines.slice(sectionB + 1).map((line) => line.trim()).filter(Boolean);
 
-                const answer = answerMatch[1].toUpperCase();
-                body = body.slice(0, answerMatch.index).trim();
-                const collectMarkers = (pattern) => [...body.matchAll(pattern)].map((match) => ({
-                    letter: (match[1] || match[2]).toUpperCase(),
-                    index: match.index,
-                    end: match.index + match[0].length,
-                }));
-                const findOptionStart = (markers) => {
-                    for (let candidate = 0; candidate <= markers.length - 4; candidate++) {
-                        if (markers.slice(candidate, candidate + 4).map((marker) => marker.letter).join('') === 'ABCD') {
-                            return candidate;
+            let objectiveNumber = 0;
+            objectiveLines.forEach((line) => {
+                if (/^\(?\s*ANSWER\s+ALL\b/i.test(line)) return;
+                // Word documents normally keep each question in its own paragraph.
+                const chunks = [line];
+                chunks.forEach((chunk) => {
+                    const bodyText = chunk.replace(/^\d+\s*[.)]\s*/, '').trim();
+                    if (!/\bAnswer\s*[:\-]?\s*\(?\s*[A-D]\s*\)?[.!]?\s*$/i.test(bodyText)) return;
+                    objectiveNumber++;
+                    const answerMatch = bodyText.match(/\bAnswer\s*[:\-]?\s*\(?\s*([A-D])\s*\)?[.!]?\s*$/i);
+                    const answer = answerMatch[1].toUpperCase();
+                    const body = bodyText.slice(0, answerMatch.index).trim();
+                    const collectMarkers = (pattern) => [...body.matchAll(pattern)].map((match) => ({
+                        letter: (match[1] || match[2]).toUpperCase(),
+                        index: match.index,
+                        end: match.index + match[0].length,
+                    }));
+                    const findOptionStart = (markers) => {
+                        for (let candidate = 0; candidate <= markers.length - 4; candidate++) {
+                            if (markers.slice(candidate, candidate + 4).map((marker) => marker.letter).join('') === 'ABCD') return candidate;
                         }
+                        return -1;
+                    };
+                    let markers = collectMarkers(/\(\s*([A-D])\s*\)|\s+([A-D])\s*\.(?=\s)/g);
+                    let optionStart = findOptionStart(markers);
+                    if (optionStart < 0) {
+                        markers = collectMarkers(/\(\s*([A-D])\s*\)|\s+([A-D])(?:\s*\.)?(?=\s)/g);
+                        optionStart = findOptionStart(markers);
                     }
-                    return -1;
-                };
+                    if (optionStart < 0) {
+                        issues.push(`Objective question ${objectiveNumber}: expected choices labelled A, B, C, and D.`);
+                        return;
+                    }
+                    const choices = markers.slice(optionStart, optionStart + 4);
+                    const questionText = body.slice(0, choices[0].index).replace(/^\s*[.\s]+/, '').trim();
+                    const options = {};
+                    choices.forEach((choice, choiceIndex) => {
+                        const nextIndex = choiceIndex < 3 ? choices[choiceIndex + 1].index : body.length;
+                        options[choice.letter] = body.slice(choice.end, nextIndex).replace(/^[\s.]+|[\s.]+$/g, '').trim();
+                    });
+                    if (!questionText || ['A', 'B', 'C', 'D'].some((letter) => !options[letter])) {
+                        issues.push(`Objective question ${objectiveNumber}: question text or an option is empty.`);
+                        return;
+                    }
+                    questions.push({ question_type: 'multiple_choice', question_text: questionText, options, correct_answer: answer, marks: defaultMarks.value || 1 });
+                });
+            });
 
-                // Prefer explicit labels so capital letters inside option text
-                // (for example, “A disagreement”) are never treated as labels.
-                let markers = collectMarkers(/\(\s*([A-D])\s*\)|\s+([A-D])\s*\.(?=\s)/g);
-                let optionStart = findOptionStart(markers);
-
-                // A few source sheets omit the period after a label, e.g.
-                // “A Working honestly.” Use that loose form only as a fallback.
-                if (optionStart < 0) {
-                    markers = collectMarkers(/\(\s*([A-D])\s*\)|\s+([A-D])(?:\s*\.)?(?=\s)/g);
-                    optionStart = findOptionStart(markers);
-                }
-                if (optionStart < 0) {
-                    issues.push(`Question ${number}: expected four choices labelled A, B, C, and D.`);
+            const theory = [];
+            let current = null;
+            theoryLines.forEach((line) => {
+                if (/^\(?\s*ANSWER\s+(ANY|ALL)\b/i.test(line)) return;
+                const numbered = line.match(/^(\d+)\s*([a-z])?\s*[.)]\s*(.*)$/i);
+                if (numbered) {
+                    current = { number: numbered[1], parts: [] };
+                    theory.push(current);
+                    if (numbered[2]) current.parts.push(`${numbered[2].toLowerCase()}. ${numbered[3].trim()}`);
+                    else if (numbered[3].trim()) current.parts.push(numbered[3].trim());
                     return;
                 }
+                const subpart = line.match(/^([a-z])\s*[.)]\s*(.*)$/i);
+                if (current && subpart) {
+                    current.parts.push(`${subpart[1].toLowerCase()}. ${subpart[2].trim()}`);
+                } else if (current) {
+                    current.parts.push(line);
+                }
+            });
 
-                const choices = markers.slice(optionStart, optionStart + 4);
-                const questionText = body.slice(0, choices[0].index).replace(/^\s*[.\s]+/, '').trim();
-                const options = {};
-                choices.forEach((choice, choiceIndex) => {
-                    const nextIndex = choiceIndex < 3 ? choices[choiceIndex + 1].index : body.length;
-                    const value = body.slice(choice.end, nextIndex).replace(/^[\s.]+|[\s.]+$/g, '').trim();
-                    options[choice.letter] = value;
-                });
-
-                if (!questionText || ['A', 'B', 'C', 'D'].some((letter) => !options[letter])) {
-                    issues.push(`Question ${number}: the question text or one of its four choices is empty.`);
+            if (!objectiveNumber) issues.push('No objective questions with answer keys were found in SECTION A.');
+            theory.forEach((item, index) => {
+                if (!item.parts.length) {
+                    issues.push(`Theory question ${item.number} has no readable question text.`);
                     return;
                 }
-
-                questions.push({
-                    question_text: questionText,
-                    options,
-                    correct_answer: answer,
-                    marks: defaultMarks.value || 1,
-                });
+                let questionText = item.parts.join('\n');
+                if (index === 0 && answerInstruction) questionText = `SECTION B INSTRUCTIONS: ${answerInstruction}\n\n${questionText}`;
+                questions.push({ question_type: 'theory', question_text: questionText, marks: defaultMarks.value || 1 });
             });
 
             renderQuestions(questions, issues);
@@ -595,6 +611,12 @@
         Add Question
     </button>
 </form>
+    </div>
+    @else
+    <div class="rounded-lg border border-amber-300 bg-amber-50 p-5 text-amber-900">
+        <h3 class="font-bold">This exam has used all its marks.</h3>
+        <p class="mt-1 text-sm">To add a theory question, increase the exam total marks first. You can then add objective and theory questions to the same exam.</p>
+        <a href="{{ route('admin.exam.edit', $exam->id) }}" class="mt-3 inline-block rounded-lg bg-amber-700 px-4 py-2 text-sm font-semibold text-white hover:bg-amber-800">Edit exam marks</a>
     </div>
     @endif
 

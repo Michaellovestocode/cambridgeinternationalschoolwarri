@@ -695,23 +695,32 @@ public function bulkImportObjectiveQuestions(Request $request, $examId)
     }
 
     $remainingMarks = (float) $exam->total_marks - (float) $exam->questions->sum('marks');
-    if ($remainingMarks <= 0) {
-        return redirect()->route('admin.exam.questions', $exam->id)
-            ->with('error', 'Cannot add questions to a completed exam.');
-    }
-
     $validated = $request->validate([
         'source_text' => ['required', 'string', 'max:200000'],
         'questions' => ['required', 'array', 'min:1', 'max:200'],
+        'questions.*.question_type' => ['required', 'in:multiple_choice,theory'],
         'questions.*.question_text' => ['required', 'string', 'max:10000'],
-        'questions.*.options' => ['required', 'array'],
-        'questions.*.options.A' => ['required', 'string', 'max:2000'],
-        'questions.*.options.B' => ['required', 'string', 'max:2000'],
-        'questions.*.options.C' => ['required', 'string', 'max:2000'],
-        'questions.*.options.D' => ['required', 'string', 'max:2000'],
-        'questions.*.correct_answer' => ['required', 'in:A,B,C,D'],
+        'questions.*.options' => ['nullable', 'array'],
+        'questions.*.options.A' => ['nullable', 'string', 'max:2000'],
+        'questions.*.options.B' => ['nullable', 'string', 'max:2000'],
+        'questions.*.options.C' => ['nullable', 'string', 'max:2000'],
+        'questions.*.options.D' => ['nullable', 'string', 'max:2000'],
+        'questions.*.correct_answer' => ['nullable', 'in:A,B,C,D'],
         'questions.*.marks' => ['required', 'numeric', 'min:0.01', 'max:1000'],
     ]);
+
+    foreach ($validated['questions'] as $index => $question) {
+        if ($question['question_type'] === 'multiple_choice') {
+            $request->validate([
+                "questions.{$index}.options" => ['required', 'array'],
+                "questions.{$index}.options.A" => ['required', 'string', 'max:2000'],
+                "questions.{$index}.options.B" => ['required', 'string', 'max:2000'],
+                "questions.{$index}.options.C" => ['required', 'string', 'max:2000'],
+                "questions.{$index}.options.D" => ['required', 'string', 'max:2000'],
+                "questions.{$index}.correct_answer" => ['required', 'in:A,B,C,D'],
+            ]);
+        }
+    }
 
     $marksToAdd = collect($validated['questions'])->sum(fn ($question) => (float) $question['marks']);
     if ($marksToAdd > $remainingMarks + 0.00001) {
@@ -736,14 +745,14 @@ public function bulkImportObjectiveQuestions(Request $request, $examId)
             Question::create([
                 'exam_id' => $lockedExam->id,
                 'question_text' => $this->cleanQuestionText($question['question_text']),
-                'question_type' => 'multiple_choice',
-                'options' => [
+                'question_type' => $question['question_type'],
+                'options' => $question['question_type'] === 'multiple_choice' ? [
                     'A' => trim($question['options']['A']),
                     'B' => trim($question['options']['B']),
                     'C' => trim($question['options']['C']),
                     'D' => trim($question['options']['D']),
-                ],
-                'correct_answer' => $question['correct_answer'],
+                ] : null,
+                'correct_answer' => $question['question_type'] === 'multiple_choice' ? $question['correct_answer'] : null,
                 'marks' => $question['marks'],
                 'order' => $order,
             ]);
@@ -751,7 +760,7 @@ public function bulkImportObjectiveQuestions(Request $request, $examId)
     });
 
     return redirect()->route('admin.exam.questions', $exam->id)
-        ->with('success', count($validated['questions']) . ' objective questions imported successfully. Please review the saved answer keys.');
+        ->with('success', count($validated['questions']) . ' objective and theory questions imported successfully. Please review the saved questions and answer keys.');
 }
 
 public function readObjectiveQuestionsDocument(Request $request, $examId)
