@@ -185,9 +185,14 @@
         <p class="mt-1 text-xs text-sky-800">Upload a picture students should see with this classwork or assignment. JPG, PNG, GIF, or WebP, up to 5 MB.</p>
         <input id="assignment-illustration" type="file" name="illustration" accept="image/jpeg,image/png,image/gif,image/webp" class="mt-3 block w-full rounded-xl border border-sky-200 bg-white px-3 py-2 text-sm text-gray-700 file:mr-3 file:rounded-lg file:border-0 file:bg-sky-100 file:px-3 file:py-2 file:font-bold file:text-sky-800">
         @error('illustration')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
-        @if($learningSession?->attachments?->contains(fn ($attachment) => str_starts_with((string) $attachment->mime_type, 'image/')))
-            <p class="mt-2 text-xs font-semibold text-sky-800">An image is already attached. Uploading another image will add it to the student view.</p>
-        @endif
+        <div id="assignment-illustration-preview" class="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            @foreach(($learningSession?->attachments ?? collect())->filter(fn ($attachment) => str_starts_with((string) $attachment->mime_type, 'image/')) as $attachment)
+                <a href="{{ $attachment->url() }}" target="_blank" rel="noopener" class="overflow-hidden rounded-xl border border-sky-200 bg-white">
+                    <img src="{{ $attachment->url() }}" alt="{{ $attachment->name }}" class="max-h-64 w-full bg-white object-contain">
+                    <span class="block truncate px-3 py-2 text-xs font-semibold text-sky-900">{{ $attachment->name }}</span>
+                </a>
+            @endforeach
+        </div>
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -216,6 +221,32 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
+        const illustrationInput = document.getElementById('assignment-illustration');
+        const illustrationPreview = document.getElementById('assignment-illustration-preview');
+        illustrationInput?.addEventListener('change', function () {
+            const file = this.files?.[0];
+            if (!file || !illustrationPreview) return;
+
+            const previewUrl = URL.createObjectURL(file);
+            const link = document.createElement('a');
+            link.href = previewUrl;
+            link.target = '_blank';
+            link.rel = 'noopener';
+            link.className = 'overflow-hidden rounded-xl border border-sky-300 bg-white';
+
+            const image = document.createElement('img');
+            image.src = previewUrl;
+            image.alt = file.name;
+            image.className = 'max-h-64 w-full bg-white object-contain';
+
+            const caption = document.createElement('span');
+            caption.textContent = `${file.name} (new image preview)`;
+            caption.className = 'block truncate px-3 py-2 text-xs font-semibold text-sky-900';
+
+            link.append(image, caption);
+            illustrationPreview.prepend(link);
+        });
+
         const subjectSelect = document.getElementById('subject-id');
         const classPanel = document.getElementById('class-assignment-panel');
         const classCount = document.getElementById('class-assignment-count');
