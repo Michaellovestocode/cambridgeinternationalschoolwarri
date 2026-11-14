@@ -142,8 +142,9 @@
 
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Reference Image <span class="text-gray-500">(Optional)</span></label>
-                    <input type="file" name="image" accept="image/*" class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-cyan-500">
+                    <input type="file" name="image" accept="image/jpeg,image/png,image/gif,image/webp" data-question-image-input data-preview-target="new-learning-question-image-preview" class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-cyan-500">
                     <p class="text-xs text-gray-500 mt-1">Upload an image showing what students should design or reference. Max 5MB (JPG, PNG, GIF, WEBP)</p>
+                    <div id="new-learning-question-image-preview" class="mt-2"></div>
                 </div>
 
                 <div id="objective-options" class="space-y-4">
@@ -252,7 +253,14 @@
                                     </div>
                                     <div>
                                         <label class="mb-1 block text-xs font-bold text-gray-700">Replace reference image (optional)</label>
-                                        <input type="file" name="image" accept="image/jpeg,image/png,image/gif,image/webp" class="w-full rounded-lg border bg-white px-3 py-2 text-sm">
+                                        @if($question->image_path)
+                                            <a href="{{ $question->getImageUrl() }}" target="_blank" rel="noopener" class="mb-2 block w-fit overflow-hidden rounded-lg border border-cyan-200 bg-white">
+                                                <img src="{{ $question->getImageUrl() }}" alt="Current reference image for question {{ $question->id }}" class="max-h-56 max-w-full object-contain">
+                                                <span class="block px-3 py-2 text-xs font-semibold text-cyan-800">Current image - open full size</span>
+                                            </a>
+                                        @endif
+                                        <input type="file" name="image" accept="image/jpeg,image/png,image/gif,image/webp" data-question-image-input data-preview-target="question-image-preview-{{ $question->id }}" class="w-full rounded-lg border bg-white px-3 py-2 text-sm">
+                                        <div id="question-image-preview-{{ $question->id }}" class="mt-2"></div>
                                     </div>
                                     <button type="submit" class="rounded-lg bg-cyan-700 px-4 py-2 text-sm font-bold text-white hover:bg-cyan-800">Save question changes</button>
                                 </form>
@@ -288,6 +296,34 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
+        document.querySelectorAll('[data-question-image-input]').forEach((input) => {
+            input.addEventListener('change', function () {
+                const file = this.files?.[0];
+                const preview = document.getElementById(this.dataset.previewTarget);
+                if (!preview) return;
+                preview.replaceChildren();
+                if (!file) return;
+
+                const imageUrl = URL.createObjectURL(file);
+                const link = document.createElement('a');
+                link.href = imageUrl;
+                link.target = '_blank';
+                link.rel = 'noopener';
+                link.className = 'block w-fit overflow-hidden rounded-lg border border-cyan-200 bg-white';
+
+                const image = document.createElement('img');
+                image.src = imageUrl;
+                image.alt = `Selected reference image: ${file.name}`;
+                image.className = 'max-h-56 max-w-full object-contain';
+
+                const caption = document.createElement('span');
+                caption.textContent = `${file.name} · new image preview`;
+                caption.className = 'block px-3 py-2 text-xs font-semibold text-cyan-800';
+                link.append(image, caption);
+                preview.append(link);
+            });
+        });
+
         const questionType = document.getElementById('question_type');
         const objectiveOptions = document.getElementById('objective-options');
         const theoryOptions = document.getElementById('theory-options');
