@@ -230,9 +230,9 @@ class LearningSessionController extends Controller
         return view('admin.learning-sessions.edit', compact('learningSession', 'subjects', 'classes', 'subjectClassIds', 'feedbackCounts'));
     }
 
-    public function submissions(LearningSession $learningSession)
+    public function submissions(Request $request, LearningSession $learningSession)
     {
-        $this->authorizeSubmissionAccess();
+        $this->authorizeSession($learningSession);
         $learningSession->load(['subject', 'schoolClass', 'targetClasses.students']);
         $attempts = $learningSession->attempts()
             ->with(['user', 'answers.question'])
@@ -244,9 +244,32 @@ class LearningSessionController extends Controller
             ? $learningSession->targetClasses
             : collect([$learningSession->schoolClass])->filter();
         $learners = $classes->flatMap->students->unique('id')->sortBy('name')->values();
+        $learners->load('class');
         $attemptsByLearner = $attempts->unique('user_id')->keyBy('user_id');
+        $submissionStats = [
+            'assigned' => $learners->count(),
+            'attempted' => $learners->filter(fn ($learner) => $attemptsByLearner->has($learner->id))->count(),
+            'not_attempted' => $learners->filter(fn ($learner) => ! $attemptsByLearner->has($learner->id))->count(),
+        ];
+        $search = trim($request->string('search')->value());
+        $status = $request->string('status')->value();
+        $classId = $request->string('class_id')->value();
+        $learners = $learners->filter(function ($learner) use ($attemptsByLearner, $search, $status, $classId) {
+            $attempt = $attemptsByLearner->get($learner->id);
+            $matchesSearch = $search === ''
+                || str_contains(mb_strtolower($learner->name), mb_strtolower($search))
+                || str_contains(mb_strtolower((string) $learner->registration_number), mb_strtolower($search));
+            $matchesStatus = match ($status) {
+                'attempted' => (bool) $attempt,
+                'not_attempted' => ! $attempt,
+                default => true,
+            };
+            $matchesClass = $classId === '' || (string) $learner->class_id === $classId;
 
-        return view('admin.learning-sessions.submissions', compact('learningSession', 'attempts', 'learners', 'attemptsByLearner'));
+            return $matchesSearch && $matchesStatus && $matchesClass;
+        })->values();
+
+        return view('admin.learning-sessions.submissions', compact('learningSession', 'attempts', 'learners', 'attemptsByLearner', 'submissionStats', 'search', 'status', 'classId', 'classes'));
     }
 
     public function publish(LearningSession $learningSession)
@@ -269,6 +292,7 @@ class LearningSessionController extends Controller
         $attempt->load(['user', 'learningSession.subject', 'answers.question']);
         abort_unless($attempt->learningSession, 404);
         $this->authorizeSubmissionAccess();
+        $this->authorizeSession($attempt->learningSession);
 
         $objectiveAnswers = $attempt->answers->filter(fn ($answer) => $answer->question?->question_type === 'objective')->values();
         $writtenAnswers = $attempt->answers->filter(fn ($answer) => $answer->question?->question_type === 'theory')->values();
@@ -286,6 +310,7 @@ class LearningSessionController extends Controller
         $attempt->load(['learningSession', 'answers.question']);
         abort_unless($attempt->learningSession, 404);
         $this->authorizeSubmissionAccess();
+        $this->authorizeSession($attempt->learningSession);
 
         $validated = $request->validate([
             'answers' => ['nullable', 'array'],
@@ -463,6 +488,7 @@ class LearningSessionController extends Controller
 
         $data = $request->validate([
             'question_text' => ['required', 'string'],
+            'drawing' => ['nullable', 'string', 'max:3000000'],
             'question_type' => ['nullable', 'in:objective,theory'],
             'marks' => ['required', 'numeric', 'min:0.01'],
             'image' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif,webp', 'max:5120'],
@@ -501,6 +527,8 @@ class LearningSessionController extends Controller
         $imagePath = null;
         if ($request->hasFile('image')) {
             $imagePath = $request->file('image')->store('learning-question-images', 'public');
+        } elseif (in_array($learningSession->assessment_type, ['assignment', 'classwork'], true)) {
+            $imagePath = $this->storeWhiteboardDrawing($data['drawing'] ?? null);
         }
 
         $learningSession->questions()->create([
@@ -539,6 +567,7 @@ class LearningSessionController extends Controller
 
         $data = $request->validate([
             'question_text' => ['required', 'string'],
+            'drawing' => ['nullable', 'string', 'max:3000000'],
             'question_type' => ['required', 'in:objective,theory'],
             'marks' => ['required', 'numeric', 'min:0.01'],
             'image' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif,webp', 'max:5120'],
@@ -565,6 +594,8 @@ class LearningSessionController extends Controller
         $imagePath = $question->image_path;
         if ($request->hasFile('image')) {
             $imagePath = $request->file('image')->store('learning-question-images', 'public');
+        } elseif (in_array($session->assessment_type, ['assignment', 'classwork'], true) && filled($data['drawing'] ?? null)) {
+            $imagePath = $this->storeWhiteboardDrawing($data['drawing']);
         }
 
         $question->update([
@@ -641,11 +672,13 @@ class LearningSessionController extends Controller
             'learning_goals' => ['nullable', 'string'],
             'estimated_minutes' => ['required', 'integer', 'min:1', 'max:300'],
             'assessment_type' => ['nullable', 'in:classwork,assignment,quiz,test'],
+            'due_at' => ['nullable', 'date'],
             'assessment_format' => ['nullable', 'in:objective,theory,mixed'],
             'is_published' => ['nullable', 'boolean'],
             'show_answers_to_students' => ['nullable', 'boolean'],
             'questions' => ['nullable', 'array'],
             'questions.*.question_text' => ['nullable', 'string'],
+            'questions.*.drawing' => ['nullable', 'string', 'max:3000000'],
             'questions.*.marks' => ['nullable', 'numeric', 'min:0.01'],
             'questions.*.question_type' => ['nullable', 'in:objective,theory'],
             'questions.*.options' => ['nullable', 'array'],
@@ -663,6 +696,31 @@ class LearningSessionController extends Controller
             'mime_type' => $image->getMimeType(),
             'size' => $image->getSize(),
         ]);
+    }
+
+    private function storeWhiteboardDrawing(?string $dataUrl): ?string
+    {
+        if (! filled($dataUrl)) {
+            return null;
+        }
+
+        if (! preg_match('/^data:image\/(jpeg|png);base64,([A-Za-z0-9+\/=]+)$/', $dataUrl, $matches)) {
+            abort(422, 'The writing pad image could not be read. Please clear it and draw again.');
+        }
+
+        $binary = base64_decode($matches[2], true);
+        $hasValidHeader = $binary !== false && ($matches[1] === 'jpeg'
+            ? str_starts_with($binary, hex2bin('ffd8ff'))
+            : str_starts_with($binary, hex2bin('89504e470d0a1a0a')));
+        if (! $hasValidHeader || strlen($binary) > 2_000_000) {
+            abort(422, 'The writing pad image is too large or invalid. Please clear it and draw again.');
+        }
+
+        $extension = $matches[1] === 'jpeg' ? 'jpg' : 'png';
+        $path = 'learning-question-images/teacher_' . uniqid('', true) . '.' . $extension;
+        Storage::disk('public')->put($path, $binary);
+
+        return $path;
     }
 
     private function storeInlineQuestions(Request $request, LearningSession $session): void
@@ -693,6 +751,9 @@ class LearningSessionController extends Controller
                 'correct_option' => $questionType === 'objective' && $hasValidAnswerKey ? $correctOption : null,
                 'order' => $index + 1,
                 'marks' => (float) ($question['marks'] ?? 1),
+                'image_path' => in_array($session->assessment_type, ['assignment', 'classwork'], true)
+                    ? $this->storeWhiteboardDrawing($question['drawing'] ?? null)
+                    : null,
             ]);
         }
     }
@@ -866,16 +927,23 @@ class LearningSessionController extends Controller
             return;
         }
 
+        $classIds = collect([$learningSession->school_class_id])
+            ->merge($learningSession->targetClasses()->pluck('school_classes.id'))
+            ->filter()
+            ->map(fn ($id) => (int) $id)
+            ->unique()
+            ->values();
+
         if ($this->exactTeachingLoadIsAvailable()) {
             $assigned = DB::table('teacher_class_subject')
                 ->where('teacher_id', $user->id)
                 ->where('subject_id', $learningSession->subject_id)
-                ->where('school_class_id', $learningSession->school_class_id)
+                ->whereIn('school_class_id', $classIds)
                 ->exists();
         } else {
             $assigned = $user->subjects()->whereKey($learningSession->subject_id)->exists()
-                && ($user->teachingClasses()->whereKey($learningSession->school_class_id)->exists()
-                    || $user->formTeacherAssignments()->where('is_active', true)->where('class_id', $learningSession->school_class_id)->exists());
+                && ($user->teachingClasses()->whereIn('school_classes.id', $classIds)->exists()
+                    || $user->formTeacherAssignments()->where('is_active', true)->whereIn('class_id', $classIds)->exists());
         }
 
         if (! $assigned) {

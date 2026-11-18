@@ -289,15 +289,14 @@
                     <a href="{{ route('attendance.my') }}" class="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg font-semibold transition">
                         Attendance
                     </a>
+                    <a href="{{ route('student.assignments.index') }}" class="bg-sky-600 hover:bg-sky-700 text-white px-4 py-2 rounded-lg font-semibold transition">Assignments</a>
                     <a href="{{ route('student.learning.index') }}" class="bg-cyan-500 hover:bg-cyan-600 text-white px-4 py-2 rounded-lg font-semibold transition">
-                        Learning
+                        Classwork
                     </a>
-                    <a href="{{ route('student.dashboard') }}#report-cards" class="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-lg font-semibold transition">
-                        Report Cards
-                    </a>
-                    <a href="{{ route('student.dashboard') }}#developmental-reports" class="bg-teal-500 hover:bg-teal-600 text-white px-4 py-2 rounded-lg font-semibold transition">
-                        Developmental Report Cards
-                    </a>
+                    <a href="{{ route('student.exams.index') }}" class="bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded-lg font-semibold transition">Exams</a>
+                    <a href="{{ route('student.results.index') }}" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-semibold transition">Results</a>
+                    <a href="{{ route('student.reports.index') }}" class="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-lg font-semibold transition">Reports</a>
+                    <a href="{{ route('student.developmental-reports.index') }}" class="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-lg font-semibold transition">Developmental</a>
                     @elseif(!auth()->user()->isStudent())
                     @if(auth()->user()->isTeacher())
                     <a href="{{ route('teacher.assessment-studio') }}" class="bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded-lg font-semibold transition">
@@ -399,15 +398,14 @@
                     <a href="{{ route('attendance.my') }}" class="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg font-semibold transition text-sm">
                         Attendance
                     </a>
+                    <a href="{{ route('student.assignments.index') }}" class="bg-sky-600 hover:bg-sky-700 text-white px-4 py-2 rounded-lg font-semibold transition text-sm">Assignments</a>
                     <a href="{{ route('student.learning.index') }}" class="bg-cyan-500 hover:bg-cyan-600 text-white px-4 py-2 rounded-lg font-semibold transition text-sm">
-                        Learning
+                        Classwork
                     </a>
-                    <a href="{{ route('student.dashboard') }}#report-cards" class="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-lg font-semibold transition text-sm">
-                        Report Cards
-                    </a>
-                    <a href="{{ route('student.dashboard') }}#developmental-reports" class="bg-teal-500 hover:bg-teal-600 text-white px-4 py-2 rounded-lg font-semibold transition text-sm">
-                        Developmental Report Cards
-                    </a>
+                    <a href="{{ route('student.exams.index') }}" class="bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded-lg font-semibold transition text-sm">Exams</a>
+                    <a href="{{ route('student.results.index') }}" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-semibold transition text-sm">Results</a>
+                    <a href="{{ route('student.reports.index') }}" class="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-lg font-semibold transition text-sm">Reports</a>
+                    <a href="{{ route('student.developmental-reports.index') }}" class="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-lg font-semibold transition text-sm">Developmental</a>
                     @elseif(!auth()->user()->isStudent())
                     @if(auth()->user()->isTeacher())
                     <a href="{{ route('teacher.assessment-studio') }}" class="bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded-lg font-semibold transition text-sm">

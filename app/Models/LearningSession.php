@@ -19,6 +19,7 @@ class LearningSession extends Model
         'lesson_content',
         'learning_goals',
         'estimated_minutes',
+        'due_at',
         'assessment_type',
         'assessment_format',
         'is_published',
@@ -28,6 +29,7 @@ class LearningSession extends Model
     protected $casts = [
         'is_published' => 'boolean',
         'show_answers_to_students' => 'boolean',
+        'due_at' => 'datetime',
     ];
 
     public function subject()

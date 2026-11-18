@@ -135,6 +135,14 @@
                     ])
                 </div>
 
+                @if(in_array($learningSession->assessment_type, ['assignment', 'classwork'], true))
+                    @include('admin.learning-sessions.partials.teacher-whiteboard', [
+                        'boardId' => 'new-question-writing-pad',
+                        'boardName' => 'drawing',
+                        'boardValue' => old('drawing', ''),
+                    ])
+                @endif
+
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Marks *</label>
                     <input type="number" name="marks" value="{{ old('marks', 1) }}" min="0.01" step="0.01" required class="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-cyan-500">
@@ -211,6 +219,14 @@
                                             'placeholder' => 'Enter your question here'
                                         ])
                                     </div>
+                                    @if(in_array($learningSession->assessment_type, ['assignment', 'classwork'], true))
+                                        @include('admin.learning-sessions.partials.teacher-whiteboard', [
+                                            'boardId' => 'question-' . $question->id . '-writing-pad',
+                                            'boardName' => 'drawing',
+                                            'boardValue' => old('drawing', ''),
+                                            'boardLabel' => 'Optional teacher writing pad (new drawing replaces the current reference image)',
+                                        ])
+                                    @endif
                                     <div class="grid gap-3 sm:grid-cols-2">
                                         <div>
                                             <label class="mb-1 block text-xs font-bold text-gray-700">Question type</label>

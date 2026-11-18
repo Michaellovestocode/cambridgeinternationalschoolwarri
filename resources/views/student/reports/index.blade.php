@@ -1,0 +1,9 @@
+@extends('layouts.app')
+@section('title', 'My Reports')
+@section('content')
+<main class="mx-auto max-w-5xl space-y-6">
+    <header class="rounded-2xl bg-gradient-to-r from-amber-600 to-emerald-700 p-5 text-white shadow-lg sm:p-7"><a href="{{ route('student.dashboard') }}" class="text-sm font-bold text-white/80">← Learner home</a><h1 class="mt-3 text-2xl font-black sm:text-3xl">Report cards</h1><p class="mt-1 text-sm text-white/80">View your published academic report cards.</p></header>
+    <section class="space-y-3"><h2 class="text-xl font-black text-gray-900">Report cards</h2>@forelse($reportCards as $reportCard)<article class="flex flex-col gap-4 rounded-2xl bg-white p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between"><div><h3 class="font-black text-gray-900">{{ $reportCard->session?->name ?? 'Session' }} · {{ $reportCard->term?->name ?? 'Term' }}</h3><p class="mt-1 text-sm text-gray-500">{{ $reportCard->class?->display_name ?? 'Class' }} · Average {{ $reportCard->computed_average_score !== null ? number_format($reportCard->computed_average_score, 1) . '%' : ($reportCard->average_score !== null ? number_format($reportCard->average_score, 1) . '%' : 'N/A') }}</p></div><div class="flex flex-wrap gap-2"><a href="{{ route('student.report-cards.preview', $reportCard) }}" class="rounded-xl bg-amber-700 px-4 py-3 text-sm font-bold text-white">View</a><a href="{{ route('student.report-cards.download', $reportCard) }}" class="rounded-xl bg-gray-100 px-4 py-3 text-sm font-bold text-gray-800">Download PDF</a></div></article>@empty<div class="rounded-2xl bg-white p-6 text-sm text-gray-500 shadow-sm">No published report cards are available.</div>@endforelse</section>
+    <a href="{{ route('student.developmental-reports.index') }}" class="inline-flex rounded-xl bg-emerald-700 px-4 py-3 text-sm font-bold text-white">Open developmental reports</a>
+</main>
+@endsection

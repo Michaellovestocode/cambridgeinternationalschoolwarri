@@ -20,6 +20,7 @@ class StudentLearningSessionController extends Controller
 
         $sessions = LearningSession::published()
             ->forSchoolClass((int) $student->class_id)
+            ->where('assessment_type', '!=', 'assignment')
             ->with(['subject', 'schoolClass', 'targetClasses'])
             ->withCount('questions')
             ->latest()

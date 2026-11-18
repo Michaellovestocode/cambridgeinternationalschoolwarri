@@ -400,6 +400,11 @@
                     </span>
                     <svg class="w-5 h-5 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
                 </a>
+                <a href="{{ route('admin.attendance.students.today') }}"
+                   class="flex items-center justify-between rounded-xl bg-gradient-to-r from-rose-600 to-orange-500 px-6 py-4 font-bold text-white shadow-lg transition-all hover:-translate-y-0.5 hover:from-rose-700 hover:to-orange-600 hover:shadow-xl group">
+                    <span class="flex items-center"><svg class="mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>Learner Clock-in / Clock-out Check</span>
+                    <svg class="h-5 w-5 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                </a>
                 @endif
 
                 <a href="{{ route('admin.exams') }}" 

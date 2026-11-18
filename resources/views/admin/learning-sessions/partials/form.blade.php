@@ -42,6 +42,12 @@
         </div>
     </div>
 
+    <div class="max-w-xl">
+        <label for="due-at" class="mb-1 block text-sm font-semibold text-gray-700">Assignment due date and time <span class="font-normal text-gray-500">(optional)</span></label>
+        <input id="due-at" type="datetime-local" name="due_at" value="{{ old('due_at', $learningSession?->due_at?->format('Y-m-d\\TH:i')) }}" class="w-full rounded-lg border px-4 py-2 focus:ring-2 focus:ring-cyan-500">
+        <p class="mt-1 text-xs text-gray-500">Learners see assignments ordered by deadline. Leave blank if there is no deadline.</p>
+    </div>
+
     <div id="class-assignment-panel" class="hidden rounded-2xl border border-cyan-100 bg-cyan-50/60 p-4 sm:p-5">
         <div class="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
             <div>
@@ -105,6 +111,14 @@
                             'name' => 'questions[0][question_text]',
                             'value' => old('questions.0.question_text'),
                             'placeholder' => 'Type the question here...'
+                        ])
+                    </div>
+
+                    <div data-assignment-writing-pad class="{{ in_array(old('assessment_type', $learningSession->assessment_type ?? request('assessment_type', 'quiz')), ['assignment', 'classwork'], true) ? '' : 'hidden' }}">
+                        @include('admin.learning-sessions.partials.teacher-whiteboard', [
+                            'boardId' => 'question-writing-pad-0',
+                            'boardName' => 'questions[0][drawing]',
+                            'boardValue' => old('questions.0.drawing', ''),
                         ])
                     </div>
 
@@ -290,6 +304,13 @@
 
         assessmentTypeSelect?.addEventListener('change', syncAssessmentLabels);
 
+        const syncTeacherWritingPads = () => {
+            const enabled = ['assignment', 'classwork'].includes(assessmentTypeSelect?.value);
+            list?.querySelectorAll('[data-assignment-writing-pad]').forEach((pad) => pad.classList.toggle('hidden', !enabled));
+        };
+        assessmentTypeSelect?.addEventListener('change', syncTeacherWritingPads);
+        syncTeacherWritingPads();
+
         if (list && addButton) {
             const makeQuestionBlock = (index) => {
                 const block = document.createElement('div');
@@ -316,6 +337,11 @@
                                 </div>
                                 <p class="text-xs text-gray-500">Format selected text or paste formatted text from Word.</p>
                             </div>
+                        </div>
+                        <div data-assignment-writing-pad class="hidden rounded-2xl border border-cyan-200 bg-cyan-50 p-4">
+                            <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"><div><p class="font-bold text-cyan-950">Optional teacher writing pad</p><p class="text-xs text-cyan-800">Write or draw with a mouse, finger, or stylus. This will be saved with the question.</p></div><div class="flex flex-wrap gap-2"><button type="button" data-board-undo class="rounded-lg bg-white px-3 py-2 text-xs font-bold text-gray-700">Undo</button><button type="button" data-board-redo class="rounded-lg bg-white px-3 py-2 text-xs font-bold text-gray-700">Redo</button><button type="button" data-board-eraser class="rounded-lg bg-white px-3 py-2 text-xs font-bold text-gray-700">Eraser</button><button type="button" data-board-clear class="rounded-lg bg-white px-3 py-2 text-xs font-bold text-rose-700">Clear</button></div></div>
+                            <div class="mt-3 overflow-hidden rounded-xl border border-gray-200 bg-white"><canvas id="question-writing-pad-${index}" data-board-canvas width="1000" height="620" class="block h-auto w-full touch-none bg-white"></canvas></div>
+                            <input type="hidden" name="questions[${index}][drawing]" value="" data-board-input>
                         </div>
                         <div>
                             <label class="block text-sm font-semibold text-gray-700 mb-1">Marks</label>
@@ -441,6 +467,12 @@
                     if (marks && question.marks !== undefined) marks.value = question.marks;
                     if (type && question.question_type) type.value = question.question_type;
                     if (correct) correct.value = question.correct_option || '';
+                    const drawingInput = block.querySelector('input[data-board-input]');
+                    const drawingBoard = block.querySelector('[data-teacher-whiteboard]');
+                    if (drawingInput && question.drawing) {
+                        drawingInput.value = question.drawing;
+                        drawingBoard?.restoreDrawing?.(question.drawing);
+                    }
 
                     ['A', 'B', 'C', 'D'].forEach((letter) => {
                         const option = block.querySelector(`[name="questions[${index}][options][${letter}]"]`);
@@ -452,6 +484,8 @@
                     list.querySelectorAll('.remove-question').forEach((button) => button.classList.remove('hidden'));
                 }
                 syncAssessmentFormat();
+                window.initTeacherWhiteboards?.(list);
+                syncTeacherWritingPads();
             }
 
             addButton.addEventListener('click', () => {
@@ -460,7 +494,9 @@
                 const block = makeQuestionBlock(nextIndex);
                 list.appendChild(block);
                 window.Alpine?.initTree(block);
+                window.initTeacherWhiteboards?.(block);
                 syncAssessmentFormat();
+                syncTeacherWritingPads();
                 if (blocks.length >= 1) {
                     list.querySelectorAll('.remove-question').forEach((btn) => btn.classList.remove('hidden'));
                 }

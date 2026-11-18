@@ -230,6 +230,12 @@
             <div class="student-question-card border border-gray-200 rounded-xl p-5">
                 <div class="font-bold text-gray-900 mb-4">{{ $loop->iteration }}. {!! $question->safe_question_text !!}</div>
 
+                @if($question->image_path)
+                    <a href="{{ $question->getImageUrl() }}" target="_blank" rel="noopener" class="mb-4 block overflow-hidden rounded-xl border border-gray-200 bg-white p-2">
+                        <img src="{{ $question->getImageUrl() }}" alt="Teacher's handwritten work or reference for question {{ $loop->iteration }}" class="max-h-[32rem] w-full object-contain">
+                    </a>
+                @endif
+
                 @if(!empty($previousAnswer?->handwriting_pages))
                     <div class="mb-4 rounded-xl border border-violet-200 bg-violet-50 p-4">
                         <p class="mb-3 text-xs font-bold uppercase tracking-wide text-violet-800">Your previous handwritten work</p>
@@ -355,7 +361,14 @@
             }
 
             function submissionImage(canvas) {
-                return canvas.toDataURL('image/jpeg', 0.72);
+                const imageCanvas = document.createElement('canvas');
+                imageCanvas.width = canvas.width;
+                imageCanvas.height = canvas.height;
+                const imageContext = imageCanvas.getContext('2d');
+                imageContext.fillStyle = '#fff';
+                imageContext.fillRect(0, 0, imageCanvas.width, imageCanvas.height);
+                imageContext.drawImage(canvas, 0, 0);
+                return imageCanvas.toDataURL('image/jpeg', 0.72);
             }
 
             function restore(canvas, image) {
@@ -420,7 +433,7 @@
                 ['pointerup', 'pointercancel', 'pointerleave'].forEach(type => canvas.addEventListener(type, function () {
                     if (!drawing) return;
                     drawing = false;
-                    hidden.value = canvas.toDataURL('image/jpeg', 0.72);
+                    hidden.value = submissionImage(canvas);
                 }));
                 wrapper.addEventListener('pointerdown', () => { activePage = { canvas, context, hidden, pageHistory }; });
                 activePage = { canvas, context, hidden, pageHistory };

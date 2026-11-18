@@ -607,6 +607,53 @@ class AttendanceController extends Controller
         ]);
     }
 
+    public function studentsToday(Request $request)
+    {
+        $this->authorizeAttendanceManager();
+        $date = $request->filled('date') ? Carbon::parse($request->input('date'))->startOfDay() : today();
+        $classId = $request->input('class_id');
+        $search = trim($request->string('search')->value());
+        $status = $request->string('status')->value();
+
+        $students = User::query()->with('class')->where('role', 'student')
+            ->when($classId, fn ($query) => $query->where('class_id', $classId))
+            ->when($search !== '', function ($query) use ($search) {
+                $query->where(function ($subQuery) use ($search) {
+                    $subQuery->where('name', 'like', "%{$search}%")
+                        ->orWhere('registration_number', 'like', "%{$search}%");
+                });
+            })
+            ->orderBy('class_id')->orderBy('name')->get();
+
+        $records = AttendanceRecord::whereDate('attendance_date', $date->toDateString())
+            ->whereIn('user_id', $students->pluck('id'))->get()->keyBy('user_id');
+        $studentRows = $students->map(function (User $student) use ($records) {
+            $record = $records->get($student->id);
+            $student->today_attendance = $record;
+            $student->today_attendance_status = ! $record?->check_in_at
+                ? 'not_clocked_in'
+                : (! $record->check_out_at ? 'not_clocked_out' : 'complete');
+            return $student;
+        });
+        $stats = [
+            'total' => $studentRows->count(),
+            'not_clocked_in' => $studentRows->where('today_attendance_status', 'not_clocked_in')->count(),
+            'not_clocked_out' => $studentRows->where('today_attendance_status', 'not_clocked_out')->count(),
+            'complete' => $studentRows->where('today_attendance_status', 'complete')->count(),
+        ];
+        if (in_array($status, ['not_clocked_in', 'not_clocked_out', 'complete'], true)) {
+            $studentRows = $studentRows->where('today_attendance_status', $status)->values();
+        }
+
+        return view('admin.attendance.students-today', [
+            'students' => $studentRows,
+            'stats' => $stats,
+            'date' => $date,
+            'classes' => $this->classesForFilters(),
+            'filters' => ['date' => $date->toDateString(), 'class_id' => (string) ($classId ?? ''), 'search' => $search, 'status' => $status],
+        ]);
+    }
+
     public function monthly(Request $request)
     {
         $this->authorizeAttendanceManager();

@@ -39,8 +39,8 @@
 @section('content')
 <div class="space-y-6">
     <div class="student-learning-hero bg-gradient-to-r from-cyan-600 to-emerald-600 text-white rounded-2xl shadow-lg p-8">
-        <h1 class="text-3xl font-bold">Learning Sessions</h1>
-        <p class="text-cyan-50 mt-2">Study a topic, answer short practice questions, then review corrections immediately.</p>
+        <h1 class="text-3xl font-bold">Classwork &amp; Quizzes</h1>
+        <p class="text-cyan-50 mt-2">Open your classwork, quizzes, and learning activities here. Assignments are listed separately.</p>
     </div>
 
     <div class="student-learning-grid grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">

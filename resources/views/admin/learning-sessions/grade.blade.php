@@ -56,6 +56,11 @@
                         <div class="min-w-0">
                             <p class="text-xs font-bold uppercase tracking-wide text-gray-500">Question {{ $attempt->answers->search($answer) + 1 }} | Objective</p>
                             <div class="mt-1 font-bold text-gray-900">{!! $question->safe_question_text !!}</div>
+                            @if($question->image_path)
+                                <a href="{{ $question->getImageUrl() }}" target="_blank" rel="noopener" class="mt-3 block w-fit overflow-hidden rounded-lg border border-gray-200 bg-white p-2">
+                                    <img src="{{ $question->getImageUrl() }}" alt="Question illustration" class="max-h-64 max-w-full object-contain">
+                                </a>
+                            @endif
                         </div>
                         <span class="shrink-0 rounded-full px-3 py-1 text-xs font-bold {{ $answer->is_correct ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800' }}">{{ $answer->is_correct ? 'Computer scored: Correct' : 'Computer scored: Incorrect' }}</span>
                     </div>
@@ -107,6 +112,11 @@
                         <div class="min-w-0">
                             <p class="text-xs font-bold uppercase tracking-wide text-violet-700">Question {{ $attempt->answers->search($answer) + 1 }} | Written | {{ $question->marks ?: 1 }} {{ (float) ($question->marks ?: 1) === 1.0 ? 'mark' : 'marks' }}</p>
                             <div class="mt-1 font-bold text-gray-900">{!! $question->safe_question_text !!}</div>
+                            @if($question->image_path)
+                                <a href="{{ $question->getImageUrl() }}" target="_blank" rel="noopener" class="mt-3 block w-fit overflow-hidden rounded-lg border border-gray-200 bg-white p-2">
+                                    <img src="{{ $question->getImageUrl() }}" alt="Question illustration" class="max-h-64 max-w-full object-contain">
+                                </a>
+                            @endif
                         </div>
                         <span class="shrink-0 rounded-full px-3 py-1 text-xs font-bold {{ $answer->teacher_score !== null ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800' }}">{{ $answer->teacher_score !== null ? 'Marked | ' . $answer->teacher_score . ' / ' . ($question->marks ?: 1) : 'Needs marking' }}</span>
                     </div>

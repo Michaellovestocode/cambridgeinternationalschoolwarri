@@ -23,34 +23,75 @@ class StudentController extends Controller
     public function dashboard()
     {
         $student = Auth::user();
-        
-        // Get available exams for student's class
-        $availableExams = Exam::whereHas('classes', function($query) use ($student) {
-            $query->where('school_classes.id', $student->class_id);
-        })
-        ->whereDoesntHave('attempts', function ($query) use ($student) {
-            $query->where('user_id', $student->id)
-                ->whereIn('status', ['in_progress', 'submitted', 'graded']);
-        })
-        ->where('is_active', true)
-        ->where('grading_mode', 'auto')
-        ->where('start_date', '<=', now())
-        ->where('end_date', '>=', now())
-        ->get();
+        $now = now()->toDateTimeString();
+        $assignments = LearningSession::published()
+            ->forSchoolClass((int) $student->class_id)
+            ->with(['subject', 'schoolClass', 'targetClasses'])
+            ->withCount('questions')
+            ->where('assessment_type', 'assignment')
+            ->orderByRaw('CASE WHEN due_at IS NULL THEN 2 WHEN due_at < ? THEN 1 ELSE 0 END', [$now])
+            ->orderByRaw('CASE WHEN due_at >= ? THEN due_at END ASC', [$now])
+            ->orderByRaw('CASE WHEN due_at < ? THEN due_at END DESC', [$now])
+            ->orderByDesc('created_at')
+            ->take(5)
+            ->get();
 
-        // Get completed attempts
-        $completedAttempts = ExamAttempt::where('user_id', $student->id)
-            ->whereIn('status', ['submitted', 'graded'])
-            ->with('exam')
+        $learningAttempts = LearningAttempt::where('user_id', $student->id)
+            ->whereIn('learning_session_id', $assignments->pluck('id'))
+            ->latest()
+            ->get()
+            ->unique('learning_session_id')
+            ->keyBy('learning_session_id');
+        $assignments->each(function ($session) use ($learningAttempts) {
+            $session->student_attempt = $learningAttempts->get($session->id);
+            $session->is_new_assignment = $session->created_at?->gte(now()->subDays(7)) ?? false;
+        });
+
+        $birthdayGreetings = BirthdayGreeting::where('student_id', $student->id)
+            ->where('expires_at', '>', now())
             ->latest()
             ->get();
 
-        // Get in-progress attempts
-        $inProgressAttempts = ExamAttempt::where('user_id', $student->id)
-            ->where('status', 'in_progress')
-            ->with('exam.questions')
-            ->get();
+        return view('student.assignments.home', compact('assignments', 'birthdayGreetings'));
+    }
 
+    public function assignments()
+    {
+        $student = Auth::user();
+        $now = now()->toDateTimeString();
+        $assignments = LearningSession::published()
+            ->forSchoolClass((int) $student->class_id)
+            ->with(['subject', 'schoolClass', 'targetClasses'])
+            ->withCount('questions')
+            ->where('assessment_type', 'assignment')
+            ->orderByRaw('CASE WHEN due_at IS NULL THEN 2 WHEN due_at < ? THEN 1 ELSE 0 END', [$now])
+            ->orderByRaw('CASE WHEN due_at >= ? THEN due_at END ASC', [$now])
+            ->orderByRaw('CASE WHEN due_at < ? THEN due_at END DESC', [$now])
+            ->orderByDesc('created_at')
+            ->get();
+        $learningAttempts = LearningAttempt::where('user_id', $student->id)
+            ->whereIn('learning_session_id', $assignments->pluck('id'))
+            ->latest()
+            ->get()
+            ->unique('learning_session_id')
+            ->keyBy('learning_session_id');
+        $assignments->each(function ($session) use ($learningAttempts) {
+            $session->student_attempt = $learningAttempts->get($session->id);
+            $session->is_new_assignment = $session->created_at?->gte(now()->subDays(7)) ?? false;
+        });
+
+        return view('student.assignments.index', compact('assignments'));
+    }
+
+    public function exams()
+    {
+        $student = Auth::user();
+        $availableExams = Exam::whereHas('classes', fn ($query) => $query->where('school_classes.id', $student->class_id))
+            ->whereDoesntHave('attempts', fn ($query) => $query->where('user_id', $student->id)->whereIn('status', ['in_progress', 'submitted', 'graded']))
+            ->where('is_active', true)->where('grading_mode', 'auto')
+            ->where('start_date', '<=', now())->where('end_date', '>=', now())
+            ->with('questions')->orderBy('end_date')->get();
+        $inProgressAttempts = ExamAttempt::where('user_id', $student->id)->where('status', 'in_progress')->with('exam.questions')->get();
         foreach ($inProgressAttempts as $attempt) {
             if ($attempt->hasTimeExpired()) {
                 $this->finalizeAttempt($attempt);
@@ -58,61 +99,35 @@ class StudentController extends Controller
                 $attempt->update(['time_remaining' => $attempt->secondsRemaining()]);
             }
         }
-
         $inProgressAttempts = $inProgressAttempts->filter->isInProgress();
 
-        $availableLearningSessions = LearningSession::published()
-            ->forSchoolClass((int) $student->class_id)
-            ->with(['subject', 'schoolClass', 'targetClasses'])
-            ->withCount('questions')
-            ->latest()
-            ->take(3)
-            ->get();
+        return view('student.exams.index', compact('availableExams', 'inProgressAttempts'));
+    }
 
-        $learningAttempts = LearningAttempt::where('user_id', $student->id)
-            ->whereIn('learning_session_id', $availableLearningSessions->pluck('id'))
-            ->latest()
-            ->get()
-            ->unique('learning_session_id')
-            ->keyBy('learning_session_id');
-        $availableLearningSessions->each(function ($session) use ($learningAttempts) {
-            $session->student_attempt = $learningAttempts->get($session->id);
-        });
+    public function results()
+    {
+        $completedAttempts = ExamAttempt::where('user_id', Auth::id())
+            ->whereIn('status', ['submitted', 'graded'])->with('exam')->latest()->get();
 
-        $completedLearningAttempts = LearningAttempt::where('user_id', $student->id)
-            ->whereNotNull('completed_at')
-            ->count();
+        return view('student.results.index', compact('completedAttempts'));
+    }
 
-        $reportCards = ReportCard::with(['session', 'term', 'class'])
-            ->where('student_id', $student->id)
-            ->published()
-            ->feeCleared()
-            ->latest()
-            ->take(6)
-            ->get();
+    public function reports()
+    {
+        $student = Auth::user();
+        $reportCards = ReportCard::with(['session', 'term', 'class'])->where('student_id', $student->id)
+            ->published()->feeCleared()->latest()->get();
 
+        return view('student.reports.index', compact('reportCards'));
+    }
+
+    public function developmentalReports()
+    {
+        $student = Auth::user();
         $developmentalReports = DevelopmentalReport::with(['session', 'term', 'class'])
-            ->where('student_id', $student->id)
-            ->where('status', DevelopmentalReport::STATUS_PUBLISHED)
-            ->latest()
-            ->take(6)
-            ->get();
+            ->where('student_id', $student->id)->where('status', DevelopmentalReport::STATUS_PUBLISHED)->latest()->get();
 
-        $birthdayGreetings = BirthdayGreeting::where('student_id', $student->id)
-            ->where('expires_at', '>', now())
-            ->latest()
-            ->get();
-
-        return view('student.dashboard', compact(
-            'availableExams',
-            'completedAttempts',
-            'inProgressAttempts',
-            'availableLearningSessions',
-            'completedLearningAttempts',
-            'reportCards',
-            'developmentalReports',
-            'birthdayGreetings'
-        ));
+        return view('student.reports.developmental', compact('developmentalReports'));
     }
 
     public function previewDevelopmentalReport(DevelopmentalReport $developmentalReport)

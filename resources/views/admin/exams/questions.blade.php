@@ -150,7 +150,7 @@
                 <label for="objective-source" class="mb-2 block text-sm font-semibold text-gray-700">Paste the full question set</label>
                 <textarea id="objective-source" name="source_text" rows="10" maxlength="200000" required
                     class="w-full rounded-lg border border-gray-300 px-4 py-3 font-mono text-sm focus:border-green-500 focus:ring-green-500"
-                    placeholder="1. Question text? A. First choice B. Second choice C. Third choice D. Fourth choice. Answer B&#10;2. Next question? (A) First (B) Second (C) Third (D) Fourth. Answer A">{{ old('source_text') }}</textarea>
+                    placeholder="SECTION A - OBJECTIVE&#10;1. Question text?&#10;A. First choice&#10;B. Second choice&#10;C. Third choice&#10;D. Fourth choice&#10;Answer: B&#10;&#10;SECTION B - THEORY&#10;1. Explain your answer.&#10;a. First part&#10;b. Second part">{{ old('source_text') }}</textarea>
             </div>
 
             <div class="flex flex-col gap-3 sm:flex-row sm:items-end">
@@ -314,25 +314,39 @@
             const lines = text.split('\n');
             const sectionA = lines.findIndex((line) => /^\s*SECTION\s+A\b/i.test(line));
             const sectionB = lines.findIndex((line) => /^\s*SECTION\s+B\b/i.test(line));
-            if (sectionA < 0 || sectionB < 0 || sectionB <= sectionA) {
-                renderQuestions([], ['The document needs SECTION A (objective) followed by SECTION B (theory).']);
-                return;
-            }
+            const hasSections = sectionA >= 0 || sectionB >= 0;
+            const objectiveStart = sectionA >= 0 ? sectionA + 1 : 0;
+            const objectiveEnd = sectionB >= 0 ? sectionB : lines.length;
+            const objectiveLines = sectionA >= 0
+                ? lines.slice(objectiveStart, objectiveEnd)
+                : (sectionB >= 0 ? [] : lines);
+            const answerInstruction = sectionB >= 0 ? lines[sectionB].replace(/^\s*SECTION\s+B\s*/i, '').trim() : '';
+            const theoryLines = sectionB >= 0 ? lines.slice(sectionB + 1) : [];
 
-            const objectiveLines = lines.slice(sectionA + 1, sectionB).map((line) => line.trim()).filter(Boolean);
-            const answerInstruction = lines[sectionB].replace(/^\s*SECTION\s+B\s*/i, '').trim();
-            const theoryLines = lines.slice(sectionB + 1).map((line) => line.trim()).filter(Boolean);
+            // Word often extracts each question, option, and answer as separate paragraphs.
+            // Join paragraphs into a question block until its answer key appears.
+            const objectiveBlocks = [];
+            let objectiveBuffer = [];
+            objectiveLines.forEach((rawLine) => {
+                const line = rawLine.trim();
+                if (!line || /^\(?\s*ANSWER\s+ALL\b/i.test(line)) return;
+                objectiveBuffer.push(line);
+                if (/\b(?:Correct\s+Answer|Answer|Ans\.?|Key)\s*[:\-]?\s*\(?\s*[A-D]\s*\)?[.!]?\s*$/i.test(line)) {
+                    objectiveBlocks.push(objectiveBuffer.join(' '));
+                    objectiveBuffer = [];
+                }
+            });
+            if (objectiveBuffer.length) objectiveBlocks.push(objectiveBuffer.join(' '));
 
             let objectiveNumber = 0;
-            objectiveLines.forEach((line) => {
-                if (/^\(?\s*ANSWER\s+ALL\b/i.test(line)) return;
-                // Word documents normally keep each question in its own paragraph.
-                const chunks = [line];
-                chunks.forEach((chunk) => {
+            objectiveBlocks.forEach((chunk) => {
                     const bodyText = chunk.replace(/^\d+\s*[.)]\s*/, '').trim();
-                    if (!/\bAnswer\s*[:\-]?\s*\(?\s*[A-D]\s*\)?[.!]?\s*$/i.test(bodyText)) return;
+                    const answerMatch = bodyText.match(/\b(?:Correct\s+Answer|Answer|Ans\.?|Key)\s*[:\-]?\s*\(?\s*([A-D])\s*\)?[.!]?\s*$/i);
                     objectiveNumber++;
-                    const answerMatch = bodyText.match(/\bAnswer\s*[:\-]?\s*\(?\s*([A-D])\s*\)?[.!]?\s*$/i);
+                    if (!answerMatch) {
+                        issues.push(`Objective question ${objectiveNumber}: add an answer key (for example, Answer: B).`);
+                        return;
+                    }
                     const answer = answerMatch[1].toUpperCase();
                     const body = bodyText.slice(0, answerMatch.index).trim();
                     const collectMarkers = (pattern) => [...body.matchAll(pattern)].map((match) => ({
@@ -346,14 +360,14 @@
                         }
                         return -1;
                     };
-                    let markers = collectMarkers(/\(\s*([A-D])\s*\)|\s+([A-D])\s*\.(?=\s)/g);
+                    let markers = collectMarkers(/\(\s*([A-D])\s*\)|(?:^|\s)([A-D])\s*[.):](?=\s)/g);
                     let optionStart = findOptionStart(markers);
                     if (optionStart < 0) {
-                        markers = collectMarkers(/\(\s*([A-D])\s*\)|\s+([A-D])(?:\s*\.)?(?=\s)/g);
+                        markers = collectMarkers(/\(\s*([A-D])\s*\)|(?:^|\s)([A-D])(?:\s*[.):])?(?=\s)/g);
                         optionStart = findOptionStart(markers);
                     }
                     if (optionStart < 0) {
-                        issues.push(`Objective question ${objectiveNumber}: expected choices labelled A, B, C, and D.`);
+                        issues.push(`Objective question ${objectiveNumber}: expected choices labelled A, B, C, and D. Put each choice on its own line or label it A. / (A).`);
                         return;
                     }
                     const choices = markers.slice(optionStart, optionStart + 4);
@@ -368,7 +382,6 @@
                         return;
                     }
                     questions.push({ question_type: 'multiple_choice', question_text: questionText, options, correct_answer: answer, marks: defaultMarks.value || 1 });
-                });
             });
 
             const theory = [];
@@ -391,7 +404,11 @@
                 }
             });
 
-            if (!objectiveNumber) issues.push('No objective questions with answer keys were found in SECTION A.');
+            if (!objectiveNumber && !theory.length) {
+                issues.push(hasSections
+                    ? 'No questions were recognized. Check that objective questions have A–D choices and an answer key, or add numbered questions under SECTION B.'
+                    : 'No questions were recognized. Add SECTION A / SECTION B headings, or include objective questions with A–D choices and an answer key.');
+            }
             theory.forEach((item, index) => {
                 if (!item.parts.length) {
                     issues.push(`Theory question ${item.number} has no readable question text.`);

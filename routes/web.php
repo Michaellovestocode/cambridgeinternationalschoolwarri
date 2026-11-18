@@ -149,6 +149,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/scanner', [AttendanceController::class, 'scanner'])->name('scanner');
         Route::post('/scan', [AttendanceController::class, 'scan'])->name('scan');
         Route::get('/today', [AttendanceController::class, 'today'])->name('today');
+        Route::get('/students/today', [AttendanceController::class, 'studentsToday'])->name('students.today');
         Route::get('/monthly', [AttendanceController::class, 'monthly'])->name('monthly');
         Route::get('/payroll-export', [AttendanceController::class, 'payrollExport'])->name('payroll-export');
         Route::get('/staff/{user}/period', [AttendanceController::class, 'staffPeriod'])->name('staff.period');
@@ -177,6 +178,11 @@ Route::middleware('auth')->group(function () {
     // Student routes
     Route::prefix('student')->name('student.')->middleware('role:student')->group(function () {
         Route::get('/dashboard', [StudentController::class, 'dashboard'])->name('dashboard');
+        Route::get('/assignments', [StudentController::class, 'assignments'])->name('assignments.index');
+        Route::get('/exams', [StudentController::class, 'exams'])->name('exams.index');
+        Route::get('/results', [StudentController::class, 'results'])->name('results.index');
+        Route::get('/reports', [StudentController::class, 'reports'])->name('reports.index');
+        Route::get('/developmental-reports', [StudentController::class, 'developmentalReports'])->name('developmental-reports.index');
         Route::get('/developmental-reports/{developmentalReport}', [StudentController::class, 'previewDevelopmentalReport'])->name('developmental-reports.preview');
         Route::get('/developmental-reports/{developmentalReport}/download', [StudentController::class, 'downloadDevelopmentalReport'])->name('developmental-reports.download');
         Route::get('/learning-sessions', [StudentLearningSessionController::class, 'index'])->name('learning.index');
