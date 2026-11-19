@@ -244,7 +244,7 @@ class LearningSessionController extends Controller
             ? $learningSession->targetClasses
             : collect([$learningSession->schoolClass])->filter();
         $learners = $classes->flatMap->students->unique('id')->sortBy('name')->values();
-        $learners->load('class');
+        $learners->each(fn ($learner) => $learner->load('class'));
         $attemptsByLearner = $attempts->unique('user_id')->keyBy('user_id');
         $submissionStats = [
             'assigned' => $learners->count(),
